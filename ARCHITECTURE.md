@@ -16,7 +16,7 @@ Finzaro is a single Next.js application at the repository root. There is no npm 
 
 - Browser client: `src/lib/supabase/client.ts`.
 - Server client: `src/lib/supabase/server.ts`.
-- Session refresh and route protection: `src/proxy.ts` + `src/lib/supabase/proxy.ts`.
+- Session refresh and route protection: `src/middleware.ts` + `src/lib/supabase/middleware.ts`.
 - Protected routes verify the authenticated user on the server before reading finance data.
 
 ## Data boundary
@@ -33,5 +33,3 @@ Finzaro is a single Next.js application at the repository root. There is no npm 
 The current service worker caches only public shell assets required for installability/offline fallback. Authenticated pages and API responses are not cached. IndexedDB transaction queues, retries and conflict resolution are intentionally deferred to the later offline-sync milestone.
 
 ## Observability
-
-Sentry is runtime-optional and activates only when `NEXT_PUBLIC_SENTRY_DSN` is configured. Build-time source-map upload is intentionally not part of the baseline configuration; it can be introduced later when release operations require it.

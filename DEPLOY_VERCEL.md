@@ -1,4 +1,15 @@
-# Deploy to Vercel
+# Deploy Vercel
+
+Baseline runtime for this project:
+
+- Next.js `15.5.27` (Maintenance LTS)
+- Node.js `22.x`
+- Production build: `npm run build`
+- Vercel Root Directory: repository root (`./`)
+- Framework Preset: `Next.js`
+- Build/Install/Output overrides: leave as Vercel defaults unless your repository layout requires otherwise
+
+For the first deployment after dependency/runtime changes, redeploy without the previous build cache.
 
 ## Path A — GitHub → Vercel
 
@@ -11,10 +22,9 @@
 NEXT_PUBLIC_SUPABASE_URL=...
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=...
 NEXT_PUBLIC_APP_URL=https://YOUR_PRODUCTION_DOMAIN
-NEXT_PUBLIC_SENTRY_DSN=...        # optional runtime monitoring
 ```
 
-5. Keep the default install command. The repository build script runs `next build --webpack`.
+5. Keep the default install command. The repository build script runs `next build`.
 6. Deploy.
 7. Copy the final production URL into Supabase Authentication URL Configuration.
 8. Re-test signup, confirmation, login, logout, password reset and PWA installation on a mobile browser.
@@ -40,4 +50,3 @@ Run this workflow only against the isolated staging project.
 - PWA install test on Android/iOS-compatible browser behavior
 - Light/dark theme check
 - Mobile widths 360px / 390px / 430px
-- Verify Sentry receives a test event when DSN is configured

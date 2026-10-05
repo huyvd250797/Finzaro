@@ -1,5 +1,17 @@
 # Finzaro
 
+Finzaro v0.1.3 is the clean deployment baseline for the personal-finance PWA.
+
+## Runtime baseline
+
+- Next.js 15.5.27 (Maintenance LTS)
+- React / React DOM 19.2.8
+- Node.js 22.x
+- Supabase Auth + PostgreSQL
+- Single Next.js application; no workspace/monorepo layer
+- Production build uses standard `next build`
+- Build worker concurrency is limited to one CPU for deployment stability
+
 Mobile-first personal finance PWA foundation built with Next.js, TypeScript, Supabase and PostgreSQL.
 
 Current baseline version: **0.1.3**. This cleanup does not add product features or change the application version. It provides a clean source tree for the next development milestone.
@@ -16,7 +28,6 @@ Current baseline version: **0.1.3**. This cleanup does not add product features 
 - Mobile-first shell, bottom navigation, desktop navigation and light/dark theme.
 - Installable PWA manifest, icons, service worker and safe offline fallback.
 - Reusable form/UI primitives needed by the next Money Core milestone.
-- Optional runtime Sentry integration.
 - GitHub CI and a manual staging database migration workflow.
 
 ## Repository layout
@@ -40,7 +51,6 @@ Copy `.env.example` to `.env.local` for local development and provide:
 NEXT_PUBLIC_SUPABASE_URL=...
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=...
 NEXT_PUBLIC_APP_URL=http://localhost:3000
-NEXT_PUBLIC_SENTRY_DSN=... # optional
 ```
 
 ## Development
@@ -56,7 +66,7 @@ Quality gate:
 npm run check
 ```
 
-Production build uses Webpack explicitly:
+Production build:
 
 ```bash
 npm run build

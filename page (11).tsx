@@ -1,10 +1,15 @@
+import Link from "next/link";
 import { AuthCard } from "@/components/auth/auth-card";
-import { ResetPasswordForm } from "@/components/auth/reset-password-form";
+import { LoginForm } from "@/components/auth/login-form";
 
-export default function ResetPasswordPage() {
+export default function LoginPage() {
   return (
-    <AuthCard title="Đặt mật khẩu mới" description="Mật khẩu mới sẽ thay thế mật khẩu hiện tại trên tài khoản Supabase Auth của bạn.">
-      <ResetPasswordForm />
+    <AuthCard
+      title="Đăng nhập"
+      description="Truy cập không gian tài chính cá nhân của bạn. Phiên đăng nhập được quản lý bằng cookie phía server."
+      footer={<>Chưa có tài khoản? <Link href="/signup" className="font-semibold text-primary hover:underline">Đăng ký</Link></>}
+    >
+      <LoginForm />
     </AuthCard>
   );
 }
