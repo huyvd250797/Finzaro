@@ -1,12 +1,8 @@
 import type { NextConfig } from "next";
-import { withSentryConfig } from "@sentry/nextjs/config";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
-  experimental: {
-    optimizePackageImports: ["lucide-react"],
-  },
   async headers() {
     return [
       {
@@ -29,4 +25,4 @@ const nextConfig: NextConfig = {
   }
 };
 
-export default withSentryConfig(nextConfig, { silent: true });
+export default nextConfig;
