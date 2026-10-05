@@ -1,3 +1,13 @@
+# V0.1.1 — Sentry / Vercel deployment hotfix
+
+## Fixed
+
+- Updated `withSentryConfig` import for `@sentry/nextjs` v11 from `@sentry/nextjs` to `@sentry/nextjs/config`.
+- Pinned `@sentry/nextjs` to `11.4.0` so Vercel builds do not silently move across SDK releases.
+- No database schema or application behavior changes.
+
+---
+
 # V0.1.0 — Foundation & Secure Account
 
 ## Done

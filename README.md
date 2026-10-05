@@ -1,4 +1,4 @@
-# Finance PWA — V0.1.0
+# Finance PWA — V0.1.1
 
 **Foundation & Secure Account** for a mobile-first personal finance PWA.
 
@@ -60,7 +60,8 @@ The service worker caches only the offline page and public icons. Authenticated 
 
 ## Version path
 
-- **V0.1.0:** Foundation & Secure Account — this package.
+- **V0.1.1:** Foundation & Secure Account — Sentry/Next.js 16 deployment hotfix.
+- **V0.1.0:** Foundation & Secure Account — initial package.
 - **V0.2.0:** Income & Expense Core.
 - **V0.3.0:** Accounts, Wallets & Transfers.
 - **V0.4.0:** Budget & Spending Control.
