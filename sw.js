@@ -1,4 +1,4 @@
-const CACHE = "finzaro-shell-v0.1.2";
+const CACHE = "finzaro-shell-v0.1.3";
 const OFFLINE = "/offline";
 const STATIC = [OFFLINE, "/icons/icon-192.png", "/icons/icon-512.png"];
 

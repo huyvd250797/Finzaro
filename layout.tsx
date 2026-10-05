@@ -1,37 +1,15 @@
-import type { Metadata, Viewport } from "next";
-import "./globals.css";
-import { ThemeProvider } from "@/components/theme/theme-provider";
-import { PwaRegister } from "@/components/pwa/pwa-register";
-import { ToastProvider } from "@/components/ui/toast";
+import { redirect } from "next/navigation";
+import { AppShell } from "@/components/shell/app-shell";
+import { createClient } from "@/lib/supabase/server";
 
-export const metadata: Metadata = {
-  title: { default: "Finzaro", template: "%s · Finzaro" },
-  description: "Ứng dụng quản lý thu chi và tài chính cá nhân mobile-first.",
-  applicationName: "Finzaro",
-  appleWebApp: { capable: true, statusBarStyle: "default", title: "Finzaro" },
-  formatDetection: { telephone: false },
-  icons: { apple: "/icons/icon-192.png" }
-};
+export default async function ProtectedLayout({ children }: { children: React.ReactNode }) {
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getClaims();
+  const userId = data?.claims?.sub;
+  if (!userId) redirect("/login");
 
-export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
-  viewportFit: "cover",
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f6f8fb" },
-    { media: "(prefers-color-scheme: dark)", color: "#08111f" }
-  ]
-};
+  const { data: profile } = await supabase.from("profiles").select("display_name").eq("id", userId).maybeSingle();
+  const displayName = profile?.display_name || data.claims?.email?.split("@")[0] || "Bạn";
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return (
-    <html lang="vi" suppressHydrationWarning>
-      <body>
-        <ThemeProvider>
-          <PwaRegister />
-          <ToastProvider>{children}</ToastProvider>
-        </ThemeProvider>
-      </body>
-    </html>
-  );
+  return <AppShell displayName={displayName}>{children}</AppShell>;
 }

@@ -1,2 +1,10 @@
-import { FeaturePlaceholder } from "@/components/shell/feature-placeholder";
-export default function MorePage() { return <FeaturePlaceholder title="Tiện ích mở rộng" version="V1.0.0+" description="Import/export, data health, notification và các mô-đun mở rộng sẽ xuất hiện theo từng phiên bản độc lập." />; }
+import { AuthCard } from "@/components/auth/auth-card";
+import { ResetPasswordForm } from "@/components/auth/reset-password-form";
+
+export default function ResetPasswordPage() {
+  return (
+    <AuthCard title="Đặt mật khẩu mới" description="Mật khẩu mới sẽ thay thế mật khẩu hiện tại trên tài khoản Supabase Auth của bạn.">
+      <ResetPasswordForm />
+    </AuthCard>
+  );
+}

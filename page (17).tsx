@@ -1,2 +1,15 @@
-import { FeaturePlaceholder } from "@/components/shell/feature-placeholder";
-export default function ToolsPage() { return <FeaturePlaceholder title="Công cụ ngân hàng" version="V1.1.0+" description="Lãi suất, gửi tiết kiệm, khoản vay và tín dụng được giữ ngoài V0.1.0 để ưu tiên độ tin cậy của lõi giao dịch." />; }
+import Link from "next/link";
+import { AuthCard } from "@/components/auth/auth-card";
+import { LoginForm } from "@/components/auth/login-form";
+
+export default function LoginPage() {
+  return (
+    <AuthCard
+      title="Đăng nhập"
+      description="Truy cập không gian tài chính cá nhân của bạn. Phiên đăng nhập được quản lý bằng cookie phía server."
+      footer={<>Chưa có tài khoản? <Link href="/signup" className="font-semibold text-primary hover:underline">Đăng ký</Link></>}
+    >
+      <LoginForm />
+    </AuthCard>
+  );
+}

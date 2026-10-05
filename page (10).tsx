@@ -1,15 +1,2 @@
-import Link from "next/link";
-import { AuthCard } from "@/components/auth/auth-card";
-import { SignupForm } from "@/components/auth/signup-form";
-
-export default function SignupPage() {
-  return (
-    <AuthCard
-      title="Tạo tài khoản"
-      description="Mỗi tài khoản mới sẽ tự tạo một workspace cá nhân, hồ sơ và bộ danh mục mặc định."
-      footer={<>Đã có tài khoản? <Link href="/login" className="font-semibold text-primary hover:underline">Đăng nhập</Link></>}
-    >
-      <SignupForm />
-    </AuthCard>
-  );
-}
+import { FeaturePlaceholder } from "@/components/shell/feature-placeholder";
+export default function QuickEntryPage() { return <FeaturePlaceholder title="Quick Entry" version="V0.2.0" description="Luồng nhập thu/chi 2–3 thao tác sẽ được kích hoạt ở phiên bản kế tiếp. V0.1.0 giữ nút + để chốt navigation ngay từ đầu." />; }
