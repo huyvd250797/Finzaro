@@ -14,17 +14,26 @@ function destination(kind: "error" | "message", message: string) {
   return `/accounts?${new URLSearchParams({ [kind]: message }).toString()}`;
 }
 
-async function accountPayload(formData: FormData) {
+function metadataPayload(formData: FormData) {
   const name = text(formData, "name");
   const accountType = text(formData, "account_type");
-  const currencyCode = text(formData, "currency_code").toUpperCase();
   const institutionName = text(formData, "institution_name");
-  const balanceInput = text(formData, "balance");
 
   if (name.length < 1 || name.length > 100) throw new Error("Tên tài khoản phải từ 1 đến 100 ký tự.");
   if (!isAccountType(accountType)) throw new Error("Loại tài khoản không hợp lệ.");
   if (institutionName.length > 100) throw new Error("Tên tổ chức tối đa 100 ký tự.");
 
+  return {
+    name,
+    account_type: accountType,
+    institution_name: institutionName || null
+  };
+}
+
+async function createPayload(formData: FormData) {
+  const metadata = metadataPayload(formData);
+  const currencyCode = text(formData, "currency_code").toUpperCase();
+  const balanceInput = text(formData, "balance");
   const { supabase } = await requireUser();
   const { data: currency, error } = await supabase
     .from("supported_currencies")
@@ -38,10 +47,8 @@ async function accountPayload(formData: FormData) {
   if (balanceMinor === null) throw new Error(`Số dư không hợp lệ. ${currencyCode} hỗ trợ tối đa ${currency.decimal_digits} chữ số thập phân.`);
 
   return {
-    name,
-    account_type: accountType,
+    ...metadata,
     currency_code: currencyCode,
-    institution_name: institutionName || null,
     opening_balance_minor: balanceMinor,
     current_balance_minor: balanceMinor
   };
@@ -50,7 +57,7 @@ async function accountPayload(formData: FormData) {
 export async function createAccountAction(formData: FormData) {
   try {
     const { supabase, userId } = await requireUser();
-    const payload = await accountPayload(formData);
+    const payload = await createPayload(formData);
     const { error } = await supabase.from("accounts").insert({ ...payload, user_id: userId });
     if (error) throw error;
 
@@ -70,13 +77,20 @@ export async function updateAccountAction(formData: FormData) {
 
   try {
     const { supabase, userId } = await requireUser();
-    const payload = await accountPayload(formData);
-    const { data, error } = await supabase.from("accounts").update(payload).eq("id", accountId).eq("user_id", userId).select("id").maybeSingle();
+    const payload = metadataPayload(formData);
+    const { data, error } = await supabase
+      .from("accounts")
+      .update(payload)
+      .eq("id", accountId)
+      .eq("user_id", userId)
+      .select("id")
+      .maybeSingle();
     if (error || !data) throw new Error("Không tìm thấy tài khoản để cập nhật.");
 
     revalidatePath("/accounts");
     revalidatePath("/overview");
-    redirect(destination("message", "Đã cập nhật tài khoản."));
+    revalidatePath("/transactions");
+    redirect(destination("message", "Đã cập nhật thông tin tài khoản. Số dư được quản lý bởi Transaction Core."));
   } catch (error) {
     if (error && typeof error === "object" && "digest" in error) throw error;
     const message = error instanceof Error ? error.message : "Không thể cập nhật tài khoản.";
@@ -95,5 +109,6 @@ export async function setAccountArchivedAction(formData: FormData) {
   if (error || !data) redirect(destination("error", "Không thể thay đổi trạng thái tài khoản."));
   revalidatePath("/accounts");
   revalidatePath("/overview");
-  redirect(destination("message", archived ? "Đã lưu trữ tài khoản." : "Đã khôi phục tài khoản."));
+  revalidatePath("/transactions");
+  redirect(destination("message", archived ? "Đã lưu trữ tài khoản. Lịch sử giao dịch vẫn được giữ nguyên." : "Đã khôi phục tài khoản."));
 }

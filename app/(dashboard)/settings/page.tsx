@@ -12,6 +12,7 @@ const sections = [
   { icon: Database, title: "Database foundation", desc: "Supabase DEV, RLS, migrations và typed clients từ V0.1.1.", value: "Connected" },
   { icon: ShieldCheck, title: "Authentication", desc: "Email/password, cookie SSR, session refresh, protected dashboard và recovery flow.", value: "V0.0.2" },
   { icon: WalletCards, title: "Account Core", desc: "Tài khoản tiền mặt, ngân hàng, ví điện tử, tiết kiệm và số dư thật trên Supabase.", value: "V0.0.3" },
+  { icon: Database, title: "Transaction Core", desc: "Income, Expense, Transfer, ledger entries và cập nhật số dư nguyên tử qua database functions.", value: "V0.0.4" },
   { icon: Bell, title: "Thông báo", desc: "Payment reminders và push notifications nằm trong roadmap V1.1.", value: "Roadmap" }
 ];
 
@@ -28,7 +29,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Sea
 
   return (
     <div className="mx-auto max-w-[900px] px-4 py-6 md:px-6 lg:px-8 lg:py-8">
-      <div><p className="text-sm font-semibold text-[var(--primary)]">Account & System</p><h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">Cài đặt</h1><p className="mt-2 text-sm text-[var(--muted-foreground)]">Tài khoản thật, preferences và diagnostics của Finzaro {APP_VERSION_LABEL}.</p></div>
+      <div><p className="text-sm font-semibold text-[var(--primary)]">Account & System</p><h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">Cài đặt</h1><p className="mt-2 text-sm text-[var(--muted-foreground)]">Account + Transaction ledger, preferences và diagnostics của Finzaro {APP_VERSION_LABEL}.</p></div>
       <AuthMessage error={params.error} message={params.message} />
 
       <div className="mt-6 grid gap-4 md:grid-cols-2">

@@ -4,7 +4,6 @@ import { AuthMessage } from "@/components/auth-message";
 import { Card, CardContent } from "@/components/ui/card";
 import { ACCOUNT_TYPE_LABELS, type AccountType } from "@/features/accounts/constants";
 import { createAccountAction, setAccountArchivedAction, updateAccountAction } from "@/features/accounts/actions";
-import { minorToMajorInput } from "@/features/accounts/money";
 import { requireUser } from "@/lib/auth";
 import { formatMinorMoney } from "@/lib/utils";
 
@@ -35,7 +34,6 @@ function currencyMeta(currencies: Currency[], code: string) {
 
 function AccountForm({ currencies, account }: { currencies: Currency[]; account?: Account }) {
   const editing = Boolean(account);
-  const selectedCurrency = currencyMeta(currencies, account?.currency_code ?? "VND");
   const action = editing ? updateAccountAction : createAccountAction;
 
   return (
@@ -45,7 +43,7 @@ function AccountForm({ currencies, account }: { currencies: Currency[]; account?
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--primary)]">{editing ? "Edit account" : "New account"}</p>
             <h2 className="mt-1 text-lg font-black">{editing ? "Cập nhật tài khoản" : "Thêm tài khoản tài chính"}</h2>
-            <p className="mt-1 text-sm text-[var(--muted-foreground)]">Số dư được lưu theo minor unit để tránh sai số floating point.</p>
+            <p className="mt-1 text-sm text-[var(--muted-foreground)]">V0.0.4 khóa tiền tệ và số dư khi chỉnh sửa; mọi biến động số dư đi qua Transaction Core.</p>
           </div>
           <Link href="/accounts" aria-label="Đóng form" className="grid size-9 place-items-center rounded-xl border border-[var(--border)] text-[var(--muted-foreground)] hover:bg-[var(--muted)]"><X className="size-4" /></Link>
         </div>
@@ -66,9 +64,7 @@ function AccountForm({ currencies, account }: { currencies: Currency[]; account?
 
           <label className="block">
             <span className="mb-2 block text-xs font-bold uppercase tracking-wide text-[var(--muted-foreground)]">Tiền tệ</span>
-            <select name="currency_code" defaultValue={account?.currency_code ?? "VND"} className="h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 text-sm">
-              {currencies.map((item) => <option key={item.code} value={item.code}>{item.code} · {item.name} ({item.symbol})</option>)}
-            </select>
+            {editing ? <div className="flex h-11 items-center rounded-xl border border-[var(--border)] bg-[var(--muted)] px-4 text-sm font-semibold">{account?.currency_code}<span className="ml-2 text-xs font-normal text-[var(--muted-foreground)]">· khóa sau khi tạo</span></div> : <select name="currency_code" defaultValue="VND" className="h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 text-sm">{currencies.map((item) => <option key={item.code} value={item.code}>{item.code} · {item.name} ({item.symbol})</option>)}</select>}
           </label>
 
           <label className="block">
@@ -77,9 +73,9 @@ function AccountForm({ currencies, account }: { currencies: Currency[]; account?
           </label>
 
           <label className="block">
-            <span className="mb-2 block text-xs font-bold uppercase tracking-wide text-[var(--muted-foreground)]">Số dư hiện tại</span>
-            <input name="balance" inputMode="decimal" defaultValue={account ? minorToMajorInput(account.current_balance_minor, selectedCurrency.decimal_digits) : "0"} required placeholder="0" className="h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-4 text-sm outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--ring)]" />
-            <span className="mt-1.5 block text-[11px] leading-5 text-[var(--muted-foreground)]">Dùng dấu chấm cho phần thập phân. V0.0.4 sẽ chuyển số dư sang cơ chế cập nhật bằng giao dịch.</span>
+            <span className="mb-2 block text-xs font-bold uppercase tracking-wide text-[var(--muted-foreground)]">{editing ? "Số dư hiện tại" : "Số dư ban đầu"}</span>
+            {editing ? <div className="flex h-11 items-center rounded-xl border border-[var(--border)] bg-[var(--muted)] px-4 text-sm font-bold">{account ? formatMinorMoney(account.current_balance_minor, account.currency_code, currencyMeta(currencies, account.currency_code).decimal_digits) : "—"}</div> : <input name="balance" inputMode="decimal" defaultValue="0" required placeholder="0" className="h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-4 text-sm outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--ring)]" />}
+            <span className="mt-1.5 block text-[11px] leading-5 text-[var(--muted-foreground)]">{editing ? "Không sửa số dư trực tiếp để tránh phá ledger. Hãy tạo giao dịch Income / Expense / Transfer." : "Opening balance chỉ đặt khi tạo tài khoản; sau đó Transaction Core sẽ duy trì current balance."}</span>
           </label>
 
           <div className="flex flex-wrap items-center gap-2 md:col-span-2">
@@ -119,9 +115,9 @@ export default async function AccountsPage({ searchParams }: { searchParams: Sea
     <div className="mx-auto max-w-[1300px] px-4 py-6 md:px-6 lg:px-8 lg:py-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-sm font-semibold text-[var(--primary)]">Money · Account Core</p>
+          <p className="text-sm font-semibold text-[var(--primary)]">Money · Account + Ledger</p>
           <h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">Tài khoản & ví</h1>
-          <p className="mt-2 text-sm text-[var(--muted-foreground)]">Dữ liệu thật từ Supabase, tách riêng theo user bằng Row Level Security.</p>
+          <p className="mt-2 text-sm text-[var(--muted-foreground)]">Số dư hiện tại được Transaction Core duy trì từ Income, Expense và Transfer; dữ liệu vẫn tách riêng theo user bằng RLS.</p>
         </div>
         <Link href="/accounts?new=1" className="inline-flex h-10 items-center gap-2 rounded-xl bg-[var(--primary)] px-4 text-sm font-bold text-white"><Plus className="size-4" /> Thêm tài khoản</Link>
       </div>

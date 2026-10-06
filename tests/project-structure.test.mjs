@@ -17,6 +17,9 @@ const required = [
   "features/accounts/actions.ts",
   "features/accounts/constants.ts",
   "features/accounts/money.ts",
+  "features/transactions/actions.ts",
+  "features/transactions/constants.ts",
+  "features/transactions/data.ts",
   "lib/app-version.ts",
   "lib/auth.ts",
   "lib/supabase/client.ts",
@@ -25,23 +28,27 @@ const required = [
   "proxy.ts",
   "supabase/migrations/20261005110000_foundation_environment.sql",
   "supabase/migrations/20261006134500_account_core.sql",
+  "supabase/migrations/20261006150000_transaction_core.sql",
   "supabase/sql-editor/V0.0.2_auth_verification.sql",
   "supabase/sql-editor/V0.0.3_account_core.sql",
   "supabase/sql-editor/V0.0.3_account_core_verify.sql",
+  "supabase/sql-editor/V0.0.4_transaction_core.sql",
+  "supabase/sql-editor/V0.0.4_transaction_core_verify.sql",
   "docs/SUPABASE_AUTH_SETUP.md",
   "docs/V0.0.3_ACCOUNT_CORE_SETUP.md",
+  "docs/V0.0.4_TRANSACTION_CORE_SETUP.md",
   "public/sw.js",
   ".env.example",
   "vercel.json"
 ];
 
-test("V0.0.3 required files exist", () => {
+test("V0.0.4 required files exist", () => {
   for (const file of required) assert.equal(existsSync(file), true, `${file} is missing`);
 });
 
-test("package version is 0.0.3", () => {
+test("package version is 0.0.4", () => {
   const pkg = JSON.parse(readFileSync("package.json", "utf8"));
-  assert.equal(pkg.version, "0.0.3");
+  assert.equal(pkg.version, "0.0.4");
   assert.match(pkg.dependencies.next, /16/);
   assert.ok(pkg.dependencies["@supabase/ssr"]);
 });

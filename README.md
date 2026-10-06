@@ -1,34 +1,44 @@
-# Finzaro V0.0.3 — Account Core
+# Finzaro V0.0.4 — Transaction Core
 
-Finzaro is a PWA-first personal finance application built with Next.js, Supabase and Vercel. V0.0.3 upgrades the authenticated V0.0.2 foundation with real user-owned financial accounts and real account balances on the Dashboard.
+Finzaro is a PWA-first personal finance application built with Next.js, Supabase and Vercel. V0.0.4 upgrades Account Core with a real transaction ledger: Income, Expense and Transfer now change account balances atomically inside PostgreSQL.
 
 ## Release scope
 
-V0.0.3 includes:
+V0.0.4 includes:
 
-- Real `accounts` table in Supabase
-- Cash, bank, e-wallet and savings account types
-- Create and edit account flows
-- Archive / restore lifecycle instead of destructive deletion in the UI
-- Opening balance + current balance stored in minor units (`BIGINT`)
-- Per-account currency
-- Per-user Row Level Security
-- Real Accounts page backed by Supabase
-- Dashboard Total Balance backed by real accounts
-- Multi-currency safety: totals are grouped by currency and the headline total only sums the user's default currency
-- Account empty states and first-account onboarding
-- Central application version constants in `lib/app-version.ts`
-- Current Finzaro version displayed in the authenticated header, sidebar, auth UI and Settings
-- V0.0.3 SQL Editor script and verification query
-- Account Core smoke tests
-
-Transactions, income, expense and transfer logic remain demo-only until V0.0.4.
+- Real `transactions` and `transaction_entries` tables in Supabase
+- Signed ledger entries in currency minor units (`BIGINT`)
+- Income transactions that increase one account balance
+- Expense transactions that decrease one account balance
+- Account-to-account transfers without counting them as income/expense
+- Same-currency and cross-currency transfer support without silently inventing FX rates
+- Atomic PostgreSQL functions for transaction creation and deletion/reversal
+- Direct client mutation of ledger rows blocked; authenticated users receive read-only table grants
+- Account balance/currency hardening: normal API clients can no longer edit ledger-maintained balance columns
+- Existing V0.0.3 account balances promoted to the V0.0.4 opening ledger baseline
+- Transaction history with search, type/account/date filters
+- Real Recent Transactions on Dashboard
+- Real monthly Income / Expense / Net Cash Flow cards
+- Real six-month cash-flow chart
+- Real expense-by-category snapshot for the current month
+- Transaction deletion with automatic account-balance reversal
+- Per-user RLS for transaction headers and entries
+- Current release display: `Finzaro V0.0.4 · Transaction Core`
+- SQL Editor migration + verification script
+- Transaction Core smoke tests and pgTAP schema tests
 
 ## Required database step — SQL Editor workflow
 
-If V0.1.1 foundation was already applied, **do not run it again**.
+This release assumes these earlier scripts were already applied:
 
-Open Supabase:
+```text
+V0.1.1 foundation
+V0.0.3 Account Core
+```
+
+Do **not** rerun the old files.
+
+Open:
 
 ```text
 Supabase Dashboard
@@ -36,44 +46,132 @@ Supabase Dashboard
 → New query
 ```
 
-Copy the full content of:
+Copy all content from:
 
 ```text
-supabase/sql-editor/V0.0.3_account_core.sql
+supabase/sql-editor/V0.0.4_transaction_core.sql
 ```
 
 Paste it into SQL Editor and click **Run**.
 
-The script creates:
+Optional verification:
 
 ```text
-public.accounts
-├── id
-├── user_id
-├── name
-├── account_type
-├── currency_code
-├── institution_name
-├── opening_balance_minor
-├── current_balance_minor
-├── is_archived
-├── created_at
-└── updated_at
+supabase/sql-editor/V0.0.4_transaction_core_verify.sql
 ```
 
-It also enables RLS and creates ownership policies for SELECT / INSERT / UPDATE / DELETE.
+Detailed steps: [`docs/V0.0.4_TRANSACTION_CORE_SETUP.md`](docs/V0.0.4_TRANSACTION_CORE_SETUP.md)
 
-Optional verification query:
+## Ledger model
+
+V0.0.4 separates the business transaction from its account movements:
 
 ```text
-supabase/sql-editor/V0.0.3_account_core_verify.sql
+transactions
+    │
+    └── transaction_entries
+            ├── signed amount_minor
+            ├── account_id
+            ├── currency_code
+            └── entry_role
 ```
 
-Detailed guide: [`docs/V0.0.3_ACCOUNT_CORE_SETUP.md`](docs/V0.0.3_ACCOUNT_CORE_SETUP.md)
+Examples:
+
+```text
+Income 1,000,000 VND
+  Account A  +1,000,000
+
+Expense 250,000 VND
+  Account A    -250,000
+
+Transfer 2,000,000 VND
+  Account A  -2,000,000
+  Account B  +2,000,000
+```
+
+Transfers are therefore excluded from income/expense analytics by transaction type instead of being mistaken for spending.
+
+## Atomic balance updates
+
+The application does not insert ledger rows and update account balances in separate browser requests.
+
+Writes use:
+
+```text
+create_financial_transaction_v004(...)
+delete_financial_transaction_v004(...)
+```
+
+Each function performs ledger + account balance changes inside one PostgreSQL transaction. If any statement fails, the database rolls the whole operation back.
+
+## Account balance hardening
+
+Before V0.0.4, Account Core could manually edit `current_balance_minor` because no transaction ledger existed.
+
+V0.0.4 changes that rule:
+
+```text
+Create account
+→ opening balance is accepted once
+→ current balance starts at opening balance
+
+After creation
+→ name/type/institution/archive state remain editable
+→ currency and balance are locked from normal authenticated API updates
+→ Income/Expense/Transfer maintain current balance
+```
+
+This prevents UI or direct Data API calls from silently breaking the ledger invariant.
+
+## Multi-currency transfers
+
+If source and destination use the same currency, the destination amount can be left blank and Finzaro uses the source amount.
+
+If currencies differ, enter both actual values:
+
+```text
+Source:      100 USD
+Destination: 2,620,000 VND
+```
+
+Finzaro records exactly what happened. V0.0.4 does **not** infer an exchange rate or perform automatic currency conversion.
+
+## Transaction routes
+
+```text
+/transactions
+/transactions?new=expense
+/transactions?new=income
+/transactions?new=transfer
+```
+
+History filters are server-rendered using query parameters:
+
+```text
+q
+ type
+account
+from
+to
+```
+
+## Dashboard behavior
+
+The dashboard now reads real ledger data for:
+
+- Income this month
+- Expense this month
+- Net cash flow
+- Six-month cash-flow graph
+- Expense category snapshot
+- Recent transactions
+
+Headline financial totals use the user's default currency only. Finzaro still does not add unrelated currencies together without an FX module.
 
 ## Environment variables
 
-V0.0.3 does not add new environment variables. Keep the same values configured for Authentication:
+V0.0.4 adds **no new environment variables**. Keep the existing Authentication configuration:
 
 ```dotenv
 NEXT_PUBLIC_FINZARO_ENV=development
@@ -82,47 +180,11 @@ NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_xxx
 ```
 
-No service-role key is required.
-
-## Account balance model
-
-Money is stored in minor units:
-
-```text
-VND 1,500,000  → 1500000
-USD 125.50     → 12550
-```
-
-The database uses `BIGINT`; the app validates values so they stay inside JavaScript's safe integer range.
-
-During V0.0.3, editing an account balance updates both `opening_balance_minor` and `current_balance_minor`. Starting in V0.0.4, transactions will become the source of balance changes.
-
-## Multi-currency behavior
-
-Finzaro does not add VND + USD + EUR as if they were the same currency.
-
-The Accounts page:
-
-- shows totals by currency;
-- shows one headline total for the user's default currency;
-- avoids implicit FX conversion.
-
-Exchange-rate conversion is intentionally deferred to a later finance module.
-
-## Account routes
-
-```text
-/accounts
-/accounts?new=1
-/accounts?edit=<ACCOUNT_ID>
-/accounts?archived=1
-```
-
-All account queries and mutations are user-scoped and additionally protected by Supabase RLS.
+No secret/service-role key is required.
 
 ## Current version display
 
-Version metadata lives in:
+Version metadata is centralized in:
 
 ```text
 lib/app-version.ts
@@ -131,10 +193,10 @@ lib/app-version.ts
 Current release:
 
 ```text
-Finzaro V0.0.3 · Account Core
+Finzaro V0.0.4 · Transaction Core
 ```
 
-The version is visible inside the app header, desktop sidebar, authentication shell and Settings page.
+It is displayed in the app header, sidebar, authentication shell and Settings.
 
 ## Install / quality check
 
@@ -154,54 +216,74 @@ npm run check
 
 ## GitHub → Vercel
 
-After running the SQL migration in Supabase SQL Editor:
+After applying the V0.0.4 SQL in Supabase:
 
 ```bash
 git add .
-git commit -m "feat: Finzaro V0.0.3 Account Core"
+git commit -m "feat: Finzaro V0.0.4 Transaction Core"
 git push
 ```
 
-Vercel can redeploy from the connected GitHub repository. No additional V0.0.3 ENV variables are required.
+The connected Vercel project can redeploy directly. No new V0.0.4 ENV values are required.
 
 ## Recommended acceptance test
 
+Start with two VND accounts, for example Bank = 10,000,000 and Cash = 1,000,000.
+
 ```text
-1. Login
-2. Open Accounts
-3. Create a VND bank account
-4. Confirm the account appears in Accounts
-5. Confirm Dashboard Total Balance changes
-6. Edit the account name/balance
-7. Archive the account
-8. Confirm Dashboard excludes archived account
-9. Restore the account
-10. Confirm another Supabase user cannot read the first user's account
+1. Create Income +5,000,000 into Bank
+   → Bank becomes 15,000,000
+   → monthly Income +5,000,000
+
+2. Create Expense 1,200,000 from Bank
+   → Bank becomes 13,800,000
+   → monthly Expense +1,200,000
+
+3. Transfer 2,000,000 Bank → Cash
+   → Bank becomes 11,800,000
+   → Cash becomes 3,000,000
+   → Income/Expense cards do not change
+
+4. Delete the transfer
+   → Bank returns to 13,800,000
+   → Cash returns to 1,000,000
+
+5. Login as another user
+   → no transaction or ledger entry from the first user is visible
 ```
 
-## Security baseline
+## Security / integrity baseline
 
 - Browser/server app clients use only the Supabase publishable key.
-- Dashboard identity is verified server-side.
-- `accounts.user_id` references `auth.users`.
-- RLS enforces `auth.uid() = user_id`.
-- Account actions also scope mutations by authenticated `user_id`.
-- No authenticated HTML is cached by the PWA service worker.
-- Multi-currency amounts are never silently combined.
+- Every transaction and entry has `user_id` ownership.
+- RLS allows users to read only their own ledger.
+- Direct INSERT/UPDATE/DELETE on transaction tables is not granted to authenticated clients.
+- Ledger writes execute through ownership-checking PostgreSQL functions.
+- Account balances are updated in the same DB transaction as ledger entries.
+- Direct account balance/currency mutation is removed from authenticated table grants.
+- Hard-deleting accounts through the normal client is removed; archive/restore remains the lifecycle action.
+- PWA authenticated navigation HTML remains uncached.
 
 ## Next release
 
-### Finzaro V0.0.4 — Transaction Core
+### Finzaro V0.0.5 — Category Engine
+
+V0.0.4 intentionally stores `category_label` as a snapshot so transaction recording can work before the category model exists. V0.0.5 will normalize this into a user-customizable Category Engine.
 
 Planned scope:
 
-- Real `transactions` / ledger schema
-- Income, expense and transfer transactions
-- Transaction CRUD
-- Transfer between two Finzaro accounts without counting it as spending
-- Atomic balance updates
-- Category foundation for transaction classification
-- Recent Transactions on Dashboard from Supabase
-- Income / Expense / Net Cash Flow cards from real data
-- Transaction history filters
-- RLS and integrity rules linking transactions to user-owned accounts
+- `categories` table with per-user ownership and RLS
+- System starter categories for Income and Expense
+- Custom categories created by each user
+- Category type separation: Income vs Expense
+- Parent/subcategory hierarchy foundation
+- Category icon and presentation metadata
+- Active/archive lifecycle
+- Transaction `category_id` foreign key while preserving historical labels safely
+- Category management UI
+- Category picker in transaction creation
+- Category-based filtering and analytics
+- Migration path for V0.0.4 free-text category labels
+- Preparation for V0.0.6 Budget Engine, where budgets can target structured categories
+
+The release after that is expected to focus on **Budget Engine**, using the normalized categories and real transaction ledger produced by V0.0.4/V0.0.5.

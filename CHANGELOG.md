@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.0.4 — Transaction Core
+
+- Added real Supabase `transactions` and `transaction_entries` ledger tables.
+- Added Income, Expense and Transfer flows backed by authenticated PostgreSQL functions.
+- Added atomic ledger + account-balance updates and transaction deletion with balance reversal.
+- Added read-only authenticated grants for ledger tables; direct client writes are blocked.
+- Hardened account grants so current balance/currency can no longer be edited directly after Transaction Core.
+- Added opening-balance enforcement for newly created accounts.
+- Replaced demo transaction history with real Supabase data and filters.
+- Connected Dashboard monthly Income, Expense, Net Cash Flow, six-month chart, category snapshot and Recent Transactions to real ledger data.
+- Added same-currency and explicit cross-currency transfers without implicit FX conversion.
+- Updated account editing so balance changes must flow through transactions.
+- Updated centralized in-app version to `V0.0.4 · Transaction Core`.
+- Added SQL Editor setup/verification scripts and Transaction Core pgTAP + Node smoke tests.
+- Defined V0.0.5 Category Engine as the next release.
+
 ## 0.0.3 — Account Core
 
 - Added real Supabase `accounts` schema for cash, bank, e-wallet and savings accounts.

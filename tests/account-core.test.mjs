@@ -34,13 +34,13 @@ test("Accounts page reads real Supabase rows and supports archive lifecycle", ()
   assert.doesNotMatch(accountsPage, /from "@\/lib\/demo-data"/);
 });
 
-test("Dashboard total balance is sourced from accounts", () => {
-  assert.match(overview, /from\("accounts"\)/);
+test("Dashboard total balance is sourced from Account Core through ledger loader", () => {
+  assert.match(overview, /loadLedger/);
   assert.match(overview, /current_balance_minor/);
   assert.match(overview, /formatMinorMoney/);
 });
 
-test("current app version is centralized", () => {
-  assert.match(version, /APP_VERSION = "0\.0\.3"/);
-  assert.match(version, /Account Core/);
+test("current app version remains centralized after Transaction Core", () => {
+  assert.match(version, /APP_VERSION = "0\.0\.4"/);
+  assert.match(version, /Transaction Core/);
 });

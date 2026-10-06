@@ -1,6 +1,6 @@
 # Finzaro — Supabase DEV Foundation Setup
 
-This document describes the database foundation introduced in V0.1.1. Authentication was activated in V0.0.2; V0.0.3 now adds Account Core through a separate migration, while Transactions remain planned for V0.0.4.
+This document describes the database foundation introduced in V0.1.1. Authentication was activated in V0.0.2; V0.0.3 adds Account Core and V0.0.4 adds Transaction Core through separate forward migrations.
 
 ## Recommended path: remote DEV project first
 
@@ -63,7 +63,7 @@ The migration creates only the V0.1.1 foundation:
 - `handle_new_user()` Auth bootstrap function
 - RLS policies
 
-The foundation migration deliberately does **not** create Accounts or Transactions. V0.0.3 adds Accounts separately in `20261006134500_account_core.sql`; Transactions remain for V0.0.4.
+The foundation migration deliberately does **not** create Accounts or Transactions. V0.0.3 adds Accounts in `20261006134500_account_core.sql`; V0.0.4 adds the ledger in `20261006150000_transaction_core.sql`.
 
 ### 6. Regenerate database types from the linked DEV project
 

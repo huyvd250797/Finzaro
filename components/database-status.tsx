@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { CheckCircle2, CircleAlert, Database, LoaderCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { APP_VERSION_LABEL } from "@/lib/app-version";
 
 type DatabaseHealth = {
   ok: boolean;
@@ -70,7 +71,7 @@ export function DatabaseStatus() {
               )}
             </div>
             <p className="mt-1 text-sm leading-6 text-[var(--muted-foreground)]">
-              Runtime health check cho Supabase DEV environment của Finzaro V0.0.3.
+              Runtime health check cho Supabase DEV environment của Finzaro {APP_VERSION_LABEL}.
             </p>
           </div>
         </div>
