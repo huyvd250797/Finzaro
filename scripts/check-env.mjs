@@ -19,6 +19,16 @@ if (url.protocol !== "https:" && !["localhost", "127.0.0.1"].includes(url.hostna
   process.exit(1);
 }
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+if (siteUrl) {
+  try {
+    new URL(siteUrl);
+  } catch {
+    console.error("NEXT_PUBLIC_SITE_URL is not a valid URL.");
+    process.exit(1);
+  }
+}
+
 const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 if (!key.startsWith("sb_publishable_") && !key.startsWith("eyJ")) {
   console.warn("Warning: publishable key format is unexpected. Verify the value from Supabase Project > Connect.");
@@ -26,3 +36,4 @@ if (!key.startsWith("sb_publishable_") && !key.startsWith("eyJ")) {
 
 console.log(`Finzaro environment OK: ${process.env.NEXT_PUBLIC_FINZARO_ENV ?? "development"}`);
 console.log(`Supabase host: ${url.hostname}`);
+console.log(`Site URL: ${siteUrl ?? "request origin fallback"}`);

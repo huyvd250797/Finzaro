@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.2.0 — Authentication
+
+- Replaced mock login with real Supabase email/password authentication.
+- Added Register, Login and Logout server actions.
+- Added cookie-based SSR session handling with Next.js 16 `proxy.ts`.
+- Added server-side dashboard protection using verified Supabase claims.
+- Added confirmation endpoint supporting token-hash and PKCE code flows.
+- Added forgot-password and reset-password flows.
+- Added generic auth callback endpoint for future OAuth/PKCE expansion.
+- Connected Settings to authenticated `profiles` and `user_preferences` rows.
+- Added RLS-backed profile and preference update actions.
+- Added signed-in identity and Logout control to the application header.
+- Updated landing page for account-based onboarding.
+- Hardened the PWA service worker to never cache authenticated navigation HTML.
+- Added Supabase Auth URL/template configuration documentation.
+- Added optional SQL Editor verification script; no new V0.2 schema migration is required.
+- Added auth scope/security smoke tests.
+
 ## 0.1.1 — DEV Database Environment
 
 - Added Supabase CLI as a project-scoped dev dependency and committed `supabase/config.toml`.

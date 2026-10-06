@@ -1,6 +1,6 @@
-# Finzaro V0.1.1 — Supabase DEV Setup
+# Finzaro — Supabase DEV Foundation Setup
 
-This release introduces the database environment only. Authentication remains a mock UI until V0.2, Accounts stay demo-only until V0.3, and Transactions stay demo-only until V0.4.
+This document describes the database foundation introduced in V0.1.1. V0.2 now activates real Authentication on top of it; Accounts remain demo-only until V0.3 and Transactions until V0.4.
 
 ## Recommended path: remote DEV project first
 

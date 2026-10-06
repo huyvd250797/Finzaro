@@ -70,7 +70,7 @@ export function DatabaseStatus() {
               )}
             </div>
             <p className="mt-1 text-sm leading-6 text-[var(--muted-foreground)]">
-              Runtime health check cho environment database của V0.1.1.
+              Runtime health check cho Supabase DEV environment của Finzaro V0.2.
             </p>
           </div>
         </div>
