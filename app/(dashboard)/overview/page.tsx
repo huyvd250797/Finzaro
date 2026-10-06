@@ -1,11 +1,12 @@
 import Link from "next/link";
-import { ArrowRight, Banknote, CircleDollarSign, Landmark, PiggyBank, Plus, Smartphone, TrendingDown, TrendingUp, WalletCards } from "lucide-react";
+import { AlertTriangle, ArrowRight, Banknote, CircleDollarSign, Landmark, PiggyBank, Plus, Smartphone, Target, TrendingDown, TrendingUp, WalletCards } from "lucide-react";
 import { formatMinorMoney } from "@/lib/utils";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { StatCard } from "@/components/stat-card";
 import { CashflowChart } from "@/components/cashflow-chart";
 import { TransactionList } from "@/components/transaction-list";
 import { CategoryIcon } from "@/features/categories/icons";
+import { budgetProgress, budgetSummary, loadBudgets, monthStartFromKey } from "@/features/budgets/data";
 import { requireUser } from "@/lib/auth";
 import type { AccountType } from "@/features/accounts/constants";
 import { cashflowSeries, currentMonthKey, currencyDigits, expenseCategories, loadLedger, monthTotals, sixMonthWindow } from "@/features/transactions/data";
@@ -28,6 +29,9 @@ export default async function OverviewPage() {
   const digits = currencyDigits(ledger.currencies, defaultCurrency);
   const totalMinor = accounts.filter((account) => account.currency_code === defaultCurrency).reduce((sum, account) => sum + account.current_balance_minor, 0);
   const currentMonth = currentMonthKey(timeZone);
+  const currentBudgets = await loadBudgets(supabase, userId, monthStartFromKey(currentMonth), false);
+  const budgetRows = budgetProgress(currentBudgets, ledger.transactions, ledger.categories);
+  const budgetState = budgetSummary(budgetRows, defaultCurrency);
   const current = monthTotals(ledger.transactions, defaultCurrency, currentMonth);
   const previous = monthTotals(ledger.transactions, defaultCurrency, months.at(-2)?.key ?? currentMonth);
   const series = cashflowSeries(ledger.transactions, defaultCurrency, timeZone);
@@ -47,6 +51,18 @@ export default async function OverviewPage() {
         <StatCard label={`Chi tiêu tháng · ${defaultCurrency}`} formattedValue={formatMinorMoney(current.expense, defaultCurrency, digits)} delta={percentChange(current.expense, previous.expense)} icon={TrendingDown} tone="negative" />
         <StatCard label={`Dòng tiền ròng · ${defaultCurrency}`} formattedValue={formatMinorMoney(current.net, defaultCurrency, digits)} delta={percentChange(current.net, previous.net)} icon={CircleDollarSign} tone={current.net >= 0 ? "positive" : "negative"} />
       </div>
+
+      <Card className="mt-4">
+        <CardContent className="flex flex-wrap items-center gap-4 p-5">
+          <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-[var(--sidebar-accent)] text-[var(--primary)]"><Target className="size-5" /></div>
+          <div className="min-w-[180px] flex-1">
+            <div className="flex flex-wrap items-center gap-2"><h2 className="font-black">Ngân sách tháng</h2>{budgetState.overCount > 0 && <span className="inline-flex items-center gap-1 rounded-lg bg-rose-500/10 px-2 py-1 text-[10px] font-black uppercase text-rose-500"><AlertTriangle className="size-3" /> {budgetState.overCount} vượt</span>}</div>
+            <p className="mt-1 text-xs text-[var(--muted-foreground)]">{budgetState.count > 0 ? `${budgetState.count} category · Đã chi ${formatMinorMoney(budgetState.actual, defaultCurrency, digits)} / ${formatMinorMoney(budgetState.allocated, defaultCurrency, digits)}` : `Chưa thiết lập Budget Engine cho ${defaultCurrency} tháng này.`}</p>
+          </div>
+          {budgetState.count > 0 && <div className="min-w-[160px] flex-1 sm:max-w-xs"><div className="mb-1.5 flex justify-between text-[11px] font-bold"><span>{budgetState.allocated > 0 ? Math.min(999, Math.round((budgetState.actual / budgetState.allocated) * 100)) : 0}%</span><span className="text-[var(--muted-foreground)]">Còn {formatMinorMoney(budgetState.remaining, defaultCurrency, digits)}</span></div><div className="h-2.5 overflow-hidden rounded-full bg-[var(--muted)]"><div className={`h-full rounded-full ${budgetState.overCount > 0 ? "bg-rose-500" : "bg-[var(--primary)]"}`} style={{width:`${budgetState.allocated > 0 ? Math.min(100, Math.round((budgetState.actual / budgetState.allocated) * 100)) : 0}%`}} /></div></div>}
+          <Link href="/budgets" className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[var(--border)] px-3 text-xs font-bold">Quản lý ngân sách <ArrowRight className="size-3.5" /></Link>
+        </CardContent>
+      </Card>
 
       <div className="mt-4 grid gap-4 xl:grid-cols-[1.45fr_.8fr]">
         <Card><CardHeader><div><h2 className="font-bold">Dòng tiền 6 tháng</h2><p className="mt-1 text-xs text-[var(--muted-foreground)]">Income / Expense thật theo {defaultCurrency}; transfer được loại khỏi cash-flow spending.</p></div><span className="rounded-lg bg-[var(--muted)] px-2.5 py-1.5 text-xs font-semibold">6 tháng</span></CardHeader><CardContent><CashflowChart data={series} decimalDigits={digits} /></CardContent></Card>

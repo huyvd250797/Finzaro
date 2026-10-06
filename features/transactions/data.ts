@@ -42,7 +42,7 @@ export type TransactionView = {
 export async function loadLedger(
   supabase: SupabaseClient<Database>,
   userId: string,
-  options: { fromDate?: string; limit?: number } = {}
+  options: { fromDate?: string; toDate?: string; limit?: number } = {}
 ) {
   let transactionQuery = supabase
     .from("transactions")
@@ -53,6 +53,7 @@ export async function loadLedger(
     .limit(options.limit ?? 500);
 
   if (options.fromDate) transactionQuery = transactionQuery.gte("transaction_date", options.fromDate);
+  if (options.toDate) transactionQuery = transactionQuery.lte("transaction_date", options.toDate);
 
   const [
     { data: transactionRows, error: transactionError },

@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.0.6 — Budget Engine
+
+- Added real Supabase `budgets` with monthly/category/currency scope and per-user RLS.
+- Added minor-unit budget amounts, first-day-of-month validation and safe amount constraints.
+- Added parent-category budget rollup across subcategories using real Expense ledger entries.
+- Added active ancestor/descendant overlap protection to prevent budget double counting.
+- Added category re-parenting guard so hierarchy changes cannot create overlapping active budgets.
+- Added create/edit/archive/restore Budget lifecycle and month navigation.
+- Added copy-from-previous-month flow for empty target months.
+- Added Near Limit (>=80%) and Over Budget (>100%) states, remaining amount and progress bars.
+- Added multi-currency budget separation without implicit FX conversion.
+- Replaced Budget preview with authenticated Budget Engine data.
+- Added current-month Budget summary to Dashboard.
+- Preserved V0.0.5 proactive PWA update prompt for iPhone Add-to-Home-Screen installs.
+- Updated centralized in-app version to `V0.0.6 · Budget Engine`.
+- Defined V0.0.7 Recurring Transactions & Financial Calendar as the next release.
+
 ## 0.0.5 — Category Engine
 
 - Added user-owned structured `categories` with RLS, hierarchy, default categories and archive lifecycle.

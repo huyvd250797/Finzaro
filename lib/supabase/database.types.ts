@@ -53,6 +53,57 @@ export type Database = {
           }
         ];
       };
+      budgets: {
+        Row: {
+          amount_minor: number;
+          category_id: string;
+          created_at: string;
+          currency_code: string;
+          id: string;
+          is_archived: boolean;
+          month_start: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          amount_minor: number;
+          category_id: string;
+          created_at?: string;
+          currency_code: string;
+          id?: string;
+          is_archived?: boolean;
+          month_start: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          amount_minor?: number;
+          category_id?: string;
+          created_at?: string;
+          currency_code?: string;
+          id?: string;
+          is_archived?: boolean;
+          month_start?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "budgets_category_id_fkey";
+            columns: ["category_id"];
+            isOneToOne: false;
+            referencedRelation: "categories";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "budgets_currency_code_fkey";
+            columns: ["currency_code"];
+            isOneToOne: false;
+            referencedRelation: "supported_currencies";
+            referencedColumns: ["code"];
+          }
+        ];
+      };
       categories: {
         Row: {
           category_type: string;
