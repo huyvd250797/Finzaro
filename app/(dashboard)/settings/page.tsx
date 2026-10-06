@@ -1,15 +1,17 @@
-import { Bell, Database, KeyRound, Moon, ShieldCheck, Smartphone, UserRound } from "lucide-react";
+import { Bell, Database, KeyRound, Moon, ShieldCheck, Smartphone, UserRound, WalletCards } from "lucide-react";
 import { updatePreferencesAction, updateProfileAction } from "@/app/auth/actions";
 import { AuthMessage } from "@/components/auth-message";
 import { DatabaseStatus } from "@/components/database-status";
 import { Card, CardContent } from "@/components/ui/card";
 import { requireUser } from "@/lib/auth";
+import { APP_RELEASE_NAME, APP_VERSION_LABEL } from "@/lib/app-version";
 
 const sections = [
   { icon: Smartphone, title: "PWA", desc: "Cài Finzaro lên màn hình chính và chạy ở chế độ standalone.", value: "Ready" },
   { icon: Moon, title: "Giao diện", desc: "Light / dark mode được lưu cục bộ trên thiết bị.", value: "System + Manual" },
   { icon: Database, title: "Database foundation", desc: "Supabase DEV, RLS, migrations và typed clients từ V0.1.1.", value: "Connected" },
-  { icon: ShieldCheck, title: "Authentication", desc: "Email/password, cookie SSR, session refresh, protected dashboard và recovery flow.", value: "V0.2" },
+  { icon: ShieldCheck, title: "Authentication", desc: "Email/password, cookie SSR, session refresh, protected dashboard và recovery flow.", value: "V0.0.2" },
+  { icon: WalletCards, title: "Account Core", desc: "Tài khoản tiền mặt, ngân hàng, ví điện tử, tiết kiệm và số dư thật trên Supabase.", value: "V0.0.3" },
   { icon: Bell, title: "Thông báo", desc: "Payment reminders và push notifications nằm trong roadmap V1.1.", value: "Roadmap" }
 ];
 
@@ -26,7 +28,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Sea
 
   return (
     <div className="mx-auto max-w-[900px] px-4 py-6 md:px-6 lg:px-8 lg:py-8">
-      <div><p className="text-sm font-semibold text-[var(--primary)]">Account & System</p><h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">Cài đặt</h1><p className="mt-2 text-sm text-[var(--muted-foreground)]">Tài khoản thật, preferences và diagnostics của Finzaro V0.2.</p></div>
+      <div><p className="text-sm font-semibold text-[var(--primary)]">Account & System</p><h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">Cài đặt</h1><p className="mt-2 text-sm text-[var(--muted-foreground)]">Tài khoản thật, preferences và diagnostics của Finzaro {APP_VERSION_LABEL}.</p></div>
       <AuthMessage error={params.error} message={params.message} />
 
       <div className="mt-6 grid gap-4 md:grid-cols-2">
@@ -51,6 +53,8 @@ export default async function SettingsPage({ searchParams }: { searchParams: Sea
           </CardContent>
         </Card>
       </div>
+
+      <Card className="mt-4"><CardContent className="flex flex-wrap items-center justify-between gap-4 p-5 sm:p-6"><div><p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--primary)]">Current release</p><h2 className="mt-1 text-lg font-black">Finzaro {APP_VERSION_LABEL} · {APP_RELEASE_NAME}</h2><p className="mt-1 text-sm text-[var(--muted-foreground)]">Version được quản lý tập trung trong lib/app-version.ts và hiển thị trực tiếp trong app.</p></div><span className="rounded-full bg-emerald-500/10 px-3 py-1.5 text-xs font-black text-emerald-600 dark:text-emerald-400">{APP_VERSION_LABEL}</span></CardContent></Card>
 
       <div className="mt-4"><DatabaseStatus /></div>
 

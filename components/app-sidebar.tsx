@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BarChart3, CreditCard, LayoutDashboard, ReceiptText, Settings2, Target, WalletCards } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
+import { APP_RELEASE_NAME, APP_VERSION_LABEL } from "@/lib/app-version";
 import { cn } from "@/lib/utils";
 
 const nav = [
@@ -36,12 +37,13 @@ export function AppSidebar() {
       <div className="mt-auto space-y-3">
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--muted)] p-4">
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[var(--primary)]"><CreditCard className="size-4" /> Sắp tới</div>
-          <p className="mt-2 text-sm font-semibold">Credit & Interest</p>
-          <p className="mt-1 text-xs leading-5 text-[var(--muted-foreground)]">Kiến trúc đã sẵn sàng cho thẻ tín dụng, khoản vay và lãi suất.</p>
+          <p className="mt-2 text-sm font-semibold">Transaction Core</p>
+          <p className="mt-1 text-xs leading-5 text-[var(--muted-foreground)]">Kết nối thu, chi và chuyển tiền với các tài khoản thật ở phiên bản kế tiếp.</p>
         </div>
         <Link href="/settings" className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-[var(--muted-foreground)] transition hover:bg-[var(--muted)] hover:text-[var(--foreground)]">
           <Settings2 className="size-4.5" /> Cài đặt
         </Link>
+        <div className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--muted-foreground)]">Finzaro {APP_VERSION_LABEL} · {APP_RELEASE_NAME}</div>
       </div>
     </aside>
   );

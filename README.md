@@ -1,124 +1,140 @@
-# Finzaro V0.2 — Authentication
+# Finzaro V0.0.3 — Account Core
 
-Finzaro is a PWA-first personal finance platform. V0.2 turns the V0.1.1 Supabase foundation into a real user-authenticated application while keeping Accounts and Transactions on demo data until V0.3/V0.4.
+Finzaro is a PWA-first personal finance application built with Next.js, Supabase and Vercel. V0.0.3 upgrades the authenticated V0.0.2 foundation with real user-owned financial accounts and real account balances on the Dashboard.
 
-## Included in V0.2
+## Release scope
 
-- Next.js 16 + React 19 + TypeScript strict + Tailwind CSS 4
-- Supabase email/password Register, Login and Logout
-- Cookie-based SSR auth through `@supabase/ssr`
-- Next.js 16 `proxy.ts` session refresh
-- Server-side route protection using `supabase.auth.getClaims()`
-- Email confirmation endpoint supporting token-hash and PKCE code flows
-- Forgot password + reset password flow
-- Auth callback endpoint prepared for future OAuth/PKCE providers
-- Automatic `profiles` + `user_preferences` creation from V0.1.1 trigger
-- Settings page connected to real authenticated profile/preferences data
-- RLS-backed profile/preferences updates without service-role credentials
-- Header displays the signed-in user's identity and provides Logout
-- PWA service worker hardened so authenticated HTML is never cached
-- Vercel-ready environment setup
-- SQL Editor verification script for the existing foundation
-- Auth-focused smoke tests
+V0.0.3 includes:
 
-## Roadmap boundaries
+- Real `accounts` table in Supabase
+- Cash, bank, e-wallet and savings account types
+- Create and edit account flows
+- Archive / restore lifecycle instead of destructive deletion in the UI
+- Opening balance + current balance stored in minor units (`BIGINT`)
+- Per-account currency
+- Per-user Row Level Security
+- Real Accounts page backed by Supabase
+- Dashboard Total Balance backed by real accounts
+- Multi-currency safety: totals are grouped by currency and the headline total only sums the user's default currency
+- Account empty states and first-account onboarding
+- Central application version constants in `lib/app-version.ts`
+- Current Finzaro version displayed in the authenticated header, sidebar, auth UI and Settings
+- V0.0.3 SQL Editor script and verification query
+- Account Core smoke tests
 
-Still intentionally demo-only:
+Transactions, income, expense and transfer logic remain demo-only until V0.0.4.
 
-- Accounts → V0.3
-- Transactions / ledger → V0.4
-- Category engine → V0.5
+## Required database step — SQL Editor workflow
 
-V0.2 establishes identity/session isolation before real financial records are introduced.
+If V0.1.1 foundation was already applied, **do not run it again**.
 
-## Supabase database
-
-If you already executed this file in SQL Editor for V0.1.1:
+Open Supabase:
 
 ```text
-supabase/migrations/20261005110000_foundation_environment.sql
+Supabase Dashboard
+→ SQL Editor
+→ New query
 ```
 
-do not run it again.
+Copy the full content of:
 
-**V0.2 requires no new schema migration.** It activates Auth against the existing foundation.
+```text
+supabase/sql-editor/V0.0.3_account_core.sql
+```
+
+Paste it into SQL Editor and click **Run**.
+
+The script creates:
+
+```text
+public.accounts
+├── id
+├── user_id
+├── name
+├── account_type
+├── currency_code
+├── institution_name
+├── opening_balance_minor
+├── current_balance_minor
+├── is_archived
+├── created_at
+└── updated_at
+```
+
+It also enables RLS and creates ownership policies for SELECT / INSERT / UPDATE / DELETE.
 
 Optional verification query:
 
 ```text
-supabase/sql-editor/V0.2_auth_verification.sql
+supabase/sql-editor/V0.0.3_account_core_verify.sql
 ```
 
-Full setup: [`docs/SUPABASE_AUTH_SETUP.md`](docs/SUPABASE_AUTH_SETUP.md)
+Detailed guide: [`docs/V0.0.3_ACCOUNT_CORE_SETUP.md`](docs/V0.0.3_ACCOUNT_CORE_SETUP.md)
 
 ## Environment variables
 
-Vercel production/development values:
+V0.0.3 does not add new environment variables. Keep the same values configured for Authentication:
 
 ```dotenv
 NEXT_PUBLIC_FINZARO_ENV=development
 NEXT_PUBLIC_SITE_URL=https://your-finzaro.vercel.app
-NEXT_PUBLIC_SUPABASE_URL=https://YOUR_DEV_PROJECT_REF.supabase.co
+NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_xxx
 ```
 
-`NEXT_PUBLIC_SITE_URL` is used as the canonical deployment URL. During local/preview requests the auth actions can fall back to the current request origin.
+No service-role key is required.
 
-No Supabase secret/service-role key is required by the app.
+## Account balance model
 
-## Supabase Auth configuration
-
-Configure:
-
-1. Authentication → Providers → Email enabled.
-2. Keep email confirmation enabled for the hosted DEV project.
-3. Authentication → URL Configuration → set Site URL to your deployed Finzaro URL.
-4. Add the deployed URL to Redirect URLs.
-5. Optionally customize Confirm signup and Recovery templates for explicit token-hash SSR links.
-
-See [`docs/SUPABASE_AUTH_SETUP.md`](docs/SUPABASE_AUTH_SETUP.md) for exact links and tests.
-
-## Main auth routes
+Money is stored in minor units:
 
 ```text
-/login
-/register
-/forgot-password
-/reset-password
-/auth/confirm
-/auth/callback
+VND 1,500,000  → 1500000
+USD 125.50     → 12550
 ```
 
-Protected application routes include the complete `(dashboard)` route group, because `app/(dashboard)/layout.tsx` verifies the authenticated identity server-side before rendering.
+The database uses `BIGINT`; the app validates values so they stay inside JavaScript's safe integer range.
 
-## Session model
+During V0.0.3, editing an account balance updates both `opening_balance_minor` and `current_balance_minor`. Starting in V0.0.4, transactions will become the source of balance changes.
+
+## Multi-currency behavior
+
+Finzaro does not add VND + USD + EUR as if they were the same currency.
+
+The Accounts page:
+
+- shows totals by currency;
+- shows one headline total for the user's default currency;
+- avoids implicit FX conversion.
+
+Exchange-rate conversion is intentionally deferred to a later finance module.
+
+## Account routes
 
 ```text
-Browser
-  ↓
-Supabase Auth cookie session
-  ↓
-Next.js proxy.ts refreshes/verifies token
-  ↓
-Dashboard layout calls getClaims()
-  ↓
-Authenticated user ID
-  ↓
-RLS-scoped profiles / user_preferences
+/accounts
+/accounts?new=1
+/accounts?edit=<ACCOUNT_ID>
+/accounts?archived=1
 ```
 
-Server authorization does not rely on `getSession()`.
+All account queries and mutations are user-scoped and additionally protected by Supabase RLS.
 
-## PWA security change
+## Current version display
 
-V0.1/V0.1.1 cached navigation HTML for offline use. That is unsafe once pages become user-specific.
+Version metadata lives in:
 
-V0.2 changes the service worker so:
+```text
+lib/app-version.ts
+```
 
-- authenticated/navigation HTML is never persisted in Cache Storage;
-- API/auth routes are not cached;
-- only static assets/icons are cached;
-- an offline navigation receives the generic `/offline` screen.
+Current release:
+
+```text
+Finzaro V0.0.3 · Account Core
+```
+
+The version is visible inside the app header, desktop sidebar, authentication shell and Settings page.
 
 ## Install / quality check
 
@@ -138,40 +154,54 @@ npm run check
 
 ## GitHub → Vercel
 
-Push the repository to GitHub, import it in Vercel, add the required environment variables, and deploy.
+After running the SQL migration in Supabase SQL Editor:
 
-After deployment test in order:
+```bash
+git add .
+git commit -m "feat: Finzaro V0.0.3 Account Core"
+git push
+```
+
+Vercel can redeploy from the connected GitHub repository. No additional V0.0.3 ENV variables are required.
+
+## Recommended acceptance test
 
 ```text
-/register
-→ confirmation email
-→ /overview
-→ /settings
-→ logout
-→ /login
-→ /forgot-password
+1. Login
+2. Open Accounts
+3. Create a VND bank account
+4. Confirm the account appears in Accounts
+5. Confirm Dashboard Total Balance changes
+6. Edit the account name/balance
+7. Archive the account
+8. Confirm Dashboard excludes archived account
+9. Restore the account
+10. Confirm another Supabase user cannot read the first user's account
 ```
 
 ## Security baseline
 
-- Public browser/server clients use only the publishable key.
-- No service-role credential is bundled.
-- Identity is verified server-side before dashboard rendering.
-- Existing RLS remains the authorization boundary for user-owned rows.
-- Password recovery does not reveal whether an email exists.
-- Redirect targets used by callbacks are restricted to local app paths.
-- Authenticated HTML is not stored by the service worker.
+- Browser/server app clients use only the Supabase publishable key.
+- Dashboard identity is verified server-side.
+- `accounts.user_id` references `auth.users`.
+- RLS enforces `auth.uid() = user_id`.
+- Account actions also scope mutations by authenticated `user_id`.
+- No authenticated HTML is cached by the PWA service worker.
+- Multi-currency amounts are never silently combined.
 
 ## Next release
 
-### V0.3 — Account Core
+### Finzaro V0.0.4 — Transaction Core
 
 Planned scope:
 
-- Real `accounts` schema
-- Cash / bank / e-wallet account types
-- Account CRUD
-- Opening balances
-- Per-user RLS
-- Dashboard total balance sourced from real accounts
-- Account archive lifecycle
+- Real `transactions` / ledger schema
+- Income, expense and transfer transactions
+- Transaction CRUD
+- Transfer between two Finzaro accounts without counting it as spending
+- Atomic balance updates
+- Category foundation for transaction classification
+- Recent Transactions on Dashboard from Supabase
+- Income / Expense / Net Cash Flow cards from real data
+- Transaction history filters
+- RLS and integrity rules linking transactions to user-owned accounts

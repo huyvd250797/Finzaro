@@ -3,14 +3,14 @@ import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatMoney } from "@/lib/utils";
 
-export function StatCard({ label, value, delta, icon: Icon, tone = "neutral" }: { label: string; value: number; delta?: number; icon: LucideIcon; tone?: "neutral" | "positive" | "negative" }) {
+export function StatCard({ label, value, formattedValue, delta, icon: Icon, tone = "neutral" }: { label: string; value?: number; formattedValue?: string; delta?: number; icon: LucideIcon; tone?: "neutral" | "positive" | "negative" }) {
   return (
     <Card>
       <CardContent>
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-sm font-medium text-[var(--muted-foreground)]">{label}</p>
-            <p className="mt-2 text-2xl font-bold tracking-tight">{formatMoney(value)}</p>
+            <p className="mt-2 text-2xl font-bold tracking-tight">{formattedValue ?? formatMoney(value ?? 0)}</p>
           </div>
           <div className="grid size-10 place-items-center rounded-xl bg-[var(--muted)] text-[var(--primary)]"><Icon className="size-5" /></div>
         </div>

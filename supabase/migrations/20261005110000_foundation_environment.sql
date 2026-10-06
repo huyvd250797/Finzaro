@@ -1,6 +1,6 @@
 -- Finzaro V0.1.1 — DEV Database Environment
 -- Foundation only: reference data, profile/preferences lifecycle, RLS.
--- Accounts/transactions intentionally remain for V0.3/V0.4.
+-- Accounts/transactions intentionally remain for V0.0.3/V0.0.4.
 
 create table if not exists public.supported_currencies (
   code text primary key,

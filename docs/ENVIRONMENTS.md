@@ -1,6 +1,6 @@
 # Finzaro Environment Strategy
 
-## V0.2 target topology
+## V0.0.3 target topology
 
 ```text
 GitHub feature branch / PR
@@ -20,7 +20,7 @@ Vercel Production URL
 Finzaro DEV Supabase  ← temporary until PROD is provisioned
 ```
 
-V0.2 continues to use the isolated DEV database provisioned in V0.1.1. This prevents premature duplication of database administration while the schema is still evolving quickly.
+V0.0.3 continues to use the isolated DEV database provisioned in V0.1.1. This prevents premature duplication of database administration while the schema is still evolving quickly.
 
 ## Later production topology
 

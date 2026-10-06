@@ -6,8 +6,18 @@ export function formatMoney(value: number, currency = "VND") {
   return new Intl.NumberFormat("vi-VN", {
     style: "currency",
     currency,
-    maximumFractionDigits: 0
+    maximumFractionDigits: currency === "VND" || currency === "JPY" ? 0 : 2
   }).format(value);
+}
+
+export function formatMinorMoney(valueMinor: number, currency = "VND", decimalDigits = 0) {
+  const scale = 10 ** decimalDigits;
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency,
+    minimumFractionDigits: decimalDigits,
+    maximumFractionDigits: decimalDigits
+  }).format(valueMinor / scale);
 }
 
 export function formatCompactMoney(value: number) {

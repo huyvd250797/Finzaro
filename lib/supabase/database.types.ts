@@ -3,6 +3,56 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 export type Database = {
   public: {
     Tables: {
+      accounts: {
+        Row: {
+          account_type: string;
+          created_at: string;
+          currency_code: string;
+          current_balance_minor: number;
+          id: string;
+          institution_name: string | null;
+          is_archived: boolean;
+          name: string;
+          opening_balance_minor: number;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          account_type: string;
+          created_at?: string;
+          currency_code: string;
+          current_balance_minor?: number;
+          id?: string;
+          institution_name?: string | null;
+          is_archived?: boolean;
+          name: string;
+          opening_balance_minor?: number;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          account_type?: string;
+          created_at?: string;
+          currency_code?: string;
+          current_balance_minor?: number;
+          id?: string;
+          institution_name?: string | null;
+          is_archived?: boolean;
+          name?: string;
+          opening_balance_minor?: number;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "accounts_currency_code_fkey";
+            columns: ["currency_code"];
+            isOneToOne: false;
+            referencedRelation: "supported_currencies";
+            referencedColumns: ["code"];
+          }
+        ];
+      };
       profiles: {
         Row: {
           avatar_url: string | null;

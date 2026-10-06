@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 const items = [
   { href: "/overview", label: "Tổng quan", icon: LayoutDashboard },
   { href: "/accounts", label: "Tài khoản", icon: WalletCards },
-  { href: "/transactions?new=1", label: "Thêm", icon: Plus, main: true },
+  { href: "/accounts?new=1", label: "Thêm", icon: Plus, main: true },
   { href: "/transactions", label: "Giao dịch", icon: ReceiptText },
   { href: "/reports", label: "Báo cáo", icon: BarChart3 }
 ];

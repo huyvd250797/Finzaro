@@ -1,12 +1,12 @@
-# Finzaro V0.2 — Supabase Authentication Setup
+# Finzaro V0.0.2 — Supabase Authentication Setup
 
-V0.2 activates real Supabase Auth on top of the V0.1.1 database foundation.
+V0.0.2 activates real Supabase Auth on top of the V0.1.1 database foundation.
 
 ## 0. Database prerequisite
 
 If you already ran `supabase/migrations/20261005110000_foundation_environment.sql` in Supabase SQL Editor for V0.1.1, do **not** run it again.
 
-V0.2 does not add a new public-schema migration. It uses the existing:
+V0.0.2 does not add a new public-schema migration. It uses the existing:
 
 - `auth.users`
 - `public.profiles`
@@ -15,7 +15,7 @@ V0.2 does not add a new public-schema migration. It uses the existing:
 - `handle_new_user()` trigger
 - existing RLS policies
 
-You can optionally run `supabase/sql-editor/V0.2_auth_verification.sql` in SQL Editor to verify the foundation.
+You can optionally run `supabase/sql-editor/V0.0.2_auth_verification.sql` in SQL Editor to verify the foundation.
 
 ## 1. Enable Email + Password
 
@@ -158,12 +158,12 @@ Update the display name, default currency, locale, and timezone. The writes go t
 
 ## SQL Editor workflow
 
-For your preferred workflow, V0.2 is simple:
+For your preferred workflow, V0.0.2 is simple:
 
 ```text
 V0.1.1 foundation SQL already executed
         ↓
-No new schema SQL required for V0.2
+No new schema SQL required for V0.0.2
         ↓
 Configure Supabase Auth + URLs
         ↓

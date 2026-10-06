@@ -1,6 +1,20 @@
 # Changelog
 
-## 0.2.0 — Authentication
+## 0.0.3 — Account Core
+
+- Added real Supabase `accounts` schema for cash, bank, e-wallet and savings accounts.
+- Added per-user account RLS policies and ownership index.
+- Added minor-unit `BIGINT` opening/current balance model with safe-integer validation.
+- Replaced demo Accounts page with authenticated Supabase data.
+- Added create, edit, archive and restore account flows.
+- Connected Dashboard Total Balance and account list to real account rows.
+- Added multi-currency grouping and avoided invalid cross-currency totals.
+- Added centralized `APP_VERSION` metadata and in-app version display.
+- Added SQL Editor migration/verification scripts and Account Core setup documentation.
+- Added Account Core smoke tests.
+- Defined V0.0.4 Transaction Core as the next release.
+
+## 0.0.2 — Authentication
 
 - Replaced mock login with real Supabase email/password authentication.
 - Added Register, Login and Logout server actions.
@@ -15,7 +29,7 @@
 - Updated landing page for account-based onboarding.
 - Hardened the PWA service worker to never cache authenticated navigation HTML.
 - Added Supabase Auth URL/template configuration documentation.
-- Added optional SQL Editor verification script; no new V0.2 schema migration is required.
+- Added optional SQL Editor verification script; no new V0.0.2 schema migration is required.
 - Added auth scope/security smoke tests.
 
 ## 0.1.1 — DEV Database Environment

@@ -9,8 +9,8 @@ const migration = fs.readFileSync(migrationPath, "utf8");
 const envExample = fs.readFileSync(path.join(root, ".env.example"), "utf8");
 const pkg = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
 
-test("V0.2 package version and Supabase dependencies are present", () => {
-  assert.equal(pkg.version, "0.2.0");
+test("V0.0.3 package version and Supabase dependencies are present", () => {
+  assert.equal(pkg.version, "0.0.3");
   assert.ok(pkg.dependencies["@supabase/ssr"]);
   assert.ok(pkg.dependencies["@supabase/supabase-js"]);
   assert.ok(pkg.devDependencies.supabase);
@@ -31,7 +31,7 @@ test("foundation migration enables RLS and user lifecycle trigger", () => {
   assert.match(migration, /revoke execute on function public\.handle_new_user\(\) from public, anon, authenticated/i);
 });
 
-test("accounts and transactions are not prematurely created", () => {
+test("foundation migration stays scoped before Account Core", () => {
   assert.doesNotMatch(migration, /create table if not exists public\.accounts/i);
   assert.doesNotMatch(migration, /create table if not exists public\.transactions/i);
 });

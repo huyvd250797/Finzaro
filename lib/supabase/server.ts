@@ -19,7 +19,7 @@ export async function createClient() {
           });
         } catch {
           // Server Components cannot always write cookies.
-          // V0.2 will add the Next.js proxy that refreshes auth sessions.
+          // Next.js proxy refreshes auth sessions outside Server Components.
         }
       }
     }
