@@ -15,7 +15,7 @@ export default function LandingPage() {
 
       <section className="mx-auto grid max-w-6xl gap-10 px-5 pb-16 pt-12 md:px-8 lg:grid-cols-[1.05fr_.95fr] lg:items-center lg:pt-20">
         <div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/15 bg-emerald-500/8 px-3 py-1.5 text-xs font-semibold text-[var(--primary)]">V0.1 · Foundation & PWA</div>
+          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/15 bg-emerald-500/8 px-3 py-1.5 text-xs font-semibold text-[var(--primary)]">V0.1.1 · DEV Database Environment</div>
           <h1 className="mt-6 max-w-3xl text-4xl font-black leading-[1.05] tracking-[-0.04em] sm:text-5xl lg:text-6xl">Tài chính cá nhân,<br /><span className="text-[var(--primary)]">rõ ràng hơn mỗi ngày.</span></h1>
           <p className="mt-5 max-w-xl text-base leading-7 text-[var(--muted-foreground)] sm:text-lg">Finzaro giúp bạn nhìn thấy dòng tiền, tài khoản và thói quen chi tiêu trong một không gian tài chính gọn gàng, chuyên nghiệp và sẵn sàng mở rộng.</p>
           <div className="mt-8 flex flex-wrap gap-3">

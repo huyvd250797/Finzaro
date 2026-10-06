@@ -1,119 +1,155 @@
-# Finzaro V0.1 — Foundation & PWA
+# Finzaro V0.1.1 — DEV Database Environment
 
-Finzaro is a professional personal finance web app designed to evolve from expense tracking into budgeting, interest, credit-card, loan and financial-intelligence management.
+Finzaro is a PWA-first personal finance platform. V0.1.1 upgrades the V0.1 frontend foundation with a reproducible Supabase DEV environment while keeping Accounts and Transactions on demo data until their planned releases.
 
-## Scope of V0.1
+## What is included
 
-This release establishes the deployable product shell:
+- Next.js 16 + React 19 + TypeScript strict + Tailwind CSS 4
+- Existing professional fintech UI and PWA shell from V0.1
+- Supabase JS + SSR clients using the current publishable-key model
+- Project-scoped Supabase CLI
+- Committed `supabase/config.toml`
+- Versioned database migration and repeatable seed data
+- `profiles` + `user_preferences` foundation for V0.2 Auth
+- `supported_currencies` reference table
+- Auth-user bootstrap trigger prepared for V0.2
+- RLS policies for all user-owned V0.1.1 tables
+- Typed database client definitions
+- `/api/health/database` runtime connectivity check
+- `/settings` Supabase DEV diagnostics
+- pgTAP database tests for local Supabase
+- GitHub/Vercel-ready environment documentation
 
-- Next.js 16 App Router + React 19 + TypeScript strict
-- Tailwind CSS 4 design system
-- Responsive desktop/mobile application shell
-- Landing page + mock login
-- Overview dashboard with demo financial data
-- Accounts and transactions demo modules
-- Budget and reports previews aligned with the roadmap
-- Light/dark mode
-- PWA manifest, icons, service worker and offline fallback
-- Vercel-ready root project
-- GitHub Actions quality workflow
-- `.env.example` with no secrets required for V0.1
+## Deliberately not included yet
 
-> Supabase is intentionally not connected in V0.1. DEV/PROD database environment work begins in V0.1.1 and real Auth in V0.2.
+- Real Login/Register/Logout — V0.2
+- Real Accounts table/data access — V0.3
+- Real Income/Expense/Transfer ledger — V0.4
 
-## Quick start
+This keeps the roadmap boundaries clean.
+
+## Install and quality check
 
 ```bash
 npm install
-npm run dev
-```
-
-Open `http://localhost:3000`.
-
-## Quality checks
-
-```bash
 npm run lint
 npm run typecheck
 npm run test
 npm run build
 ```
 
-Or run all checks:
+Or:
 
 ```bash
 npm run check
 ```
 
-## Deploy to Vercel from GitHub
+## Create Finzaro DEV Supabase
 
-1. Create a new GitHub repository, for example `finzaro`.
-2. Push this source to the repository.
-3. In Vercel choose **Add New → Project** and import the GitHub repository.
-4. Vercel should detect **Next.js** automatically.
-5. V0.1 has no required environment variables, so you can deploy immediately.
-6. After deployment, open `/overview` to test the application shell and install the PWA from a supported browser.
+The recommended setup is a separate Supabase project named **Finzaro DEV**.
 
-Example Git commands:
+1. Create the project in Supabase.
+2. Copy the **Project URL**, **publishable key**, and **project ref**.
+3. Install dependencies.
+4. Link the project and push the migration:
 
 ```bash
-git init
-git add .
-git commit -m "feat: Finzaro V0.1 foundation and PWA"
-git branch -M main
-git remote add origin https://github.com/YOUR_USERNAME/finzaro.git
-git push -u origin main
+npx supabase login
+npx supabase link --project-ref YOUR_DEV_PROJECT_REF
+npm run db:push
+npm run db:types:linked
 ```
 
-## Project structure
+Full instructions: [`docs/SUPABASE_DEV_SETUP.md`](docs/SUPABASE_DEV_SETUP.md)
+
+## Required environment variables
+
+Copy `.env.example` to `.env.local` for local Next.js development:
+
+```dotenv
+NEXT_PUBLIC_FINZARO_ENV=development
+NEXT_PUBLIC_SUPABASE_URL=https://YOUR_DEV_PROJECT_REF.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_REPLACE_ME
+```
+
+The application build does not read a secret/server key.
+
+## Vercel deployment
+
+Push the project to GitHub and import it in Vercel. Then configure these Vercel environment variables:
 
 ```text
-app/
-  (dashboard)/
-    overview/
-    accounts/
-    transactions/
-    budgets/
-    reports/
-    settings/
-  login/
-  offline/
-  manifest.ts
-components/
-  ui/
-lib/
-public/
-  icons/
-  sw.js
-tests/
-.github/workflows/
+NEXT_PUBLIC_FINZARO_ENV=development
+NEXT_PUBLIC_SUPABASE_URL=<Finzaro DEV URL>
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<Finzaro DEV publishable key>
 ```
 
-## Roadmap handoff
+Redeploy and open `/settings`. The Supabase DEV diagnostic should report a live database connection.
 
-### V0.1.1 — Environment
+## Database commands
 
-- Create `Finzaro DEV` Supabase project
-- Prepare production environment strategy
-- Add Supabase CLI and migration workflow
-- Add typed environment validation
-- Database foundation migration
+```bash
+npm run db:start          # optional local stack; requires Docker-compatible runtime
+npm run db:status
+npm run db:reset
+npm run db:lint
+npm run db:test
+npm run db:push           # linked remote DEV
+npm run db:pull           # linked remote DEV
+npm run db:types:local
+npm run db:types:linked
+```
+
+Supabase local development applies migrations first and seed data afterward. Keep schema changes in `supabase/migrations/`; seed files should contain only reproducible development/reference data.
+
+## Database foundation
+
+```text
+auth.users
+   │
+   ├── 1:1 → profiles
+   │
+   └── 1:1 → user_preferences
+                    │
+                    └── currency_code → supported_currencies
+```
+
+When V0.2 creates a real Auth user, the `handle_new_user()` trigger automatically creates the matching profile and preference row.
+
+## Security baseline
+
+- User-owned foundation tables have RLS enabled.
+- Users can read/update only their own profile/preferences.
+- Browser/server session clients use the publishable key.
+- No secret/service key is included in V0.1.1.
+- `.env*`, Supabase link state and local secrets are ignored by Git.
+- Real financial records must never be placed in DEV seed files.
+
+## Environment strategy
+
+See [`docs/ENVIRONMENTS.md`](docs/ENVIRONMENTS.md).
+
+Current stage:
+
+```text
+Vercel Preview/Development → Finzaro DEV Supabase
+```
+
+Before real financial data is stored:
+
+```text
+Vercel Preview  → Finzaro DEV
+Vercel Production → Finzaro PROD
+```
+
+## Next release
 
 ### V0.2 — Authentication
 
-- Supabase Auth
-- Register / Login / Logout
-- Session-aware protected dashboard
-- Profile table
-- RLS foundation and policy tests
-
-### V0.3 — Account Core
-
-- Real accounts table
-- Cash, bank and e-wallet accounts
-- Opening balances
-- Ownership policies and typed data access
-
-## Security note
-
-Never commit production secrets. When Supabase is added, browser code will only receive the public client key; privileged service credentials must remain server-side.
+- Real Supabase Register/Login/Logout
+- Server-side session cookies
+- Next.js auth proxy/session refresh
+- Protected dashboard routes
+- Email confirmation/reset-password flow
+- Profile/preferences UI connected to the V0.1.1 tables
+- Auth/RLS integration tests
