@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
     };
     const transactions = filterReportTransactions(ledger.transactions, filters, ledger.categories);
 
-    const rows = [
+    const rows: Array<Array<string | number>> = [
       ["Ngày", "Loại", "Tiêu đề", "Danh mục", "Tài khoản nguồn", "Tài khoản đích", "Tiền tệ nguồn", "Số tiền nguồn (minor)", "Tiền tệ đích", "Số tiền đích (minor)", "Ghi chú"]
     ];
 

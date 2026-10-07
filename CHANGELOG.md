@@ -1,5 +1,11 @@
 # Changelog
 
+### V0.0.9 — Deploy build fix
+
+- Fixed TypeScript inference in `app/api/reports/export/route.ts`: CSV rows now explicitly accept both `string` and `number` cells.
+- Resolves Vercel `TS2322` on the source/destination minor-unit amount columns during `next build`.
+- No database migration or environment-variable changes are required.
+
 ## V0.0.9 — Savings Goals
 
 - Added real Supabase `savings_goals` and `savings_goal_entries` with per-user RLS.
