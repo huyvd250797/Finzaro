@@ -1,0 +1,13 @@
+begin;
+select plan(9);
+select has_table('public', 'savings_goals', 'savings_goals exists');
+select has_table('public', 'savings_goal_entries', 'savings_goal_entries exists');
+select col_is_pk('public', 'savings_goals', 'id', 'savings_goals id is primary key');
+select col_is_pk('public', 'savings_goal_entries', 'id', 'savings_goal_entries id is primary key');
+select policies_are('public', 'savings_goals', array['users can insert own savings goals','users can read own savings goals','users can update own savings goals'], 'goal RLS policies exist');
+select policies_are('public', 'savings_goal_entries', array['users can delete own savings goal entries','users can insert own savings goal entries','users can read own savings goal entries'], 'entry RLS policies exist');
+select has_function('public', 'validate_savings_goal_v009', array[]::text[], 'goal validation trigger function exists');
+select has_function('public', 'validate_savings_goal_entry_v009', array[]::text[], 'entry validation trigger function exists');
+select has_function('public', 'guard_savings_goal_entry_delete_v009', array[]::text[], 'entry delete guard exists');
+select * from finish();
+rollback;

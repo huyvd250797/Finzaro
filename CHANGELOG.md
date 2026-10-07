@@ -1,5 +1,20 @@
 # Changelog
 
+## V0.0.9 — Savings Goals
+
+- Added real Supabase `savings_goals` and `savings_goal_entries` with per-user RLS.
+- Added target amount/date, currency, linked account, icon and archive lifecycle.
+- Added contribution, withdrawal and signed manual-adjustment history.
+- Added progress %, remaining amount, completed/on-track/behind/overdue states.
+- Added monthly-required saving calculation and completion-date forecast when enough contribution history exists.
+- Added optional traceability from a Goal Entry to one matching Transaction Ledger transaction with DB-level currency/account/direction validation.
+- Kept Savings Goals as a planning/earmarking layer so goal progress never silently mutates Account balances.
+- Added Savings Goals page, instant create/edit/progress modals and pending button states.
+- Added Dashboard Savings Goals summary and mobile navigation shortcut.
+- Preserved PWA Auth Bootstrap, 5xx recovery and proactive update prompt.
+- Updated current version to `V0.0.9 · Savings Goals`.
+- Defined V0.0.10 Interest & Deposit Manager as the next release.
+
 ## V0.0.8 — Reports & Financial Insights
 
 - Rebuilt Reports from real Account + Transaction Ledger data.

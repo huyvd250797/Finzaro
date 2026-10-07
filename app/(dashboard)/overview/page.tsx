@@ -7,6 +7,7 @@ import { CashflowChart } from "@/components/cashflow-chart";
 import { TransactionList } from "@/components/transaction-list";
 import { CategoryIcon } from "@/features/categories/icons";
 import { budgetProgress, budgetSummary, loadBudgets, monthStartFromKey } from "@/features/budgets/data";
+import { loadSavingsGoals, savingsGoalProgress, savingsGoalSummary } from "@/features/goals/data";
 import { requireUser } from "@/lib/auth";
 import { loadRecurringData, projectRecurringOccurrences, todayInTimeZone as recurringToday } from "@/features/recurring/data";
 import type { AccountType } from "@/features/accounts/constants";
@@ -30,17 +31,21 @@ export default async function OverviewPage() {
   const digits = currencyDigits(ledger.currencies, defaultCurrency);
   const totalMinor = accounts.filter((account) => account.currency_code === defaultCurrency).reduce((sum, account) => sum + account.current_balance_minor, 0);
   const currentMonth = currentMonthKey(timeZone);
-  const [currentBudgets, recurring] = await Promise.all([
+  const recurringTodayKey = recurringToday(timeZone);
+  const [currentBudgets, recurring, goalData] = await Promise.all([
     loadBudgets(supabase, userId, monthStartFromKey(currentMonth), false),
-    loadRecurringData(supabase, userId)
+    loadRecurringData(supabase, userId),
+    loadSavingsGoals(supabase, userId, false)
   ]);
   const budgetRows = budgetProgress(currentBudgets, ledger.transactions, ledger.categories);
   const budgetState = budgetSummary(budgetRows, defaultCurrency);
+  const goalProgress = savingsGoalProgress(goalData.goals, goalData.entries, goalData.accounts, recurringTodayKey);
+  const goalState = savingsGoalSummary(goalProgress, defaultCurrency);
+  const dashboardGoals = goalProgress.filter((goal) => !goal.is_archived && goal.currency_code === defaultCurrency).slice(0, 3);
   const current = monthTotals(ledger.transactions, defaultCurrency, currentMonth);
   const previous = monthTotals(ledger.transactions, defaultCurrency, months.at(-2)?.key ?? currentMonth);
   const series = cashflowSeries(ledger.transactions, defaultCurrency, timeZone);
   const categories = expenseCategories(ledger.transactions, defaultCurrency, currentMonth);
-  const recurringTodayKey = recurringToday(timeZone);
   const recurringEnd = new Date(`${recurringTodayKey}T00:00:00Z`);
   recurringEnd.setUTCDate(recurringEnd.getUTCDate() + 14);
   const upcomingRecurring = projectRecurringOccurrences(
@@ -86,6 +91,20 @@ export default async function OverviewPage() {
             <p className="mt-1 text-xs text-[var(--muted-foreground)]">{upcomingRecurring.length > 0 ? `${upcomingRecurring.length} khoản định kỳ cần theo dõi. Gần nhất: ${upcomingRecurring[0]?.rule.title} · ${upcomingRecurring[0]?.dueDate.split("-").reverse().join("/")}.` : "Không có khoản định kỳ nào cần xử lý trong 14 ngày tới."}</p>
           </div>
           <Link href="/recurring" className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[var(--border)] px-3 text-xs font-bold">Mở lịch tài chính <ArrowRight className="size-3.5" /></Link>
+        </CardContent>
+      </Card>
+
+      <Card className="mt-4">
+        <CardContent className="p-5">
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-[var(--sidebar-accent)] text-[var(--primary)]"><PiggyBank className="size-5" /></div>
+            <div className="min-w-[180px] flex-1">
+              <div className="flex flex-wrap items-center gap-2"><h2 className="font-black">Mục tiêu tiết kiệm</h2>{goalState.attention > 0 && <span className="inline-flex items-center gap-1 rounded-lg bg-amber-500/10 px-2 py-1 text-[10px] font-black uppercase text-amber-500"><AlertTriangle className="size-3" /> {goalState.attention} cần chú ý</span>}</div>
+              <p className="mt-1 text-xs text-[var(--muted-foreground)]">{goalState.count > 0 ? `Đã tiết kiệm ${formatMinorMoney(goalState.saved, defaultCurrency, digits)} / ${formatMinorMoney(goalState.target, defaultCurrency, digits)} · ${goalState.percent}%` : `Chưa có Savings Goal nào bằng ${defaultCurrency}.`}</p>
+            </div>
+            <Link href="/goals" className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[var(--border)] px-3 text-xs font-bold">Mở mục tiêu <ArrowRight className="size-3.5" /></Link>
+          </div>
+          {dashboardGoals.length > 0 && <div className="mt-4 grid gap-2 sm:grid-cols-3">{dashboardGoals.map((goal) => <div key={goal.id} className="rounded-xl border border-[var(--border)] p-3"><div className="flex items-center gap-2"><span className="grid size-8 place-items-center rounded-lg bg-[var(--sidebar-accent)] text-[var(--primary)]"><CategoryIcon name={goal.icon_name} className="size-3.5" /></span><span className="min-w-0 flex-1 truncate text-xs font-black">{goal.name}</span><span className="text-[10px] font-black text-[var(--muted-foreground)]">{goal.percent}%</span></div><div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[var(--muted)]"><div className={`h-full rounded-full ${goal.status === "behind" || goal.status === "overdue" ? "bg-amber-500" : goal.status === "completed" ? "bg-emerald-500" : "bg-[var(--primary)]"}`} style={{width:`${Math.max(0, Math.min(100, goal.percent))}%`}} /></div></div>)}</div>}
         </CardContent>
       </Card>
 

@@ -41,6 +41,6 @@ test("Dashboard total balance is sourced from Account Core through ledger loader
 });
 
 test("current app version remains centralized after Reports & Insights", () => {
-  assert.match(version, /APP_VERSION = "0\.0\.8"/);
-  assert.match(version, /Reports & Financial Insights/);
+  assert.match(version, /APP_VERSION = "0\.0\.9"/);
+  assert.match(version, /Savings Goals/);
 });

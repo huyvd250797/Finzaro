@@ -390,6 +390,117 @@ export type Database = {
           }
         ];
       };
+      savings_goals: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          description: string | null;
+          currency_code: string;
+          target_amount_minor: number;
+          target_date: string | null;
+          linked_account_id: string | null;
+          icon_name: string;
+          is_archived: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          name: string;
+          description?: string | null;
+          currency_code: string;
+          target_amount_minor: number;
+          target_date?: string | null;
+          linked_account_id?: string | null;
+          icon_name?: string;
+          is_archived?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          name?: string;
+          description?: string | null;
+          currency_code?: string;
+          target_amount_minor?: number;
+          target_date?: string | null;
+          linked_account_id?: string | null;
+          icon_name?: string;
+          is_archived?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "savings_goals_currency_code_fkey";
+            columns: ["currency_code"];
+            isOneToOne: false;
+            referencedRelation: "supported_currencies";
+            referencedColumns: ["code"];
+          },
+          {
+            foreignKeyName: "savings_goals_linked_account_id_fkey";
+            columns: ["linked_account_id"];
+            isOneToOne: false;
+            referencedRelation: "accounts";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      savings_goal_entries: {
+        Row: {
+          id: string;
+          user_id: string;
+          goal_id: string;
+          entry_type: string;
+          amount_minor: number;
+          entry_date: string;
+          transaction_id: string | null;
+          notes: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          goal_id: string;
+          entry_type: string;
+          amount_minor: number;
+          entry_date?: string;
+          transaction_id?: string | null;
+          notes?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          goal_id?: string;
+          entry_type?: string;
+          amount_minor?: number;
+          entry_date?: string;
+          transaction_id?: string | null;
+          notes?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "savings_goal_entries_goal_id_fkey";
+            columns: ["goal_id"];
+            isOneToOne: false;
+            referencedRelation: "savings_goals";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "savings_goal_entries_transaction_id_fkey";
+            columns: ["transaction_id"];
+            isOneToOne: false;
+            referencedRelation: "transactions";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
       profiles: {
         Row: {
           avatar_url: string | null;
