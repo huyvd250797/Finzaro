@@ -57,7 +57,7 @@ test("dashboard and navigation surface Savings Goals", () => {
   assert.match(overview, /loadSavingsGoals/);
   assert.match(overview, /Mục tiêu tiết kiệm/);
   assert.match(sidebar, /\/goals/);
-  assert.match(sidebar, /Credit Card Manager/);
+  assert.match(sidebar, /Net Worth & Financial Position/);
 });
 
 test("V0.0.9 preserves proactive PWA updates", () => {
@@ -66,7 +66,7 @@ test("V0.0.9 preserves proactive PWA updates", () => {
   assert.match(pwa, /SKIP_WAITING/);
 });
 
-test("current app version is V0.0.11 Loan & Debt Manager", () => {
-  assert.match(version, /APP_VERSION = "0\.0\.11"/);
-  assert.match(version, /Loan & Debt Manager/);
+test("current app version is V0.0.12 Credit Card Manager", () => {
+  assert.match(version, /APP_VERSION = "0\.0\.12"/);
+  assert.match(version, /Credit Card Manager/);
 });

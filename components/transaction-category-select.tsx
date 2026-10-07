@@ -11,8 +11,8 @@ type Option = {
   parent_id: string | null;
 };
 
-export function TransactionCategorySelect({ categories }: { categories: Option[] }) {
-  const [value, setValue] = useState(categories[0]?.id ?? "");
+export function TransactionCategorySelect({ categories, defaultValue }: { categories: Option[]; defaultValue?: string | null }) {
+  const [value, setValue] = useState(defaultValue && categories.some((category) => category.id === defaultValue) ? defaultValue : categories[0]?.id ?? "");
   const categoryById = useMemo(() => new Map(categories.map((category) => [category.id, category])), [categories]);
   const selected = categoryById.get(value) ?? categories[0];
 

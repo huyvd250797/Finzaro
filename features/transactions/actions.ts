@@ -167,3 +167,52 @@ export async function deleteTransactionAction(formData: FormData) {
     redirect(destination("error", error instanceof Error ? error.message : "Không thể xóa giao dịch."));
   }
 }
+
+
+export async function updateTransactionAction(formData: FormData) {
+  const transactionId = text(formData, "transaction_id");
+  try {
+    if (!transactionId) throw new Error("Thiếu mã giao dịch.");
+    const title = text(formData, "title");
+    const categoryId = text(formData, "category_id") || null;
+    const notes = text(formData, "notes");
+    const transactionDate = text(formData, "transaction_date");
+    const accountId = text(formData, "account_id") || null;
+    const amountInput = text(formData, "amount");
+    if (title.length < 1 || title.length > 140) throw new Error("Nội dung giao dịch phải từ 1 đến 140 ký tự.");
+    if (notes.length > 500) throw new Error("Ghi chú tối đa 500 ký tự.");
+    if (!validDate(transactionDate)) throw new Error("Ngày giao dịch không hợp lệ.");
+    if (!categoryId || !accountId) throw new Error("Vui lòng chọn danh mục và tài khoản.");
+
+    const { supabase, userId } = await requireUser();
+    const { data: transaction, error: transactionError } = await supabase.from("transactions").select("transaction_type").eq("id", transactionId).eq("user_id", userId).maybeSingle();
+    if (transactionError || !transaction) throw new Error("Không tìm thấy giao dịch.");
+    if (!['income','expense'].includes(transaction.transaction_type)) throw new Error("V0.0.12 chỉ cho phép sửa khoản thu/chi. Chuyển tiền vẫn giữ bất biến để bảo vệ ledger.");
+
+    const [{ data: category, error: categoryError }, { data: account, error: accountError }] = await Promise.all([
+      supabase.from("categories").select("category_type,is_archived").eq("id", categoryId).eq("user_id", userId).maybeSingle(),
+      supabase.from("accounts").select("currency_code,is_archived").eq("id", accountId).eq("user_id", userId).maybeSingle()
+    ]);
+    if (categoryError || !category || category.is_archived || category.category_type !== transaction.transaction_type) throw new Error("Danh mục không hợp lệ hoặc đã lưu trữ.");
+    if (accountError || !account || account.is_archived) throw new Error("Tài khoản không hợp lệ hoặc đã lưu trữ.");
+    const { data: currencyConfig, error: currencyConfigError } = await supabase.from("supported_currencies").select("decimal_digits").eq("code", account.currency_code).maybeSingle();
+    if (currencyConfigError || !currencyConfig) throw new Error("Không đọc được cấu hình tiền tệ.");
+    const amountMinor = parseMajorAmountToMinor(amountInput, currencyConfig.decimal_digits);
+    if (amountMinor === null || amountMinor <= 0) throw new Error(`Số tiền không hợp lệ cho ${account.currency_code}.`);
+
+    const { error } = await (supabase as any).rpc("update_financial_transaction_v012", {
+      p_transaction_id: transactionId, p_title: title, p_category_id: categoryId, p_notes: notes || null,
+      p_transaction_date: transactionDate, p_account_id: accountId, p_amount_minor: amountMinor
+    });
+    if (error) throw new Error(safeDbMessage(error, error.message?.includes("linked to another financial module") ? "Giao dịch đang liên kết với module tài chính khác nên không thể sửa trực tiếp." : "Không thể cập nhật giao dịch."));
+    revalidatePath("/transactions");
+    revalidatePath("/overview");
+    revalidatePath("/accounts");
+    revalidatePath("/reports");
+    revalidatePath("/budgets");
+    redirect(destination("message", "Đã cập nhật khoản thu/chi và tính lại số dư tài khoản."));
+  } catch (error) {
+    if (error && typeof error === "object" && "digest" in error) throw error;
+    redirect(destination("error", error instanceof Error ? error.message : "Không thể cập nhật giao dịch."));
+  }
+}

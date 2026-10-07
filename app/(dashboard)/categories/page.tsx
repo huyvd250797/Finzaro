@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Archive, ChevronRight, RotateCcw, Settings2, Shapes, X } from "lucide-react";
+import { Archive, ChevronRight, RotateCcw, Shapes, X } from "lucide-react";
 import { AuthMessage } from "@/components/auth-message";
 import { PendingSubmitButton } from "@/components/pending-submit-button";
 import { InstantReveal } from "@/components/instant-reveal";
@@ -108,7 +108,7 @@ function CategorySection({ type, categories, showArchived }: { type: CategoryTyp
                 </div>
                 <p className="mt-0.5 truncate text-[11px] text-[var(--muted-foreground)]">{categoryPath(category, categoryById)} · {category.icon_name} · {category.icon_color ?? "#0d8b66"}</p>
               </div>
-              <Link href={`/categories?edit=${category.id}`} title="Sửa" className="grid size-9 place-items-center rounded-xl border border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]"><Settings2 className="size-3.5" /></Link>
+              <InstantReveal label="Sửa" icon={false} className="h-9 border border-[var(--border)] bg-[var(--card)] px-3 text-xs text-[var(--foreground)] shadow-none"><CategoryForm type={category.category_type} categories={categories} editing={category} /></InstantReveal>
               <form action={setCategoryArchivedAction}>
                 <input type="hidden" name="category_id" value={category.id} />
                 <input type="hidden" name="archived" value={category.is_archived ? "false" : "true"} />

@@ -19,6 +19,10 @@ const required = [
   "app/(dashboard)/goals/page.tsx",
   "app/(dashboard)/deposits/page.tsx",
   "app/(dashboard)/loans/page.tsx",
+  "app/(dashboard)/credit-cards/page.tsx",
+  "features/credit-cards/actions.ts",
+  "features/credit-cards/data.ts",
+  "components/app-splash.tsx",
   "components/pending-submit-button.tsx",
   "components/navigation-progress.tsx",
   "components/instant-reveal.tsx",
@@ -63,6 +67,7 @@ const required = [
   "supabase/migrations/20261007110000_savings_goals.sql",
   "supabase/migrations/20261007123000_interest_deposit_manager.sql",
   "supabase/migrations/20261007143000_loan_debt_manager.sql",
+  "supabase/migrations/20261007160000_credit_card_manager.sql",
   "supabase/sql-editor/V0.0.5_category_engine.sql",
   "supabase/sql-editor/V0.0.5_category_engine_verify.sql",
   "supabase/sql-editor/V0.0.6_budget_engine.sql",
@@ -76,12 +81,15 @@ const required = [
   "supabase/sql-editor/V0.0.10_interest_deposit_manager_verify.sql",
   "supabase/sql-editor/V0.0.11_loan_debt_manager.sql",
   "supabase/sql-editor/V0.0.11_loan_debt_manager_verify.sql",
+  "supabase/sql-editor/V0.0.12_credit_card_manager.sql",
+  "supabase/sql-editor/V0.0.12_credit_card_manager_verify.sql",
   "supabase/tests/category-engine.test.sql",
   "supabase/tests/budget-engine.test.sql",
   "supabase/tests/recurring-calendar.test.sql",
   "supabase/tests/savings-goals.test.sql",
   "supabase/tests/interest-deposit-manager.test.sql",
   "supabase/tests/loan-debt-manager.test.sql",
+  "supabase/tests/credit-card-manager.test.sql",
   "docs/V0.0.5_CATEGORY_ENGINE_SETUP.md",
   "docs/V0.0.6_BUDGET_ENGINE_SETUP.md",
   "docs/V0.0.7_RECURRING_CALENDAR_SETUP.md",
@@ -89,18 +97,19 @@ const required = [
   "docs/V0.0.9_SAVINGS_GOALS_SETUP.md",
   "docs/V0.0.10_INTEREST_DEPOSIT_MANAGER_SETUP.md",
   "docs/V0.0.11_LOAN_DEBT_MANAGER_SETUP.md",
+  "docs/V0.0.12_CREDIT_CARD_MANAGER_SETUP.md",
   "public/sw.js",
   ".env.example",
   "vercel.json"
 ];
 
-test("V0.0.11 required files exist", () => {
+test("V0.0.12 required files exist", () => {
   for (const file of required) assert.equal(existsSync(file), true, `${file} is missing`);
 });
 
-test("package version is 0.0.11", () => {
+test("package version is 0.0.12", () => {
   const pkg = JSON.parse(readFileSync("package.json", "utf8"));
-  assert.equal(pkg.version, "0.0.11");
+  assert.equal(pkg.version, "0.0.12");
   assert.match(pkg.dependencies.next, /16/);
   assert.ok(pkg.dependencies["@supabase/ssr"]);
 });

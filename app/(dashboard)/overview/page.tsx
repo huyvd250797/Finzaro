@@ -10,6 +10,7 @@ import { budgetProgress, budgetSummary, loadBudgets, monthStartFromKey } from "@
 import { loadSavingsGoals, savingsGoalProgress, savingsGoalSummary } from "@/features/goals/data";
 import { depositProjections, depositSummary, loadDeposits } from "@/features/deposits/data";
 import { loanProjections, loanSummary, loadLoans } from "@/features/loans/data";
+import { creditCardSummary, loadCreditCards, projectCreditCards } from "@/features/credit-cards/data";
 import { requireUser } from "@/lib/auth";
 import { loadRecurringData, projectRecurringOccurrences, todayInTimeZone as recurringToday } from "@/features/recurring/data";
 import type { AccountType } from "@/features/accounts/constants";
@@ -34,12 +35,13 @@ export default async function OverviewPage() {
   const totalMinor = accounts.filter((account) => account.currency_code === defaultCurrency).reduce((sum, account) => sum + account.current_balance_minor, 0);
   const currentMonth = currentMonthKey(timeZone);
   const recurringTodayKey = recurringToday(timeZone);
-  const [currentBudgets, recurring, goalData, depositData, loanData] = await Promise.all([
+  const [currentBudgets, recurring, goalData, depositData, loanData, creditCardData] = await Promise.all([
     loadBudgets(supabase, userId, monthStartFromKey(currentMonth), false),
     loadRecurringData(supabase, userId),
     loadSavingsGoals(supabase, userId, false),
     loadDeposits(supabase, userId, false),
-    loadLoans(supabase, userId, false)
+    loadLoans(supabase, userId, false),
+    loadCreditCards(supabase, userId, false)
   ]);
   const budgetRows = budgetProgress(currentBudgets, ledger.transactions, ledger.categories);
   const budgetState = budgetSummary(budgetRows, defaultCurrency);
@@ -50,6 +52,8 @@ export default async function OverviewPage() {
   const depositState = depositSummary(depositRows, defaultCurrency);
   const loanRows = loanProjections(loanData.loans, loanData.payments, loanData.accounts, recurringTodayKey);
   const loanState = loanSummary(loanRows, defaultCurrency);
+  const creditCardRows = projectCreditCards(creditCardData.cards, creditCardData.statements, creditCardData.payments, creditCardData.accounts, recurringTodayKey);
+  const creditCardState = creditCardSummary(creditCardRows, defaultCurrency);
   const current = monthTotals(ledger.transactions, defaultCurrency, currentMonth);
   const previous = monthTotals(ledger.transactions, defaultCurrency, months.at(-2)?.key ?? currentMonth);
   const series = cashflowSeries(ledger.transactions, defaultCurrency, timeZone);
@@ -135,6 +139,17 @@ export default async function OverviewPage() {
             <p className="mt-1 text-xs text-[var(--muted-foreground)]">{loanState.count > 0 ? `Dư nợ ${formatMinorMoney(loanState.remaining, defaultCurrency, digits)} · Đã trả gốc ${formatMinorMoney(loanState.paidPrincipal, defaultCurrency, digits)}${loanState.next?.next_due_date ? ` · kỳ gần nhất ${loanState.next.next_due_date.split("-").reverse().join("/")}` : ""}` : `Chưa có khoản vay nào bằng ${defaultCurrency}.`}</p>
           </div>
           <Link href="/loans" className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[var(--border)] px-3 text-xs font-bold">Quản lý dư nợ <ArrowRight className="size-3.5" /></Link>
+        </CardContent>
+      </Card>
+
+      <Card className="mt-4 fin-card">
+        <CardContent className="flex min-w-0 flex-wrap items-center gap-4 p-5">
+          <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-sky-500/10 text-sky-600"><CreditCard className="size-5" /></div>
+          <div className="min-w-[180px] flex-1">
+            <div className="flex flex-wrap items-center gap-2"><h2 className="font-black">Thẻ tín dụng</h2>{(creditCardState.highUtilization > 0 || creditCardState.dueAttention > 0) && <span className="rounded-lg bg-amber-500/10 px-2 py-1 text-[10px] font-black uppercase text-amber-600">{creditCardState.highUtilization + creditCardState.dueAttention} cần chú ý</span>}</div>
+            <p className="mt-1 text-xs text-[var(--muted-foreground)]">{creditCardState.count > 0 ? `Dư nợ ${formatMinorMoney(creditCardState.totalBalance, defaultCurrency, digits)} / hạn mức ${formatMinorMoney(creditCardState.totalLimit, defaultCurrency, digits)} · khả dụng ${formatMinorMoney(creditCardState.available, defaultCurrency, digits)}` : `Chưa có thẻ tín dụng nào bằng ${defaultCurrency}.`}</p>
+          </div>
+          <Link href="/credit-cards" className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[var(--border)] px-3 text-xs font-bold">Quản lý thẻ <ArrowRight className="size-3.5" /></Link>
         </CardContent>
       </Card>
 

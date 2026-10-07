@@ -5,7 +5,7 @@ export function BrandLogo({ compact = false, className }: { compact?: boolean; c
   return (
     <div className={cn("flex items-center gap-3", className)}>
       <div className="relative size-11 shrink-0 overflow-hidden rounded-[16px] shadow-[0_12px_28px_-14px_rgba(0,0,0,0.42)] ring-1 ring-black/5 dark:ring-white/10">
-        <Image src="/icons/finzaro-v0011-192.png" alt="Finzaro" fill sizes="44px" priority className="object-cover" />
+        <Image src="/icons/finzaro-v0012-192.png" alt="Finzaro" fill sizes="44px" priority className="object-cover" />
       </div>
       {!compact && (
         <div className="min-w-0">

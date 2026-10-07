@@ -12,14 +12,14 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: "/pwa?source=homescreen",
     scope: "/",
     display: "standalone",
-    background_color: "#f5f7f7",
-    theme_color: "#0d8b66",
+    background_color: "#f4f7f6",
+    theme_color: "#0b8f68",
     orientation: "portrait-primary",
     categories: ["finance", "productivity"],
     icons: [
-      { src: "/icons/finzaro-v0011-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
-      { src: "/icons/finzaro-v0011-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
-      { src: "/icons/finzaro-v0011-maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" }
+      { src: "/icons/finzaro-v0012-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+      { src: "/icons/finzaro-v0012-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+      { src: "/icons/finzaro-v0012-maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" }
     ]
   };
 }

@@ -1,0 +1,10 @@
+begin;
+select plan(6);
+select has_table('public', 'credit_cards', 'credit_cards exists');
+select has_table('public', 'credit_card_statements', 'credit_card_statements exists');
+select has_table('public', 'credit_card_payments', 'credit_card_payments exists');
+select has_function('public', 'validate_credit_card_v0012', array[]::text[], 'credit card validator exists');
+select has_function('public', 'apply_credit_card_payment_v0012', array[]::text[], 'payment balance trigger function exists');
+select has_function('public', 'update_financial_transaction_v012', array['uuid','text','uuid','text','date','uuid','bigint'], 'transaction edit RPC exists');
+select * from finish();
+rollback;

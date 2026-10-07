@@ -61,7 +61,7 @@ test("V0.0.6 keeps proactive PWA update prompt", () => {
   assert.match(pwa, /registration\.update\(\)/);
 });
 
-test("current app version is V0.0.11 Loan & Debt Manager", () => {
-  assert.match(version, /APP_VERSION = "0\.0\.11"/);
-  assert.match(version, /Loan & Debt Manager/);
+test("current app version is V0.0.12 Credit Card Manager", () => {
+  assert.match(version, /APP_VERSION = "0\.0\.12"/);
+  assert.match(version, /Credit Card Manager/);
 });

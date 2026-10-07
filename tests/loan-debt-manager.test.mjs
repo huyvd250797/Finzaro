@@ -71,7 +71,7 @@ test("V0.0.11 expands icon library and stores selectable colors", () => {
 
 test("mobile taskbar uses More bottom sheet and PWA viewport is locked", () => {
   assert.match(mobile, /Ellipsis/);
-  assert.match(mobile, /Thêm module/);
+  assert.match(mobile, /Truy cập nhanh/);
   assert.match(mobile, /sheet-up/);
   assert.match(mobile, /\/loans/);
   assert.match(layout, /maximumScale: 1/);
@@ -86,7 +86,7 @@ test("dashboard surfaces Loan & Debt summary", () => {
   assert.match(overview, /loanSummary/);
 });
 
-test("current app version is V0.0.11 Loan & Debt Manager", () => {
-  assert.match(version, /APP_VERSION = "0\.0\.11"/);
-  assert.match(version, /Loan & Debt Manager/);
+test("current app version is V0.0.12 Credit Card Manager", () => {
+  assert.match(version, /APP_VERSION = "0\.0\.12"/);
+  assert.match(version, /Credit Card Manager/);
 });
