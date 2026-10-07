@@ -1,5 +1,19 @@
 # Changelog
 
+## V0.0.8 — Reports & Financial Insights
+
+- Rebuilt Reports from real Account + Transaction Ledger data.
+- Added period/currency/account/category/type filters.
+- Added income, expense, net cash flow, savings rate and average expense analytics.
+- Added spending-by-category and spending-by-account breakdowns.
+- Added Budget vs Actual and 30-day Recurring Commitments.
+- Added rule-based Financial Insights.
+- Added authenticated CSV report export.
+- Fixed iPhone Home Screen launch: PWA now boots through `/pwa` and can login inside the installed app without Safari session.
+- Hardened optional auth and proxy so missing PWA cookies redirect to Login instead of causing server error.
+- Added PWA navigation 5xx recovery screen.
+- Updated version to `0.0.8`.
+
 ## 0.0.7 — Recurring Transactions & Financial Calendar
 
 - Added Supabase `recurring_rules` and `recurring_occurrences` with per-user RLS.

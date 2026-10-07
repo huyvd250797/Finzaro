@@ -4,15 +4,14 @@ import { redirect } from "next/navigation";
 import { AuthMessage } from "@/components/auth-message";
 import { AuthShell } from "@/components/auth-shell";
 import { PendingSubmitButton } from "@/components/pending-submit-button";
-import { createClient } from "@/lib/supabase/server";
+import { optionalUser } from "@/lib/auth";
 import { registerAction } from "@/app/auth/actions";
 
 type SearchParams = Promise<{ error?: string; message?: string }>;
 
 export default async function RegisterPage({ searchParams }: { searchParams: SearchParams }) {
-  const supabase = await createClient();
-  const { data } = await supabase.auth.getClaims();
-  if (data?.claims?.sub) redirect("/overview");
+  const current = await optionalUser();
+  if (current) redirect("/overview");
   const params = await searchParams;
 
   return (

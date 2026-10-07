@@ -44,30 +44,46 @@ export async function loadLedger(
   userId: string,
   options: { fromDate?: string; toDate?: string; limit?: number } = {}
 ) {
-  let transactionQuery = supabase
-    .from("transactions")
-    .select("id, transaction_type, title, category_id, category_label, notes, transaction_date, created_at, categories(id, name, icon_name, category_type, parent_id, is_archived), transaction_entries(id, transaction_id, account_id, currency_code, amount_minor, entry_role)")
-    .eq("user_id", userId)
-    .order("transaction_date", { ascending: false })
-    .order("created_at", { ascending: false })
-    .limit(options.limit ?? 500);
+  const requestedLimit = Math.max(1, Math.min(options.limit ?? 500, 10000));
+  const transactionPromise = (async () => {
+    const rows: unknown[] = [];
+    const batchSize = Math.min(1000, requestedLimit);
+    let offset = 0;
 
-  if (options.fromDate) transactionQuery = transactionQuery.gte("transaction_date", options.fromDate);
-  if (options.toDate) transactionQuery = transactionQuery.lte("transaction_date", options.toDate);
+    while (rows.length < requestedLimit) {
+      const pageSize = Math.min(batchSize, requestedLimit - rows.length);
+      let query = supabase
+        .from("transactions")
+        .select("id, transaction_type, title, category_id, category_label, notes, transaction_date, created_at, categories(id, name, icon_name, category_type, parent_id, is_archived), transaction_entries(id, transaction_id, account_id, currency_code, amount_minor, entry_role)")
+        .eq("user_id", userId)
+        .order("transaction_date", { ascending: false })
+        .order("created_at", { ascending: false })
+        .range(offset, offset + pageSize - 1);
+
+      if (options.fromDate) query = query.gte("transaction_date", options.fromDate);
+      if (options.toDate) query = query.lte("transaction_date", options.toDate);
+      const { data, error } = await query;
+      if (error) throw error;
+      const page = data ?? [];
+      rows.push(...page);
+      if (page.length < pageSize) break;
+      offset += page.length;
+    }
+    return rows;
+  })();
 
   const [
-    { data: transactionRows, error: transactionError },
+    transactionRows,
     { data: accountRows, error: accountError },
     { data: currencyRows, error: currencyError },
     { data: categoryRows, error: categoryError }
   ] = await Promise.all([
-    transactionQuery,
+    transactionPromise,
     supabase.from("accounts").select("id, name, account_type, currency_code, institution_name, is_archived, current_balance_minor").eq("user_id", userId),
     supabase.from("supported_currencies").select("code, decimal_digits, symbol").eq("is_active", true),
     supabase.from("categories").select("id, user_id, name, category_type, parent_id, icon_name, system_key, is_system, is_archived, sort_order, created_at, updated_at").eq("user_id", userId).order("sort_order")
   ]);
 
-  if (transactionError) throw transactionError;
   if (accountError) throw accountError;
   if (currencyError) throw currencyError;
   if (categoryError) throw categoryError;

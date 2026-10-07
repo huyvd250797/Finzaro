@@ -5,6 +5,9 @@ import { existsSync, readFileSync } from "node:fs";
 const required = [
   "app/manifest.ts",
   "app/api/version/route.ts",
+  "app/api/reports/export/route.ts",
+  "app/pwa/route.ts",
+  "app/pwa-error/page.tsx",
   "app/login/page.tsx",
   "app/register/page.tsx",
   "app/(dashboard)/overview/page.tsx",
@@ -20,6 +23,8 @@ const required = [
   "components/recurring-rule-launcher.tsx",
   "features/recurring/actions.ts",
   "features/recurring/data.ts",
+  "features/reports/data.ts",
+  "app/(dashboard)/reports/page.tsx",
   "components/category-icon-picker.tsx",
   "components/transaction-category-select.tsx",
   "components/pwa-register.tsx",
@@ -50,24 +55,26 @@ const required = [
   "supabase/sql-editor/V0.0.6_budget_engine_verify.sql",
   "supabase/sql-editor/V0.0.7_recurring_calendar.sql",
   "supabase/sql-editor/V0.0.7_recurring_calendar_verify.sql",
+  "supabase/sql-editor/V0.0.8_reports_insights_verify.sql",
   "supabase/tests/category-engine.test.sql",
   "supabase/tests/budget-engine.test.sql",
   "supabase/tests/recurring-calendar.test.sql",
   "docs/V0.0.5_CATEGORY_ENGINE_SETUP.md",
   "docs/V0.0.6_BUDGET_ENGINE_SETUP.md",
   "docs/V0.0.7_RECURRING_CALENDAR_SETUP.md",
+  "docs/V0.0.8_REPORTS_PWA_AUTH_SETUP.md",
   "public/sw.js",
   ".env.example",
   "vercel.json"
 ];
 
-test("V0.0.7 required files exist", () => {
+test("V0.0.8 required files exist", () => {
   for (const file of required) assert.equal(existsSync(file), true, `${file} is missing`);
 });
 
-test("package version is 0.0.7", () => {
+test("package version is 0.0.8", () => {
   const pkg = JSON.parse(readFileSync("package.json", "utf8"));
-  assert.equal(pkg.version, "0.0.7");
+  assert.equal(pkg.version, "0.0.8");
   assert.match(pkg.dependencies.next, /16/);
   assert.ok(pkg.dependencies["@supabase/ssr"]);
 });

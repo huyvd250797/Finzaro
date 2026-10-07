@@ -1,70 +1,43 @@
-# Finzaro V0.0.7 — Recurring Transactions & Financial Calendar
+# Finzaro V0.0.8 — Reports & Financial Insights
 
-Finzaro là PWA quản lý tài chính cá nhân xây bằng Next.js + Supabase + Vercel. V0.0.7 bổ sung giao dịch định kỳ, Financial Calendar và một đợt tối ưu UX/performance để thao tác phản hồi ngay thay vì tạo cảm giác app bị lag.
+Finzaro là PWA quản lý tài chính cá nhân chạy trên Next.js + Supabase + Vercel.
 
-## Có gì mới trong V0.0.7
+## V0.0.8 có gì mới
 
-### Recurring Transactions
+- Reports thật từ Transaction Ledger.
+- Bộ lọc thời gian: tháng này, tháng trước, 3/6/12 tháng, YTD, custom.
+- Filter currency, account, category và transaction type.
+- Income / Expense / Net Cash Flow / Average Expense.
+- Cash Flow Trend.
+- Spending by Category.
+- Spending by Account.
+- Budget vs Actual.
+- Recurring Commitments 30 ngày.
+- Financial Insights rule-based, chưa dùng AI.
+- Authenticated CSV export.
+- PWA Auth Bootstrap cho iPhone: Add to Home Screen xong có thể đăng nhập trực tiếp trong PWA.
+- PWA 5xx recovery screen thay vì màn hình `This page couldn't load`.
+- Giữ nguyên proactive PWA update prompt.
 
-- `recurring_rules` thật trên Supabase.
-- Hỗ trợ Income / Expense / Transfer định kỳ.
-- Weekly / Monthly / Yearly, có `interval_count` cho mỗi N chu kỳ.
-- Start date / optional end date.
-- Category và account được validate theo owner + trạng thái archive.
-- Minor-unit `BIGINT`, không dùng floating point cho tiền.
-- Multi-currency transfer vẫn yêu cầu số tiền nhận rõ ràng, không tự đoán FX.
-- Pause / Resume rule.
+## PWA fix quan trọng
 
-### Financial Calendar
-
-- Calendar theo tháng.
-- Phân biệt Upcoming / Due Today / Overdue / Paid / Skipped.
-- Danh sách các khoản cần xử lý trong 30 ngày tới.
-- Khi bấm **Đã thanh toán / Đã nhận**, Finzaro gọi RPC và tạo Transaction thật vào ledger.
-- Khi **Bỏ qua**, không tạo transaction.
-- Hỗ trợ **Hoàn tác**; nếu kỳ đã tạo Transaction, ledger và account balance được reverse bằng Transaction Core.
-- Dashboard có summary các khoản định kỳ trong 14 ngày tới.
-
-### UX / Performance Fix
-
-- `requireUser()` được request-deduplicate bằng React `cache()`.
-- Bỏ `getUser()` round-trip dư thừa; server authorization dùng verified `getClaims()`.
-- Mở form **Thêm tài khoản**, Transaction composer, Budget mới và Category mới bằng local instant modal, không cần đợi server chỉ để hiện UI.
-- Thêm top navigation progress bar + route loading skeleton.
-- Các nút submit quan trọng đổi trạng thái ngay bằng `useFormStatus()`:
-  - `Đang đăng nhập...`
-  - `Đang tạo tài khoản...`
-  - `Đang lưu giao dịch...`
-  - `Đang tạo danh mục...`
-  - `Đang tạo ngân sách...`
-  - `Đang tạo lịch...`
-- Nút bị disable trong lúc submit để tránh double-submit.
-
-### PWA Update Prompt
-
-Cơ chế từ V0.0.5 tiếp tục được giữ. Khi PWA iPhone phát hiện version mới, app hiện banner **Có phiên bản Finzaro mới** và nút **Cập nhật ngay** để activate Service Worker mới rồi reload.
-
-## SQL bắt buộc
-
-Vào **Supabase → SQL Editor → New query**, chạy toàn bộ file:
+Manifest không còn khởi động thẳng vào `/overview`. V0.0.8 dùng:
 
 ```text
-supabase/sql-editor/V0.0.7_recurring_calendar.sql
+/pwa?source=homescreen
+   ├─ session hợp lệ -> /overview
+   └─ chưa đăng nhập -> /login
 ```
 
-Sau đó có thể chạy file kiểm tra read-only:
+PWA trên iOS có thể có cookie/storage context riêng với Safari. Finzaro không còn giả định rằng việc đã login trên Safari đồng nghĩa PWA đã login.
 
-```text
-supabase/sql-editor/V0.0.7_recurring_calendar_verify.sql
-```
+Xem `docs/V0.0.8_REPORTS_PWA_AUTH_SETUP.md`.
 
-Không chạy lại SQL V0.0.3–V0.0.6 nếu database đã được nâng cấp trước đó.
+## Database
 
-Hướng dẫn chi tiết: `docs/V0.0.7_RECURRING_CALENDAR_SETUP.md`.
+V0.0.8 không yêu cầu SQL migration mới. Dùng schema từ V0.0.7.
 
 ## ENV
-
-V0.0.7 không cần ENV mới:
 
 ```env
 NEXT_PUBLIC_FINZARO_ENV=development
@@ -73,7 +46,7 @@ NEXT_PUBLIC_SUPABASE_URL=https://xxxxx.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_xxxxx
 ```
 
-## Deploy
+## Chạy kiểm tra
 
 ```bash
 npm install
@@ -82,18 +55,10 @@ npm run typecheck
 npm run build
 ```
 
-Push GitHub → Vercel tự deploy.
+## Deploy
 
-## Version hiện tại
+Push repository lên GitHub và import/connect repository với Vercel. Không cần thêm ENV mới so với V0.0.7.
 
-```text
-Finzaro V0.0.7 · Recurring Transactions & Financial Calendar
-```
+## Phiên bản kế tiếp
 
-Version được quản lý tập trung tại `lib/app-version.ts` và được dùng cả trong UI lẫn PWA update detection.
-
-## Phiên bản tiếp theo
-
-**Finzaro V0.0.8 — Reports & Financial Insights**
-
-Dự kiến nâng cấp Reports thành module thật: period presets/custom range, breakdown theo account/category, budget variance, income-vs-expense, trend comparison, CSV export nền tảng và các insight rule-based trước khi tiến tới Savings Goals / AI.
+**Finzaro V0.0.9 — Savings Goals**: mục tiêu tiết kiệm, contribution history, target date, tiến độ, dự báo hoàn thành và liên kết với tài khoản tiết kiệm.

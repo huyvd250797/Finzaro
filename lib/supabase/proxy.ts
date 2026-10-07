@@ -5,20 +5,12 @@ import type { Database } from "@/lib/supabase/database.types";
 
 export async function updateSession(request: NextRequest) {
   const config = getPublicSupabaseConfig();
-
-  // Keep the project build/deployable before environment variables are configured.
-  // Protected server layouts still reject access when Supabase is unavailable.
-  if (!config) {
-    return NextResponse.next({ request });
-  }
+  if (!config) return NextResponse.next({ request });
 
   let response = NextResponse.next({ request });
-
   const supabase = createServerClient<Database>(config.url, config.publishableKey, {
     cookies: {
-      getAll() {
-        return request.cookies.getAll();
-      },
+      getAll() { return request.cookies.getAll(); },
       setAll(cookiesToSet) {
         cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
         response = NextResponse.next({ request });
@@ -27,9 +19,12 @@ export async function updateSession(request: NextRequest) {
     }
   });
 
-  // Verifies and refreshes the access token when required.
-  // Do not replace with getSession() for server-side authorization.
-  await supabase.auth.getClaims();
+  try {
+    await supabase.auth.getClaims();
+  } catch {
+    // No cookie / temporary auth network failure must not turn a public PWA
+    // bootstrap or Login navigation into a 500 response.
+  }
 
   return response;
 }

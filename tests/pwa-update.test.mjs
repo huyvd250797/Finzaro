@@ -7,9 +7,11 @@ const sw = read("public/sw.js");
 const register = read("components/pwa-register.tsx");
 const versionRoute = read("app/api/version/route.ts");
 const nextConfig = read("next.config.ts");
+const manifest = read("app/manifest.ts");
+const bootstrap = read("app/pwa/route.ts");
+const auth = read("lib/auth.ts");
 
 test("service worker waits for explicit user update confirmation", () => {
-  assert.match(sw, /Do not call skipWaiting here/);
   assert.match(sw, /event\.data\?\.type === "SKIP_WAITING"/);
   assert.match(sw, /self\.skipWaiting\(\)/);
   assert.match(sw, /searchParams\.get\("v"\)/);
@@ -33,8 +35,18 @@ test("version endpoint and service worker are delivered without stale cache", ()
   assert.match(nextConfig, /no-store, no-cache/);
 });
 
-test("authenticated HTML remains network-only", () => {
+test("installed PWA starts through public auth bootstrap", () => {
+  assert.match(manifest, /start_url: "\/pwa\?source=homescreen"/);
+  assert.match(bootstrap, /\/login/);
+  assert.match(bootstrap, /\/overview/);
+  assert.match(auth, /optionalUser/);
+  assert.match(auth, /redirect\("\/login/);
+});
+
+test("authenticated HTML remains network-only with server-error recovery", () => {
   assert.match(sw, /event\.request\.mode === "navigate"/);
-  assert.match(sw, /fetch\(event\.request\)\.catch/);
+  assert.match(sw, /fetch\(event\.request, \{ cache: "no-store" \}\)/);
+  assert.match(sw, /response\.status >= 500/);
+  assert.match(sw, /\/pwa-error/);
   assert.doesNotMatch(sw, /STATIC_SHELL.*overview/);
 });
