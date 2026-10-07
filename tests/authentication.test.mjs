@@ -46,3 +46,10 @@ test("authenticated navigation is not cached by PWA service worker", () => {
   assert.match(sw, /event\.request\.mode === "navigate"/);
   assert.doesNotMatch(sw, /cache\.put\(event\.request, copy\).*navigate/s);
 });
+
+test("unauthenticated redirect is URL encoded and dashboard is dynamic", () => {
+  assert.match(authGuard, /new URLSearchParams/);
+  assert.doesNotMatch(authGuard, /redirect\("\/login\?error=[^"]*[À-ỹ]/u);
+  assert.match(dashboard, /export const dynamic = "force-dynamic"/);
+});
+

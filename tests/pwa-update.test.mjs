@@ -40,7 +40,8 @@ test("installed PWA starts through public auth bootstrap", () => {
   assert.match(bootstrap, /\/login/);
   assert.match(bootstrap, /\/overview/);
   assert.match(auth, /optionalUser/);
-  assert.match(auth, /redirect\("\/login/);
+  assert.match(auth, /new URLSearchParams/);
+  assert.match(auth, /redirect\(`\/login\?\$\{params\.toString\(\)\}`\)/);
 });
 
 test("authenticated HTML remains network-only with server-error recovery", () => {

@@ -156,3 +156,9 @@
 - Added PWA manifest, install icons, service worker and offline fallback.
 - Added dark/light mode and demo financial dataset.
 - Added Vercel config, CI workflow, tests and deployment documentation.
+## V0.0.9 deploy fix — authenticated prerender / ByteString
+
+- URL-encode unauthenticated Vietnamese redirect messages with `URLSearchParams` before Next.js writes the `Location` header.
+- Mark the authenticated dashboard layout as `force-dynamic` so protected pages are not prerendered during production build without a user session.
+- Fixes Vercel build failure on `/goals`: `Cannot convert argument to a ByteString ... value of 273`.
+

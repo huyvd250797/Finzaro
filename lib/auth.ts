@@ -31,7 +31,11 @@ export const optionalUser = cache(async () => {
 export const requireUser = cache(async () => {
   const current = await optionalUser();
   if (!current) {
-    redirect("/login?error=Vui+lòng+đăng+nhập+để+tiếp+tục.&source=pwa");
+    const params = new URLSearchParams({
+      error: "Vui lòng đăng nhập để tiếp tục.",
+      source: "pwa"
+    });
+    redirect(`/login?${params.toString()}`);
   }
   return current;
 });
