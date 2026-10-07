@@ -109,6 +109,7 @@ export type Database = {
           category_type: string;
           created_at: string;
           icon_name: string;
+          icon_color: string;
           id: string;
           is_archived: boolean;
           is_system: boolean;
@@ -123,6 +124,7 @@ export type Database = {
           category_type: string;
           created_at?: string;
           icon_name?: string;
+          icon_color?: string;
           id?: string;
           is_archived?: boolean;
           is_system?: boolean;
@@ -137,6 +139,7 @@ export type Database = {
           category_type?: string;
           created_at?: string;
           icon_name?: string;
+          icon_color?: string;
           id?: string;
           is_archived?: boolean;
           is_system?: boolean;
@@ -401,6 +404,7 @@ export type Database = {
           target_date: string | null;
           linked_account_id: string | null;
           icon_name: string;
+          icon_color: string;
           is_archived: boolean;
           created_at: string;
           updated_at: string;
@@ -415,6 +419,7 @@ export type Database = {
           target_date?: string | null;
           linked_account_id?: string | null;
           icon_name?: string;
+          icon_color?: string;
           is_archived?: boolean;
           created_at?: string;
           updated_at?: string;
@@ -429,6 +434,7 @@ export type Database = {
           target_date?: string | null;
           linked_account_id?: string | null;
           icon_name?: string;
+          icon_color?: string;
           is_archived?: boolean;
           created_at?: string;
           updated_at?: string;
@@ -517,6 +523,7 @@ export type Database = {
           auto_renew: boolean;
           linked_account_id: string | null;
           icon_name: string;
+          icon_color: string;
           notes: string | null;
           is_archived: boolean;
           created_at: string;
@@ -537,6 +544,7 @@ export type Database = {
           auto_renew?: boolean;
           linked_account_id?: string | null;
           icon_name?: string;
+          icon_color?: string;
           notes?: string | null;
           is_archived?: boolean;
           created_at?: string;
@@ -557,6 +565,7 @@ export type Database = {
           auto_renew?: boolean;
           linked_account_id?: string | null;
           icon_name?: string;
+          icon_color?: string;
           notes?: string | null;
           is_archived?: boolean;
           created_at?: string;
@@ -623,6 +632,144 @@ export type Database = {
           },
           {
             foreignKeyName: "deposit_interest_entries_transaction_id_fkey";
+            columns: ["transaction_id"];
+            isOneToOne: false;
+            referencedRelation: "transactions";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      loans: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          lender_name: string | null;
+          currency_code: string;
+          original_principal_minor: number;
+          annual_rate_percent: number;
+          term_months: number;
+          start_date: string;
+          first_payment_date: string;
+          interest_method: string;
+          payment_frequency: string;
+          upfront_fee_minor: number;
+          linked_account_id: string | null;
+          icon_name: string;
+          icon_color: string;
+          notes: string | null;
+          is_archived: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          name: string;
+          lender_name?: string | null;
+          currency_code: string;
+          original_principal_minor: number;
+          annual_rate_percent: number;
+          term_months: number;
+          start_date: string;
+          first_payment_date: string;
+          interest_method?: string;
+          payment_frequency?: string;
+          upfront_fee_minor?: number;
+          linked_account_id?: string | null;
+          icon_name?: string;
+          icon_color?: string;
+          notes?: string | null;
+          is_archived?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          name?: string;
+          lender_name?: string | null;
+          currency_code?: string;
+          original_principal_minor?: number;
+          annual_rate_percent?: number;
+          term_months?: number;
+          start_date?: string;
+          first_payment_date?: string;
+          interest_method?: string;
+          payment_frequency?: string;
+          upfront_fee_minor?: number;
+          linked_account_id?: string | null;
+          icon_name?: string;
+          icon_color?: string;
+          notes?: string | null;
+          is_archived?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "loans_currency_code_fkey";
+            columns: ["currency_code"];
+            isOneToOne: false;
+            referencedRelation: "supported_currencies";
+            referencedColumns: ["code"];
+          },
+          {
+            foreignKeyName: "loans_linked_account_id_fkey";
+            columns: ["linked_account_id"];
+            isOneToOne: false;
+            referencedRelation: "accounts";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      loan_payments: {
+        Row: {
+          id: string;
+          user_id: string;
+          loan_id: string;
+          payment_date: string;
+          principal_minor: number;
+          interest_minor: number;
+          fee_minor: number;
+          transaction_id: string | null;
+          notes: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          loan_id: string;
+          payment_date?: string;
+          principal_minor?: number;
+          interest_minor?: number;
+          fee_minor?: number;
+          transaction_id?: string | null;
+          notes?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          loan_id?: string;
+          payment_date?: string;
+          principal_minor?: number;
+          interest_minor?: number;
+          fee_minor?: number;
+          transaction_id?: string | null;
+          notes?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "loan_payments_loan_id_fkey";
+            columns: ["loan_id"];
+            isOneToOne: false;
+            referencedRelation: "loans";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "loan_payments_transaction_id_fkey";
             columns: ["transaction_id"];
             isOneToOne: false;
             referencedRelation: "transactions";

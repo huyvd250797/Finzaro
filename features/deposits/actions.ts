@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { parseMajorAmountToMinor } from "@/features/accounts/money";
-import { isCategoryIconName } from "@/features/categories/icons";
+import { isCategoryIconColor, isCategoryIconName } from "@/features/categories/icons";
 import { requireUser } from "@/lib/auth";
 
 function text(formData: FormData, key: string) { return String(formData.get(key) ?? "").trim(); }
@@ -46,6 +46,7 @@ async function depositPayload(formData: FormData, mode: "create" | "update") {
   const interestMethod = text(formData, "interest_method");
   const linkedAccountId = text(formData, "linked_account_id") || null;
   const iconName = text(formData, "icon_name") || "Landmark";
+  const iconColor = text(formData, "icon_color") || "#0d8b66";
   const notes = text(formData, "notes");
   const autoRenew = text(formData, "auto_renew") === "on";
 
@@ -53,6 +54,7 @@ async function depositPayload(formData: FormData, mode: "create" | "update") {
   if (institutionName.length > 120) throw new Error("Tên tổ chức tối đa 120 ký tự.");
   if (!validDate(startDate)) throw new Error("Ngày gửi không hợp lệ.");
   if (!isCategoryIconName(iconName)) throw new Error("Icon tiền gửi không hợp lệ.");
+  if (!isCategoryIconColor(iconColor)) throw new Error("Màu icon tiền gửi không hợp lệ.");
   if (notes.length > 1000) throw new Error("Ghi chú tối đa 1000 ký tự.");
   if (!["simple_maturity", "compound_monthly", "monthly_payout"].includes(interestMethod)) throw new Error("Phương thức tính lãi không hợp lệ.");
 
@@ -97,6 +99,7 @@ async function depositPayload(formData: FormData, mode: "create" | "update") {
       auto_renew: autoRenew,
       linked_account_id: linkedAccountId,
       icon_name: iconName,
+      icon_color: iconColor,
       notes: notes || null
     }
   };
@@ -105,7 +108,7 @@ async function depositPayload(formData: FormData, mode: "create" | "update") {
 export async function createDepositAction(formData: FormData) {
   try {
     const { supabase, userId, payload } = await depositPayload(formData, "create");
-    const { error } = await supabase.from("deposits").insert({ ...payload, user_id: userId });
+    const { error } = await (supabase as any).from("deposits").insert({ ...payload, user_id: userId });
     if (error) throw error;
     revalidateDeposits();
     redirect(destination("message", "Đã tạo khoản tiền gửi."));
@@ -121,7 +124,7 @@ export async function updateDepositAction(formData: FormData) {
   try {
     const { supabase, userId, payload } = await depositPayload(formData, "update");
     const { currency_code: _lockedCurrency, ...updatePayload } = payload;
-    const { data, error } = await supabase.from("deposits").update(updatePayload).eq("id", depositId).eq("user_id", userId).select("id").maybeSingle();
+    const { data, error } = await (supabase as any).from("deposits").update(updatePayload).eq("id", depositId).eq("user_id", userId).select("id").maybeSingle();
     if (error || !data) throw error ?? new Error("Không tìm thấy khoản tiền gửi.");
     revalidateDeposits();
     redirect(destination("message", "Đã cập nhật khoản tiền gửi."));

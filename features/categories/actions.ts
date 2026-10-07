@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { isCategoryIconName } from "@/features/categories/icons";
+import { isCategoryIconColor, isCategoryIconName } from "@/features/categories/icons";
 import { isCategoryType } from "@/features/categories/constants";
 import { requireUser } from "@/lib/auth";
 
@@ -27,11 +27,13 @@ export async function createCategoryAction(formData: FormData) {
     const name = text(formData, "name");
     const categoryType = text(formData, "category_type");
     const iconName = text(formData, "icon_name");
+    const iconColor = text(formData, "icon_color") || "#0d8b66";
     const parentId = text(formData, "parent_id") || null;
 
     if (name.length < 1 || name.length > 80) throw new Error("Tên danh mục phải từ 1 đến 80 ký tự.");
     if (!isCategoryType(categoryType)) throw new Error("Loại danh mục không hợp lệ.");
     if (!isCategoryIconName(iconName)) throw new Error("Icon không hợp lệ.");
+    if (!isCategoryIconColor(iconColor)) throw new Error("Màu icon không hợp lệ.");
 
     const { supabase, userId } = await requireUser();
     if (parentId) {
@@ -46,12 +48,13 @@ export async function createCategoryAction(formData: FormData) {
       }
     }
 
-    const { error } = await supabase.from("categories").insert({
+    const { error } = await (supabase as any).from("categories").insert({
       user_id: userId,
       name,
       category_type: categoryType,
       parent_id: parentId,
-      icon_name: iconName
+      icon_name: iconName,
+      icon_color: iconColor
     });
     if (error) throw new Error(safeMessage(error, "Không thể tạo danh mục."));
 
@@ -72,9 +75,11 @@ export async function updateCategoryAction(formData: FormData) {
   try {
     const name = text(formData, "name");
     const iconName = text(formData, "icon_name");
+    const iconColor = text(formData, "icon_color") || "#0d8b66";
     const parentId = text(formData, "parent_id") || null;
     if (name.length < 1 || name.length > 80) throw new Error("Tên danh mục phải từ 1 đến 80 ký tự.");
     if (!isCategoryIconName(iconName)) throw new Error("Icon không hợp lệ.");
+    if (!isCategoryIconColor(iconColor)) throw new Error("Màu icon không hợp lệ.");
     if (parentId === categoryId) throw new Error("Danh mục không thể là danh mục cha của chính nó.");
 
     const { supabase, userId } = await requireUser();
@@ -101,7 +106,7 @@ export async function updateCategoryAction(formData: FormData) {
 
     const { data, error } = await supabase
       .from("categories")
-      .update({ name, icon_name: iconName, parent_id: parentId })
+      .update({ name, icon_name: iconName, icon_color: iconColor, parent_id: parentId } as any)
       .eq("id", categoryId)
       .eq("user_id", userId)
       .select("id")

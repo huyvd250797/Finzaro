@@ -20,7 +20,7 @@ import { InstantReveal } from "@/components/instant-reveal";
 import { PendingSubmitButton } from "@/components/pending-submit-button";
 import { Card, CardContent } from "@/components/ui/card";
 import { minorToMajorInput } from "@/features/accounts/money";
-import { CategoryIcon } from "@/features/categories/icons";
+import { CategoryIcon, iconColorValue } from "@/features/categories/icons";
 import {
   addSavingsGoalEntryAction,
   createSavingsGoalAction,
@@ -133,7 +133,7 @@ function GoalForm({
 
           <div className="md:col-span-2">
             <span className="mb-2 block text-xs font-black uppercase tracking-wide text-[var(--muted-foreground)]">Icon</span>
-            <CategoryIconPicker defaultValue={editing?.icon_name ?? "PiggyBank"} />
+            <CategoryIconPicker defaultValue={editing?.icon_name ?? "PiggyBank"} defaultColor={editing?.icon_color ?? "emerald"} />
           </div>
 
           <div className="flex justify-end gap-2 md:col-span-2">
@@ -233,7 +233,7 @@ export default async function GoalsPage({ searchParams }: { searchParams: Search
               <Card key={goal.id} className={goal.status === "completed" ? "border-emerald-500/25" : goal.status === "overdue" ? "border-rose-500/25" : undefined}>
                 <CardContent className="p-5 sm:p-6">
                   <div className="flex items-start gap-4">
-                    <div className="grid size-12 shrink-0 place-items-center rounded-2xl bg-[var(--sidebar-accent)] text-[var(--primary)]"><CategoryIcon name={goal.icon_name} className="size-5" /></div>
+                    <div className="grid size-12 shrink-0 place-items-center rounded-2xl bg-[var(--sidebar-accent)]" style={{ color: iconColorValue(goal.icon_color) }}><CategoryIcon name={goal.icon_name} className="size-5" /></div>
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-start justify-between gap-2"><div className="min-w-0"><h2 className="truncate text-lg font-black">{goal.name}</h2><p className="mt-1 text-xs text-[var(--muted-foreground)]">{goal.description || "Không có mô tả"}</p></div><span className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-black uppercase tracking-wide ${status.className}`}><StatusIcon className="size-3" /> {status.label}</span></div>
                       <div className="mt-5 flex items-end justify-between gap-3"><div><p className="text-xs font-bold text-[var(--muted-foreground)]">Đã tiết kiệm</p><p className="mt-1 text-2xl font-black">{formatMinorMoney(goal.saved_minor, goal.currency_code, digits)}</p></div><div className="text-right"><p className="text-xs font-bold text-[var(--muted-foreground)]">Mục tiêu</p><p className="mt-1 text-sm font-black">{formatMinorMoney(goal.target_amount_minor, goal.currency_code, digits)}</p></div></div>

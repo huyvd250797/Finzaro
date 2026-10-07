@@ -1,6 +1,6 @@
 const APP_VERSION = new URL(self.location.href).searchParams.get("v") || "unknown";
 const CACHE_NAME = `finzaro-static-v${APP_VERSION}`;
-const STATIC_SHELL = ["/offline", "/pwa-error", "/icons/icon-192.png", "/icons/icon-512.png", "/icons/apple-touch-icon.png"];
+const STATIC_SHELL = ["/offline", "/pwa-error", "/icons/finzaro-v0011-192.png", "/icons/finzaro-v0011-512.png", "/icons/finzaro-v0011-apple.png"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_SHELL)));

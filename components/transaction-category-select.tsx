@@ -1,12 +1,13 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { CategoryIcon } from "@/features/categories/icons";
+import { CategoryIcon, iconColorValue } from "@/features/categories/icons";
 
 type Option = {
   id: string;
   name: string;
   icon_name: string;
+  icon_color: string | null;
   parent_id: string | null;
 };
 
@@ -30,7 +31,7 @@ export function TransactionCategorySelect({ categories }: { categories: Option[]
 
   return (
     <div className="relative">
-      <CategoryIcon name={selected?.icon_name} className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[var(--primary)]" />
+      <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: iconColorValue(selected?.icon_color) }}><CategoryIcon name={selected?.icon_name} className="size-4" /></span>
       <select
         name="category_id"
         required

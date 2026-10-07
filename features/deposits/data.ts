@@ -16,6 +16,7 @@ export type Deposit = {
   auto_renew: boolean;
   linked_account_id: string | null;
   icon_name: string;
+  icon_color: string | null;
   notes: string | null;
   is_archived: boolean;
   created_at: string;

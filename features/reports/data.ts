@@ -17,7 +17,7 @@ export type ReportFilters = {
 
 export type ReportRange = { key: ReportRangeKey; from: string; to: string; label: string };
 export type MonthlyCashflowRow = { key: string; month: string; income: number; expense: number; net: number };
-export type CategorySpendRow = { id: string; label: string; icon_name: string; amount: number; percent: number };
+export type CategorySpendRow = { id: string; label: string; icon_name: string; icon_color: string | null; amount: number; percent: number };
 export type AccountSpendRow = { id: string; label: string; amount: number; percent: number };
 export type Insight = { tone: "positive" | "warning" | "negative" | "neutral"; title: string; description: string };
 
@@ -152,13 +152,13 @@ export function monthlyCashflow(transactions: TransactionView[], currency: strin
 }
 
 export function categorySpending(transactions: TransactionView[], currency: string) {
-  const totals = new Map<string, { id: string; label: string; icon_name: string; amount: number }>();
+  const totals = new Map<string, { id: string; label: string; icon_name: string; icon_color: string | null; amount: number }>();
   for (const transaction of transactions) {
     if (transaction.transaction_type !== "expense") continue;
     const entry = transactionEntry(transaction, "expense");
     if (!entry || entry.currency_code !== currency) continue;
     const id = transaction.category_id ?? "uncategorized";
-    const row = totals.get(id) ?? { id, label: transaction.category?.name ?? transaction.category_label ?? "Chưa phân loại", icon_name: transaction.category?.icon_name ?? "Shapes", amount: 0 };
+    const row = totals.get(id) ?? { id, label: transaction.category?.name ?? transaction.category_label ?? "Chưa phân loại", icon_name: transaction.category?.icon_name ?? "Shapes", icon_color: transaction.category?.icon_color ?? "#0d8b66", amount: 0 };
     row.amount += Math.abs(entry.amount_minor);
     totals.set(id, row);
   }

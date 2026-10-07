@@ -1,0 +1,14 @@
+begin;
+select plan(10);
+select has_table('public', 'loans', 'loans exists');
+select has_table('public', 'loan_payments', 'loan payments exists');
+select has_column('public', 'loans', 'annual_rate_percent', 'loan annual rate exists');
+select has_column('public', 'loans', 'first_payment_date', 'first payment date exists');
+select has_column('public', 'loans', 'icon_color', 'loan icon color exists');
+select has_column('public', 'categories', 'icon_color', 'category icon color exists');
+select has_column('public', 'savings_goals', 'icon_color', 'goal icon color exists');
+select has_column('public', 'deposits', 'icon_color', 'deposit icon color exists');
+select policies_are('public', 'loans', array['users can insert own loans','users can read own loans','users can update own loans'], 'loan policies are explicit');
+select policies_are('public', 'loan_payments', array['users can delete own loan payments','users can insert own loan payments','users can read own loan payments'], 'payment policies are explicit');
+select * from finish();
+rollback;

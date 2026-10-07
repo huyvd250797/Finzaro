@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { createCategoryAction, setCategoryArchivedAction, updateCategoryAction } from "@/features/categories/actions";
 import { CATEGORY_TYPE_LABELS, isCategoryType, type CategoryType } from "@/features/categories/constants";
 import { categoryDepth, categoryPath, loadCategories, type CategoryRow } from "@/features/categories/data";
-import { CategoryIcon } from "@/features/categories/icons";
+import { CategoryIcon, iconColorValue } from "@/features/categories/icons";
 import { requireUser } from "@/lib/auth";
 
 export const metadata = { title: "Danh mục" };
@@ -40,7 +40,7 @@ function CategoryForm({
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--primary)]">Category Engine</p>
             <h2 className="mt-1 text-lg font-black">{editing ? `Sửa ${editing.name}` : `Thêm danh mục ${CATEGORY_TYPE_LABELS[type].toLowerCase()}`}</h2>
-            <p className="mt-1 text-sm text-[var(--muted-foreground)]">Chọn icon riêng và có thể đặt dưới một danh mục cha cùng loại.</p>
+            <p className="mt-1 text-sm text-[var(--muted-foreground)]">Chọn icon riêng, màu icon và có thể đặt dưới một danh mục cha cùng loại.</p>
           </div>
           <Link href="/categories" data-instant-close aria-label="Đóng" className="grid size-9 place-items-center rounded-xl border border-[var(--border)] text-[var(--muted-foreground)]"><X className="size-4" /></Link>
         </div>
@@ -64,7 +64,7 @@ function CategoryForm({
 
           <div className="md:col-span-2">
             <span className="mb-2 block text-xs font-bold uppercase tracking-wide text-[var(--muted-foreground)]">Icon</span>
-            <CategoryIconPicker defaultValue={editing?.icon_name ?? (type === "income" ? "CircleDollarSign" : "Shapes")} />
+            <CategoryIconPicker defaultValue={editing?.icon_name ?? (type === "income" ? "CircleDollarSign" : "Shapes")} defaultColor={editing?.icon_color ?? "emerald"} />
           </div>
 
           <div className="flex justify-end gap-2 md:col-span-2">
@@ -99,14 +99,14 @@ function CategorySection({ type, categories, showArchived }: { type: CategoryTyp
           const depth = categoryDepth(category, categoryById);
           return (
             <div key={category.id} className={`flex items-center gap-3 rounded-xl border border-[var(--border)] p-3 ${category.is_archived ? "opacity-55" : ""}`} style={{ marginLeft: `${Math.min(depth, 2) * 14}px` }}>
-              <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-[var(--sidebar-accent)] text-[var(--primary)]"><CategoryIcon name={category.icon_name} className="size-4.5" /></div>
+              <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-[var(--sidebar-accent)] text-[var(--primary)]" style={{ color: iconColorValue(category.icon_color) }}><CategoryIcon name={category.icon_name} className="size-4.5" /></div>
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-1.5">
                   <p className="truncate text-sm font-bold">{category.name}</p>
                   {category.is_system && <span className="rounded-md bg-[var(--muted)] px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide text-[var(--muted-foreground)]">Mặc định</span>}
                   {category.is_archived && <span className="rounded-md bg-[var(--muted)] px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide text-[var(--muted-foreground)]">Đã lưu trữ</span>}
                 </div>
-                <p className="mt-0.5 truncate text-[11px] text-[var(--muted-foreground)]">{categoryPath(category, categoryById)} · {category.icon_name}</p>
+                <p className="mt-0.5 truncate text-[11px] text-[var(--muted-foreground)]">{categoryPath(category, categoryById)} · {category.icon_name} · {category.icon_color ?? "#0d8b66"}</p>
               </div>
               <Link href={`/categories?edit=${category.id}`} title="Sửa" className="grid size-9 place-items-center rounded-xl border border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]"><Settings2 className="size-3.5" /></Link>
               <form action={setCategoryArchivedAction}>

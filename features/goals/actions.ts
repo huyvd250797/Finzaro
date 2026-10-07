@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { parseMajorAmountToMinor } from "@/features/accounts/money";
-import { isCategoryIconName } from "@/features/categories/icons";
+import { isCategoryIconColor, isCategoryIconName } from "@/features/categories/icons";
 import { requireUser } from "@/lib/auth";
 
 function text(formData: FormData, key: string) {
@@ -37,11 +37,13 @@ async function validateGoalMetadata(formData: FormData, mode: "create" | "update
   const targetDate = text(formData, "target_date") || null;
   const linkedAccountId = text(formData, "linked_account_id") || null;
   const iconName = text(formData, "icon_name") || "PiggyBank";
+  const iconColor = text(formData, "icon_color") || "#0d8b66";
 
   if (name.length < 1 || name.length > 120) throw new Error("Tên mục tiêu phải từ 1 đến 120 ký tự.");
   if (description.length > 500) throw new Error("Mô tả tối đa 500 ký tự.");
   if (targetDate && !validDate(targetDate)) throw new Error("Ngày mục tiêu không hợp lệ.");
   if (!isCategoryIconName(iconName)) throw new Error("Icon mục tiêu không hợp lệ.");
+  if (!isCategoryIconColor(iconColor)) throw new Error("Màu icon mục tiêu không hợp lệ.");
 
   const { supabase, userId } = await requireUser();
   let currencyCode = text(formData, "currency_code").toUpperCase();
@@ -75,7 +77,8 @@ async function validateGoalMetadata(formData: FormData, mode: "create" | "update
       target_amount_minor: targetAmountMinor,
       target_date: targetDate,
       linked_account_id: linkedAccountId,
-      icon_name: iconName
+      icon_name: iconName,
+      icon_color: iconColor
     }
   };
 }
@@ -83,7 +86,7 @@ async function validateGoalMetadata(formData: FormData, mode: "create" | "update
 export async function createSavingsGoalAction(formData: FormData) {
   try {
     const { supabase, userId, payload } = await validateGoalMetadata(formData, "create");
-    const { error } = await supabase.from("savings_goals").insert({ ...payload, user_id: userId });
+    const { error } = await (supabase as any).from("savings_goals").insert({ ...payload, user_id: userId });
     if (error) throw new Error(safeMessage(error, "Không thể tạo mục tiêu tiết kiệm."));
     revalidatePath("/goals");
     revalidatePath("/overview");
@@ -100,7 +103,7 @@ export async function updateSavingsGoalAction(formData: FormData) {
   try {
     const { supabase, userId, payload } = await validateGoalMetadata(formData, "update");
     const { currency_code: _currency, ...updatePayload } = payload;
-    const { data, error } = await supabase.from("savings_goals").update(updatePayload).eq("id", goalId).eq("user_id", userId).select("id").maybeSingle();
+    const { data, error } = await (supabase as any).from("savings_goals").update(updatePayload).eq("id", goalId).eq("user_id", userId).select("id").maybeSingle();
     if (error || !data) throw new Error(safeMessage(error, "Không thể cập nhật mục tiêu."));
     revalidatePath("/goals");
     revalidatePath("/overview");

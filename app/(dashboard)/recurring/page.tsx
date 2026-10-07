@@ -12,7 +12,7 @@ import { AuthMessage } from "@/components/auth-message";
 import { PendingSubmitButton } from "@/components/pending-submit-button";
 import { RecurringRuleLauncher } from "@/components/recurring-rule-launcher";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { CategoryIcon } from "@/features/categories/icons";
+import { CategoryIcon, iconColorValue } from "@/features/categories/icons";
 import {
   createRecurringRuleAction,
   postRecurringOccurrenceAction,
@@ -37,7 +37,7 @@ export const metadata = { title: "Định kỳ & Lịch tài chính" };
 
 type SearchParams = Promise<{ month?: string; error?: string; message?: string; show?: string }>;
 type Account = { id: string; name: string; currency_code: string; is_archived: boolean };
-type Category = { id: string; name: string; category_type: string; icon_name: string; is_archived: boolean };
+type Category = { id: string; name: string; category_type: string; icon_name: string; icon_color: string | null; is_archived: boolean };
 type Currency = { code: string; decimal_digits: number; symbol: string };
 
 function frequencyLabel(rule: RecurringRule) {
@@ -106,14 +106,14 @@ function RuleForm({
   );
 }
 
-function OccurrenceRow({ item, accounts, categories, currencies }: { item: RecurringProjectedOccurrence; accounts: Account[]; categories: Category[]; currencies: Currency[] }) {
+function OccurrenceRow({ item, accounts, categories, currencies }: { key?: string; item: RecurringProjectedOccurrence; accounts: Account[]; categories: Category[]; currencies: Currency[] }) {
   const category = categories.find((candidate) => candidate.id === item.rule.category_id);
   const done = item.status === "paid" || item.status === "skipped";
   const statusText = item.status === "paid" ? "Đã ghi nhận" : item.status === "skipped" ? "Đã bỏ qua" : item.status === "overdue" ? "Quá hạn" : item.status === "due" ? "Đến hạn hôm nay" : "Sắp tới";
   const statusClass = item.status === "overdue" ? "text-rose-500 bg-rose-500/10" : item.status === "due" ? "text-amber-600 bg-amber-500/10" : item.status === "paid" ? "text-emerald-600 bg-emerald-500/10" : "text-[var(--muted-foreground)] bg-[var(--muted)]";
   return (
     <div className="flex flex-wrap items-center gap-3 rounded-xl border border-[var(--border)] p-3">
-      <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-[var(--sidebar-accent)] text-[var(--primary)]">{category ? <CategoryIcon name={category.icon_name} className="size-4" /> : <CalendarClock className="size-4" />}</div>
+      <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-[var(--sidebar-accent)]" style={category ? { color: iconColorValue(category.icon_color) } : undefined}>{category ? <CategoryIcon name={category.icon_name} className="size-4" /> : <CalendarClock className="size-4" />}</div>
       <div className="min-w-[160px] flex-1"><p className="truncate text-sm font-bold">{item.rule.title}</p><p className="mt-0.5 text-[11px] text-[var(--muted-foreground)]">{item.dueDate.split("-").reverse().join("/")} · {amountLabel(item.rule, accounts, currencies)}</p></div>
       <span className={`rounded-lg px-2 py-1 text-[10px] font-black uppercase ${statusClass}`}>{statusText}</span>
       {!done ? <div className="ml-auto flex gap-2"><form action={postRecurringOccurrenceAction}><input type="hidden" name="rule_id" value={item.rule.id} /><input type="hidden" name="due_date" value={item.dueDate} /><input type="hidden" name="status" value="skipped" /><PendingSubmitButton idleLabel="Bỏ qua" pendingLabel="Đang lưu..." className="h-8 rounded-lg border border-[var(--border)] px-2.5 text-[11px] font-bold" /></form><form action={postRecurringOccurrenceAction}><input type="hidden" name="rule_id" value={item.rule.id} /><input type="hidden" name="due_date" value={item.dueDate} /><input type="hidden" name="status" value="paid" /><PendingSubmitButton idleLabel={item.rule.transaction_type === "income" ? "Đã nhận" : "Đã thanh toán"} pendingLabel="Đang ghi nhận..." className="h-8 rounded-lg bg-[var(--primary)] px-3 text-[11px] font-bold text-white" /></form></div> : item.occurrence && <form action={undoRecurringOccurrenceAction} className="ml-auto"><input type="hidden" name="occurrence_id" value={item.occurrence.id} /><PendingSubmitButton idleLabel="Hoàn tác" pendingLabel="Đang hoàn tác..." className="h-8 rounded-lg border border-[var(--border)] px-2.5 text-[11px] font-bold" /></form>}
@@ -127,7 +127,7 @@ export default async function RecurringPage({ searchParams }: { searchParams: Se
   const [{ data: preferences }, { data: accountRows }, { data: categoryRows }, { data: currencyRows }, recurring] = await Promise.all([
     supabase.from("user_preferences").select("currency_code, timezone").eq("id", userId).maybeSingle(),
     supabase.from("accounts").select("id, name, currency_code, is_archived").eq("user_id", userId).order("name"),
-    supabase.from("categories").select("id, name, category_type, icon_name, is_archived").eq("user_id", userId).order("name"),
+    supabase.from("categories").select("id, name, category_type, icon_name, icon_color, is_archived").eq("user_id", userId).order("name"),
     supabase.from("supported_currencies").select("code, decimal_digits, symbol").eq("is_active", true),
     loadRecurringData(supabase, userId)
   ]);
@@ -190,7 +190,7 @@ export default async function RecurringPage({ searchParams }: { searchParams: Se
 
       <Card className="mt-4">
         <CardHeader><div><h2 className="font-black">Quy tắc định kỳ</h2><p className="mt-1 text-xs text-[var(--muted-foreground)]">{visibleRules.length} {showPaused ? "đang tạm dừng" : "đang hoạt động"}</p></div><Link href={showPaused ? "/recurring" : "/recurring?show=paused"} className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[var(--border)] px-3 text-xs font-bold">{showPaused ? <CirclePlay className="size-3.5" /> : <CirclePause className="size-3.5" />}{showPaused ? "Đang hoạt động" : "Đã tạm dừng"}</Link></CardHeader>
-        <CardContent className="grid gap-3 lg:grid-cols-2">{visibleRules.length === 0 ? <div className="col-span-full rounded-xl border border-dashed border-[var(--border)] p-7 text-center text-sm text-[var(--muted-foreground)]">Chưa có lịch trong nhóm này.</div> : visibleRules.map((rule) => { const category = categories.find((item) => item.id === rule.category_id); return <div key={rule.id} className="flex items-center gap-3 rounded-xl border border-[var(--border)] p-4"><div className="grid size-11 place-items-center rounded-xl bg-[var(--sidebar-accent)] text-[var(--primary)]">{category ? <CategoryIcon name={category.icon_name} className="size-4.5" /> : <CalendarClock className="size-4.5" />}</div><div className="min-w-0 flex-1"><p className="truncate text-sm font-black">{rule.title}</p><p className="mt-0.5 text-[11px] text-[var(--muted-foreground)]">{frequencyLabel(rule)} · từ {rule.start_date.split("-").reverse().join("/")} · {amountLabel(rule, accounts, currencies)}</p></div><form action={setRecurringRuleActiveAction}><input type="hidden" name="rule_id" value={rule.id} /><input type="hidden" name="active" value={rule.is_active ? "false" : "true"} /><PendingSubmitButton idleLabel={rule.is_active ? "Tạm dừng" : "Kích hoạt"} pendingLabel="Đang lưu..." className="h-8 rounded-lg border border-[var(--border)] px-2.5 text-[11px] font-bold" /></form></div>; })}</CardContent>
+        <CardContent className="grid gap-3 lg:grid-cols-2">{visibleRules.length === 0 ? <div className="col-span-full rounded-xl border border-dashed border-[var(--border)] p-7 text-center text-sm text-[var(--muted-foreground)]">Chưa có lịch trong nhóm này.</div> : visibleRules.map((rule) => { const category = categories.find((item) => item.id === rule.category_id); return <div key={rule.id} className="flex items-center gap-3 rounded-xl border border-[var(--border)] p-4"><div className="grid size-11 place-items-center rounded-xl bg-[var(--sidebar-accent)]" style={category ? { color: iconColorValue(category.icon_color) } : undefined}>{category ? <CategoryIcon name={category.icon_name} className="size-4.5" /> : <CalendarClock className="size-4.5" />}</div><div className="min-w-0 flex-1"><p className="truncate text-sm font-black">{rule.title}</p><p className="mt-0.5 text-[11px] text-[var(--muted-foreground)]">{frequencyLabel(rule)} · từ {rule.start_date.split("-").reverse().join("/")} · {amountLabel(rule, accounts, currencies)}</p></div><form action={setRecurringRuleActiveAction}><input type="hidden" name="rule_id" value={rule.id} /><input type="hidden" name="active" value={rule.is_active ? "false" : "true"} /><PendingSubmitButton idleLabel={rule.is_active ? "Tạm dừng" : "Kích hoạt"} pendingLabel="Đang lưu..." className="h-8 rounded-lg border border-[var(--border)] px-2.5 text-[11px] font-bold" /></form></div>; })}</CardContent>
       </Card>
     </div>
   );

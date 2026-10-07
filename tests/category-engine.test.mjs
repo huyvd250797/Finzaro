@@ -56,12 +56,12 @@ test("Transaction Core is upgraded to structured category IDs", () => {
   assert.match(txActions, /create_financial_transaction_v005/);
   assert.match(txActions, /p_category_id/);
   assert.doesNotMatch(txActions, /p_category_label/);
-  assert.match(txData, /categories\(id, name, icon_name, category_type, parent_id, is_archived\)/);
+  assert.match(txData, /categories\(id, name, icon_name, icon_color, category_type, parent_id, is_archived\)/);
   assert.match(txPage, /TransactionCategorySelect/);
   assert.match(txPage, /name="category"/);
 });
 
-test("current app version is V0.0.10 Interest & Deposit Manager", () => {
-  assert.match(version, /APP_VERSION = "0\.0\.10"/);
-  assert.match(version, /Interest & Deposit Manager/);
+test("current app version is V0.0.11 Loan & Debt Manager", () => {
+  assert.match(version, /APP_VERSION = "0\.0\.11"/);
+  assert.match(version, /Loan & Debt Manager/);
 });

@@ -1,39 +1,47 @@
-# Finzaro V0.0.10 — Interest & Deposit Manager
+# Finzaro V0.0.11 — Loan & Debt Manager
 
-Finzaro là PWA quản lý tài chính cá nhân chạy trên Next.js + Supabase + Vercel.
+Finzaro là PWA quản lý tài chính cá nhân chạy trên **Next.js + TypeScript + Supabase + Vercel**.
 
-## V0.0.10 có gì mới
+## V0.0.11 có gì mới
 
-- Interest & Deposit Manager thật trên Supabase với RLS theo user.
-- Quản lý principal, annual interest rate, term, start date và maturity date.
-- 3 mô hình planning: lãi đơn đáo hạn, lãi kép hàng tháng, trả lãi hàng tháng.
-- Auto-renew flag và linked account cùng currency.
-- Lãi dự kiến, tổng đáo hạn dự kiến, ngày còn lại và trạng thái Active / Due Soon / Matured.
-- Ghi nhận realized interest / tax / fee / adjustment riêng với projected interest.
-- Công cụ so sánh kỳ hạn 3 / 6 / 12 / 24 tháng không ghi DB.
-- Dashboard có Deposit summary và maturity warning.
-- Desktop/mobile navigation có **Tiền gửi & lãi suất**.
-- Giữ nguyên PWA Auth Bootstrap, 5xx recovery, instant UI feedback và **Cập nhật ngay**.
+- Loan & Debt Manager thật trên Supabase với RLS theo user.
+- Quản lý số tiền vay, lender, annual rate, term, ngày bắt đầu, kỳ trả đầu, linked account và phí ban đầu.
+- Hỗ trợ 3 mô hình: **Annuity**, **Gốc đều – lãi giảm dần**, **Interest-only**.
+- Payment Frequency: hàng tháng, mỗi 2 tuần hoặc hàng tuần.
+- Tự sinh amortization schedule theo tần suất thanh toán đã chọn.
+- Payment History tách Principal / Interest / Fee.
+- Dư nợ thực tế được tính từ Principal đã trả.
+- Loan Simulator mô phỏng trả thêm mỗi tháng, thời gian rút ngắn và tiền lãi tiết kiệm.
+- Dashboard có Total Debt / Loan due-soon summary.
+- Thư viện icon mở rộng + 12 màu gợi ý + color picker tùy ý cho Category, Savings Goal, Deposit và Loan.
+- Thiết kế lại logo/PWA app icon theo phong cách fintech chuyên nghiệp.
+- Mobile taskbar đổi nút ngoài cùng thành **[…] Thêm** và mở Bottom Sheet module bằng animation trượt lên.
+- PWA mobile được khóa zoom/pinch, chặn kéo ngang và chuẩn hóa input không tràn layout.
+- Giữ nguyên PWA Auth Bootstrap, Update Prompt, loading states và instant local modal.
 
 ## Database
 
-Vào Supabase SQL Editor và chạy:
+Chạy bằng Supabase SQL Editor:
 
 ```text
-supabase/sql-editor/V0.0.10_interest_deposit_manager.sql
+supabase/sql-editor/V0.0.11_loan_debt_manager.sql
 ```
 
-Kiểm tra tùy chọn:
+Verify tùy chọn:
 
 ```text
-supabase/sql-editor/V0.0.10_interest_deposit_manager_verify.sql
+supabase/sql-editor/V0.0.11_loan_debt_manager_verify.sql
 ```
 
-Hướng dẫn: `docs/V0.0.10_INTEREST_DEPOSIT_MANAGER_SETUP.md`.
+Hướng dẫn chi tiết:
+
+```text
+docs/V0.0.11_LOAN_DEBT_MANAGER_SETUP.md
+```
 
 ## ENV
 
-Không có ENV mới so với V0.0.9.
+Không có ENV mới so với V0.0.10.
 
 ```env
 NEXT_PUBLIC_FINZARO_ENV=development
@@ -42,7 +50,7 @@ NEXT_PUBLIC_SUPABASE_URL=https://xxxxx.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_xxxxx
 ```
 
-## Chạy kiểm tra
+## Kiểm tra
 
 ```bash
 npm install
@@ -53,8 +61,8 @@ npm run build
 
 ## Deploy
 
-Push repository lên GitHub và để Vercel redeploy. PWA đang cài trên iPhone tiếp tục dùng Update Prompt để chuyển sang V0.0.10.
+Run SQL V0.0.11 → push GitHub → Vercel redeploy → mở PWA và bấm **Cập nhật ngay**.
 
-## Phiên bản kế tiếp
+## Phiên bản tiếp theo
 
-**Finzaro V0.0.11 — Loan & Debt Manager**: quản lý khoản vay, dư nợ, lãi suất, lịch trả nợ, amortization schedule, khoản thanh toán thực tế và mô phỏng trả thêm/trả trước hạn.
+**Finzaro V0.0.12 — Credit Card Manager**: quản lý thẻ tín dụng, credit limit, statement cycle, statement balance, due date, minimum payment, credit utilization, payment history và cảnh báo thanh toán.

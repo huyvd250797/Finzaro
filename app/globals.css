@@ -28,17 +28,45 @@
 }
 
 * { box-sizing: border-box; }
-html { min-height: 100%; background: var(--background); }
+
+html {
+  min-height: 100%;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+  overscroll-behavior-x: none;
+  background: var(--background);
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
+  position: relative;
   min-height: 100vh;
+  width: 100%;
+  max-width: 100vw;
   margin: 0;
+  overflow-x: hidden;
+  overscroll-behavior-x: none;
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
   text-rendering: optimizeLegibility;
+  touch-action: pan-y;
 }
-button, input { font: inherit; }
+
+main, header, footer, nav, aside, section, article, form, fieldset, div {
+  min-width: 0;
+}
+
+button, input, select, textarea {
+  min-width: 0;
+  max-width: 100%;
+  font: inherit;
+}
+
+textarea { resize: vertical; }
 a { color: inherit; text-decoration: none; }
+img, svg, canvas, video { max-width: 100%; }
 ::selection { background: rgba(13, 139, 102, 0.2); }
 
 .finzaro-grid {
@@ -46,7 +74,19 @@ a { color: inherit; text-decoration: none; }
   background-size: 28px 28px;
 }
 
+/* iOS zooms focused form controls below 16px. */
+@media (max-width: 767px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
 @media (display-mode: standalone) {
+  html, body {
+    overscroll-behavior: none;
+  }
   .pwa-only-safe { padding-top: env(safe-area-inset-top); }
 }
 
@@ -54,4 +94,14 @@ a { color: inherit; text-decoration: none; }
   0% { transform: translateX(-120%); }
   55% { transform: translateX(90%); }
   100% { transform: translateX(240%); }
+}
+
+@keyframes sheet-up {
+  from { transform: translateY(100%); opacity: .65; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }

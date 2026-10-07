@@ -40,7 +40,7 @@ function TransactionForm({
 }: {
   type: TransactionType;
   accounts: Array<{ id: string; name: string; currency_code: string; institution_name: string | null }>;
-  categories: Array<{ id: string; name: string; icon_name: string; parent_id: string | null }>;
+  categories: Array<{ id: string; name: string; icon_name: string; icon_color: string | null; parent_id: string | null }>;
   timeZone: string;
 }) {
   const isTransfer = type === "transfer";
@@ -155,8 +155,8 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
   const timeZone = preferences?.timezone ?? "Asia/Ho_Chi_Minh";
   const activeAccounts = ledger.accounts.filter((account) => !account.is_archived);
   const newType = params.new && isTransactionType(params.new) ? params.new : null;
-  const expenseCategories = ledger.categories.filter((category) => !category.is_archived && category.category_type === "expense").map(({ id, name, icon_name, parent_id }) => ({ id, name, icon_name, parent_id }));
-  const incomeCategories = ledger.categories.filter((category) => !category.is_archived && category.category_type === "income").map(({ id, name, icon_name, parent_id }) => ({ id, name, icon_name, parent_id }));
+  const expenseCategories = ledger.categories.filter((category) => !category.is_archived && category.category_type === "expense").map(({ id, name, icon_name, icon_color, parent_id }) => ({ id, name, icon_name, icon_color, parent_id }));
+  const incomeCategories = ledger.categories.filter((category) => !category.is_archived && category.category_type === "income").map(({ id, name, icon_name, icon_color, parent_id }) => ({ id, name, icon_name, icon_color, parent_id }));
   const filtered = filterTransactions(ledger.transactions, params);
   const currentMonth = currentMonthKey(timeZone);
   const totals = monthTotals(ledger.transactions, defaultCurrency, currentMonth);

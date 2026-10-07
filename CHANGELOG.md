@@ -1,5 +1,20 @@
 # Changelog
 
+## V0.0.11 — Loan & Debt Manager
+
+- Added Supabase `loans` and `loan_payments` with per-user RLS.
+- Added annuity, equal-principal and interest-only amortization schedules with monthly, biweekly and weekly payment frequencies.
+- Added actual payment history split into principal, interest and fees.
+- Added remaining-debt tracking, next-payment status and Dashboard Loan summary.
+- Added extra-monthly-payment simulator with months and interest saved.
+- Added DB validation for linked account currency, principal overpayment and optional ledger-transaction traceability.
+- Expanded Lucide icon library and added 12 quick-palette colors plus arbitrary HEX color picker across Category, Savings Goal, Deposit and Loan modules.
+- Replaced the previous PWA/app icon with a new professional Finzaro finance mark.
+- Replaced the right-most mobile taskbar item with `[…] Thêm` and an animated module Bottom Sheet.
+- Locked standalone-PWA zoom/pinch, horizontal page drag and normalized mobile form controls to prevent iOS focus zoom and element overflow.
+- Updated current version to `V0.0.11 · Loan & Debt Manager`.
+- Defined V0.0.12 Credit Card Manager as the next release.
+
 ## V0.0.10 — Interest & Deposit Manager
 
 - Added real Supabase `deposits` and `deposit_interest_entries` with per-user RLS.

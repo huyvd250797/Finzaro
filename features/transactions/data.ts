@@ -24,7 +24,7 @@ export type LedgerEntry = {
   account: LedgerAccount | null;
 };
 
-export type TransactionCategory = Pick<CategoryRow, "id" | "name" | "icon_name" | "category_type" | "parent_id" | "is_archived">;
+export type TransactionCategory = Pick<CategoryRow, "id" | "name" | "icon_name" | "icon_color" | "category_type" | "parent_id" | "is_archived">;
 
 export type TransactionView = {
   id: string;
@@ -54,7 +54,7 @@ export async function loadLedger(
       const pageSize = Math.min(batchSize, requestedLimit - rows.length);
       let query = supabase
         .from("transactions")
-        .select("id, transaction_type, title, category_id, category_label, notes, transaction_date, created_at, categories(id, name, icon_name, category_type, parent_id, is_archived), transaction_entries(id, transaction_id, account_id, currency_code, amount_minor, entry_role)")
+        .select("id, transaction_type, title, category_id, category_label, notes, transaction_date, created_at, categories(id, name, icon_name, icon_color, category_type, parent_id, is_archived), transaction_entries(id, transaction_id, account_id, currency_code, amount_minor, entry_role)")
         .eq("user_id", userId)
         .order("transaction_date", { ascending: false })
         .order("created_at", { ascending: false })
@@ -81,7 +81,7 @@ export async function loadLedger(
     transactionPromise,
     supabase.from("accounts").select("id, name, account_type, currency_code, institution_name, is_archived, current_balance_minor").eq("user_id", userId),
     supabase.from("supported_currencies").select("code, decimal_digits, symbol").eq("is_active", true),
-    supabase.from("categories").select("id, user_id, name, category_type, parent_id, icon_name, system_key, is_system, is_archived, sort_order, created_at, updated_at").eq("user_id", userId).order("sort_order")
+    supabase.from("categories").select("id, user_id, name, category_type, parent_id, icon_name, icon_color, system_key, is_system, is_archived, sort_order, created_at, updated_at").eq("user_id", userId).order("sort_order")
   ]);
 
   if (accountError) throw accountError;
@@ -206,7 +206,7 @@ export function cashflowSeries(transactions: TransactionView[], defaultCurrency:
 }
 
 export function expenseCategories(transactions: TransactionView[], defaultCurrency: string, targetMonth: string) {
-  const totals = new Map<string, { label: string; icon_name: string; value: number }>();
+  const totals = new Map<string, { label: string; icon_name: string; icon_color: string | null; value: number }>();
   for (const transaction of transactions) {
     if (transaction.transaction_type !== "expense" || !transaction.transaction_date.startsWith(targetMonth)) continue;
     const entry = transactionEntry(transaction, "expense");
@@ -214,7 +214,8 @@ export function expenseCategories(transactions: TransactionView[], defaultCurren
     const key = transaction.category_id ?? transaction.category_label ?? "uncategorized";
     const label = transaction.category?.name ?? transaction.category_label ?? "Chưa phân loại";
     const icon_name = transaction.category?.icon_name ?? "Shapes";
-    const current = totals.get(key) ?? { label, icon_name, value: 0 };
+    const icon_color = transaction.category?.icon_color ?? "#0d8b66";
+    const current = totals.get(key) ?? { label, icon_name, icon_color, value: 0 };
     current.value += Math.abs(entry.amount_minor);
     totals.set(key, current);
   }

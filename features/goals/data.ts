@@ -11,6 +11,7 @@ export type SavingsGoal = {
   target_date: string | null;
   linked_account_id: string | null;
   icon_name: string;
+  icon_color: string | null;
   is_archived: boolean;
   created_at: string;
   updated_at: string;

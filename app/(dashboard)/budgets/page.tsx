@@ -37,7 +37,7 @@ import {
   type BudgetProgress
 } from "@/features/budgets/data";
 import { categoryPath, loadCategories, type CategoryRow } from "@/features/categories/data";
-import { CategoryIcon } from "@/features/categories/icons";
+import { CategoryIcon, iconColorValue } from "@/features/categories/icons";
 import { currentMonthKey, loadLedger } from "@/features/transactions/data";
 import { requireUser } from "@/lib/auth";
 import { formatMinorMoney } from "@/lib/utils";
@@ -90,7 +90,7 @@ function BudgetForm({
             <div className="md:col-span-2">
               <span className="mb-2 block text-xs font-bold uppercase tracking-wide text-[var(--muted-foreground)]">Danh mục</span>
               <div className="flex h-11 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--muted)] px-3 text-sm font-semibold">
-                <CategoryIcon name={editing.category.icon_name} className="size-4 text-[var(--primary)]" />
+                <span style={{ color: iconColorValue(editing.category.icon_color) }}><CategoryIcon name={editing.category.icon_name} className="size-4" /></span>
                 {categoryPath(editing.category, categoryById)}
               </div>
             </div>
@@ -242,7 +242,7 @@ export default async function BudgetsPage({ searchParams }: { searchParams: Sear
                       <Card key={item.id} className={item.is_archived ? "opacity-60" : ""}>
                         <CardContent className="p-5">
                           <div className="flex items-start gap-3">
-                            <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-[var(--sidebar-accent)] text-[var(--primary)]"><CategoryIcon name={item.category.icon_name} className="size-5" /></div>
+                            <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-[var(--sidebar-accent)]" style={{ color: iconColorValue(item.category.icon_color) }}><CategoryIcon name={item.category.icon_name} className="size-5" /></div>
                             <div className="min-w-0 flex-1">
                               <div className="flex flex-wrap items-center gap-2"><h3 className="truncate font-black">{item.category.name}</h3>{item.is_archived && <span className="rounded-md bg-[var(--muted)] px-1.5 py-0.5 text-[9px] font-black uppercase text-[var(--muted-foreground)]">Lưu trữ</span>}</div>
                               <p className="mt-0.5 truncate text-[11px] text-[var(--muted-foreground)]">{categoryPath(item.category, categoryById)}{item.scope_category_ids.length > 1 ? ` · gồm ${item.scope_category_ids.length - 1} subcategory` : ""}</p>

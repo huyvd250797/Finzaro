@@ -9,6 +9,7 @@ export type CategoryRow = {
   category_type: CategoryType;
   parent_id: string | null;
   icon_name: string;
+  icon_color: string | null;
   system_key: string | null;
   is_system: boolean;
   is_archived: boolean;
@@ -20,7 +21,7 @@ export type CategoryRow = {
 export async function loadCategories(supabase: SupabaseClient<Database>, userId: string, includeArchived = true) {
   let query = supabase
     .from("categories")
-    .select("id, user_id, name, category_type, parent_id, icon_name, system_key, is_system, is_archived, sort_order, created_at, updated_at")
+    .select("id, user_id, name, category_type, parent_id, icon_name, icon_color, system_key, is_system, is_archived, sort_order, created_at, updated_at")
     .eq("user_id", userId)
     .order("category_type", { ascending: true })
     .order("sort_order", { ascending: true })

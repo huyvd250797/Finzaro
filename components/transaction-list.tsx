@@ -1,5 +1,5 @@
 import { ArrowLeftRight, Trash2 } from "lucide-react";
-import { CategoryIcon } from "@/features/categories/icons";
+import { CategoryIcon, iconColorValue } from "@/features/categories/icons";
 import { deleteTransactionAction } from "@/features/transactions/actions";
 import { currencyDigits, transactionEntry, type LedgerCurrency, type TransactionView } from "@/features/transactions/data";
 import { formatMinorMoney } from "@/lib/utils";
@@ -49,7 +49,7 @@ export function TransactionList({
 
         return (
           <div key={tx.id} className="flex items-start gap-3 py-4 first:pt-0 last:pb-0">
-            <div className={`mt-0.5 grid size-10 shrink-0 place-items-center rounded-xl ${tx.transaction_type === "income" ? "bg-emerald-500/10 text-emerald-600" : tx.transaction_type === "transfer" ? "bg-sky-500/10 text-sky-600" : "bg-rose-500/10 text-rose-500"}`}>
+            <div className={`mt-0.5 grid size-10 shrink-0 place-items-center rounded-xl ${tx.transaction_type === "transfer" ? "bg-sky-500/10 text-sky-600" : "bg-[var(--muted)]"}`} style={tx.transaction_type === "transfer" ? undefined : { color: iconColorValue(tx.category?.icon_color) }}>
               {tx.transaction_type === "transfer" ? <ArrowLeftRight className="size-4.5" /> : <CategoryIcon name={tx.category?.icon_name} className="size-4.5" />}
             </div>
             <div className="min-w-0 flex-1">
