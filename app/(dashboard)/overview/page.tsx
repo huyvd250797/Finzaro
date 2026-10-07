@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AlertTriangle, ArrowRight, Banknote, CircleDollarSign, Landmark, PiggyBank, Plus, Smartphone, Target, TrendingDown, TrendingUp, WalletCards } from "lucide-react";
+import { AlertTriangle, ArrowRight, Banknote, CalendarClock, CircleDollarSign, Landmark, PiggyBank, Plus, Smartphone, Target, TrendingDown, TrendingUp, WalletCards } from "lucide-react";
 import { formatMinorMoney } from "@/lib/utils";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { StatCard } from "@/components/stat-card";
@@ -8,6 +8,7 @@ import { TransactionList } from "@/components/transaction-list";
 import { CategoryIcon } from "@/features/categories/icons";
 import { budgetProgress, budgetSummary, loadBudgets, monthStartFromKey } from "@/features/budgets/data";
 import { requireUser } from "@/lib/auth";
+import { loadRecurringData, projectRecurringOccurrences, todayInTimeZone as recurringToday } from "@/features/recurring/data";
 import type { AccountType } from "@/features/accounts/constants";
 import { cashflowSeries, currentMonthKey, currencyDigits, expenseCategories, loadLedger, monthTotals, sixMonthWindow } from "@/features/transactions/data";
 
@@ -29,13 +30,26 @@ export default async function OverviewPage() {
   const digits = currencyDigits(ledger.currencies, defaultCurrency);
   const totalMinor = accounts.filter((account) => account.currency_code === defaultCurrency).reduce((sum, account) => sum + account.current_balance_minor, 0);
   const currentMonth = currentMonthKey(timeZone);
-  const currentBudgets = await loadBudgets(supabase, userId, monthStartFromKey(currentMonth), false);
+  const [currentBudgets, recurring] = await Promise.all([
+    loadBudgets(supabase, userId, monthStartFromKey(currentMonth), false),
+    loadRecurringData(supabase, userId)
+  ]);
   const budgetRows = budgetProgress(currentBudgets, ledger.transactions, ledger.categories);
   const budgetState = budgetSummary(budgetRows, defaultCurrency);
   const current = monthTotals(ledger.transactions, defaultCurrency, currentMonth);
   const previous = monthTotals(ledger.transactions, defaultCurrency, months.at(-2)?.key ?? currentMonth);
   const series = cashflowSeries(ledger.transactions, defaultCurrency, timeZone);
   const categories = expenseCategories(ledger.transactions, defaultCurrency, currentMonth);
+  const recurringTodayKey = recurringToday(timeZone);
+  const recurringEnd = new Date(`${recurringTodayKey}T00:00:00Z`);
+  recurringEnd.setUTCDate(recurringEnd.getUTCDate() + 14);
+  const upcomingRecurring = projectRecurringOccurrences(
+    recurring.rules.filter((rule) => rule.is_active),
+    recurring.occurrences,
+    recurringTodayKey,
+    recurringEnd.toISOString().slice(0, 10),
+    recurringTodayKey
+  ).filter((item) => item.status === "upcoming" || item.status === "due" || item.status === "overdue");
   const today = new Intl.DateTimeFormat("vi-VN", { weekday: "long", day: "2-digit", month: "2-digit", year: "numeric", timeZone }).format(new Date());
 
   return (
@@ -61,6 +75,17 @@ export default async function OverviewPage() {
           </div>
           {budgetState.count > 0 && <div className="min-w-[160px] flex-1 sm:max-w-xs"><div className="mb-1.5 flex justify-between text-[11px] font-bold"><span>{budgetState.allocated > 0 ? Math.min(999, Math.round((budgetState.actual / budgetState.allocated) * 100)) : 0}%</span><span className="text-[var(--muted-foreground)]">Còn {formatMinorMoney(budgetState.remaining, defaultCurrency, digits)}</span></div><div className="h-2.5 overflow-hidden rounded-full bg-[var(--muted)]"><div className={`h-full rounded-full ${budgetState.overCount > 0 ? "bg-rose-500" : "bg-[var(--primary)]"}`} style={{width:`${budgetState.allocated > 0 ? Math.min(100, Math.round((budgetState.actual / budgetState.allocated) * 100)) : 0}%`}} /></div></div>}
           <Link href="/budgets" className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[var(--border)] px-3 text-xs font-bold">Quản lý ngân sách <ArrowRight className="size-3.5" /></Link>
+        </CardContent>
+      </Card>
+
+      <Card className="mt-4">
+        <CardContent className="flex flex-wrap items-center gap-4 p-5">
+          <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-[var(--sidebar-accent)] text-[var(--primary)]"><CalendarClock className="size-5" /></div>
+          <div className="min-w-[180px] flex-1">
+            <h2 className="font-black">Lịch tài chính · 14 ngày tới</h2>
+            <p className="mt-1 text-xs text-[var(--muted-foreground)]">{upcomingRecurring.length > 0 ? `${upcomingRecurring.length} khoản định kỳ cần theo dõi. Gần nhất: ${upcomingRecurring[0]?.rule.title} · ${upcomingRecurring[0]?.dueDate.split("-").reverse().join("/")}.` : "Không có khoản định kỳ nào cần xử lý trong 14 ngày tới."}</p>
+          </div>
+          <Link href="/recurring" className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[var(--border)] px-3 text-xs font-bold">Mở lịch tài chính <ArrowRight className="size-3.5" /></Link>
         </CardContent>
       </Card>
 

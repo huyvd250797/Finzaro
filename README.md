@@ -1,172 +1,99 @@
-# Finzaro V0.0.6 — Budget Engine
+# Finzaro V0.0.7 — Recurring Transactions & Financial Calendar
 
-Finzaro là PWA quản lý tài chính cá nhân chạy Next.js + Supabase + Vercel. V0.0.6 đưa Budget từ preview thành engine thật dựa trên Category Engine + Transaction Ledger, đồng thời giữ cơ chế cập nhật PWA chủ động đã có từ V0.0.5.
+Finzaro là PWA quản lý tài chính cá nhân xây bằng Next.js + Supabase + Vercel. V0.0.7 bổ sung giao dịch định kỳ, Financial Calendar và một đợt tối ưu UX/performance để thao tác phản hồi ngay thay vì tạo cảm giác app bị lag.
 
-## V0.0.6 có gì mới
+## Có gì mới trong V0.0.7
 
-### Budget Engine
+### Recurring Transactions
 
-- `budgets` table thật trên Supabase.
-- Budget theo tháng + Expense category + currency.
-- RLS theo từng user.
-- Minor-unit `BIGINT` cho hạn mức.
-- Actual Spending tính từ Expense ledger thật, không lưu counter trùng lặp.
-- Category cha tự bao gồm toàn bộ subcategory.
-- Chặn budget cha/con chồng lấp trong cùng tháng + currency để tránh double-count.
-- Chặn re-parent category nếu thao tác đó làm phát sinh overlap cho budget đang active.
-- Progress %, Remaining, Near Limit (>=80%), Over Budget (>100%).
-- Month navigation.
-- Copy ngân sách từ tháng trước.
-- Edit hạn mức.
-- Archive/restore budget.
-- Multi-currency không tự FX conversion.
-- Budget summary trên Dashboard.
+- `recurring_rules` thật trên Supabase.
+- Hỗ trợ Income / Expense / Transfer định kỳ.
+- Weekly / Monthly / Yearly, có `interval_count` cho mỗi N chu kỳ.
+- Start date / optional end date.
+- Category và account được validate theo owner + trạng thái archive.
+- Minor-unit `BIGINT`, không dùng floating point cho tiền.
+- Multi-currency transfer vẫn yêu cầu số tiền nhận rõ ràng, không tự đoán FX.
+- Pause / Resume rule.
+
+### Financial Calendar
+
+- Calendar theo tháng.
+- Phân biệt Upcoming / Due Today / Overdue / Paid / Skipped.
+- Danh sách các khoản cần xử lý trong 30 ngày tới.
+- Khi bấm **Đã thanh toán / Đã nhận**, Finzaro gọi RPC và tạo Transaction thật vào ledger.
+- Khi **Bỏ qua**, không tạo transaction.
+- Hỗ trợ **Hoàn tác**; nếu kỳ đã tạo Transaction, ledger và account balance được reverse bằng Transaction Core.
+- Dashboard có summary các khoản định kỳ trong 14 ngày tới.
+
+### UX / Performance Fix
+
+- `requireUser()` được request-deduplicate bằng React `cache()`.
+- Bỏ `getUser()` round-trip dư thừa; server authorization dùng verified `getClaims()`.
+- Mở form **Thêm tài khoản**, Transaction composer, Budget mới và Category mới bằng local instant modal, không cần đợi server chỉ để hiện UI.
+- Thêm top navigation progress bar + route loading skeleton.
+- Các nút submit quan trọng đổi trạng thái ngay bằng `useFormStatus()`:
+  - `Đang đăng nhập...`
+  - `Đang tạo tài khoản...`
+  - `Đang lưu giao dịch...`
+  - `Đang tạo danh mục...`
+  - `Đang tạo ngân sách...`
+  - `Đang tạo lịch...`
+- Nút bị disable trong lúc submit để tránh double-submit.
 
 ### PWA Update Prompt
 
-Cơ chế V0.0.5 tiếp tục được giữ:
-
-- `/api/version` no-store.
-- Service Worker phát hiện worker mới.
-- Kiểm tra khi app mở/foreground/online.
-- Banner **Có phiên bản Finzaro mới**.
-- Nút **Cập nhật ngay** activate worker mới và reload.
-- Authenticated navigation không cache HTML.
+Cơ chế từ V0.0.5 tiếp tục được giữ. Khi PWA iPhone phát hiện version mới, app hiện banner **Có phiên bản Finzaro mới** và nút **Cập nhật ngay** để activate Service Worker mới rồi reload.
 
 ## SQL bắt buộc
 
-Vào **Supabase → SQL Editor → New query**, chạy:
+Vào **Supabase → SQL Editor → New query**, chạy toàn bộ file:
 
 ```text
-supabase/sql-editor/V0.0.6_budget_engine.sql
+supabase/sql-editor/V0.0.7_recurring_calendar.sql
 ```
 
-Không chạy lại các SQL release trước nếu đã chạy thành công.
-
-File verify read-only:
+Sau đó có thể chạy file kiểm tra read-only:
 
 ```text
-supabase/sql-editor/V0.0.6_budget_engine_verify.sql
+supabase/sql-editor/V0.0.7_recurring_calendar_verify.sql
 ```
 
-Chi tiết: [`docs/V0.0.6_BUDGET_ENGINE_SETUP.md`](docs/V0.0.6_BUDGET_ENGINE_SETUP.md)
+Không chạy lại SQL V0.0.3–V0.0.6 nếu database đã được nâng cấp trước đó.
 
-## Budget model
-
-```text
-categories (expense)
-      │
-      └── budgets
-          ├── month_start
-          ├── currency_code
-          └── amount_minor
-
-transactions (expense)
-      │
-      ├── category_id
-      └── transaction_entries (signed ledger)
-                 │
-                 └── actual spending
-```
-
-Budget parent category bao gồm Expense của descendants. V0.0.6 cấm active budget scope chồng lấp trong cùng month/currency.
-
-## Multi-currency
-
-Finzaro không cộng VND + USD hoặc tự quy đổi FX:
-
-```text
-Budget VND → Expense VND
-Budget USD → Expense USD
-```
-
-FX conversion sẽ được thiết kế thành engine riêng ở roadmap sau.
+Hướng dẫn chi tiết: `docs/V0.0.7_RECURRING_CALENDAR_SETUP.md`.
 
 ## ENV
 
-Không có ENV mới:
+V0.0.7 không cần ENV mới:
 
-```dotenv
+```env
 NEXT_PUBLIC_FINZARO_ENV=development
 NEXT_PUBLIC_SITE_URL=https://your-finzaro.vercel.app
-NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_xxx
+NEXT_PUBLIC_SUPABASE_URL=https://xxxxx.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_xxxxx
 ```
 
-## Version display
-
-Version tập trung tại:
-
-```text
-lib/app-version.ts
-```
-
-Hiện tại:
-
-```text
-Finzaro V0.0.6 · Budget Engine
-```
-
-Version hiển thị ở Header, Sidebar, Auth UI và Settings; `/api/version` + Service Worker cũng dùng cùng version để PWA phát hiện release mới.
-
-## Quality commands
+## Deploy
 
 ```bash
 npm install
-npm run lint
-npm run typecheck
 npm run test
+npm run typecheck
 npm run build
 ```
 
-hoặc:
+Push GitHub → Vercel tự deploy.
 
-```bash
-npm run check
+## Version hiện tại
+
+```text
+Finzaro V0.0.7 · Recurring Transactions & Financial Calendar
 ```
 
-## GitHub → Vercel
-
-Sau khi SQL V0.0.6 chạy thành công:
-
-```bash
-git add .
-git commit -m "feat: Finzaro V0.0.6 Budget Engine"
-git push
-```
-
-Vercel redeploy từ GitHub. Không cần ENV mới.
-
-## Acceptance test nhanh
-
-1. Mở `/budgets`.
-2. Tạo `Ăn uống` = `5.000.000 VND`.
-3. Ghi Expense `1.000.000 VND` vào `Ăn uống › Cà phê`.
-4. Budget parent phải hiển thị 20%.
-5. Đạt >=80% phải chuyển `Gần giới hạn`.
-6. >100% phải chuyển `Vượt ngân sách`.
-7. Thử tạo budget child cùng month/currency và xác nhận bị chặn overlap.
-8. Sang tháng mới → **Sao chép tháng trước**.
-9. Dashboard phải hiển thị Budget summary.
-10. Từ PWA bản cũ, deploy V0.0.6 và kiểm tra prompt **Cập nhật ngay**.
+Version được quản lý tập trung tại `lib/app-version.ts` và được dùng cả trong UI lẫn PWA update detection.
 
 ## Phiên bản tiếp theo
 
-**Finzaro V0.0.7 — Recurring Transactions & Financial Calendar**
+**Finzaro V0.0.8 — Reports & Financial Insights**
 
-Mục tiêu là quản lý các dòng tiền có lịch lặp như lương, tiền nhà, Internet, Netflix, bảo hiểm, học phí hoặc khoản thanh toán định kỳ.
-
-Dự kiến gồm:
-
-- `recurring_rules` thật trên Supabase.
-- Income/Expense recurring.
-- Chu kỳ weekly / monthly / yearly / custom cơ bản.
-- Next due date.
-- Financial Calendar theo tháng.
-- Upcoming payments/income trên Dashboard.
-- Mark due item là Paid / Skipped.
-- Tạo Transaction thật từ recurring occurrence, không làm giả ledger.
-- Nhắc khoản sắp đến hạn làm nền cho notification ở release sau.
-- RLS + SQL Editor migration riêng.
-
-Sau V0.0.7, hướng dự kiến là **V0.0.8 — Reports & Financial Insights** để nâng cấp reporting theo period/category/account/budget và chuẩn bị Savings Goals.
+Dự kiến nâng cấp Reports thành module thật: period presets/custom range, breakdown theo account/category, budget variance, income-vs-expense, trend comparison, CSV export nền tảng và các insight rule-based trước khi tiến tới Savings Goals / AI.

@@ -3,6 +3,7 @@ import { LockKeyhole, Mail } from "lucide-react";
 import { redirect } from "next/navigation";
 import { AuthMessage } from "@/components/auth-message";
 import { AuthShell } from "@/components/auth-shell";
+import { PendingSubmitButton } from "@/components/pending-submit-button";
 import { createClient } from "@/lib/supabase/server";
 import { loginAction } from "@/app/auth/actions";
 
@@ -40,7 +41,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
             <input name="password" type="password" autoComplete="current-password" required placeholder="••••••••" className="h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--background)] pl-10 pr-4 text-sm outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--ring)]" />
           </div>
         </label>
-        <button type="submit" className="flex h-11 w-full items-center justify-center rounded-xl bg-[var(--primary)] text-sm font-bold text-white transition hover:brightness-110">Đăng nhập</button>
+        <PendingSubmitButton idleLabel="Đăng nhập" pendingLabel="Đang đăng nhập..." className="h-11 w-full rounded-xl bg-[var(--primary)] text-sm font-bold text-white hover:brightness-110" />
       </form>
       <p className="mt-5 text-center text-sm text-[var(--muted-foreground)]">Chưa có tài khoản? <Link href="/register" className="font-bold text-[var(--primary)] hover:underline">Đăng ký</Link></p>
     </AuthShell>

@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { Archive, ArchiveRestore, Banknote, Landmark, Pencil, PiggyBank, Plus, Smartphone, WalletCards, X } from "lucide-react";
 import { AuthMessage } from "@/components/auth-message";
+import { InstantReveal } from "@/components/instant-reveal";
+import { PendingSubmitButton } from "@/components/pending-submit-button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ACCOUNT_TYPE_LABELS, type AccountType } from "@/features/accounts/constants";
 import { createAccountAction, setAccountArchivedAction, updateAccountAction } from "@/features/accounts/actions";
@@ -45,7 +47,7 @@ function AccountForm({ currencies, account }: { currencies: Currency[]; account?
             <h2 className="mt-1 text-lg font-black">{editing ? "Cập nhật tài khoản" : "Thêm tài khoản tài chính"}</h2>
             <p className="mt-1 text-sm text-[var(--muted-foreground)]">V0.0.4 khóa tiền tệ và số dư khi chỉnh sửa; mọi biến động số dư đi qua Transaction Core.</p>
           </div>
-          <Link href="/accounts" aria-label="Đóng form" className="grid size-9 place-items-center rounded-xl border border-[var(--border)] text-[var(--muted-foreground)] hover:bg-[var(--muted)]"><X className="size-4" /></Link>
+          <Link href="/accounts" data-instant-close aria-label="Đóng form" className="grid size-9 place-items-center rounded-xl border border-[var(--border)] text-[var(--muted-foreground)] hover:bg-[var(--muted)]"><X className="size-4" /></Link>
         </div>
 
         <form action={action} className="mt-5 grid gap-4 md:grid-cols-2">
@@ -79,8 +81,8 @@ function AccountForm({ currencies, account }: { currencies: Currency[]; account?
           </label>
 
           <div className="flex flex-wrap items-center gap-2 md:col-span-2">
-            <button type="submit" className="inline-flex h-10 items-center gap-2 rounded-xl bg-[var(--primary)] px-4 text-sm font-bold text-white">{editing ? "Lưu thay đổi" : "Tạo tài khoản"}</button>
-            <Link href="/accounts" className="inline-flex h-10 items-center rounded-xl border border-[var(--border)] px-4 text-sm font-bold">Hủy</Link>
+            <PendingSubmitButton idleLabel={editing ? "Lưu thay đổi" : "Tạo tài khoản"} pendingLabel={editing ? "Đang lưu..." : "Đang tạo tài khoản..."} className="h-10 rounded-xl bg-[var(--primary)] px-4 text-sm font-bold text-white" />
+            <Link href="/accounts" data-instant-close className="inline-flex h-10 items-center rounded-xl border border-[var(--border)] px-4 text-sm font-bold">Hủy</Link>
           </div>
         </form>
       </CardContent>
@@ -119,12 +121,12 @@ export default async function AccountsPage({ searchParams }: { searchParams: Sea
           <h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">Tài khoản & ví</h1>
           <p className="mt-2 text-sm text-[var(--muted-foreground)]">Số dư hiện tại được Transaction Core duy trì từ Income, Expense và Transfer; dữ liệu vẫn tách riêng theo user bằng RLS.</p>
         </div>
-        <Link href="/accounts?new=1" className="inline-flex h-10 items-center gap-2 rounded-xl bg-[var(--primary)] px-4 text-sm font-bold text-white"><Plus className="size-4" /> Thêm tài khoản</Link>
+        <InstantReveal label="Thêm tài khoản" initialOpen={params.new === "1"}><AccountForm currencies={currencies} /></InstantReveal>
       </div>
 
       <AuthMessage error={params.error ?? (accountsError ? "Không thể tải dữ liệu tài khoản." : undefined)} message={params.message} />
 
-      {(params.new === "1" || editAccount) && <AccountForm currencies={currencies} account={editAccount} />}
+      {editAccount && <AccountForm currencies={currencies} account={editAccount} />}
 
       <Card className="mt-6 overflow-hidden bg-gradient-to-br from-emerald-600 to-teal-800 text-white">
         <CardContent className="p-6 sm:p-7">

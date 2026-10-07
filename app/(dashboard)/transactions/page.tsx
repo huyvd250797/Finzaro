@@ -1,6 +1,8 @@
 import Link from "next/link";
-import { ArrowDownLeft, ArrowLeftRight, ArrowUpRight, CalendarDays, Filter, Plus, Search, Shapes, X } from "lucide-react";
+import { CalendarDays, Filter, Plus, Search, Shapes, X } from "lucide-react";
 import { AuthMessage } from "@/components/auth-message";
+import { InstantTransactionLauncher } from "@/components/instant-transaction-launcher";
+import { PendingSubmitButton } from "@/components/pending-submit-button";
 import { TransactionCategorySelect } from "@/components/transaction-category-select";
 import { TransactionList } from "@/components/transaction-list";
 import { Card, CardContent } from "@/components/ui/card";
@@ -53,16 +55,9 @@ function TransactionForm({
             <h2 className="mt-1 text-lg font-black">{TRANSACTION_TYPE_LABELS[type]}</h2>
             <p className="mt-1 text-sm text-[var(--muted-foreground)]">V0.0.5 dùng category có cấu trúc; ledger và số dư vẫn cập nhật atomic trong PostgreSQL.</p>
           </div>
-          <Link href="/transactions" aria-label="Đóng form" className="grid size-9 place-items-center rounded-xl border border-[var(--border)] text-[var(--muted-foreground)] hover:bg-[var(--muted)]"><X className="size-4" /></Link>
+          <button type="button" data-instant-close aria-label="Đóng form" className="grid size-9 place-items-center rounded-xl border border-[var(--border)] text-[var(--muted-foreground)] hover:bg-[var(--muted)]"><X className="size-4" /></button>
         </div>
 
-        <div className="mt-4 flex flex-wrap gap-2">
-          {(["expense", "income", "transfer"] as TransactionType[]).map((item) => (
-            <Link key={item} href={`/transactions?new=${item}`} className={`rounded-xl px-3 py-2 text-xs font-bold ${item === type ? "bg-[var(--primary)] text-white" : "border border-[var(--border)] bg-[var(--background)] text-[var(--muted-foreground)] hover:bg-[var(--muted)]"}`}>
-              {TRANSACTION_TYPE_LABELS[item]}
-            </Link>
-          ))}
-        </div>
 
         {accounts.length === 0 ? (
           <div className="mt-5 rounded-xl border border-dashed border-[var(--border)] p-5 text-center">
@@ -138,8 +133,8 @@ function TransactionForm({
             </label>
 
             <div className="flex justify-end gap-2 md:col-span-2">
-              <Link href="/transactions" className="inline-flex h-10 items-center rounded-xl border border-[var(--border)] px-4 text-sm font-bold hover:bg-[var(--muted)]">Hủy</Link>
-              <button type="submit" disabled={!canSubmit} className="inline-flex h-10 items-center rounded-xl bg-[var(--primary)] px-5 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-50">Lưu giao dịch</button>
+              <button type="button" data-instant-close className="inline-flex h-10 items-center rounded-xl border border-[var(--border)] px-4 text-sm font-bold hover:bg-[var(--muted)]">Hủy</button>
+              <PendingSubmitButton idleLabel="Lưu giao dịch" pendingLabel="Đang lưu giao dịch..." disabled={!canSubmit} className="h-10 rounded-xl bg-[var(--primary)] px-5 text-sm font-bold text-white" />
             </div>
           </form>
         )}
@@ -160,9 +155,8 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
   const timeZone = preferences?.timezone ?? "Asia/Ho_Chi_Minh";
   const activeAccounts = ledger.accounts.filter((account) => !account.is_archived);
   const newType = params.new && isTransactionType(params.new) ? params.new : null;
-  const transactionCategories = newType && newType !== "transfer"
-    ? ledger.categories.filter((category) => !category.is_archived && category.category_type === newType).map(({ id, name, icon_name, parent_id }) => ({ id, name, icon_name, parent_id }))
-    : [];
+  const expenseCategories = ledger.categories.filter((category) => !category.is_archived && category.category_type === "expense").map(({ id, name, icon_name, parent_id }) => ({ id, name, icon_name, parent_id }));
+  const incomeCategories = ledger.categories.filter((category) => !category.is_archived && category.category_type === "income").map(({ id, name, icon_name, parent_id }) => ({ id, name, icon_name, parent_id }));
   const filtered = filterTransactions(ledger.transactions, params);
   const currentMonth = currentMonthKey(timeZone);
   const totals = monthTotals(ledger.transactions, defaultCurrency, currentMonth);
@@ -179,14 +173,17 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
         </div>
         <div className="flex flex-wrap gap-2">
           <Link href="/categories" className="inline-flex h-10 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-3.5 text-sm font-bold"><Shapes className="size-4 text-[var(--primary)]" /> Danh mục</Link>
-          <Link href="/transactions?new=expense" className="inline-flex h-10 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-3.5 text-sm font-bold"><ArrowUpRight className="size-4 text-rose-500" /> Chi tiêu</Link>
-          <Link href="/transactions?new=income" className="inline-flex h-10 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-3.5 text-sm font-bold"><ArrowDownLeft className="size-4 text-emerald-600" /> Thu nhập</Link>
-          <Link href="/transactions?new=transfer" className="inline-flex h-10 items-center gap-2 rounded-xl bg-[var(--primary)] px-3.5 text-sm font-bold text-white"><ArrowLeftRight className="size-4" /> Chuyển tiền</Link>
+          <InstantTransactionLauncher
+            initialType={newType}
+            expense={<TransactionForm type="expense" accounts={activeAccounts} categories={expenseCategories} timeZone={timeZone} />}
+            income={<TransactionForm type="income" accounts={activeAccounts} categories={incomeCategories} timeZone={timeZone} />}
+            transfer={<TransactionForm type="transfer" accounts={activeAccounts} categories={[]} timeZone={timeZone} />}
+          />
         </div>
       </div>
 
       <AuthMessage error={params.error} message={params.message} />
-      {newType && <TransactionForm type={newType} accounts={activeAccounts} categories={transactionCategories} timeZone={timeZone} />}
+      
 
       <div className="mt-5 grid gap-3 sm:grid-cols-3">
         <Card><CardContent className="p-4"><p className="text-xs font-bold uppercase tracking-wide text-[var(--muted-foreground)]">Thu nhập tháng · {defaultCurrency}</p><p className="mt-2 text-xl font-black text-emerald-600 dark:text-emerald-400">{formatMinorMoney(totals.income, defaultCurrency, digits)}</p></CardContent></Card>

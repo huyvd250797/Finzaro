@@ -12,6 +12,14 @@ const required = [
   "app/(dashboard)/transactions/page.tsx",
   "app/(dashboard)/categories/page.tsx",
   "app/(dashboard)/settings/page.tsx",
+  "app/(dashboard)/recurring/page.tsx",
+  "components/pending-submit-button.tsx",
+  "components/navigation-progress.tsx",
+  "components/instant-reveal.tsx",
+  "components/instant-transaction-launcher.tsx",
+  "components/recurring-rule-launcher.tsx",
+  "features/recurring/actions.ts",
+  "features/recurring/data.ts",
   "components/category-icon-picker.tsx",
   "components/transaction-category-select.tsx",
   "components/pwa-register.tsx",
@@ -35,26 +43,31 @@ const required = [
   "supabase/migrations/20261006150000_transaction_core.sql",
   "supabase/migrations/20261006160000_category_engine.sql",
   "supabase/migrations/20261006170000_budget_engine.sql",
+  "supabase/migrations/20261006180000_recurring_calendar.sql",
   "supabase/sql-editor/V0.0.5_category_engine.sql",
   "supabase/sql-editor/V0.0.5_category_engine_verify.sql",
   "supabase/sql-editor/V0.0.6_budget_engine.sql",
   "supabase/sql-editor/V0.0.6_budget_engine_verify.sql",
+  "supabase/sql-editor/V0.0.7_recurring_calendar.sql",
+  "supabase/sql-editor/V0.0.7_recurring_calendar_verify.sql",
   "supabase/tests/category-engine.test.sql",
   "supabase/tests/budget-engine.test.sql",
+  "supabase/tests/recurring-calendar.test.sql",
   "docs/V0.0.5_CATEGORY_ENGINE_SETUP.md",
   "docs/V0.0.6_BUDGET_ENGINE_SETUP.md",
+  "docs/V0.0.7_RECURRING_CALENDAR_SETUP.md",
   "public/sw.js",
   ".env.example",
   "vercel.json"
 ];
 
-test("V0.0.6 required files exist", () => {
+test("V0.0.7 required files exist", () => {
   for (const file of required) assert.equal(existsSync(file), true, `${file} is missing`);
 });
 
-test("package version is 0.0.6", () => {
+test("package version is 0.0.7", () => {
   const pkg = JSON.parse(readFileSync("package.json", "utf8"));
-  assert.equal(pkg.version, "0.0.6");
+  assert.equal(pkg.version, "0.0.7");
   assert.match(pkg.dependencies.next, /16/);
   assert.ok(pkg.dependencies["@supabase/ssr"]);
 });

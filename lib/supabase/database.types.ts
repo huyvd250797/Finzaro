@@ -259,6 +259,137 @@ export type Database = {
           }
         ];
       };
+
+      recurring_rules: {
+        Row: {
+          id: string;
+          user_id: string;
+          transaction_type: string;
+          title: string;
+          category_id: string | null;
+          from_account_id: string | null;
+          to_account_id: string | null;
+          from_amount_minor: number | null;
+          to_amount_minor: number | null;
+          notes: string | null;
+          frequency: string;
+          interval_count: number;
+          start_date: string;
+          end_date: string | null;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          transaction_type: string;
+          title: string;
+          category_id?: string | null;
+          from_account_id?: string | null;
+          to_account_id?: string | null;
+          from_amount_minor?: number | null;
+          to_amount_minor?: number | null;
+          notes?: string | null;
+          frequency: string;
+          interval_count?: number;
+          start_date: string;
+          end_date?: string | null;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          transaction_type?: string;
+          title?: string;
+          category_id?: string | null;
+          from_account_id?: string | null;
+          to_account_id?: string | null;
+          from_amount_minor?: number | null;
+          to_amount_minor?: number | null;
+          notes?: string | null;
+          frequency?: string;
+          interval_count?: number;
+          start_date?: string;
+          end_date?: string | null;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "recurring_rules_category_id_fkey";
+            columns: ["category_id"];
+            isOneToOne: false;
+            referencedRelation: "categories";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "recurring_rules_from_account_id_fkey";
+            columns: ["from_account_id"];
+            isOneToOne: false;
+            referencedRelation: "accounts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "recurring_rules_to_account_id_fkey";
+            columns: ["to_account_id"];
+            isOneToOne: false;
+            referencedRelation: "accounts";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      recurring_occurrences: {
+        Row: {
+          id: string;
+          user_id: string;
+          recurring_rule_id: string;
+          due_date: string;
+          status: string;
+          transaction_id: string | null;
+          completed_at: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          recurring_rule_id: string;
+          due_date: string;
+          status: string;
+          transaction_id?: string | null;
+          completed_at?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          recurring_rule_id?: string;
+          due_date?: string;
+          status?: string;
+          transaction_id?: string | null;
+          completed_at?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "recurring_occurrences_recurring_rule_id_fkey";
+            columns: ["recurring_rule_id"];
+            isOneToOne: false;
+            referencedRelation: "recurring_rules";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "recurring_occurrences_transaction_id_fkey";
+            columns: ["transaction_id"];
+            isOneToOne: false;
+            referencedRelation: "transactions";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
       profiles: {
         Row: {
           avatar_url: string | null;
@@ -345,6 +476,15 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
+
+      post_recurring_occurrence_v007: {
+        Args: { p_rule_id: string; p_due_date: string; p_status: string };
+        Returns: string;
+      };
+      undo_recurring_occurrence_v007: {
+        Args: { p_occurrence_id: string };
+        Returns: boolean;
+      };
       create_financial_transaction_v004: {
         Args: {
           p_category_label?: string | null;

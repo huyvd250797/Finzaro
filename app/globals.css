@@ -49,3 +49,9 @@ a { color: inherit; text-decoration: none; }
 @media (display-mode: standalone) {
   .pwa-only-safe { padding-top: env(safe-area-inset-top); }
 }
+
+@keyframes finzaro-progress {
+  0% { transform: translateX(-120%); }
+  55% { transform: translateX(90%); }
+  100% { transform: translateX(240%); }
+}

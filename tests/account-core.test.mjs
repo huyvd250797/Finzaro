@@ -40,7 +40,7 @@ test("Dashboard total balance is sourced from Account Core through ledger loader
   assert.match(overview, /formatMinorMoney/);
 });
 
-test("current app version remains centralized after Budget Engine", () => {
-  assert.match(version, /APP_VERSION = "0\.0\.6"/);
-  assert.match(version, /Budget Engine/);
+test("current app version remains centralized after Recurring & Calendar", () => {
+  assert.match(version, /APP_VERSION = "0\.0\.7"/);
+  assert.match(version, /Recurring Transactions & Financial Calendar/);
 });

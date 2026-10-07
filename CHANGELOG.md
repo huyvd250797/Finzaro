@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.0.7 — Recurring Transactions & Financial Calendar
+
+- Added Supabase `recurring_rules` and `recurring_occurrences` with per-user RLS.
+- Added weekly/monthly/yearly schedule projection with interval support and end dates.
+- Added recurring Income, Expense and Transfer rules with category/account ownership validation.
+- Added Financial Calendar month view with Upcoming, Due, Overdue, Paid and Skipped states.
+- Added authenticated `post_recurring_occurrence_v007` RPC that creates a real Transaction Core ledger transaction when a due item is confirmed.
+- Added undo flow that reverses the linked ledger transaction when applicable.
+- Added pause/resume lifecycle for recurring rules.
+- Added upcoming recurring summary to Dashboard and mobile navigation shortcut to Financial Calendar.
+- Optimized authenticated server work by request-deduplicating `requireUser()` and removing the redundant `getUser()` round-trip.
+- Added instant local modal opening for high-frequency create flows to eliminate ~1s perceived form-opening delay.
+- Added `useFormStatus()` loading labels/spinners for Login, Register, Create Account, Transaction, Category, Budget and Recurring actions.
+- Added route navigation progress and dashboard loading skeletons for immediate visual feedback.
+- Preserved proactive iPhone PWA update prompt and centralized version metadata.
+- Updated current version to `V0.0.7 · Recurring Transactions & Financial Calendar`.
+- Defined V0.0.8 Reports & Financial Insights as the next release.
+
 ## 0.0.6 — Budget Engine
 
 - Added real Supabase `budgets` with monthly/category/currency scope and per-user RLS.

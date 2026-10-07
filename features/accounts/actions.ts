@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { isAccountType } from "@/features/accounts/constants";
 import { parseMajorAmountToMinor } from "@/features/accounts/money";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/lib/supabase/database.types";
 
 function text(formData: FormData, key: string) {
   return String(formData.get(key) ?? "").trim();
@@ -30,11 +32,10 @@ function metadataPayload(formData: FormData) {
   };
 }
 
-async function createPayload(formData: FormData) {
+async function createPayload(formData: FormData, supabase: SupabaseClient<Database>) {
   const metadata = metadataPayload(formData);
   const currencyCode = text(formData, "currency_code").toUpperCase();
   const balanceInput = text(formData, "balance");
-  const { supabase } = await requireUser();
   const { data: currency, error } = await supabase
     .from("supported_currencies")
     .select("code, decimal_digits")
@@ -57,7 +58,7 @@ async function createPayload(formData: FormData) {
 export async function createAccountAction(formData: FormData) {
   try {
     const { supabase, userId } = await requireUser();
-    const payload = await createPayload(formData);
+    const payload = await createPayload(formData, supabase);
     const { error } = await supabase.from("accounts").insert({ ...payload, user_id: userId });
     if (error) throw error;
 
@@ -106,7 +107,12 @@ export async function setAccountArchivedAction(formData: FormData) {
   const { supabase, userId } = await requireUser();
   const { data, error } = await supabase.from("accounts").update({ is_archived: archived }).eq("id", accountId).eq("user_id", userId).select("id").maybeSingle();
 
-  if (error || !data) redirect(destination("error", "Không thể thay đổi trạng thái tài khoản."));
+  if (error || !data) {
+    const message = error?.message?.includes("Pause recurring rules")
+      ? "Tài khoản đang được dùng bởi lịch định kỳ đang hoạt động. Hãy tạm dừng lịch đó trước khi lưu trữ tài khoản."
+      : "Không thể thay đổi trạng thái tài khoản.";
+    redirect(destination("error", message));
+  }
   revalidatePath("/accounts");
   revalidatePath("/overview");
   revalidatePath("/transactions");

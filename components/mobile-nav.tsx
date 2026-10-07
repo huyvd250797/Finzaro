@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Plus, ReceiptText, Target, WalletCards } from "lucide-react";
+import { CalendarClock, LayoutDashboard, Plus, ReceiptText, WalletCards } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const items = [
@@ -10,7 +10,7 @@ const items = [
   { href: "/accounts", label: "Tài khoản", icon: WalletCards },
   { href: "/transactions?new=expense", label: "Thêm", icon: Plus, main: true },
   { href: "/transactions", label: "Giao dịch", icon: ReceiptText },
-  { href: "/budgets", label: "Ngân sách", icon: Target }
+  { href: "/recurring", label: "Lịch", icon: CalendarClock }
 ];
 
 export function MobileNav() {
@@ -22,7 +22,7 @@ export function MobileNav() {
           const Icon = item.icon;
           const active = !item.main && pathname === item.href;
           return (
-            <Link key={item.label} href={item.href} className="flex min-h-14 flex-col items-center justify-center gap-1 text-[10px] font-medium">
+            <Link key={item.label} href={item.href} prefetch className="flex min-h-14 flex-col items-center justify-center gap-1 text-[10px] font-medium active:scale-[0.98]">
               <span className={cn("grid place-items-center transition", item.main ? "-mt-7 size-12 rounded-full bg-[var(--primary)] text-white shadow-lg shadow-emerald-500/25" : active ? "text-[var(--primary)]" : "text-[var(--muted-foreground)]") }>
                 <Icon className={item.main ? "size-5" : "size-4.5"} />
               </span>

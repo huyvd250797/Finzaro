@@ -6,7 +6,6 @@ import {
   ArrowRight,
   CalendarRange,
   CheckCircle2,
-  Copy,
   Gauge,
   Pencil,
   Plus,
@@ -15,7 +14,9 @@ import {
   X
 } from "lucide-react";
 import { AuthMessage } from "@/components/auth-message";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { PendingSubmitButton } from "@/components/pending-submit-button";
+import { InstantReveal } from "@/components/instant-reveal";
+import { Card, CardContent } from "@/components/ui/card";
 import { minorToMajorInput } from "@/features/accounts/money";
 import {
   copyPreviousMonthBudgetsAction,
@@ -78,7 +79,7 @@ function BudgetForm({
             <h2 className="mt-1 text-lg font-black">{editing ? `Sửa ngân sách ${editing.category.name}` : `Thiết lập ngân sách ${monthLabel(month)}`}</h2>
             <p className="mt-1 text-sm text-[var(--muted-foreground)]">Ngân sách danh mục cha tự động tính cả chi tiêu của các subcategory bên dưới.</p>
           </div>
-          <Link href={`/budgets?month=${month}`} aria-label="Đóng" className="grid size-9 place-items-center rounded-xl border border-[var(--border)] text-[var(--muted-foreground)]"><X className="size-4" /></Link>
+          <Link href={`/budgets?month=${month}`} data-instant-close aria-label="Đóng" className="grid size-9 place-items-center rounded-xl border border-[var(--border)] text-[var(--muted-foreground)]"><X className="size-4" /></Link>
         </div>
 
         <form action={editing ? updateBudgetAction : createBudgetAction} className="mt-5 grid gap-4 md:grid-cols-3">
@@ -130,8 +131,8 @@ function BudgetForm({
           </label>
 
           <div className="flex justify-end gap-2 md:col-span-3">
-            <Link href={`/budgets?month=${month}`} className="inline-flex h-10 items-center rounded-xl border border-[var(--border)] px-4 text-sm font-bold">Hủy</Link>
-            <button type="submit" className="inline-flex h-10 items-center rounded-xl bg-[var(--primary)] px-5 text-sm font-bold text-white">{editing ? "Lưu hạn mức" : "Tạo ngân sách"}</button>
+            <Link href={`/budgets?month=${month}`} data-instant-close className="inline-flex h-10 items-center rounded-xl border border-[var(--border)] px-4 text-sm font-bold">Hủy</Link>
+            <PendingSubmitButton idleLabel={editing ? "Lưu hạn mức" : "Tạo ngân sách"} pendingLabel={editing ? "Đang lưu..." : "Đang tạo ngân sách..."} className="h-10 rounded-xl bg-[var(--primary)] px-5 text-sm font-bold text-white" />
           </div>
         </form>
       </CardContent>
@@ -181,9 +182,9 @@ export default async function BudgetsPage({ searchParams }: { searchParams: Sear
         <div className="flex flex-wrap gap-2">
           <form action={copyPreviousMonthBudgetsAction}>
             <input type="hidden" name="month" value={month} />
-            <button type="submit" className="inline-flex h-10 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-3.5 text-sm font-bold"><Copy className="size-4" /> Sao chép tháng trước</button>
+            <PendingSubmitButton idleLabel="Sao chép tháng trước" pendingLabel="Đang sao chép..." className="h-10 rounded-xl border border-[var(--border)] bg-[var(--card)] px-3.5 text-sm font-bold" />
           </form>
-          <Link href={`/budgets?month=${month}&new=1`} className="inline-flex h-10 items-center gap-2 rounded-xl bg-[var(--primary)] px-4 text-sm font-bold text-white"><Plus className="size-4" /> Ngân sách mới</Link>
+          <InstantReveal label="Ngân sách mới" initialOpen={params.new === "1"}><BudgetForm month={month} categories={categories} currencies={ledger.currencies} defaultCurrency={defaultCurrency} /></InstantReveal>
         </div>
       </div>
 
@@ -200,7 +201,7 @@ export default async function BudgetsPage({ searchParams }: { searchParams: Sear
       </div>
 
       <AuthMessage error={params.error} message={params.message} />
-      {(params.new === "1" || editing) && <BudgetForm month={month} categories={categories} currencies={ledger.currencies} defaultCurrency={defaultCurrency} editing={editing} />}
+      {editing && <BudgetForm month={month} categories={categories} currencies={ledger.currencies} defaultCurrency={defaultCurrency} editing={editing} />}
 
       <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Card><CardContent><p className="text-xs font-bold uppercase tracking-wide text-[var(--muted-foreground)]">Đã phân bổ · {defaultCurrency}</p><p className="mt-3 text-2xl font-black">{formatMinorMoney(summary.allocated, defaultCurrency, defaultDigits)}</p><p className="mt-1 text-xs text-[var(--muted-foreground)]">{summary.count} ngân sách đang hoạt động</p></CardContent></Card>

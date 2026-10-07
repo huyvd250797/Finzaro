@@ -142,7 +142,12 @@ export async function setCategoryArchivedAction(formData: FormData) {
     .eq("user_id", userId)
     .select("id")
     .maybeSingle();
-  if (error || !data) redirect(destination("error", "Không thể thay đổi trạng thái danh mục."));
+  if (error || !data) {
+    const message = error?.message?.includes("Pause recurring rules")
+      ? "Danh mục đang được dùng bởi lịch định kỳ đang hoạt động. Hãy tạm dừng lịch đó trước khi lưu trữ danh mục."
+      : "Không thể thay đổi trạng thái danh mục.";
+    redirect(destination("error", message));
+  }
 
   revalidatePath("/categories");
   revalidatePath("/transactions");

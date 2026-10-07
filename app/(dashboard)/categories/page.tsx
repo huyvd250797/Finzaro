@@ -1,6 +1,8 @@
 import Link from "next/link";
-import { Archive, ChevronRight, Plus, RotateCcw, Settings2, Shapes, X } from "lucide-react";
+import { Archive, ChevronRight, RotateCcw, Settings2, Shapes, X } from "lucide-react";
 import { AuthMessage } from "@/components/auth-message";
+import { PendingSubmitButton } from "@/components/pending-submit-button";
+import { InstantReveal } from "@/components/instant-reveal";
 import { CategoryIconPicker } from "@/components/category-icon-picker";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { createCategoryAction, setCategoryArchivedAction, updateCategoryAction } from "@/features/categories/actions";
@@ -40,7 +42,7 @@ function CategoryForm({
             <h2 className="mt-1 text-lg font-black">{editing ? `Sửa ${editing.name}` : `Thêm danh mục ${CATEGORY_TYPE_LABELS[type].toLowerCase()}`}</h2>
             <p className="mt-1 text-sm text-[var(--muted-foreground)]">Chọn icon riêng và có thể đặt dưới một danh mục cha cùng loại.</p>
           </div>
-          <Link href="/categories" aria-label="Đóng" className="grid size-9 place-items-center rounded-xl border border-[var(--border)] text-[var(--muted-foreground)]"><X className="size-4" /></Link>
+          <Link href="/categories" data-instant-close aria-label="Đóng" className="grid size-9 place-items-center rounded-xl border border-[var(--border)] text-[var(--muted-foreground)]"><X className="size-4" /></Link>
         </div>
 
         <form action={action} className="mt-5 grid gap-4 md:grid-cols-2">
@@ -66,8 +68,8 @@ function CategoryForm({
           </div>
 
           <div className="flex justify-end gap-2 md:col-span-2">
-            <Link href="/categories" className="inline-flex h-10 items-center rounded-xl border border-[var(--border)] px-4 text-sm font-bold">Hủy</Link>
-            <button type="submit" className="inline-flex h-10 items-center rounded-xl bg-[var(--primary)] px-5 text-sm font-bold text-white">{editing ? "Lưu thay đổi" : "Tạo danh mục"}</button>
+            <Link href="/categories" data-instant-close className="inline-flex h-10 items-center rounded-xl border border-[var(--border)] px-4 text-sm font-bold">Hủy</Link>
+            <PendingSubmitButton idleLabel={editing ? "Lưu thay đổi" : "Tạo danh mục"} pendingLabel={editing ? "Đang lưu..." : "Đang tạo danh mục..."} className="h-10 rounded-xl bg-[var(--primary)] px-5 text-sm font-bold text-white" />
           </div>
         </form>
       </CardContent>
@@ -88,7 +90,7 @@ function CategorySection({ type, categories, showArchived }: { type: CategoryTyp
           <h2 className="font-bold">{CATEGORY_TYPE_LABELS[type]}</h2>
           <p className="mt-1 text-xs text-[var(--muted-foreground)]">{visible.length} danh mục {showArchived ? "(gồm đã lưu trữ)" : "đang hoạt động"}</p>
         </div>
-        <Link href={`/categories?new=${type}`} className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-[var(--primary)] px-3 text-xs font-bold text-white"><Plus className="size-3.5" /> Thêm</Link>
+        <InstantReveal label="Thêm" icon={false}><CategoryForm type={type} categories={categories} /></InstantReveal>
       </CardHeader>
       <CardContent className="space-y-2">
         {visible.length === 0 ? (
