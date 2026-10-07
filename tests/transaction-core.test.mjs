@@ -59,7 +59,7 @@ test("transaction UI and dashboard read real ledger data", () => {
   assert.doesNotMatch(overview, /demo-data/);
 });
 
-test("current app version is V0.0.9 Savings Goals", () => {
-  assert.match(version, /APP_VERSION = "0\.0\.9"/);
-  assert.match(version, /Savings Goals/);
+test("current app version is V0.0.10 Interest & Deposit Manager", () => {
+  assert.match(version, /APP_VERSION = "0\.0\.10"/);
+  assert.match(version, /Interest & Deposit Manager/);
 });

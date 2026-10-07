@@ -8,6 +8,7 @@ import { TransactionList } from "@/components/transaction-list";
 import { CategoryIcon } from "@/features/categories/icons";
 import { budgetProgress, budgetSummary, loadBudgets, monthStartFromKey } from "@/features/budgets/data";
 import { loadSavingsGoals, savingsGoalProgress, savingsGoalSummary } from "@/features/goals/data";
+import { depositProjections, depositSummary, loadDeposits } from "@/features/deposits/data";
 import { requireUser } from "@/lib/auth";
 import { loadRecurringData, projectRecurringOccurrences, todayInTimeZone as recurringToday } from "@/features/recurring/data";
 import type { AccountType } from "@/features/accounts/constants";
@@ -32,16 +33,19 @@ export default async function OverviewPage() {
   const totalMinor = accounts.filter((account) => account.currency_code === defaultCurrency).reduce((sum, account) => sum + account.current_balance_minor, 0);
   const currentMonth = currentMonthKey(timeZone);
   const recurringTodayKey = recurringToday(timeZone);
-  const [currentBudgets, recurring, goalData] = await Promise.all([
+  const [currentBudgets, recurring, goalData, depositData] = await Promise.all([
     loadBudgets(supabase, userId, monthStartFromKey(currentMonth), false),
     loadRecurringData(supabase, userId),
-    loadSavingsGoals(supabase, userId, false)
+    loadSavingsGoals(supabase, userId, false),
+    loadDeposits(supabase, userId, false)
   ]);
   const budgetRows = budgetProgress(currentBudgets, ledger.transactions, ledger.categories);
   const budgetState = budgetSummary(budgetRows, defaultCurrency);
   const goalProgress = savingsGoalProgress(goalData.goals, goalData.entries, goalData.accounts, recurringTodayKey);
   const goalState = savingsGoalSummary(goalProgress, defaultCurrency);
   const dashboardGoals = goalProgress.filter((goal) => !goal.is_archived && goal.currency_code === defaultCurrency).slice(0, 3);
+  const depositRows = depositProjections(depositData.deposits, depositData.entries, depositData.accounts, recurringTodayKey);
+  const depositState = depositSummary(depositRows, defaultCurrency);
   const current = monthTotals(ledger.transactions, defaultCurrency, currentMonth);
   const previous = monthTotals(ledger.transactions, defaultCurrency, months.at(-2)?.key ?? currentMonth);
   const series = cashflowSeries(ledger.transactions, defaultCurrency, timeZone);
@@ -105,6 +109,17 @@ export default async function OverviewPage() {
             <Link href="/goals" className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[var(--border)] px-3 text-xs font-bold">Mở mục tiêu <ArrowRight className="size-3.5" /></Link>
           </div>
           {dashboardGoals.length > 0 && <div className="mt-4 grid gap-2 sm:grid-cols-3">{dashboardGoals.map((goal) => <div key={goal.id} className="rounded-xl border border-[var(--border)] p-3"><div className="flex items-center gap-2"><span className="grid size-8 place-items-center rounded-lg bg-[var(--sidebar-accent)] text-[var(--primary)]"><CategoryIcon name={goal.icon_name} className="size-3.5" /></span><span className="min-w-0 flex-1 truncate text-xs font-black">{goal.name}</span><span className="text-[10px] font-black text-[var(--muted-foreground)]">{goal.percent}%</span></div><div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[var(--muted)]"><div className={`h-full rounded-full ${goal.status === "behind" || goal.status === "overdue" ? "bg-amber-500" : goal.status === "completed" ? "bg-emerald-500" : "bg-[var(--primary)]"}`} style={{width:`${Math.max(0, Math.min(100, goal.percent))}%`}} /></div></div>)}</div>}
+        </CardContent>
+      </Card>
+
+      <Card className="mt-4">
+        <CardContent className="flex flex-wrap items-center gap-4 p-5">
+          <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-[var(--sidebar-accent)] text-[var(--primary)]"><Landmark className="size-5" /></div>
+          <div className="min-w-[180px] flex-1">
+            <div className="flex flex-wrap items-center gap-2"><h2 className="font-black">Tiền gửi & lãi suất</h2>{depositState.dueSoon > 0 && <span className="rounded-lg bg-amber-500/10 px-2 py-1 text-[10px] font-black uppercase text-amber-500">{depositState.dueSoon} đáo hạn cần chú ý</span>}</div>
+            <p className="mt-1 text-xs text-[var(--muted-foreground)]">{depositState.count > 0 ? `Gốc ${formatMinorMoney(depositState.principal, defaultCurrency, digits)} · Lãi dự kiến ${formatMinorMoney(depositState.projectedInterest, defaultCurrency, digits)}${depositState.next ? ` · gần nhất ${depositState.next.maturity_date.split("-").reverse().join("/")}` : ""}` : `Chưa có khoản tiền gửi nào bằng ${defaultCurrency}.`}</p>
+          </div>
+          <Link href="/deposits" className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[var(--border)] px-3 text-xs font-bold">Quản lý tiền gửi <ArrowRight className="size-3.5" /></Link>
         </CardContent>
       </Card>
 

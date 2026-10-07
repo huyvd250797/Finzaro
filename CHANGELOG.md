@@ -1,5 +1,18 @@
 # Changelog
 
+## V0.0.10 — Interest & Deposit Manager
+
+- Added real Supabase `deposits` and `deposit_interest_entries` with per-user RLS.
+- Added principal, annual rate, term, start/maturity dates, interest method, auto-renew and linked account.
+- Added projected simple-interest, monthly-compound and monthly-payout planning models.
+- Added realized interest/tax/fee/adjustment history without silently mutating Account Ledger.
+- Added DB validation for maturity dates, linked-account currency/ownership and account archive guard.
+- Added term comparison calculator for 3/6/12/24 months.
+- Added Deposit Manager dashboard summary, due-soon warnings and desktop/mobile navigation.
+- Preserved PWA Auth Bootstrap, update prompt, server-error recovery and pending-action feedback.
+- Updated current version to `V0.0.10 · Interest & Deposit Manager`.
+- Defined V0.0.11 Loan & Debt Manager as the next release.
+
 ### V0.0.9 — Deploy build fix
 
 - Fixed TypeScript inference in `app/api/reports/export/route.ts`: CSV rows now explicitly accept both `string` and `number` cells.

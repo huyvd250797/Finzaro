@@ -57,7 +57,7 @@ test("dashboard and navigation surface Savings Goals", () => {
   assert.match(overview, /loadSavingsGoals/);
   assert.match(overview, /Mục tiêu tiết kiệm/);
   assert.match(sidebar, /\/goals/);
-  assert.match(sidebar, /Interest & Deposit Manager/);
+  assert.match(sidebar, /Loan & Debt Manager/);
 });
 
 test("V0.0.9 preserves proactive PWA updates", () => {
@@ -66,7 +66,7 @@ test("V0.0.9 preserves proactive PWA updates", () => {
   assert.match(pwa, /SKIP_WAITING/);
 });
 
-test("current app version is V0.0.9 Savings Goals", () => {
-  assert.match(version, /APP_VERSION = "0\.0\.9"/);
-  assert.match(version, /Savings Goals/);
+test("current app version is V0.0.10 Interest & Deposit Manager", () => {
+  assert.match(version, /APP_VERSION = "0\.0\.10"/);
+  assert.match(version, /Interest & Deposit Manager/);
 });

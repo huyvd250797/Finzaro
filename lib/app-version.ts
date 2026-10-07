@@ -1,3 +1,3 @@
-export const APP_VERSION = "0.0.9";
+export const APP_VERSION = "0.0.10";
 export const APP_VERSION_LABEL = `V${APP_VERSION}`;
-export const APP_RELEASE_NAME = "Savings Goals";
+export const APP_RELEASE_NAME = "Interest & Deposit Manager";

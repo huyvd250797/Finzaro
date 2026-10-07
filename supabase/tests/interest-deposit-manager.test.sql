@@ -1,0 +1,12 @@
+begin;
+select plan(8);
+select has_table('public', 'deposits', 'deposits exists');
+select has_table('public', 'deposit_interest_entries', 'deposit interest entries exists');
+select has_column('public', 'deposits', 'annual_rate_percent', 'deposit annual rate exists');
+select has_column('public', 'deposits', 'maturity_date', 'deposit maturity exists');
+select has_column('public', 'deposits', 'auto_renew', 'auto renew exists');
+select has_column('public', 'deposit_interest_entries', 'transaction_id', 'interest entry transaction link exists');
+select policies_are('public', 'deposits', array['users can insert own deposits','users can read own deposits','users can update own deposits'], 'deposit policies are explicit');
+select policies_are('public', 'deposit_interest_entries', array['users can delete own deposit interest entries','users can insert own deposit interest entries','users can read own deposit interest entries'], 'entry policies are explicit');
+select * from finish();
+rollback;

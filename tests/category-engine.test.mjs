@@ -61,7 +61,7 @@ test("Transaction Core is upgraded to structured category IDs", () => {
   assert.match(txPage, /name="category"/);
 });
 
-test("current app version is V0.0.9 Savings Goals", () => {
-  assert.match(version, /APP_VERSION = "0\.0\.9"/);
-  assert.match(version, /Savings Goals/);
+test("current app version is V0.0.10 Interest & Deposit Manager", () => {
+  assert.match(version, /APP_VERSION = "0\.0\.10"/);
+  assert.match(version, /Interest & Deposit Manager/);
 });

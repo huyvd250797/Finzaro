@@ -501,6 +501,135 @@ export type Database = {
           }
         ];
       };
+      deposits: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          institution_name: string | null;
+          currency_code: string;
+          principal_minor: number;
+          annual_rate_percent: number;
+          term_months: number;
+          start_date: string;
+          maturity_date: string;
+          interest_method: string;
+          auto_renew: boolean;
+          linked_account_id: string | null;
+          icon_name: string;
+          notes: string | null;
+          is_archived: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          name: string;
+          institution_name?: string | null;
+          currency_code: string;
+          principal_minor: number;
+          annual_rate_percent: number;
+          term_months: number;
+          start_date: string;
+          maturity_date: string;
+          interest_method?: string;
+          auto_renew?: boolean;
+          linked_account_id?: string | null;
+          icon_name?: string;
+          notes?: string | null;
+          is_archived?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          name?: string;
+          institution_name?: string | null;
+          currency_code?: string;
+          principal_minor?: number;
+          annual_rate_percent?: number;
+          term_months?: number;
+          start_date?: string;
+          maturity_date?: string;
+          interest_method?: string;
+          auto_renew?: boolean;
+          linked_account_id?: string | null;
+          icon_name?: string;
+          notes?: string | null;
+          is_archived?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "deposits_currency_code_fkey";
+            columns: ["currency_code"];
+            isOneToOne: false;
+            referencedRelation: "supported_currencies";
+            referencedColumns: ["code"];
+          },
+          {
+            foreignKeyName: "deposits_linked_account_id_fkey";
+            columns: ["linked_account_id"];
+            isOneToOne: false;
+            referencedRelation: "accounts";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      deposit_interest_entries: {
+        Row: {
+          id: string;
+          user_id: string;
+          deposit_id: string;
+          entry_type: string;
+          amount_minor: number;
+          entry_date: string;
+          transaction_id: string | null;
+          notes: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          deposit_id: string;
+          entry_type: string;
+          amount_minor: number;
+          entry_date?: string;
+          transaction_id?: string | null;
+          notes?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          deposit_id?: string;
+          entry_type?: string;
+          amount_minor?: number;
+          entry_date?: string;
+          transaction_id?: string | null;
+          notes?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "deposit_interest_entries_deposit_id_fkey";
+            columns: ["deposit_id"];
+            isOneToOne: false;
+            referencedRelation: "deposits";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "deposit_interest_entries_transaction_id_fkey";
+            columns: ["transaction_id"];
+            isOneToOne: false;
+            referencedRelation: "transactions";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
       profiles: {
         Row: {
           avatar_url: string | null;

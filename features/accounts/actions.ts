@@ -110,7 +110,9 @@ export async function setAccountArchivedAction(formData: FormData) {
   if (error || !data) {
     const message = error?.message?.includes("Pause recurring rules")
       ? "Tài khoản đang được dùng bởi lịch định kỳ đang hoạt động. Hãy tạm dừng lịch đó trước khi lưu trữ tài khoản."
-      : "Không thể thay đổi trạng thái tài khoản.";
+      : error?.message?.includes("active deposits")
+        ? "Tài khoản đang được liên kết với khoản tiền gửi đang hoạt động. Hãy lưu trữ hoặc gỡ liên kết tiền gửi trước."
+        : "Không thể thay đổi trạng thái tài khoản.";
     redirect(destination("error", message));
   }
   revalidatePath("/accounts");

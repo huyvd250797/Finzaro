@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, PiggyBank, Plus, ReceiptText, WalletCards } from "lucide-react";
+import { Landmark, LayoutDashboard, Plus, ReceiptText, WalletCards } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const items = [
@@ -10,7 +10,7 @@ const items = [
   { href: "/accounts", label: "Tài khoản", icon: WalletCards },
   { href: "/transactions?new=expense", label: "Thêm", icon: Plus, main: true },
   { href: "/transactions", label: "Giao dịch", icon: ReceiptText },
-  { href: "/goals", label: "Mục tiêu", icon: PiggyBank }
+  { href: "/deposits", label: "Tiền gửi", icon: Landmark }
 ];
 
 export function MobileNav() {
