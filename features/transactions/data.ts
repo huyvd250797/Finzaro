@@ -1,6 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/database.types";
 import type { CategoryRow } from "@/features/categories/data";
+import { minorToMajorInput } from "@/features/accounts/money";
+import { formatMinorMoney } from "@/lib/utils";
 
 export type LedgerAccount = {
   id: string;
@@ -222,4 +224,86 @@ export function expenseCategories(transactions: TransactionView[], defaultCurren
   const rows = Array.from(totals.values()).sort((a, b) => b.value - a.value);
   const sum = rows.reduce((total, row) => total + row.value, 0);
   return rows.slice(0, 5).map((row) => ({ ...row, percent: sum > 0 ? Math.max(4, Math.round((row.value / sum) * 100)) : 0 }));
+}
+
+export type QuickTransactionSuggestion = {
+  id: string;
+  kind: "frequent" | "recent";
+  transaction_type: "income" | "expense" | "transfer";
+  title: string;
+  category_id: string | null;
+  category_name: string | null;
+  category_icon_name: string | null;
+  category_icon_color: string | null;
+  from_account_id: string | null;
+  to_account_id: string | null;
+  from_amount: string;
+  to_amount: string;
+  amount_label: string;
+  notes: string;
+  usage_count: number;
+  last_used_date: string;
+};
+
+export function quickTransactionSuggestions(
+  transactions: TransactionView[],
+  currencies: LedgerCurrency[],
+  type: "income" | "expense" | "transfer",
+  limit = 8
+): QuickTransactionSuggestion[] {
+  const candidates = transactions.filter((transaction) => transaction.transaction_type === type).slice(0, 160);
+  const groups = new Map<string, { transaction: TransactionView; count: number }>();
+
+  for (const transaction of candidates) {
+    const fromEntry = transaction.entries.find((entry) => entry.entry_role === "expense" || entry.entry_role === "transfer_out") ?? null;
+    const toEntry = transaction.entries.find((entry) => entry.entry_role === "income" || entry.entry_role === "transfer_in") ?? null;
+    const signature = [
+      type,
+      transaction.title.trim().toLocaleLowerCase("vi"),
+      transaction.category_id ?? "",
+      fromEntry?.account_id ?? "",
+      toEntry?.account_id ?? "",
+      Math.abs(fromEntry?.amount_minor ?? 0),
+      Math.abs(toEntry?.amount_minor ?? 0),
+      fromEntry?.currency_code ?? "",
+      toEntry?.currency_code ?? ""
+    ].join("|");
+    const existing = groups.get(signature);
+    if (existing) existing.count += 1;
+    else groups.set(signature, { transaction, count: 1 });
+  }
+
+  const toSuggestion = (item: { transaction: TransactionView; count: number }, kind: "frequent" | "recent"): QuickTransactionSuggestion => {
+    const transaction = item.transaction;
+    const fromEntry = transaction.entries.find((entry) => entry.entry_role === "expense" || entry.entry_role === "transfer_out") ?? null;
+    const toEntry = transaction.entries.find((entry) => entry.entry_role === "income" || entry.entry_role === "transfer_in") ?? null;
+    const amountEntry = type === "income" ? toEntry : fromEntry;
+    const amountCurrency = amountEntry?.currency_code ?? toEntry?.currency_code ?? fromEntry?.currency_code ?? "VND";
+    const digits = currencyDigits(currencies, amountCurrency);
+    const major = (entry: LedgerEntry | null) => entry ? minorToMajorInput(Math.abs(entry.amount_minor), currencyDigits(currencies, entry.currency_code)) : "";
+    return {
+      id: `${kind}:${transaction.id}`,
+      kind,
+      transaction_type: type,
+      title: transaction.title,
+      category_id: transaction.category_id,
+      category_name: transaction.category?.name ?? transaction.category_label,
+      category_icon_name: transaction.category?.icon_name ?? null,
+      category_icon_color: transaction.category?.icon_color ?? null,
+      from_account_id: fromEntry?.account_id ?? null,
+      to_account_id: toEntry?.account_id ?? null,
+      from_amount: major(fromEntry),
+      to_amount: major(toEntry),
+      amount_label: amountEntry ? formatMinorMoney(Math.abs(amountEntry.amount_minor), amountCurrency, digits) : "—",
+      notes: transaction.notes ?? "",
+      usage_count: item.count,
+      last_used_date: transaction.transaction_date
+    };
+  };
+
+  const grouped = Array.from(groups.values());
+  const frequent = grouped.filter((item) => item.count > 1).sort((a, b) => b.count - a.count || b.transaction.transaction_date.localeCompare(a.transaction.transaction_date)).slice(0, Math.min(4, limit));
+  const usedTransactions = new Set(frequent.map((item) => item.transaction.id));
+  const recent = grouped.filter((item) => !usedTransactions.has(item.transaction.id)).sort((a, b) => b.transaction.transaction_date.localeCompare(a.transaction.transaction_date) || b.transaction.created_at.localeCompare(a.transaction.created_at)).slice(0, Math.max(0, limit - frequent.length));
+  return [...frequent.map((item) => toSuggestion(item, "frequent")), ...recent.map((item) => toSuggestion(item, "recent"))];
 }

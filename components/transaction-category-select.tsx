@@ -11,14 +11,32 @@ type Option = {
   parent_id: string | null;
 };
 
-export function TransactionCategorySelect({ categories, defaultValue }: { categories: Option[]; defaultValue?: string | null }) {
-  const [value, setValue] = useState(defaultValue && categories.some((category) => category.id === defaultValue) ? defaultValue : categories[0]?.id ?? "");
+export function TransactionCategorySelect({
+  categories,
+  defaultValue,
+  value,
+  onValueChange
+}: {
+  categories: Option[];
+  defaultValue?: string | null;
+  value?: string;
+  onValueChange?: (value: string) => void;
+}) {
+  const defaultId = defaultValue && categories.some((category) => category.id === defaultValue) ? defaultValue : categories[0]?.id ?? "";
+  const [internalValue, setInternalValue] = useState(defaultId);
+  const controlled = value !== undefined;
+  const currentValue = controlled ? value : internalValue;
   const categoryById = useMemo(() => new Map(categories.map((category) => [category.id, category])), [categories]);
-  const selected = categoryById.get(value) ?? categories[0];
+  const selected = categoryById.get(currentValue) ?? categories[0];
 
   function label(category: Option) {
     const parent = category.parent_id ? categoryById.get(category.parent_id) : null;
     return parent ? `${parent.name} › ${category.name}` : category.name;
+  }
+
+  function setValue(next: string) {
+    if (!controlled) setInternalValue(next);
+    onValueChange?.(next);
   }
 
   if (categories.length === 0) {
@@ -35,7 +53,7 @@ export function TransactionCategorySelect({ categories, defaultValue }: { catego
       <select
         name="category_id"
         required
-        value={value}
+        value={currentValue}
         onChange={(event) => setValue(event.target.value)}
         className="h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--background)] pl-10 pr-3 text-sm outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--ring)]"
       >

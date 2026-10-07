@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AlertTriangle, ArrowRight, Banknote, CalendarClock, CircleDollarSign, CreditCard, Landmark, PiggyBank, Plus, Scale, Smartphone, Target, TrendingDown, TrendingUp, WalletCards } from "lucide-react";
+import { AlertTriangle, ArrowRight, Banknote, CalendarClock, CircleDollarSign, CreditCard, HeartPulse, Landmark, PiggyBank, Plus, Scale, Smartphone, Target, TrendingDown, TrendingUp, WalletCards } from "lucide-react";
 import { formatMinorMoney } from "@/lib/utils";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { StatCard } from "@/components/stat-card";
@@ -35,13 +35,14 @@ export default async function OverviewPage() {
   const totalMinor = accounts.filter((account) => account.currency_code === defaultCurrency).reduce((sum, account) => sum + account.current_balance_minor, 0);
   const currentMonth = currentMonthKey(timeZone);
   const recurringTodayKey = recurringToday(timeZone);
-  const [currentBudgets, recurring, goalData, depositData, loanData, creditCardData] = await Promise.all([
+  const [currentBudgets, recurring, goalData, depositData, loanData, creditCardData, healthSnapshotResult] = await Promise.all([
     loadBudgets(supabase, userId, monthStartFromKey(currentMonth), false),
     loadRecurringData(supabase, userId),
     loadSavingsGoals(supabase, userId, false),
     loadDeposits(supabase, userId, false),
     loadLoans(supabase, userId, false),
-    loadCreditCards(supabase, userId, false)
+    loadCreditCards(supabase, userId, false),
+    (supabase as any).from("financial_health_snapshots").select("overall_score, data_confidence, snapshot_date").eq("user_id", userId).eq("currency_code", defaultCurrency).order("snapshot_date", { ascending: false }).limit(1).maybeSingle()
   ]);
   const budgetRows = budgetProgress(currentBudgets, ledger.transactions, ledger.categories);
   const budgetState = budgetSummary(budgetRows, defaultCurrency);
@@ -54,6 +55,7 @@ export default async function OverviewPage() {
   const loanState = loanSummary(loanRows, defaultCurrency);
   const creditCardRows = projectCreditCards(creditCardData.cards, creditCardData.statements, creditCardData.payments, creditCardData.accounts, recurringTodayKey);
   const creditCardState = creditCardSummary(creditCardRows, defaultCurrency);
+  const lastHealthSnapshot = healthSnapshotResult?.data ?? null;
   const netWorthAssets = totalMinor + depositState.principal;
   const netWorthLiabilities = loanState.remaining + creditCardState.totalBalance;
   const netWorth = netWorthAssets - netWorthLiabilities;
@@ -94,6 +96,17 @@ export default async function OverviewPage() {
             <p className="mt-1 text-xs text-[var(--muted-foreground)]">Net Worth {formatMinorMoney(netWorth, defaultCurrency, digits)} · Tài sản {formatMinorMoney(netWorthAssets, defaultCurrency, digits)} · Nợ {formatMinorMoney(netWorthLiabilities, defaultCurrency, digits)}</p>
           </div>
           <Link href="/net-worth" className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[var(--border)] px-3 text-xs font-bold">Financial Position <ArrowRight className="size-3.5" /></Link>
+        </CardContent>
+      </Card>
+
+      <Card className="mt-4 fin-card border-sky-500/20">
+        <CardContent className="flex min-w-0 flex-wrap items-center gap-4 p-5">
+          <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-sky-500/10 text-sky-600"><HeartPulse className="size-5" /></div>
+          <div className="min-w-[180px] flex-1">
+            <div className="flex flex-wrap items-center gap-2"><h2 className="font-black">Financial Health</h2>{lastHealthSnapshot && <span className="rounded-lg bg-[var(--muted)] px-2 py-1 text-[10px] font-black uppercase">{lastHealthSnapshot.overall_score}/100</span>}</div>
+            <p className="mt-1 text-xs text-[var(--muted-foreground)]">{lastHealthSnapshot ? `Snapshot gần nhất ${lastHealthSnapshot.snapshot_date.split("-").reverse().join("/")} · confidence ${lastHealthSnapshot.data_confidence}%` : "Mở Financial Health để tính score trực tiếp từ cash flow, budget, debt, credit và Net Worth."}</p>
+          </div>
+          <Link href="/health" className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[var(--border)] px-3 text-xs font-bold">Xem sức khỏe tài chính <ArrowRight className="size-3.5" /></Link>
         </CardContent>
       </Card>
 

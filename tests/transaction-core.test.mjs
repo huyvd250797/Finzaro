@@ -7,6 +7,7 @@ const migration = read("supabase/migrations/20261006150000_transaction_core.sql"
 const actions = read("features/transactions/actions.ts");
 const data = read("features/transactions/data.ts");
 const page = read("app/(dashboard)/transactions/page.tsx");
+const entryForm = read("components/transaction-entry-form.tsx");
 const overview = read("app/(dashboard)/overview/page.tsx");
 const accountActions = read("features/accounts/actions.ts");
 const accountPage = read("app/(dashboard)/accounts/page.tsx");
@@ -49,7 +50,7 @@ test("transaction actions validate accounts and call RPCs", () => {
 
 test("transaction UI and dashboard read real ledger data", () => {
   assert.match(page, /loadLedger/);
-  assert.match(page, /createTransactionAction/);
+  assert.match(entryForm, /createTransactionAction/);
   assert.match(page, /TransactionList/);
   assert.match(data, /from\("transactions"\)/);
   assert.match(data, /transaction_entries\(id, transaction_id, account_id/);
@@ -59,7 +60,7 @@ test("transaction UI and dashboard read real ledger data", () => {
   assert.doesNotMatch(overview, /demo-data/);
 });
 
-test("current app version is V0.1.0 Net Worth & Financial Position", () => {
-  assert.match(version, /APP_VERSION = "0\.1\.0"/);
-  assert.match(version, /Net Worth & Financial Position/);
+test("current app version is V0.2.0 Financial Health Score & Intelligence", () => {
+  assert.match(version, /APP_VERSION = "0\.2\.0"/);
+  assert.match(version, /Financial Health Score & Intelligence/);
 });

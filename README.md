@@ -1,33 +1,32 @@
-# Finzaro V0.1.0 — Net Worth & Financial Position
+# Finzaro V0.2.0 — Financial Health Score & Intelligence
 
-Finzaro là PWA quản lý tài chính cá nhân chạy Next.js + TypeScript + Supabase + Vercel. V0.1.0 hợp nhất Assets/Liabilities thành Net Worth theo từng currency và bắt đầu áp dụng version policy `X.Y.Z` mới.
+Finzaro là PWA quản lý tài chính cá nhân chạy Next.js + TypeScript + Supabase + Vercel. V0.2.0 bổ sung Financial Health Score có giải thích và Quick Transaction Suggestions để nhập giao dịch nhanh hơn.
 
-## Điểm mới V0.1.0
+## Điểm mới V0.2.0
 
-- Trang `/net-worth` với Total Assets, Total Liabilities, Net Worth và Liquid Assets.
-- Breakdown Account / Deposit / Loan / Credit Card.
-- Debt-to-Asset và Liquidity Coverage.
-- Snapshot Net Worth theo ngày + trend 12 snapshot gần nhất.
-- Không double-count Savings Goals.
-- Không tự quy đổi FX.
-- Khôi phục nút `(+)` lớn ở giữa mobile taskbar: 2 chức năng trái, 2 chức năng phải; ngoài cùng bên phải là `Thêm`.
-- Quick-add Expense / Income / Transfer từ nút giữa.
-- Category đã dùng vẫn sửa được tên/icon/màu; có confirm cảnh báo trước khi áp dụng cho lịch sử hiển thị.
-- Fix legacy DB icon allow-list để bộ icon mới có thể lưu thật.
-- Modal/bottom sheet khóa background scroll trên iOS/PWA.
-- Splash dùng đúng Light/Dark mode đã lưu ngay từ first paint.
+- Trang `/health` với Financial Health Score 0–100.
+- 7 subscore có trọng số: Cash Flow, Savings, Budget, Liquidity, Debt, Credit, Net Worth Trend.
+- `Data Confidence` để phân biệt score mạnh/yếu do dữ liệu thiếu.
+- Financial Intelligence dạng rule-based với hành động đề xuất và deep-link tới module liên quan.
+- Health snapshot theo ngày + lịch sử score.
+- Quick transaction suggestions: ưu tiên giao dịch nhập nhiều, sau đó giao dịch gần đây.
+- Chọn suggestion sẽ tự fill title, account, amount, category, notes; ngày vẫn là hôm nay.
+- Người dùng có thể chỉnh lại field rồi lưu hoặc lưu ngay nếu dữ liệu gợi ý đã đúng.
+- Không tạo bảng suggestion riêng; suggestion được suy ra trực tiếp từ ledger.
+- Navigation bổ sung `Sức khỏe tài chính` ở desktop và Bottom Sheet `Thêm` trên mobile.
+- Giữ nguyên toàn bộ PWA, scroll-lock, theme bootstrap và mobile taskbar từ V0.1.0.
 
 ## SQL cần chạy
 
 Supabase → SQL Editor → Run:
 
-`supabase/sql-editor/V0.1.0_net_worth_financial_position.sql`
+`supabase/sql-editor/V0.2.0_financial_health_score.sql`
 
 Verify tùy chọn:
 
-`supabase/sql-editor/V0.1.0_net_worth_financial_position_verify.sql`
+`supabase/sql-editor/V0.2.0_financial_health_score_verify.sql`
 
-Không chạy lại migration cũ nếu database đã ở V0.0.12.
+Không chạy lại migration cũ nếu database đã ở V0.1.0.
 
 ## ENV
 
@@ -45,14 +44,14 @@ npm run build
 
 ## Versioning
 
-Xem `docs/VERSIONING.md`.
+Finzaro dùng `X.Y.Z`:
 
 - `X`: major workflow/architecture change.
 - `Y`: module/feature mới.
 - `Z`: bug/UI/performance/deploy fix.
 
-Vì Net Worth là module mới, release dự kiến `V0.0.13` được đổi thành **V0.1.0**.
+V0.2.0 là feature release nên tăng `Y` từ V0.1.0.
 
 ## Tiếp theo
 
-**Finzaro V0.2.0 — Financial Health Score & Intelligence**: tổng hợp cash flow, budget adherence, emergency liquidity, debt load, credit utilization và Net Worth trend thành bộ chỉ báo sức khỏe tài chính có giải thích, không đưa ra quyết định tài chính thay người dùng.
+**Finzaro V0.3.0 — Forecasting & Scenario Planning**: dự báo dòng tiền, mô phỏng kịch bản thu nhập/chi tiêu/lãi suất, stress-test nghĩa vụ nợ và runway tài chính dựa trên dữ liệu hiện hữu.

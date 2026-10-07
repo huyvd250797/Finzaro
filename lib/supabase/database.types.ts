@@ -777,6 +777,71 @@ export type Database = {
           }
         ];
       };
+      financial_health_snapshots: {
+        Row: {
+          id: string;
+          user_id: string;
+          snapshot_date: string;
+          currency_code: string;
+          overall_score: number;
+          data_confidence: number;
+          cashflow_score: number;
+          savings_score: number;
+          budget_score: number;
+          liquidity_score: number;
+          debt_score: number;
+          credit_score: number;
+          net_worth_score: number;
+          metrics: Json;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          snapshot_date?: string;
+          currency_code: string;
+          overall_score: number;
+          data_confidence: number;
+          cashflow_score: number;
+          savings_score: number;
+          budget_score: number;
+          liquidity_score: number;
+          debt_score: number;
+          credit_score: number;
+          net_worth_score: number;
+          metrics?: Json;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          snapshot_date?: string;
+          currency_code?: string;
+          overall_score?: number;
+          data_confidence?: number;
+          cashflow_score?: number;
+          savings_score?: number;
+          budget_score?: number;
+          liquidity_score?: number;
+          debt_score?: number;
+          credit_score?: number;
+          net_worth_score?: number;
+          metrics?: Json;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "financial_health_snapshots_currency_code_fkey";
+            columns: ["currency_code"];
+            isOneToOne: false;
+            referencedRelation: "supported_currencies";
+            referencedColumns: ["code"];
+          }
+        ];
+      };
       net_worth_snapshots: {
         Row: {
           id: string;

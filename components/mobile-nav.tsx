@@ -12,6 +12,7 @@ import {
   CircleDollarSign,
   CreditCard,
   Ellipsis,
+  HeartPulse,
   Landmark,
   LayoutDashboard,
   PiggyBank,
@@ -36,6 +37,7 @@ const moduleItems = [
   { href: "/loans", label: "Khoản vay", icon: CircleDollarSign },
   { href: "/credit-cards", label: "Thẻ tín dụng", icon: CreditCard },
   { href: "/net-worth", label: "Tài sản ròng", icon: Scale },
+  { href: "/health", label: "Sức khỏe", icon: HeartPulse },
   { href: "/reports", label: "Báo cáo", icon: BarChart3 },
   { href: "/settings", label: "Cài đặt", icon: Settings2 }
 ];

@@ -1,15 +1,16 @@
 import Link from "next/link";
-import { CalendarDays, Filter, Plus, Search, X } from "lucide-react";
+import { Filter, Search, X } from "lucide-react";
 import { AuthMessage } from "@/components/auth-message";
 import { InstantTransactionLauncher } from "@/components/instant-transaction-launcher";
 import { PendingSubmitButton } from "@/components/pending-submit-button";
+import { TransactionEntryForm } from "@/components/transaction-entry-form";
 import { TransactionCategorySelect } from "@/components/transaction-category-select";
 import { TransactionList } from "@/components/transaction-list";
 import { Card, CardContent } from "@/components/ui/card";
 import { minorToMajorInput } from "@/features/accounts/money";
-import { createTransactionAction, updateTransactionAction } from "@/features/transactions/actions";
-import { isTransactionType, TRANSACTION_TYPE_LABELS, type TransactionType } from "@/features/transactions/constants";
-import { currencyDigits, filterTransactions, loadLedger, monthTotals, currentMonthKey, transactionEntry, type LedgerCurrency, type TransactionView } from "@/features/transactions/data";
+import { updateTransactionAction } from "@/features/transactions/actions";
+import { isTransactionType } from "@/features/transactions/constants";
+import { currencyDigits, filterTransactions, loadLedger, monthTotals, currentMonthKey, quickTransactionSuggestions, transactionEntry, type LedgerCurrency, type TransactionView } from "@/features/transactions/data";
 import { requireUser } from "@/lib/auth";
 import { formatMinorMoney } from "@/lib/utils";
 
@@ -17,36 +18,6 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "Giao dịch" };
 
 type SearchParams = Promise<{ new?: string; edit?: string; q?: string; type?: string; account?: string; category?: string; from?: string; to?: string; error?: string; message?: string }>;
-
-function todayInTimeZone(timeZone: string) {
-  const parts = new Intl.DateTimeFormat("en-US", { timeZone, year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date());
-  const value = (type: string) => parts.find((part) => part.type === type)?.value ?? "";
-  return `${value("year")}-${value("month")}-${value("day")}`;
-}
-
-function TransactionForm({ type, accounts, categories, timeZone }: {
-  type: TransactionType;
-  accounts: Array<{ id: string; name: string; currency_code: string; institution_name: string | null }>;
-  categories: Array<{ id: string; name: string; icon_name: string; icon_color: string | null; parent_id: string | null }>;
-  timeZone: string;
-}) {
-  const isTransfer = type === "transfer";
-  return <Card className="border-emerald-500/25 shadow-xl shadow-black/5"><CardContent className="p-5 sm:p-6">
-    <div className="flex items-start justify-between gap-4"><div><p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--primary)]">New transaction</p><h2 className="mt-1 text-lg font-black">{TRANSACTION_TYPE_LABELS[type]}</h2><p className="mt-1 text-xs text-[var(--muted-foreground)]">Ledger và số dư được cập nhật atomic trong PostgreSQL.</p></div><button type="button" data-instant-close aria-label="Đóng" className="grid size-9 shrink-0 place-items-center rounded-xl border border-[var(--border)]"><X className="size-4" /></button></div>
-    {accounts.length === 0 ? <div className="mt-5 rounded-xl border border-dashed border-[var(--border)] p-5 text-center"><p className="text-sm font-bold">Cần ít nhất một tài khoản đang hoạt động</p><Link href="/accounts?new=1" className="mt-3 fin-primary-btn">Tạo tài khoản</Link></div> : !isTransfer && categories.length === 0 ? <div className="mt-5 rounded-xl border border-dashed border-[var(--border)] p-5 text-center"><p className="text-sm font-bold">Chưa có danh mục phù hợp</p><Link href={`/categories?new=${type}`} className="mt-3 fin-primary-btn"><Plus className="size-3.5" /> Tạo danh mục</Link></div> : <form action={createTransactionAction} className="mt-5 grid min-w-0 gap-4 md:grid-cols-2">
-      <input type="hidden" name="transaction_type" value={type} />
-      <label className="md:col-span-2"><span className="field-label">Nội dung</span><input name="title" required maxLength={140} placeholder={type === "income" ? "VD: Lương tháng 10" : type === "expense" ? "VD: Siêu thị cuối tuần" : "VD: Chuyển quỹ dự phòng"} className="fin-input" /></label>
-      {(type === "expense" || type === "transfer") && <label><span className="field-label">Tài khoản nguồn</span><select name="from_account_id" required className="fin-input"><option value="">Chọn tài khoản</option>{accounts.map((account) => <option key={account.id} value={account.id}>{account.name} · {account.currency_code}</option>)}</select></label>}
-      {(type === "income" || type === "transfer") && <label><span className="field-label">{type === "income" ? "Tài khoản nhận" : "Tài khoản đích"}</span><select name="to_account_id" required className="fin-input"><option value="">Chọn tài khoản</option>{accounts.map((account) => <option key={account.id} value={account.id}>{account.name} · {account.currency_code}</option>)}</select></label>}
-      {(type === "expense" || type === "transfer") && <label><span className="field-label">{type === "transfer" ? "Số tiền gửi" : "Số tiền"}</span><input name="from_amount" inputMode="decimal" required placeholder="0" className="fin-input" /></label>}
-      {(type === "income" || type === "transfer") && <label><span className="field-label">{type === "transfer" ? "Số tiền nhận" : "Số tiền"}</span><input name="to_amount" inputMode="decimal" required={type === "income"} placeholder={type === "transfer" ? "Để trống nếu cùng tiền tệ" : "0"} className="fin-input" />{isTransfer && <span className="mt-1 block text-[11px] text-[var(--muted-foreground)]">Khác tiền tệ: nhập số tiền thực nhận.</span>}</label>}
-      {!isTransfer && <label><span className="field-label flex items-center justify-between"><span>Danh mục</span><Link href="/categories" className="normal-case tracking-normal text-[var(--primary)]">Quản lý</Link></span><TransactionCategorySelect categories={categories} /></label>}
-      <label><span className="field-label">Ngày giao dịch</span><div className="relative"><CalendarDays className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[var(--muted-foreground)]" /><input type="date" name="transaction_date" required defaultValue={todayInTimeZone(timeZone)} className="fin-input pl-10" /></div></label>
-      <label className="md:col-span-2"><span className="field-label">Ghi chú</span><textarea name="notes" maxLength={500} rows={3} className="fin-textarea" placeholder="Thông tin thêm..." /></label>
-      <div className="flex justify-end gap-2 md:col-span-2"><button type="button" data-instant-close className="fin-secondary-btn">Hủy</button><PendingSubmitButton idleLabel="Lưu giao dịch" pendingLabel="Đang lưu giao dịch..." className="fin-primary-btn" /></div>
-    </form>}
-  </CardContent></Card>;
-}
 
 function EditTransactionForm({ transaction, accounts, categories, currencies }: {
   transaction: TransactionView;
@@ -85,6 +56,14 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
   const incomeCategories = ledger.categories.filter((category) => category.category_type === "income" && !category.is_archived);
   const expenseCategories = ledger.categories.filter((category) => category.category_type === "expense" && !category.is_archived);
   const filterCategories = ledger.categories.filter((category) => !category.is_archived);
+  const today = (() => {
+    const parts = new Intl.DateTimeFormat("en-US", { timeZone, year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date());
+    const value = (kind: string) => parts.find((part) => part.type === kind)?.value ?? "";
+    return `${value("year")}-${value("month")}-${value("day")}`;
+  })();
+  const expenseSuggestions = quickTransactionSuggestions(ledger.transactions, ledger.currencies, "expense");
+  const incomeSuggestions = quickTransactionSuggestions(ledger.transactions, ledger.currencies, "income");
+  const transferSuggestions = quickTransactionSuggestions(ledger.transactions, ledger.currencies, "transfer");
   const newType = params.new && isTransactionType(params.new) ? params.new : null;
   const editing = params.edit ? ledger.transactions.find((tx) => tx.id === params.edit && (tx.transaction_type === "income" || tx.transaction_type === "expense")) ?? null : null;
   const filtered = filterTransactions(ledger.transactions, { q: params.q, type: params.type, account: params.account, category: params.category, from: params.from, to: params.to });
@@ -92,7 +71,7 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
   const totals = monthTotals(ledger.transactions, defaultCurrency, currentMonthKey(timeZone));
 
   return <div className="mx-auto max-w-[1500px] min-w-0 px-4 py-6 md:px-6 lg:px-8 lg:py-8">
-    <div className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-sm font-semibold text-[var(--primary)]">Money · Ledger</p><h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">Giao dịch</h1><p className="mt-2 max-w-3xl text-sm text-[var(--muted-foreground)]">Thu nhập, chi tiêu, chuyển tiền và chỉnh sửa các khoản thu/chi đã nhập với số dư được tái tính atomic.</p></div><InstantTransactionLauncher initialType={newType} expense={<TransactionForm type="expense" accounts={activeAccounts} categories={expenseCategories} timeZone={timeZone} />} income={<TransactionForm type="income" accounts={activeAccounts} categories={incomeCategories} timeZone={timeZone} />} transfer={<TransactionForm type="transfer" accounts={activeAccounts} categories={[]} timeZone={timeZone} />} /></div>
+    <div className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-sm font-semibold text-[var(--primary)]">Money · Ledger</p><h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">Giao dịch</h1><p className="mt-2 max-w-3xl text-sm text-[var(--muted-foreground)]">Thu nhập, chi tiêu, chuyển tiền và chỉnh sửa các khoản thu/chi đã nhập với số dư được tái tính atomic.</p></div><InstantTransactionLauncher initialType={newType} expense={<TransactionEntryForm type="expense" accounts={activeAccounts} categories={expenseCategories} today={today} suggestions={expenseSuggestions} />} income={<TransactionEntryForm type="income" accounts={activeAccounts} categories={incomeCategories} today={today} suggestions={incomeSuggestions} />} transfer={<TransactionEntryForm type="transfer" accounts={activeAccounts} categories={[]} today={today} suggestions={transferSuggestions} />} /></div>
     <AuthMessage error={params.error} message={params.message} />
     {editing && <EditTransactionForm transaction={editing} accounts={activeAccounts} categories={editing.transaction_type === "income" ? incomeCategories : expenseCategories} currencies={ledger.currencies} />}
 
