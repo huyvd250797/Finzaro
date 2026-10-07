@@ -41,6 +41,6 @@ test("Dashboard total balance is sourced from Account Core through ledger loader
 });
 
 test("current app version remains centralized after Reports & Insights", () => {
-  assert.match(version, /APP_VERSION = "0\.0\.12"/);
-  assert.match(version, /Credit Card Manager/);
+  assert.match(version, /APP_VERSION = "0\.1\.0"/);
+  assert.match(version, /Net Worth & Financial Position/);
 });

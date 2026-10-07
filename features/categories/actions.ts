@@ -61,6 +61,9 @@ export async function createCategoryAction(formData: FormData) {
     revalidatePath("/categories");
     revalidatePath("/transactions");
     revalidatePath("/overview");
+    revalidatePath("/reports");
+    revalidatePath("/budgets");
+    revalidatePath("/recurring");
     redirect(destination("message", "Đã tạo danh mục mới."));
   } catch (error) {
     if (error && typeof error === "object" && "digest" in error) throw error;
@@ -116,7 +119,10 @@ export async function updateCategoryAction(formData: FormData) {
     revalidatePath("/categories");
     revalidatePath("/transactions");
     revalidatePath("/overview");
-    redirect(destination("message", "Đã cập nhật tên, icon và cấu trúc danh mục."));
+    revalidatePath("/reports");
+    revalidatePath("/budgets");
+    revalidatePath("/recurring");
+    redirect(destination("message", "Đã cập nhật danh mục. Giao dịch cũ dùng danh mục này sẽ hiển thị tên/icon/màu mới."));
   } catch (error) {
     if (error && typeof error === "object" && "digest" in error) throw error;
     redirect(destination("error", error instanceof Error ? error.message : "Không thể cập nhật danh mục."));

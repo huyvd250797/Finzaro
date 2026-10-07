@@ -20,14 +20,19 @@ const required = [
   "app/(dashboard)/deposits/page.tsx",
   "app/(dashboard)/loans/page.tsx",
   "app/(dashboard)/credit-cards/page.tsx",
+  "app/(dashboard)/net-worth/page.tsx",
   "features/credit-cards/actions.ts",
   "features/credit-cards/data.ts",
+  "features/net-worth/actions.ts",
+  "features/net-worth/data.ts",
   "components/app-splash.tsx",
   "components/pending-submit-button.tsx",
   "components/navigation-progress.tsx",
   "components/instant-reveal.tsx",
   "components/instant-transaction-launcher.tsx",
   "components/recurring-rule-launcher.tsx",
+  "components/use-overlay-scroll-lock.ts",
+  "components/confirm-submit-form.tsx",
   "features/recurring/actions.ts",
   "features/recurring/data.ts",
   "features/reports/data.ts",
@@ -68,6 +73,7 @@ const required = [
   "supabase/migrations/20261007123000_interest_deposit_manager.sql",
   "supabase/migrations/20261007143000_loan_debt_manager.sql",
   "supabase/migrations/20261007160000_credit_card_manager.sql",
+  "supabase/migrations/20261007164000_net_worth_financial_position.sql",
   "supabase/sql-editor/V0.0.5_category_engine.sql",
   "supabase/sql-editor/V0.0.5_category_engine_verify.sql",
   "supabase/sql-editor/V0.0.6_budget_engine.sql",
@@ -83,6 +89,8 @@ const required = [
   "supabase/sql-editor/V0.0.11_loan_debt_manager_verify.sql",
   "supabase/sql-editor/V0.0.12_credit_card_manager.sql",
   "supabase/sql-editor/V0.0.12_credit_card_manager_verify.sql",
+  "supabase/sql-editor/V0.1.0_net_worth_financial_position.sql",
+  "supabase/sql-editor/V0.1.0_net_worth_financial_position_verify.sql",
   "supabase/tests/category-engine.test.sql",
   "supabase/tests/budget-engine.test.sql",
   "supabase/tests/recurring-calendar.test.sql",
@@ -90,6 +98,7 @@ const required = [
   "supabase/tests/interest-deposit-manager.test.sql",
   "supabase/tests/loan-debt-manager.test.sql",
   "supabase/tests/credit-card-manager.test.sql",
+  "supabase/tests/net-worth-financial-position.test.sql",
   "docs/V0.0.5_CATEGORY_ENGINE_SETUP.md",
   "docs/V0.0.6_BUDGET_ENGINE_SETUP.md",
   "docs/V0.0.7_RECURRING_CALENDAR_SETUP.md",
@@ -98,18 +107,20 @@ const required = [
   "docs/V0.0.10_INTEREST_DEPOSIT_MANAGER_SETUP.md",
   "docs/V0.0.11_LOAN_DEBT_MANAGER_SETUP.md",
   "docs/V0.0.12_CREDIT_CARD_MANAGER_SETUP.md",
+  "docs/V0.1.0_NET_WORTH_FINANCIAL_POSITION_SETUP.md",
+  "docs/VERSIONING.md",
   "public/sw.js",
   ".env.example",
   "vercel.json"
 ];
 
-test("V0.0.12 required files exist", () => {
+test("V0.1.0 required files exist", () => {
   for (const file of required) assert.equal(existsSync(file), true, `${file} is missing`);
 });
 
-test("package version is 0.0.12", () => {
+test("package version is 0.1.0", () => {
   const pkg = JSON.parse(readFileSync("package.json", "utf8"));
-  assert.equal(pkg.version, "0.0.12");
+  assert.equal(pkg.version, "0.1.0");
   assert.match(pkg.dependencies.next, /16/);
   assert.ok(pkg.dependencies["@supabase/ssr"]);
 });

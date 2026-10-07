@@ -55,10 +55,10 @@ test("dashboard and navigation surface Deposit Manager", () => {
   assert.match(overview, /Tiền gửi & lãi suất/);
   assert.match(sidebar, /\/deposits/);
   assert.match(mobile, /\/deposits/);
-  assert.match(sidebar, /Net Worth & Financial Position/);
+  assert.match(sidebar, /\/net-worth/);
 });
 
-test("current app version is V0.0.12 Credit Card Manager", () => {
-  assert.match(version, /APP_VERSION = "0\.0\.12"/);
-  assert.match(version, /Credit Card Manager/);
+test("current app version is V0.1.0 Net Worth & Financial Position", () => {
+  assert.match(version, /APP_VERSION = "0\.1\.0"/);
+  assert.match(version, /Net Worth & Financial Position/);
 });

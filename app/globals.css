@@ -106,7 +106,7 @@ img, svg, canvas, video { max-width: 100%; }
   to { opacity: 1; }
 }
 
-/* V0.0.12 — finance-grade visual system */
+/* V0.1.0 — finance-grade visual system */
 :root {
   --background: #f4f7f6;
   --foreground: #10201c;

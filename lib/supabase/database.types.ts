@@ -777,6 +777,62 @@ export type Database = {
           }
         ];
       };
+      net_worth_snapshots: {
+        Row: {
+          id: string;
+          user_id: string;
+          snapshot_date: string;
+          currency_code: string;
+          account_assets_minor: number;
+          deposit_assets_minor: number;
+          loan_liabilities_minor: number;
+          credit_card_liabilities_minor: number;
+          total_assets_minor: number;
+          total_liabilities_minor: number;
+          net_worth_minor: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          snapshot_date?: string;
+          currency_code: string;
+          account_assets_minor?: number;
+          deposit_assets_minor?: number;
+          loan_liabilities_minor?: number;
+          credit_card_liabilities_minor?: number;
+          total_assets_minor?: number;
+          total_liabilities_minor?: number;
+          net_worth_minor?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          snapshot_date?: string;
+          currency_code?: string;
+          account_assets_minor?: number;
+          deposit_assets_minor?: number;
+          loan_liabilities_minor?: number;
+          credit_card_liabilities_minor?: number;
+          total_assets_minor?: number;
+          total_liabilities_minor?: number;
+          net_worth_minor?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "net_worth_snapshots_currency_code_fkey";
+            columns: ["currency_code"];
+            isOneToOne: false;
+            referencedRelation: "supported_currencies";
+            referencedColumns: ["code"];
+          }
+        ];
+      };
       profiles: {
         Row: {
           avatar_url: string | null;

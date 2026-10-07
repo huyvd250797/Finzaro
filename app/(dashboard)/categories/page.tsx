@@ -3,6 +3,7 @@ import { Archive, ChevronRight, RotateCcw, Shapes, X } from "lucide-react";
 import { AuthMessage } from "@/components/auth-message";
 import { PendingSubmitButton } from "@/components/pending-submit-button";
 import { InstantReveal } from "@/components/instant-reveal";
+import { ConfirmSubmitForm } from "@/components/confirm-submit-form";
 import { CategoryIconPicker } from "@/components/category-icon-picker";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { createCategoryAction, setCategoryArchivedAction, updateCategoryAction } from "@/features/categories/actions";
@@ -24,11 +25,13 @@ type SearchParams = Promise<{
 function CategoryForm({
   type,
   categories,
-  editing
+  editing,
+  usageCount = 0
 }: {
   type: CategoryType;
   categories: CategoryRow[];
   editing?: CategoryRow | null;
+  usageCount?: number;
 }) {
   const action = editing ? updateCategoryAction : createCategoryAction;
   const parentOptions = categories.filter((category) => category.category_type === type && !category.is_archived && category.id !== editing?.id && category.parent_id === null);
@@ -45,7 +48,7 @@ function CategoryForm({
           <Link href="/categories" data-instant-close aria-label="Đóng" className="grid size-9 place-items-center rounded-xl border border-[var(--border)] text-[var(--muted-foreground)]"><X className="size-4" /></Link>
         </div>
 
-        <form action={action} className="mt-5 grid gap-4 md:grid-cols-2">
+        <ConfirmSubmitForm action={action} confirmMessage={editing && usageCount > 0 ? `Danh mục “${editing.name}” đang được sử dụng bởi ${usageCount} giao dịch. Thay đổi tên, icon hoặc màu sẽ cập nhật cách hiển thị của các giao dịch đã phát sinh; số tiền và ledger không thay đổi. Bạn có chắc muốn lưu?` : null} className="mt-5 grid gap-4 md:grid-cols-2">
           {editing && <input type="hidden" name="category_id" value={editing.id} />}
           {!editing && <input type="hidden" name="category_type" value={type} />}
 
@@ -64,20 +67,20 @@ function CategoryForm({
 
           <div className="md:col-span-2">
             <span className="mb-2 block text-xs font-bold uppercase tracking-wide text-[var(--muted-foreground)]">Icon</span>
-            <CategoryIconPicker defaultValue={editing?.icon_name ?? (type === "income" ? "CircleDollarSign" : "Shapes")} defaultColor={editing?.icon_color ?? "emerald"} />
+            <CategoryIconPicker defaultValue={editing?.icon_name ?? (type === "income" ? "CircleDollarSign" : "Shapes")} defaultColor={editing?.icon_color ?? "#0d8b66"} />
           </div>
 
           <div className="flex justify-end gap-2 md:col-span-2">
             <Link href="/categories" data-instant-close className="inline-flex h-10 items-center rounded-xl border border-[var(--border)] px-4 text-sm font-bold">Hủy</Link>
             <PendingSubmitButton idleLabel={editing ? "Lưu thay đổi" : "Tạo danh mục"} pendingLabel={editing ? "Đang lưu..." : "Đang tạo danh mục..."} className="h-10 rounded-xl bg-[var(--primary)] px-5 text-sm font-bold text-white" />
           </div>
-        </form>
+        </ConfirmSubmitForm>
       </CardContent>
     </Card>
   );
 }
 
-function CategorySection({ type, categories, showArchived }: { type: CategoryType; categories: CategoryRow[]; showArchived: boolean }) {
+function CategorySection({ type, categories, showArchived, usageCounts }: { type: CategoryType; categories: CategoryRow[]; showArchived: boolean; usageCounts: Map<string, number> }) {
   const categoryById = new Map(categories.map((category) => [category.id, category]));
   const visible = categories
     .filter((category) => category.category_type === type && (showArchived || !category.is_archived))
@@ -108,7 +111,7 @@ function CategorySection({ type, categories, showArchived }: { type: CategoryTyp
                 </div>
                 <p className="mt-0.5 truncate text-[11px] text-[var(--muted-foreground)]">{categoryPath(category, categoryById)} · {category.icon_name} · {category.icon_color ?? "#0d8b66"}</p>
               </div>
-              <InstantReveal label="Sửa" icon={false} className="h-9 border border-[var(--border)] bg-[var(--card)] px-3 text-xs text-[var(--foreground)] shadow-none"><CategoryForm type={category.category_type} categories={categories} editing={category} /></InstantReveal>
+              <InstantReveal label="Sửa" icon={false} className="h-9 border border-[var(--border)] bg-[var(--card)] px-3 text-xs text-[var(--foreground)] shadow-none"><CategoryForm type={category.category_type} categories={categories} editing={category} usageCount={usageCounts.get(category.id) ?? 0} /></InstantReveal>
               <form action={setCategoryArchivedAction}>
                 <input type="hidden" name="category_id" value={category.id} />
                 <input type="hidden" name="archived" value={category.is_archived ? "false" : "true"} />
@@ -125,7 +128,15 @@ function CategorySection({ type, categories, showArchived }: { type: CategoryTyp
 export default async function CategoriesPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
   const { supabase, userId } = await requireUser();
-  const categories = await loadCategories(supabase, userId, true);
+  const [categories, usageResult] = await Promise.all([
+    loadCategories(supabase, userId, true),
+    supabase.from("transactions").select("category_id").eq("user_id", userId).not("category_id", "is", null).limit(10000)
+  ]);
+  const usageCounts = new Map<string, number>();
+  for (const row of usageResult.data ?? []) {
+    if (!row.category_id) continue;
+    usageCounts.set(row.category_id, (usageCounts.get(row.category_id) ?? 0) + 1);
+  }
   const newType = params.new && isCategoryType(params.new) ? params.new : null;
   const editing = params.edit ? categories.find((category) => category.id === params.edit) ?? null : null;
   const showArchived = params.show === "archived";
@@ -136,7 +147,7 @@ export default async function CategoriesPage({ searchParams }: { searchParams: S
         <div>
           <p className="text-sm font-semibold text-[var(--primary)]">Money · Classification</p>
           <h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">Danh mục</h1>
-          <p className="mt-2 max-w-3xl text-sm text-[var(--muted-foreground)]">Tổ chức thu nhập và chi tiêu bằng category có cấu trúc, subcategory và icon riêng. Giao dịch cũ vẫn giữ snapshot tên danh mục để bảo toàn lịch sử.</p>
+          <p className="mt-2 max-w-3xl text-sm text-[var(--muted-foreground)]">Tổ chức thu nhập và chi tiêu bằng category có cấu trúc, subcategory và icon riêng. Khi bạn xác nhận đổi tên/icon/màu, các giao dịch đã dùng danh mục đó sẽ hiển thị metadata mới; số tiền và ledger không thay đổi.</p>
         </div>
         <div className="flex gap-2">
           <Link href={showArchived ? "/categories" : "/categories?show=archived"} className="inline-flex h-10 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-3.5 text-sm font-bold">{showArchived ? <Shapes className="size-4" /> : <Archive className="size-4" />} {showArchived ? "Đang hoạt động" : "Xem đã lưu trữ"}</Link>
@@ -146,11 +157,11 @@ export default async function CategoriesPage({ searchParams }: { searchParams: S
 
       <AuthMessage error={params.error} message={params.message} />
       {newType && <CategoryForm type={newType} categories={categories} />}
-      {editing && <CategoryForm type={editing.category_type} categories={categories} editing={editing} />}
+      {editing && <CategoryForm type={editing.category_type} categories={categories} editing={editing} usageCount={usageCounts.get(editing.id) ?? 0} />}
 
       <div className="mt-5 grid gap-4 xl:grid-cols-2">
-        <CategorySection type="expense" categories={categories} showArchived={showArchived} />
-        <CategorySection type="income" categories={categories} showArchived={showArchived} />
+        <CategorySection type="expense" categories={categories} showArchived={showArchived} usageCounts={usageCounts} />
+        <CategorySection type="income" categories={categories} showArchived={showArchived} usageCounts={usageCounts} />
       </div>
     </div>
   );

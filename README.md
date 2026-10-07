@@ -1,31 +1,58 @@
-# Finzaro V0.0.12 — Credit Card Manager
+# Finzaro V0.1.0 — Net Worth & Financial Position
 
-Finzaro là PWA quản lý tài chính cá nhân chạy Next.js + Supabase + Vercel. V0.0.12 bổ sung Credit Card Manager và nâng cấp khả năng chỉnh sửa dữ liệu/UX mobile.
+Finzaro là PWA quản lý tài chính cá nhân chạy Next.js + TypeScript + Supabase + Vercel. V0.1.0 hợp nhất Assets/Liabilities thành Net Worth theo từng currency và bắt đầu áp dụng version policy `X.Y.Z` mới.
 
-## V0.0.12 có gì mới
-- Credit cards, statements, payments, credit limit, utilization, minimum due, due-date tracking.
-- Payment có thể link Transaction Ledger và được database kiểm tra currency/account/direction.
-- Sửa Income/Expense đã nhập; ledger/account balance được hoàn nguyên và áp dụng lại atomic.
-- Category có nút Sửa trực tiếp, cập nhật tên/icon/màu/parent.
-- Mobile taskbar đồng nhất kích cỡ; `... Thêm` mở bottom sheet truy cập module.
-- Splash loading lúc mở app + route loading fallback.
-- Visual system finance-grade mới, chuẩn hóa card/input/button/typography.
-- Giữ PWA auth bootstrap, update prompt, no-zoom và horizontal overflow protections.
+## Điểm mới V0.1.0
+
+- Trang `/net-worth` với Total Assets, Total Liabilities, Net Worth và Liquid Assets.
+- Breakdown Account / Deposit / Loan / Credit Card.
+- Debt-to-Asset và Liquidity Coverage.
+- Snapshot Net Worth theo ngày + trend 12 snapshot gần nhất.
+- Không double-count Savings Goals.
+- Không tự quy đổi FX.
+- Khôi phục nút `(+)` lớn ở giữa mobile taskbar: 2 chức năng trái, 2 chức năng phải; ngoài cùng bên phải là `Thêm`.
+- Quick-add Expense / Income / Transfer từ nút giữa.
+- Category đã dùng vẫn sửa được tên/icon/màu; có confirm cảnh báo trước khi áp dụng cho lịch sử hiển thị.
+- Fix legacy DB icon allow-list để bộ icon mới có thể lưu thật.
+- Modal/bottom sheet khóa background scroll trên iOS/PWA.
+- Splash dùng đúng Light/Dark mode đã lưu ngay từ first paint.
 
 ## SQL cần chạy
-`supabase/sql-editor/V0.0.12_credit_card_manager.sql`
+
+Supabase → SQL Editor → Run:
+
+`supabase/sql-editor/V0.1.0_net_worth_financial_position.sql`
 
 Verify tùy chọn:
-`supabase/sql-editor/V0.0.12_credit_card_manager_verify.sql`
 
-Không cần ENV mới.
+`supabase/sql-editor/V0.1.0_net_worth_financial_position_verify.sql`
 
-## Deploy
+Không chạy lại migration cũ nếu database đã ở V0.0.12.
+
+## ENV
+
+Không có biến mới. Xem `.env.example`.
+
+## Commands
+
 ```bash
 npm install
+npm run lint
+npm run typecheck
+npm run test
 npm run build
 ```
-Sau đó push GitHub và deploy/redeploy trên Vercel.
 
-## Version kế tiếp
-**Finzaro V0.0.13 — Net Worth & Financial Position**: tổng hợp tiền mặt/ngân hàng, savings goals, deposits, loans và credit-card debt thành net worth, assets/liabilities breakdown và financial position dashboard.
+## Versioning
+
+Xem `docs/VERSIONING.md`.
+
+- `X`: major workflow/architecture change.
+- `Y`: module/feature mới.
+- `Z`: bug/UI/performance/deploy fix.
+
+Vì Net Worth là module mới, release dự kiến `V0.0.13` được đổi thành **V0.1.0**.
+
+## Tiếp theo
+
+**Finzaro V0.2.0 — Financial Health Score & Intelligence**: tổng hợp cash flow, budget adherence, emergency liquidity, debt load, credit utilization và Net Worth trend thành bộ chỉ báo sức khỏe tài chính có giải thích, không đưa ra quyết định tài chính thay người dùng.

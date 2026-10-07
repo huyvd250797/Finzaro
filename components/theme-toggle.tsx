@@ -12,12 +12,14 @@ export function ThemeToggle() {
     const shouldDark = saved ? saved === "dark" : prefersDark;
     setDark(shouldDark);
     document.documentElement.classList.toggle("dark", shouldDark);
+    document.documentElement.style.colorScheme = shouldDark ? "dark" : "light";
   }, []);
 
   function toggle() {
     const next = !dark;
     setDark(next);
     document.documentElement.classList.toggle("dark", next);
+    document.documentElement.style.colorScheme = next ? "dark" : "light";
     localStorage.setItem("finzaro-theme", next ? "dark" : "light");
   }
 

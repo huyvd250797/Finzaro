@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AlertTriangle, ArrowRight, Banknote, CalendarClock, CircleDollarSign, CreditCard, Landmark, PiggyBank, Plus, Smartphone, Target, TrendingDown, TrendingUp, WalletCards } from "lucide-react";
+import { AlertTriangle, ArrowRight, Banknote, CalendarClock, CircleDollarSign, CreditCard, Landmark, PiggyBank, Plus, Scale, Smartphone, Target, TrendingDown, TrendingUp, WalletCards } from "lucide-react";
 import { formatMinorMoney } from "@/lib/utils";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { StatCard } from "@/components/stat-card";
@@ -54,6 +54,9 @@ export default async function OverviewPage() {
   const loanState = loanSummary(loanRows, defaultCurrency);
   const creditCardRows = projectCreditCards(creditCardData.cards, creditCardData.statements, creditCardData.payments, creditCardData.accounts, recurringTodayKey);
   const creditCardState = creditCardSummary(creditCardRows, defaultCurrency);
+  const netWorthAssets = totalMinor + depositState.principal;
+  const netWorthLiabilities = loanState.remaining + creditCardState.totalBalance;
+  const netWorth = netWorthAssets - netWorthLiabilities;
   const current = monthTotals(ledger.transactions, defaultCurrency, currentMonth);
   const previous = monthTotals(ledger.transactions, defaultCurrency, months.at(-2)?.key ?? currentMonth);
   const series = cashflowSeries(ledger.transactions, defaultCurrency, timeZone);
@@ -82,6 +85,17 @@ export default async function OverviewPage() {
         <StatCard label={`Chi tiêu tháng · ${defaultCurrency}`} formattedValue={formatMinorMoney(current.expense, defaultCurrency, digits)} delta={percentChange(current.expense, previous.expense)} icon={TrendingDown} tone="negative" />
         <StatCard label={`Dòng tiền ròng · ${defaultCurrency}`} formattedValue={formatMinorMoney(current.net, defaultCurrency, digits)} delta={percentChange(current.net, previous.net)} icon={CircleDollarSign} tone={current.net >= 0 ? "positive" : "negative"} />
       </div>
+
+      <Card className="mt-4 fin-card border-emerald-500/20">
+        <CardContent className="flex min-w-0 flex-wrap items-center gap-4 p-5">
+          <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-emerald-500/10 text-emerald-600"><Scale className="size-5" /></div>
+          <div className="min-w-[180px] flex-1">
+            <div className="flex flex-wrap items-center gap-2"><h2 className="font-black">Tài sản ròng · {defaultCurrency}</h2><span className={`rounded-lg px-2 py-1 text-[10px] font-black uppercase ${netWorth >= 0 ? "bg-emerald-500/10 text-emerald-600" : "bg-rose-500/10 text-rose-500"}`}>{netWorth >= 0 ? "Positive" : "Negative"}</span></div>
+            <p className="mt-1 text-xs text-[var(--muted-foreground)]">Net Worth {formatMinorMoney(netWorth, defaultCurrency, digits)} · Tài sản {formatMinorMoney(netWorthAssets, defaultCurrency, digits)} · Nợ {formatMinorMoney(netWorthLiabilities, defaultCurrency, digits)}</p>
+          </div>
+          <Link href="/net-worth" className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[var(--border)] px-3 text-xs font-bold">Financial Position <ArrowRight className="size-3.5" /></Link>
+        </CardContent>
+      </Card>
 
       <Card className="mt-4">
         <CardContent className="flex flex-wrap items-center gap-4 p-5">
