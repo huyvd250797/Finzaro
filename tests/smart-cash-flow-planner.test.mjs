@@ -50,7 +50,14 @@ test("Cash Flow Planner is discoverable from desktop and mobile navigation", () 
   assert.match(mobile, /href: "\/cash-flow"/);
 });
 
-test("current app version is V0.4.0 Smart Cash Flow Planner", () => {
-  assert.match(version, /APP_VERSION = "0\.4\.0"/);
+test("current app version is V0.4.1 Smart Cash Flow Planner deploy fix", () => {
+  assert.match(version, /APP_VERSION = "0\.4\.1"/);
   assert.match(version, /Smart Cash Flow Planner/);
+});
+
+
+test("money calculator does not import unavailable Lucide Backspace icon", () => {
+  const source = read("components/money-calculator-input.tsx");
+  assert.doesNotMatch(source, /import\s*\{[^}]*\bBackspace\b[^}]*\}\s*from\s*["']lucide-react["']/);
+  assert.match(source, /aria-label="Xóa một chữ số"/);
 });

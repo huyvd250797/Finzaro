@@ -1,5 +1,12 @@
 # Changelog
 
+## V0.4.1 — Smart Cash Flow Planner · Deploy Fix
+
+- Fixed Vercel/Next.js build failure caused by importing the non-existent `Backspace` export from `lucide-react`.
+- Replaced the keypad backspace icon with a dependency-free inline SVG to avoid future icon-export incompatibility.
+- No database schema changes and no new environment variables are required.
+- V0.4.0 Smart Cash Flow Planner, quick transaction suggestions and Money Calculator behavior are unchanged.
+
 ## V0.4.0 — Smart Cash Flow Planner
 
 - Added Smart Cash Flow Planner with monthly Safe to Spend planning.

@@ -147,9 +147,9 @@ test("V0.4.0 required files exist", () => {
   for (const file of required) assert.equal(existsSync(file), true, `${file} is missing`);
 });
 
-test("package version is 0.4.0", () => {
+test("package version is 0.4.1", () => {
   const pkg = JSON.parse(readFileSync("package.json", "utf8"));
-  assert.equal(pkg.version, "0.4.0");
+  assert.equal(pkg.version, "0.4.1");
   assert.match(pkg.dependencies.next, /16/);
   assert.ok(pkg.dependencies["@supabase/ssr"]);
 });

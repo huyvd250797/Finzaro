@@ -1,6 +1,6 @@
 "use client";
 
-import { Backspace, Calculator, ChevronDown, ChevronUp } from "lucide-react";
+import { Calculator, ChevronDown, ChevronUp } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -223,7 +223,13 @@ export function MoneyCalculatorInput({
               </button>
             ))}
             <button type="button" onClick={clear} className="h-11 rounded-xl border border-rose-500/20 bg-rose-500/[.07] text-xs font-black text-rose-500">C</button>
-            <button type="button" onClick={backspace} className="grid h-11 place-items-center rounded-xl border border-[var(--border)] bg-[var(--background)]"><Backspace className="size-4" /></button>
+            <button type="button" onClick={backspace} aria-label="Xóa một chữ số" title="Xóa một chữ số" className="grid h-11 place-items-center rounded-xl border border-[var(--border)] bg-[var(--background)]">
+              <svg viewBox="0 0 24 24" aria-hidden="true" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 6H9l-6 6 6 6h12a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2Z" />
+                <path d="m18 9-6 6" />
+                <path d="m12 9 6 6" />
+              </svg>
+            </button>
             <button type="button" onClick={() => setOpen(false)} className="h-11 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs font-black">Xong</button>
             <button type="button" onClick={equals} className="h-11 rounded-xl bg-[var(--primary)] text-lg font-black text-white">=</button>
           </div>

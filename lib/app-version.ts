@@ -1,3 +1,3 @@
-export const APP_VERSION = "0.4.0";
+export const APP_VERSION = "0.4.1";
 export const APP_VERSION_LABEL = `V${APP_VERSION}`;
-export const APP_RELEASE_NAME = "Smart Cash Flow Planner";
+export const APP_RELEASE_NAME = "Smart Cash Flow Planner · Deploy Fix";
