@@ -1,32 +1,33 @@
-# Finzaro V0.2.0 — Financial Health Score & Intelligence
+# Finzaro V0.3.0 — Forecasting & Scenario Planning
 
-Finzaro là PWA quản lý tài chính cá nhân chạy Next.js + TypeScript + Supabase + Vercel. V0.2.0 bổ sung Financial Health Score có giải thích và Quick Transaction Suggestions để nhập giao dịch nhanh hơn.
+Finzaro là PWA quản lý tài chính cá nhân chạy Next.js + TypeScript + Supabase + Vercel. V0.3.0 đưa hệ thống từ phân tích quá khứ/hiện tại sang dự báo Cash Position và mô phỏng kịch bản tài chính tương lai.
 
-## Điểm mới V0.2.0
+## Điểm mới V0.3.0
 
-- Trang `/health` với Financial Health Score 0–100.
-- 7 subscore có trọng số: Cash Flow, Savings, Budget, Liquidity, Debt, Credit, Net Worth Trend.
-- `Data Confidence` để phân biệt score mạnh/yếu do dữ liệu thiếu.
-- Financial Intelligence dạng rule-based với hành động đề xuất và deep-link tới module liên quan.
-- Health snapshot theo ngày + lịch sử score.
-- Quick transaction suggestions: ưu tiên giao dịch nhập nhiều, sau đó giao dịch gần đây.
-- Chọn suggestion sẽ tự fill title, account, amount, category, notes; ngày vẫn là hôm nay.
-- Người dùng có thể chỉnh lại field rồi lưu hoặc lưu ngay nếu dữ liệu gợi ý đã đúng.
-- Không tạo bảng suggestion riêng; suggestion được suy ra trực tiếp từ ledger.
-- Navigation bổ sung `Sức khỏe tài chính` ở desktop và Bottom Sheet `Thêm` trên mobile.
-- Giữ nguyên toàn bộ PWA, scroll-lock, theme bootstrap và mobile taskbar từ V0.1.0.
+- Trang `/forecast` với baseline forecast 30 / 90 / 180 / 365 ngày.
+- Dự báo sử dụng dữ liệu thật từ Account, Transaction, Recurring, Loan, Credit Card, Deposit và Net Worth.
+- Known inflow / known obligations 30 ngày.
+- Projected Cash Position 12 tháng và cảnh báo tháng có nguy cơ shortfall.
+- Scenario Planner realtime: tăng/giảm thu nhập, tăng/giảm chi tiêu, thu nhập thêm, chi thêm, trả nợ thêm và reserve tiết kiệm.
+- Lưu kịch bản vào Supabase để dùng lại trên nhiều thiết bị.
+- RLS cho `forecast_scenarios`.
+- Desktop navigation và mobile Bottom Sheet bổ sung Dự báo.
+- Dashboard có shortcut Forecasting & Scenario Planning.
+- Sửa giao diện `Gợi ý chọn nhanh`: responsive grid 2 cột trên mobile, không còn card hẹp/bể amount.
+- Sửa datepicker trong form giao dịch: Finzaro-styled date shell, không tràn modal trên iPhone PWA.
+- Giữ nguyên PWA Auth bootstrap, update prompt, theme bootstrap và overlay scroll lock.
 
 ## SQL cần chạy
 
 Supabase → SQL Editor → Run:
 
-`supabase/sql-editor/V0.2.0_financial_health_score.sql`
+`supabase/sql-editor/V0.3.0_forecasting_scenarios.sql`
 
 Verify tùy chọn:
 
-`supabase/sql-editor/V0.2.0_financial_health_score_verify.sql`
+`supabase/sql-editor/V0.3.0_forecasting_scenarios_verify.sql`
 
-Không chạy lại migration cũ nếu database đã ở V0.1.0.
+Không chạy lại migration cũ nếu database đã ở V0.2.0.
 
 ## ENV
 
@@ -50,8 +51,8 @@ Finzaro dùng `X.Y.Z`:
 - `Y`: module/feature mới.
 - `Z`: bug/UI/performance/deploy fix.
 
-V0.2.0 là feature release nên tăng `Y` từ V0.1.0.
+V0.3.0 là feature release nên tăng `Y` từ V0.2.0.
 
 ## Tiếp theo
 
-**Finzaro V0.3.0 — Forecasting & Scenario Planning**: dự báo dòng tiền, mô phỏng kịch bản thu nhập/chi tiêu/lãi suất, stress-test nghĩa vụ nợ và runway tài chính dựa trên dữ liệu hiện hữu.
+**Finzaro V0.4.0 — Smart Cash Flow Planner**: biến forecast thành kế hoạch dòng tiền theo tháng, safe-to-spend, reserved money, upcoming obligations và cảnh báo thiếu hụt có hành động cụ thể.

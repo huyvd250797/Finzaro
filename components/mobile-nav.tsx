@@ -7,6 +7,7 @@ import {
   ArrowDownLeft,
   ArrowLeftRight,
   ArrowUpRight,
+  Activity,
   BarChart3,
   CalendarClock,
   CircleDollarSign,
@@ -38,6 +39,7 @@ const moduleItems = [
   { href: "/credit-cards", label: "Thẻ tín dụng", icon: CreditCard },
   { href: "/net-worth", label: "Tài sản ròng", icon: Scale },
   { href: "/health", label: "Sức khỏe", icon: HeartPulse },
+  { href: "/forecast", label: "Dự báo", icon: Activity },
   { href: "/reports", label: "Báo cáo", icon: BarChart3 },
   { href: "/settings", label: "Cài đặt", icon: Settings2 }
 ];

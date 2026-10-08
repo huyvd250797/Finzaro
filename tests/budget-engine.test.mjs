@@ -61,7 +61,7 @@ test("V0.0.6 keeps proactive PWA update prompt", () => {
   assert.match(pwa, /registration\.update\(\)/);
 });
 
-test("current app version is V0.2.0 Financial Health Score & Intelligence", () => {
-  assert.match(version, /APP_VERSION = "0\.2\.0"/);
-  assert.match(version, /Financial Health Score & Intelligence/);
+test("current app version is V0.3.0 Forecasting & Scenario Planning", () => {
+  assert.match(version, /APP_VERSION = "0\.3\.0"/);
+  assert.match(version, /Forecasting & Scenario Planning/);
 });

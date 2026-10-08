@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { CalendarDays, Clock3, Repeat2, Sparkles, X } from "lucide-react";
+import { Clock3, Repeat2, Sparkles, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { createTransactionAction } from "@/features/transactions/actions";
 import type { TransactionType } from "@/features/transactions/constants";
@@ -11,6 +11,7 @@ import { CategoryIcon, iconColorValue } from "@/features/categories/icons";
 import { PendingSubmitButton } from "@/components/pending-submit-button";
 import { TransactionCategorySelect } from "@/components/transaction-category-select";
 import { Card, CardContent } from "@/components/ui/card";
+import { MobileDateInput } from "@/components/mobile-date-input";
 import { cn } from "@/lib/utils";
 
 type AccountOption = { id: string; name: string; currency_code: string; institution_name: string | null };
@@ -73,12 +74,15 @@ export function TransactionEntryForm({
             {suggestions.length > 0 && (
               <div className="mt-5 rounded-2xl border border-[var(--border)] bg-[var(--muted)]/55 p-3 sm:p-4">
                 <div className="flex items-center justify-between gap-3"><div><div className="flex items-center gap-1.5 text-xs font-black"><Sparkles className="size-3.5 text-[var(--primary)]" /> Gợi ý chọn nhanh</div><p className="mt-1 text-[11px] text-[var(--muted-foreground)]">Ưu tiên mẫu nhập nhiều, sau đó là giao dịch gần đây.</p></div>{selectedSuggestion && <span className="fin-badge">Đã tự điền</span>}</div>
-                <div className="mt-3 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
                   {suggestions.map((suggestion) => {
                     const selected = selectedSuggestion === suggestion.id;
-                    return <button key={suggestion.id} type="button" onClick={() => applySuggestion(suggestion)} className={cn("min-w-[180px] max-w-[220px] rounded-2xl border bg-[var(--card)] p-3 text-left transition active:scale-[.98]", selected ? "border-[var(--primary)] ring-2 ring-[var(--ring)]" : "border-[var(--border)] hover:border-[var(--primary)]/45")}>
-                      <div className="flex items-center gap-2"><span className="grid size-8 shrink-0 place-items-center rounded-lg bg-[var(--sidebar-accent)]" style={{ color: iconColorValue(suggestion.category_icon_color) }}>{suggestion.category_icon_name ? <CategoryIcon name={suggestion.category_icon_name} className="size-3.5" /> : suggestion.kind === "frequent" ? <Repeat2 className="size-3.5" /> : <Clock3 className="size-3.5" />}</span><span className="min-w-0 flex-1"><span className="block truncate text-xs font-black">{suggestion.title}</span><span className="mt-0.5 block text-[10px] font-bold text-[var(--muted-foreground)]">{suggestion.kind === "frequent" ? `Đã nhập ${suggestion.usage_count} lần` : "Gần đây"}</span></span></div>
-                      <div className="mt-2 flex items-center justify-between gap-2"><span className="truncate text-[10px] text-[var(--muted-foreground)]">{suggestion.category_name ?? (type === "transfer" ? "Chuyển tiền" : "Chưa phân loại")}</span><span className="shrink-0 text-[11px] font-black">{suggestion.amount_label}</span></div>
+                    return <button key={suggestion.id} type="button" onClick={() => applySuggestion(suggestion)} className={cn("quick-suggestion-card min-w-0 rounded-2xl border bg-[var(--card)] p-3 text-left transition active:scale-[.98]", selected ? "border-[var(--primary)] ring-2 ring-[var(--ring)]" : "border-[var(--border)] hover:border-[var(--primary)]/45")}>
+                      <div className="flex min-w-0 items-start gap-2.5">
+                        <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-[var(--sidebar-accent)]" style={{ color: iconColorValue(suggestion.category_icon_color) }}>{suggestion.category_icon_name ? <CategoryIcon name={suggestion.category_icon_name} className="size-4" /> : suggestion.kind === "frequent" ? <Repeat2 className="size-4" /> : <Clock3 className="size-4" />}</span>
+                        <span className="min-w-0 flex-1"><span className="block truncate text-xs font-black">{suggestion.title}</span><span className="mt-0.5 block truncate text-[10px] font-bold text-[var(--muted-foreground)]">{suggestion.kind === "frequent" ? `${suggestion.usage_count} lần · nhập nhiều` : "Giao dịch gần đây"}</span></span>
+                      </div>
+                      <div className="mt-3 min-w-0"><span className="block truncate text-[10px] text-[var(--muted-foreground)]">{suggestion.category_name ?? (type === "transfer" ? "Chuyển tiền" : "Chưa phân loại")}</span><span className="mt-1 block truncate text-sm font-black tracking-tight">{suggestion.amount_label}</span></div>
                     </button>;
                   })}
                 </div>
@@ -93,7 +97,7 @@ export function TransactionEntryForm({
               {(type === "expense" || type === "transfer") && <label><span className="field-label">{type === "transfer" ? "Số tiền gửi" : "Số tiền"}</span><input name="from_amount" value={fromAmount} onChange={(event) => setFromAmount(event.target.value)} inputMode="decimal" required placeholder="0" className="fin-input" /></label>}
               {(type === "income" || type === "transfer") && <label><span className="field-label">{type === "transfer" ? "Số tiền nhận" : "Số tiền"}</span><input name="to_amount" value={toAmount} onChange={(event) => setToAmount(event.target.value)} inputMode="decimal" required={type === "income"} placeholder={type === "transfer" ? "Để trống nếu cùng tiền tệ" : "0"} className="fin-input" />{isTransfer && <span className="mt-1 block text-[11px] text-[var(--muted-foreground)]">Khác tiền tệ: nhập số tiền thực nhận.</span>}</label>}
               {!isTransfer && <label><span className="field-label flex items-center justify-between"><span>Danh mục</span><Link href="/categories" className="normal-case tracking-normal text-[var(--primary)]">Quản lý</Link></span><TransactionCategorySelect categories={categories} value={categoryId} onValueChange={setCategoryId} /></label>}
-              <label><span className="field-label">Ngày giao dịch</span><div className="relative"><CalendarDays className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[var(--muted-foreground)]" /><input type="date" name="transaction_date" required defaultValue={today} className="fin-input pl-10" /></div></label>
+              <label><span className="field-label">Ngày giao dịch</span><MobileDateInput name="transaction_date" defaultValue={today} ariaLabel="Ngày giao dịch" /></label>
               <label className="md:col-span-2"><span className="field-label">Ghi chú</span><textarea name="notes" value={notes} onChange={(event) => setNotes(event.target.value)} maxLength={500} rows={3} className="fin-textarea" placeholder="Thông tin thêm..." /></label>
               {selectedSuggestion && <div className="md:col-span-2 rounded-xl bg-emerald-500/[.065] px-3 py-2 text-[11px] font-medium text-emerald-700 dark:text-emerald-300">Mẫu đã được tự động điền. Bạn có thể sửa bất kỳ trường nào hoặc bấm lưu ngay.</div>}
               <div className="flex justify-end gap-2 md:col-span-2"><button type="button" data-instant-close className="fin-secondary-btn">Hủy</button><PendingSubmitButton idleLabel="Lưu giao dịch" pendingLabel="Đang lưu giao dịch..." className="fin-primary-btn" /></div>

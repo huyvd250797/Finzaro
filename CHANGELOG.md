@@ -1,20 +1,18 @@
 # Changelog
 
-## V0.2.0 — Financial Health Score & Intelligence
+## V0.3.0 — Forecasting & Scenario Planning
 
-- Added `/health` Financial Health Score dashboard.
-- Added weighted rule-based scoring across Cash Flow, Savings, Budget, Liquidity, Debt, Credit and Net Worth trend.
-- Added Data Confidence to distinguish strong analysis from incomplete data.
-- Added rule-based Financial Intelligence with contextual actions to Reports, Budgets, Goals, Loans, Credit Cards and Net Worth.
-- Added `financial_health_snapshots` with RLS, daily/currency uniqueness and score history.
-- Added Quick Transaction Suggestions for Income / Expense / Transfer.
-- Suggestions prioritize frequently entered transaction patterns, then recent transactions.
-- Selecting a suggestion auto-fills title, account, amount, category and notes while keeping the transaction date at today.
-- Suggested values remain fully editable before submit; user can save immediately when the autofill is correct.
-- No duplicate suggestion table: patterns are derived from the existing ledger.
-- Added Financial Health entry to desktop navigation and mobile module sheet.
-- Preserved V0.1.0 PWA theme bootstrap, overlay scroll lock and central transaction action.
+- Added `/forecast` with 30/90/180/365-day forward cash projections.
+- Forecast engine combines historical cash flow, Recurring Rules, Loan schedules, Credit Card statement obligations and non-auto-renew Deposit maturities.
+- Added projected 12-month cash position and shortfall detection.
+- Added realtime Scenario Planner for income, expense, extra income/spend, extra debt payment and savings reserve assumptions.
+- Added persistent `forecast_scenarios` with Supabase RLS.
+- Added Forecasting navigation entry to desktop sidebar and mobile module sheet.
+- Added Forecasting shortcut to Overview.
+- Rebuilt Quick Transaction Suggestions as a responsive mobile grid; no more narrow/broken suggestion cards.
+- Added Finzaro-styled `MobileDateInput` so the transaction date field remains inside the modal on iOS while preserving the native picker.
+- Preserved PWA auth bootstrap, update prompt, theme bootstrap and modal/background scroll locking.
 
 ## Next
 
-V0.3.0 — Forecasting & Scenario Planning.
+V0.4.0 — Smart Cash Flow Planner.

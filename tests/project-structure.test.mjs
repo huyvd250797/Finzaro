@@ -22,12 +22,17 @@ const required = [
   "app/(dashboard)/credit-cards/page.tsx",
   "app/(dashboard)/net-worth/page.tsx",
   "app/(dashboard)/health/page.tsx",
+  "app/(dashboard)/forecast/page.tsx",
   "features/credit-cards/actions.ts",
   "features/credit-cards/data.ts",
   "features/net-worth/actions.ts",
   "features/net-worth/data.ts",
   "features/financial-health/actions.ts",
   "features/financial-health/data.ts",
+  "features/forecasting/actions.ts",
+  "features/forecasting/data.ts",
+  "components/scenario-planner.tsx",
+  "components/mobile-date-input.tsx",
   "components/transaction-entry-form.tsx",
   "components/app-splash.tsx",
   "components/pending-submit-button.tsx",
@@ -79,6 +84,7 @@ const required = [
   "supabase/migrations/20261007160000_credit_card_manager.sql",
   "supabase/migrations/20261007164000_net_worth_financial_position.sql",
   "supabase/migrations/20261007183000_financial_health_score.sql",
+  "supabase/migrations/20261007190000_forecasting_scenarios.sql",
   "supabase/sql-editor/V0.0.5_category_engine.sql",
   "supabase/sql-editor/V0.0.5_category_engine_verify.sql",
   "supabase/sql-editor/V0.0.6_budget_engine.sql",
@@ -98,6 +104,8 @@ const required = [
   "supabase/sql-editor/V0.1.0_net_worth_financial_position_verify.sql",
   "supabase/sql-editor/V0.2.0_financial_health_score.sql",
   "supabase/sql-editor/V0.2.0_financial_health_score_verify.sql",
+  "supabase/sql-editor/V0.3.0_forecasting_scenarios.sql",
+  "supabase/sql-editor/V0.3.0_forecasting_scenarios_verify.sql",
   "supabase/tests/category-engine.test.sql",
   "supabase/tests/budget-engine.test.sql",
   "supabase/tests/recurring-calendar.test.sql",
@@ -107,6 +115,7 @@ const required = [
   "supabase/tests/credit-card-manager.test.sql",
   "supabase/tests/net-worth-financial-position.test.sql",
   "supabase/tests/financial-health-score.test.sql",
+  "supabase/tests/forecasting-scenarios.test.sql",
   "docs/V0.0.5_CATEGORY_ENGINE_SETUP.md",
   "docs/V0.0.6_BUDGET_ENGINE_SETUP.md",
   "docs/V0.0.7_RECURRING_CALENDAR_SETUP.md",
@@ -117,19 +126,20 @@ const required = [
   "docs/V0.0.12_CREDIT_CARD_MANAGER_SETUP.md",
   "docs/V0.1.0_NET_WORTH_FINANCIAL_POSITION_SETUP.md",
   "docs/V0.2.0_FINANCIAL_HEALTH_SCORE_SETUP.md",
+  "docs/V0.3.0_FORECASTING_SCENARIO_PLANNING_SETUP.md",
   "docs/VERSIONING.md",
   "public/sw.js",
   ".env.example",
   "vercel.json"
 ];
 
-test("V0.2.0 required files exist", () => {
+test("V0.3.0 required files exist", () => {
   for (const file of required) assert.equal(existsSync(file), true, `${file} is missing`);
 });
 
-test("package version is 0.2.0", () => {
+test("package version is 0.3.0", () => {
   const pkg = JSON.parse(readFileSync("package.json", "utf8"));
-  assert.equal(pkg.version, "0.2.0");
+  assert.equal(pkg.version, "0.3.0");
   assert.match(pkg.dependencies.next, /16/);
   assert.ok(pkg.dependencies["@supabase/ssr"]);
 });

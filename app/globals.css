@@ -175,3 +175,13 @@ body {
   .fin-input, .fin-textarea { font-size: 16px !important; }
   .fin-primary-btn, .fin-secondary-btn, .fin-dark-btn { font-size: 13px; }
 }
+
+/* V0.3.0 — transaction quick pick + native date shell hardening */
+.quick-suggestion-card {
+  width: 100%;
+  max-width: none !important;
+  min-width: 0 !important;
+  overflow: hidden;
+}
+input[type="date"]::-webkit-date-and-time-value { text-align: left; }
+input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; }
