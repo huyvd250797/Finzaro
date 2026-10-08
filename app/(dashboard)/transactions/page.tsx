@@ -3,6 +3,8 @@ import { Filter, Search, X } from "lucide-react";
 import { AuthMessage } from "@/components/auth-message";
 import { InstantTransactionLauncher } from "@/components/instant-transaction-launcher";
 import { PendingSubmitButton } from "@/components/pending-submit-button";
+import { MoneyCalculatorInput } from "@/components/money-calculator-input";
+import { MobileDateInput } from "@/components/mobile-date-input";
 import { TransactionEntryForm } from "@/components/transaction-entry-form";
 import { TransactionCategorySelect } from "@/components/transaction-category-select";
 import { TransactionList } from "@/components/transaction-list";
@@ -21,7 +23,7 @@ type SearchParams = Promise<{ new?: string; edit?: string; q?: string; type?: st
 
 function EditTransactionForm({ transaction, accounts, categories, currencies }: {
   transaction: TransactionView;
-  accounts: Array<{ id: string; name: string; currency_code: string; institution_name: string | null }>;
+  accounts: Array<{ id: string; name: string; currency_code: string; institution_name: string | null; decimal_digits?: number }>;
   categories: Array<{ id: string; name: string; icon_name: string; icon_color: string | null; parent_id: string | null }>;
   currencies: LedgerCurrency[];
 }) {
@@ -36,9 +38,9 @@ function EditTransactionForm({ transaction, accounts, categories, currencies }: 
       <input type="hidden" name="transaction_id" value={transaction.id} />
       <label className="md:col-span-2"><span className="field-label">Nội dung</span><input name="title" required maxLength={140} defaultValue={transaction.title} className="fin-input" /></label>
       <label><span className="field-label">Tài khoản</span><select name="account_id" required defaultValue={entry.account_id} className="fin-input">{accounts.map((account) => <option key={account.id} value={account.id}>{account.name} · {account.currency_code}</option>)}</select></label>
-      <label><span className="field-label">Số tiền</span><input name="amount" inputMode="decimal" required defaultValue={minorToMajorInput(Math.abs(entry.amount_minor), digits)} className="fin-input" /></label>
+      <label><span className="field-label">Số tiền</span><MoneyCalculatorInput name="amount" defaultValue={minorToMajorInput(Math.abs(entry.amount_minor), digits)} decimalDigits={digits} currencyCode={entry.currency_code} required /></label>
       <label><span className="field-label">Danh mục</span><TransactionCategorySelect categories={categories} defaultValue={transaction.category_id} /></label>
-      <label><span className="field-label">Ngày giao dịch</span><input name="transaction_date" type="date" required defaultValue={transaction.transaction_date} className="fin-input" /></label>
+      <label><span className="field-label">Ngày giao dịch</span><MobileDateInput name="transaction_date" defaultValue={transaction.transaction_date} ariaLabel="Ngày giao dịch" /></label>
       <label className="md:col-span-2"><span className="field-label">Ghi chú</span><textarea name="notes" rows={3} maxLength={500} defaultValue={transaction.notes ?? ""} className="fin-textarea" /></label>
       <div className="flex justify-end gap-2 md:col-span-2"><Link href="/transactions" className="fin-secondary-btn">Hủy</Link><PendingSubmitButton idleLabel="Cập nhật giao dịch" pendingLabel="Đang cập nhật..." className="fin-primary-btn" /></div>
     </form>
@@ -52,7 +54,10 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
   const defaultCurrency = preferences?.currency_code ?? "VND";
   const timeZone = preferences?.timezone ?? "Asia/Ho_Chi_Minh";
   const ledger = await loadLedger(supabase, userId, { limit: 500 });
-  const activeAccounts = ledger.accounts.filter((account) => !account.is_archived);
+  const activeAccounts = ledger.accounts.filter((account) => !account.is_archived).map((account) => ({
+    ...account,
+    decimal_digits: currencyDigits(ledger.currencies, account.currency_code)
+  }));
   const incomeCategories = ledger.categories.filter((category) => category.category_type === "income" && !category.is_archived);
   const expenseCategories = ledger.categories.filter((category) => category.category_type === "expense" && !category.is_archived);
   const filterCategories = ledger.categories.filter((category) => !category.is_archived);

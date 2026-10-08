@@ -26,7 +26,7 @@ export default async function ForecastPage({ searchParams }: { searchParams: Sea
           <h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">Forecasting & Scenario Planning</h1>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--muted-foreground)]">Dự báo Cash Position từ lịch định kỳ, lịch trả nợ, sao kê thẻ, đáo hạn tiền gửi và hành vi thu/chi lịch sử; sau đó stress-test các kịch bản trước khi ra quyết định.</p>
         </div>
-        <div className="flex gap-2"><Link href="/health" className="fin-secondary-btn">Sức khỏe tài chính</Link><Link href="/net-worth" className="fin-primary-btn">Tài sản ròng <ArrowRight className="size-4" /></Link></div>
+        <div className="flex flex-wrap gap-2"><Link href="/health" className="fin-secondary-btn">Sức khỏe tài chính</Link><Link href="/cash-flow" className="fin-primary-btn">Kế hoạch dòng tiền <ArrowRight className="size-4" /></Link></div>
       </div>
 
       <AuthMessage error={params.error} message={params.message} />

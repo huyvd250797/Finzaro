@@ -12,9 +12,10 @@ import { PendingSubmitButton } from "@/components/pending-submit-button";
 import { TransactionCategorySelect } from "@/components/transaction-category-select";
 import { Card, CardContent } from "@/components/ui/card";
 import { MobileDateInput } from "@/components/mobile-date-input";
+import { MoneyCalculatorInput } from "@/components/money-calculator-input";
 import { cn } from "@/lib/utils";
 
-type AccountOption = { id: string; name: string; currency_code: string; institution_name: string | null };
+type AccountOption = { id: string; name: string; currency_code: string; institution_name: string | null; decimal_digits?: number };
 type CategoryOption = { id: string; name: string; icon_name: string; icon_color: string | null; parent_id: string | null };
 
 export function TransactionEntryForm({
@@ -41,6 +42,9 @@ export function TransactionEntryForm({
   const [selectedSuggestion, setSelectedSuggestion] = useState<string | null>(null);
   const accountIds = useMemo(() => new Set(accounts.map((account) => account.id)), [accounts]);
   const categoryIds = useMemo(() => new Set(categories.map((category) => category.id)), [categories]);
+  const fromAccount = accounts.find((account) => account.id === fromAccountId) ?? null;
+  const toAccount = accounts.find((account) => account.id === toAccountId) ?? null;
+  const visibleSuggestions = suggestions.slice(0, 10);
 
   function applySuggestion(suggestion: QuickTransactionSuggestion) {
     setTitle(suggestion.title);
@@ -74,10 +78,10 @@ export function TransactionEntryForm({
             {suggestions.length > 0 && (
               <div className="mt-5 rounded-2xl border border-[var(--border)] bg-[var(--muted)]/55 p-3 sm:p-4">
                 <div className="flex items-center justify-between gap-3"><div><div className="flex items-center gap-1.5 text-xs font-black"><Sparkles className="size-3.5 text-[var(--primary)]" /> Gợi ý chọn nhanh</div><p className="mt-1 text-[11px] text-[var(--muted-foreground)]">Ưu tiên mẫu nhập nhiều, sau đó là giao dịch gần đây.</p></div>{selectedSuggestion && <span className="fin-badge">Đã tự điền</span>}</div>
-                <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
-                  {suggestions.map((suggestion) => {
+                <div className="mt-3 flex snap-x snap-mandatory gap-2 overflow-x-auto overscroll-x-contain pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                  {visibleSuggestions.map((suggestion) => {
                     const selected = selectedSuggestion === suggestion.id;
-                    return <button key={suggestion.id} type="button" onClick={() => applySuggestion(suggestion)} className={cn("quick-suggestion-card min-w-0 rounded-2xl border bg-[var(--card)] p-3 text-left transition active:scale-[.98]", selected ? "border-[var(--primary)] ring-2 ring-[var(--ring)]" : "border-[var(--border)] hover:border-[var(--primary)]/45")}>
+                    return <button key={suggestion.id} type="button" onClick={() => applySuggestion(suggestion)} className={cn("quick-suggestion-card w-[calc(50%_-_4px)] min-w-[calc(50%_-_4px)] flex-[0_0_calc(50%_-_4px)] snap-start rounded-2xl border bg-[var(--card)] p-3 text-left transition active:scale-[.98]", selected ? "border-[var(--primary)] ring-2 ring-[var(--ring)]" : "border-[var(--border)] hover:border-[var(--primary)]/45")}>
                       <div className="flex min-w-0 items-start gap-2.5">
                         <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-[var(--sidebar-accent)]" style={{ color: iconColorValue(suggestion.category_icon_color) }}>{suggestion.category_icon_name ? <CategoryIcon name={suggestion.category_icon_name} className="size-4" /> : suggestion.kind === "frequent" ? <Repeat2 className="size-4" /> : <Clock3 className="size-4" />}</span>
                         <span className="min-w-0 flex-1"><span className="block truncate text-xs font-black">{suggestion.title}</span><span className="mt-0.5 block truncate text-[10px] font-bold text-[var(--muted-foreground)]">{suggestion.kind === "frequent" ? `${suggestion.usage_count} lần · nhập nhiều` : "Giao dịch gần đây"}</span></span>
@@ -94,8 +98,8 @@ export function TransactionEntryForm({
               <label className="md:col-span-2"><span className="field-label">Nội dung</span><input name="title" value={title} onChange={(event) => setTitle(event.target.value)} required maxLength={140} placeholder={type === "income" ? "VD: Lương tháng 10" : type === "expense" ? "VD: Siêu thị cuối tuần" : "VD: Chuyển quỹ dự phòng"} className="fin-input" /></label>
               {(type === "expense" || type === "transfer") && <label><span className="field-label">Tài khoản nguồn</span><select name="from_account_id" value={fromAccountId} onChange={(event) => setFromAccountId(event.target.value)} required className="fin-input"><option value="">Chọn tài khoản</option>{accounts.map((account) => <option key={account.id} value={account.id}>{account.name} · {account.currency_code}</option>)}</select></label>}
               {(type === "income" || type === "transfer") && <label><span className="field-label">{type === "income" ? "Tài khoản nhận" : "Tài khoản đích"}</span><select name="to_account_id" value={toAccountId} onChange={(event) => setToAccountId(event.target.value)} required className="fin-input"><option value="">Chọn tài khoản</option>{accounts.map((account) => <option key={account.id} value={account.id}>{account.name} · {account.currency_code}</option>)}</select></label>}
-              {(type === "expense" || type === "transfer") && <label><span className="field-label">{type === "transfer" ? "Số tiền gửi" : "Số tiền"}</span><input name="from_amount" value={fromAmount} onChange={(event) => setFromAmount(event.target.value)} inputMode="decimal" required placeholder="0" className="fin-input" /></label>}
-              {(type === "income" || type === "transfer") && <label><span className="field-label">{type === "transfer" ? "Số tiền nhận" : "Số tiền"}</span><input name="to_amount" value={toAmount} onChange={(event) => setToAmount(event.target.value)} inputMode="decimal" required={type === "income"} placeholder={type === "transfer" ? "Để trống nếu cùng tiền tệ" : "0"} className="fin-input" />{isTransfer && <span className="mt-1 block text-[11px] text-[var(--muted-foreground)]">Khác tiền tệ: nhập số tiền thực nhận.</span>}</label>}
+              {(type === "expense" || type === "transfer") && <label><span className="field-label">{type === "transfer" ? "Số tiền gửi" : "Số tiền"}</span><MoneyCalculatorInput name="from_amount" value={fromAmount} onValueChange={setFromAmount} decimalDigits={fromAccount?.decimal_digits ?? 0} currencyCode={fromAccount?.currency_code} required placeholder="0" /></label>}
+              {(type === "income" || type === "transfer") && <label><span className="field-label">{type === "transfer" ? "Số tiền nhận" : "Số tiền"}</span><MoneyCalculatorInput name="to_amount" value={toAmount} onValueChange={setToAmount} decimalDigits={toAccount?.decimal_digits ?? 0} currencyCode={toAccount?.currency_code} required={type === "income"} allowEmpty={type === "transfer"} placeholder={type === "transfer" ? "Để trống nếu cùng tiền tệ" : "0"} />{isTransfer && <span className="mt-1 block text-[11px] text-[var(--muted-foreground)]">Khác tiền tệ: nhập số tiền thực nhận.</span>}</label>}
               {!isTransfer && <label><span className="field-label flex items-center justify-between"><span>Danh mục</span><Link href="/categories" className="normal-case tracking-normal text-[var(--primary)]">Quản lý</Link></span><TransactionCategorySelect categories={categories} value={categoryId} onValueChange={setCategoryId} /></label>}
               <label><span className="field-label">Ngày giao dịch</span><MobileDateInput name="transaction_date" defaultValue={today} ariaLabel="Ngày giao dịch" /></label>
               <label className="md:col-span-2"><span className="field-label">Ghi chú</span><textarea name="notes" value={notes} onChange={(event) => setNotes(event.target.value)} maxLength={500} rows={3} className="fin-textarea" placeholder="Thông tin thêm..." /></label>

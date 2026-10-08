@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Activity, AlertTriangle, ArrowRight, Banknote, CalendarClock, CircleDollarSign, CreditCard, HeartPulse, Landmark, PiggyBank, Plus, Scale, Smartphone, Target, TrendingDown, TrendingUp, WalletCards } from "lucide-react";
+import { Activity, AlertTriangle, ArrowRight, Banknote, CalendarClock, CalendarRange, CircleDollarSign, CreditCard, HeartPulse, Landmark, PiggyBank, Plus, Scale, Smartphone, Target, TrendingDown, TrendingUp, WalletCards } from "lucide-react";
 import { formatMinorMoney } from "@/lib/utils";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { StatCard } from "@/components/stat-card";
@@ -115,6 +115,14 @@ export default async function OverviewPage() {
           <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-violet-500/10 text-violet-600"><Activity className="size-5" /></div>
           <div className="min-w-[180px] flex-1"><h2 className="font-black">Forecasting & Scenario Planning</h2><p className="mt-1 text-xs text-[var(--muted-foreground)]">Xem trước Cash Position 30/90/180/365 ngày và stress-test các kịch bản tăng thu, giảm chi, trả nợ hoặc reserve tiết kiệm.</p></div>
           <Link href="/forecast" className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[var(--border)] px-3 text-xs font-bold">Mở dự báo <ArrowRight className="size-3.5" /></Link>
+        </CardContent>
+      </Card>
+
+      <Card className="mt-4 fin-card border-emerald-500/20">
+        <CardContent className="flex min-w-0 flex-wrap items-center gap-4 p-5">
+          <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-emerald-500/10 text-emerald-600"><CalendarRange className="size-5" /></div>
+          <div className="min-w-[180px] flex-1"><h2 className="font-black">Smart Cash Flow Planner</h2><p className="mt-1 text-xs text-[var(--muted-foreground)]">Lập kế hoạch thu nhập, nghĩa vụ, chi linh hoạt, reserve và mức đệm tiền mặt để biết Safe to Spend theo từng tháng.</p></div>
+          <Link href="/cash-flow" className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[var(--border)] px-3 text-xs font-bold">Lập kế hoạch <ArrowRight className="size-3.5" /></Link>
         </CardContent>
       </Card>
 

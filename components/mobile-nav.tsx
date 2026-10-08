@@ -10,6 +10,7 @@ import {
   Activity,
   BarChart3,
   CalendarClock,
+  CalendarRange,
   CircleDollarSign,
   CreditCard,
   Ellipsis,
@@ -40,6 +41,7 @@ const moduleItems = [
   { href: "/net-worth", label: "Tài sản ròng", icon: Scale },
   { href: "/health", label: "Sức khỏe", icon: HeartPulse },
   { href: "/forecast", label: "Dự báo", icon: Activity },
+  { href: "/cash-flow", label: "Dòng tiền", icon: CalendarRange },
   { href: "/reports", label: "Báo cáo", icon: BarChart3 },
   { href: "/settings", label: "Cài đặt", icon: Settings2 }
 ];

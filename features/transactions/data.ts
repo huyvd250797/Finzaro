@@ -249,7 +249,7 @@ export function quickTransactionSuggestions(
   transactions: TransactionView[],
   currencies: LedgerCurrency[],
   type: "income" | "expense" | "transfer",
-  limit = 8
+  limit = 10
 ): QuickTransactionSuggestion[] {
   const candidates = transactions.filter((transaction) => transaction.transaction_type === type).slice(0, 160);
   const groups = new Map<string, { transaction: TransactionView; count: number }>();

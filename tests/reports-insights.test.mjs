@@ -39,6 +39,6 @@ test("Financial Insights are rule based and CSV export is authenticated", () => 
 });
 
 test("current app version is V0.3.0 Forecasting & Scenario Planning", () => {
-  assert.match(version, /APP_VERSION = "0\.3\.0"/);
-  assert.match(version, /Forecasting & Scenario Planning/);
+  assert.match(version, /APP_VERSION = "0\.4\.0"/);
+  assert.match(version, /Smart Cash Flow Planner/);
 });
