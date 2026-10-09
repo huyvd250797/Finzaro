@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Activity, AlertTriangle, ArrowRight, Banknote, CalendarClock, CalendarRange, CircleDollarSign, CreditCard, HeartPulse, Landmark, PiggyBank, Plus, Scale, Smartphone, Sparkles, Target, TrendingDown, TrendingUp, WalletCards } from "lucide-react";
+import { Activity, AlertTriangle, ArrowRight, Banknote, CalendarClock, CalendarRange, CircleDollarSign, Coins, CreditCard, HeartPulse, Landmark, PiggyBank, Plus, Scale, Smartphone, Sparkles, Target, TrendingDown, TrendingUp, WalletCards } from "lucide-react";
 import { formatMinorMoney } from "@/lib/utils";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { StatCard } from "@/components/stat-card";
@@ -12,6 +12,7 @@ import { loadFinancialGoalPlan } from "@/features/goals/planner-data";
 import { depositProjections, depositSummary, loadDeposits } from "@/features/deposits/data";
 import { loanProjections, loanSummary, loadLoans } from "@/features/loans/data";
 import { creditCardSummary, loadCreditCards, projectCreditCards } from "@/features/credit-cards/data";
+import { investmentAssetSummary, investmentAssetViews, loadInvestmentAssets } from "@/features/assets/data";
 import { requireUser } from "@/lib/auth";
 import { loadRecurringData, projectRecurringOccurrences, todayInTimeZone as recurringToday } from "@/features/recurring/data";
 import type { AccountType } from "@/features/accounts/constants";
@@ -36,13 +37,14 @@ export default async function OverviewPage() {
   const totalMinor = accounts.filter((account) => account.currency_code === defaultCurrency).reduce((sum, account) => sum + account.current_balance_minor, 0);
   const currentMonth = currentMonthKey(timeZone);
   const recurringTodayKey = recurringToday(timeZone);
-  const [currentBudgets, recurring, goalData, depositData, loanData, creditCardData, healthSnapshotResult, goalPlanData] = await Promise.all([
+  const [currentBudgets, recurring, goalData, depositData, loanData, creditCardData, assetData, healthSnapshotResult, goalPlanData] = await Promise.all([
     loadBudgets(supabase, userId, monthStartFromKey(currentMonth), false),
     loadRecurringData(supabase, userId),
     loadSavingsGoals(supabase, userId, false),
     loadDeposits(supabase, userId, false),
     loadLoans(supabase, userId, false),
     loadCreditCards(supabase, userId, false),
+    loadInvestmentAssets(supabase, userId, false),
     (supabase as any).from("financial_health_snapshots").select("overall_score, data_confidence, snapshot_date").eq("user_id", userId).eq("currency_code", defaultCurrency).order("snapshot_date", { ascending: false }).limit(1).maybeSingle(),
     loadFinancialGoalPlan(supabase, userId, defaultCurrency)
   ]);
@@ -58,8 +60,10 @@ export default async function OverviewPage() {
   const loanState = loanSummary(loanRows, defaultCurrency);
   const creditCardRows = projectCreditCards(creditCardData.cards, creditCardData.statements, creditCardData.payments, creditCardData.accounts, recurringTodayKey);
   const creditCardState = creditCardSummary(creditCardRows, defaultCurrency);
+  const assetRows = investmentAssetViews(assetData.assets, assetData.valuations, assetData.accounts);
+  const assetState = investmentAssetSummary(assetRows, defaultCurrency);
   const lastHealthSnapshot = healthSnapshotResult?.data ?? null;
-  const netWorthAssets = totalMinor + depositState.principal;
+  const netWorthAssets = totalMinor + depositState.principal + assetState.currentValue;
   const netWorthLiabilities = loanState.remaining + creditCardState.totalBalance;
   const netWorth = netWorthAssets - netWorthLiabilities;
   const current = monthTotals(ledger.transactions, defaultCurrency, currentMonth);
@@ -99,6 +103,15 @@ export default async function OverviewPage() {
             <p className="mt-1 text-xs text-[var(--muted-foreground)]">Net Worth {formatMinorMoney(netWorth, defaultCurrency, digits)} · Tài sản {formatMinorMoney(netWorthAssets, defaultCurrency, digits)} · Nợ {formatMinorMoney(netWorthLiabilities, defaultCurrency, digits)}</p>
           </div>
           <Link href="/net-worth" className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[var(--border)] px-3 text-xs font-bold">Financial Position <ArrowRight className="size-3.5" /></Link>
+        </CardContent>
+      </Card>
+
+
+      <Card className="mt-4 fin-card border-violet-500/20">
+        <CardContent className="flex min-w-0 flex-wrap items-center gap-4 p-5">
+          <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-violet-500/10 text-violet-600"><Coins className="size-5" /></div>
+          <div className="min-w-[180px] flex-1"><h2 className="font-black">Đầu tư & tài sản</h2><p className="mt-1 text-xs text-[var(--muted-foreground)]">{assetState.count > 0 ? `Giá trị ${formatMinorMoney(assetState.currentValue, defaultCurrency, digits)} · lãi/lỗ ${formatMinorMoney(assetState.gainLoss, defaultCurrency, digits)} · ${assetState.count} tài sản` : `Chưa có tài sản đầu tư nào bằng ${defaultCurrency}.`}</p></div>
+          <Link href="/assets" className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[var(--border)] px-3 text-xs font-bold">Quản lý tài sản <ArrowRight className="size-3.5" /></Link>
         </CardContent>
       </Card>
 

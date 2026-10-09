@@ -31,6 +31,7 @@ export type TransactionCategory = Pick<CategoryRow, "id" | "name" | "icon_name" 
 export type TransactionView = {
   id: string;
   transaction_type: string;
+  transaction_purpose: string;
   title: string;
   category_id: string | null;
   category_label: string | null;
@@ -56,7 +57,7 @@ export async function loadLedger(
       const pageSize = Math.min(batchSize, requestedLimit - rows.length);
       let query = supabase
         .from("transactions")
-        .select("id, transaction_type, title, category_id, category_label, notes, transaction_date, created_at, categories(id, name, icon_name, icon_color, category_type, parent_id, is_archived), transaction_entries(id, transaction_id, account_id, currency_code, amount_minor, entry_role)")
+        .select("id, transaction_type, transaction_purpose, title, category_id, category_label, notes, transaction_date, created_at, categories(id, name, icon_name, icon_color, category_type, parent_id, is_archived), transaction_entries(id, transaction_id, account_id, currency_code, amount_minor, entry_role)")
         .eq("user_id", userId)
         .order("transaction_date", { ascending: false })
         .order("created_at", { ascending: false })
@@ -106,6 +107,7 @@ export async function loadLedger(
     return {
       id: transaction.id,
       transaction_type: transaction.transaction_type,
+      transaction_purpose: transaction.transaction_purpose ?? "standard",
       title: transaction.title,
       category_id: transaction.category_id,
       category_label: transaction.category_label,
@@ -192,7 +194,7 @@ export function monthTotals(transactions: TransactionView[], defaultCurrency: st
     if (transaction.transaction_type === "income") {
       const entry = transactionEntry(transaction, "income");
       if (entry?.currency_code === defaultCurrency) income += entry.amount_minor;
-    } else if (transaction.transaction_type === "expense") {
+    } else if (transaction.transaction_type === "expense" && transaction.transaction_purpose === "standard") {
       const entry = transactionEntry(transaction, "expense");
       if (entry?.currency_code === defaultCurrency) expense += Math.abs(entry.amount_minor);
     }
@@ -210,7 +212,7 @@ export function cashflowSeries(transactions: TransactionView[], defaultCurrency:
 export function expenseCategories(transactions: TransactionView[], defaultCurrency: string, targetMonth: string) {
   const totals = new Map<string, { label: string; icon_name: string; icon_color: string | null; value: number }>();
   for (const transaction of transactions) {
-    if (transaction.transaction_type !== "expense" || !transaction.transaction_date.startsWith(targetMonth)) continue;
+    if (transaction.transaction_type !== "expense" || transaction.transaction_purpose !== "standard" || !transaction.transaction_date.startsWith(targetMonth)) continue;
     const entry = transactionEntry(transaction, "expense");
     if (!entry || entry.currency_code !== defaultCurrency) continue;
     const key = transaction.category_id ?? transaction.category_label ?? "uncategorized";
@@ -251,7 +253,7 @@ export function quickTransactionSuggestions(
   type: "income" | "expense" | "transfer",
   limit = 10
 ): QuickTransactionSuggestion[] {
-  const candidates = transactions.filter((transaction) => transaction.transaction_type === type).slice(0, 160);
+  const candidates = transactions.filter((transaction) => transaction.transaction_type === type && (type === "transfer" || transaction.transaction_purpose === "standard")).slice(0, 160);
   const groups = new Map<string, { transaction: TransactionView; count: number }>();
 
   for (const transaction of candidates) {

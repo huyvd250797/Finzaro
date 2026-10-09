@@ -66,12 +66,12 @@ function GoalForm({
   editing
 }: {
   currencies: Currency[];
-  accounts: Array<{ id: string; name: string; currency_code: string; is_archived: boolean }>;
+  accounts: Array<{ id: string; name: string; currency_code: string; account_type: string; is_archived: boolean }>;
   editing?: SavingsGoalProgress | null;
 }) {
   const currency = editing?.currency_code ?? "VND";
   const digits = currencies.find((item) => item.code === currency)?.decimal_digits ?? 0;
-  const compatibleAccounts = editing ? accounts.filter((account) => account.currency_code === editing.currency_code && !account.is_archived) : accounts.filter((account) => !account.is_archived);
+  const compatibleAccounts = editing ? accounts.filter((account) => account.account_type === "savings" && account.currency_code === editing.currency_code && !account.is_archived) : accounts.filter((account) => account.account_type === "savings" && !account.is_archived);
 
   return (
     <Card className="border-emerald-500/25 shadow-2xl">
@@ -80,7 +80,7 @@ function GoalForm({
           <div>
             <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--primary)]">Savings Goals</p>
             <h2 className="mt-1 text-xl font-black">{editing ? `Sửa ${editing.name}` : "Mục tiêu tiết kiệm mới"}</h2>
-            <p className="mt-1 text-sm text-[var(--muted-foreground)]">Theo dõi tiến độ mà không làm thay đổi số dư ledger. Tài khoản liên kết chỉ dùng để đối chiếu và liên kết giao dịch.</p>
+            <p className="mt-1 text-sm text-[var(--muted-foreground)]">Có thể theo dõi độc lập hoặc liên kết một tài khoản Savings. Khi Chuyển tiền vào/ra tài khoản liên kết, tiến độ Goal tự tăng/giảm từ ledger.</p>
           </div>
           <button type="button" data-instant-close aria-label="Đóng" className="grid size-9 place-items-center rounded-xl border border-[var(--border)] text-[var(--muted-foreground)]"><X className="size-4" /></button>
         </div>
@@ -121,9 +121,10 @@ function GoalForm({
           <label className="block">
             <span className="mb-2 block text-xs font-black uppercase tracking-wide text-[var(--muted-foreground)]">Tài khoản liên kết</span>
             <select name="linked_account_id" defaultValue={editing?.linked_account_id ?? ""} className="h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 text-sm">
-              <option value="">Không liên kết</option>
+              <option value="">Không liên kết · theo dõi độc lập</option>
               {compatibleAccounts.map((account) => <option key={account.id} value={account.id}>{account.name} · {account.currency_code}</option>)}
             </select>
+            <span className="mt-1 block text-[11px] leading-4 text-[var(--muted-foreground)]">Mỗi Savings Account chỉ liên kết một Goal đang hoạt động. Transfer vào sẽ tạo Contribution tự động; transfer ra sẽ giảm tiến độ.</span>
           </label>
 
           <label className="block md:col-span-2">
@@ -253,7 +254,7 @@ export default async function GoalsPage({ searchParams }: { searchParams: Search
 
                   {!goal.is_archived && (
                     <div className="mt-5 flex flex-wrap gap-2">
-                      <InstantReveal label="Ghi nhận" icon={false}><EntryForm goal={goal} today={today} digits={digits} transactions={ledger.transactions} /></InstantReveal>
+                      {goal.linked_account ? <span className="inline-flex h-10 items-center rounded-xl border border-emerald-500/20 bg-emerald-500/[.06] px-3 text-xs font-black text-emerald-700 dark:text-emerald-300">Tự đồng bộ qua Chuyển tiền</span> : <InstantReveal label="Ghi nhận" icon={false}><EntryForm goal={goal} today={today} digits={digits} transactions={ledger.transactions} /></InstantReveal>}
                       <InstantReveal label="Sửa" icon={false}><GoalForm currencies={currencies} accounts={goalData.accounts} editing={goal} /></InstantReveal>
                       <form action={setSavingsGoalArchivedAction}><input type="hidden" name="goal_id" value={goal.id} /><input type="hidden" name="archived" value="true" /><PendingSubmitButton idleLabel="Lưu trữ" pendingLabel="Đang lưu trữ..." className="h-10 rounded-xl border border-[var(--border)] px-3.5 text-xs font-black" /></form>
                     </div>
@@ -271,7 +272,7 @@ export default async function GoalsPage({ searchParams }: { searchParams: Search
         </div>
       )}
 
-      <Card className="mt-5 border-sky-500/20"><CardContent className="p-5 text-sm leading-6 text-[var(--muted-foreground)]"><strong className="text-[var(--foreground)]">Nguyên tắc dữ liệu:</strong> Savings Goal là lớp lập kế hoạch/earmarking, không tự trừ tiền khỏi tài khoản. Muốn số dư thật thay đổi, hãy tạo Income/Expense/Transfer trong Transaction Core; sau đó có thể liên kết transaction phù hợp vào lịch sử mục tiêu để giữ trace giữa kế hoạch và ledger.</CardContent></Card>
+      <Card className="mt-5 border-sky-500/20"><CardContent className="p-5 text-sm leading-6 text-[var(--muted-foreground)]"><strong className="text-[var(--foreground)]">Nguyên tắc dữ liệu V0.6.0:</strong> Goal không liên kết vẫn theo dõi độc lập. Nếu Goal liên kết Savings Account, Transaction Ledger là source of truth: Chuyển tiền vào account tự tăng Goal, chuyển ra tự giảm Goal; không cần ghi Contribution lần hai.</CardContent></Card>
     </div>
   );
 }

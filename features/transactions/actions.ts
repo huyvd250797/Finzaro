@@ -40,7 +40,15 @@ function safeDbMessage(error: unknown, fallback: string) {
     "Transfer requires two different accounts",
     "Transfer amounts",
     "One or more transfer accounts",
-    "Transaction was not found"
+    "Transaction was not found",
+    "Credit card",
+    "credit card",
+    "Loan",
+    "loan",
+    "payment",
+    "liability",
+    "savings account",
+    "savings goal"
   ];
   return known.some((item) => message.includes(item)) ? message : fallback;
 }
@@ -56,15 +64,24 @@ export async function createTransactionAction(formData: FormData) {
     const toAccountId = text(formData, "to_account_id") || null;
     const fromAmountInput = text(formData, "from_amount");
     const toAmountInput = text(formData, "to_amount");
+    const transactionPurpose = text(formData, "transaction_purpose") || "standard";
+    const creditCardId = text(formData, "credit_card_id") || null;
+    const loanId = text(formData, "loan_id") || null;
+    const loanPrincipalInput = text(formData, "loan_principal");
+    const loanInterestInput = text(formData, "loan_interest");
+    const loanFeeInput = text(formData, "loan_fee");
 
     if (!isTransactionType(transactionType)) throw new Error("Loại giao dịch không hợp lệ.");
     if (title.length < 1 || title.length > 140) throw new Error("Nội dung giao dịch phải từ 1 đến 140 ký tự.");
     if (notes.length > 500) throw new Error("Ghi chú tối đa 500 ký tự.");
     if (!validDate(transactionDate)) throw new Error("Ngày giao dịch không hợp lệ.");
-    if (transactionType !== "transfer" && !categoryId) throw new Error("Vui lòng chọn danh mục.");
+    if (transactionType !== "transfer" && transactionPurpose === "standard" && !categoryId) throw new Error("Vui lòng chọn danh mục.");
+    if (transactionType !== "expense" && transactionPurpose !== "standard") throw new Error("Mục đích thanh toán nợ chỉ áp dụng cho Chi tiền.");
+    if (transactionPurpose === "credit_card_payment" && !creditCardId) throw new Error("Vui lòng chọn thẻ tín dụng cần thanh toán.");
+    if (transactionPurpose === "loan_payment" && !loanId) throw new Error("Vui lòng chọn khoản vay cần thanh toán.");
 
     const { supabase, userId } = await requireUser();
-    if (transactionType !== "transfer" && categoryId) {
+    if (transactionType !== "transfer" && transactionPurpose === "standard" && categoryId) {
       const { data: category, error: categoryError } = await supabase
         .from("categories")
         .select("id, category_type, is_archived")
@@ -94,13 +111,24 @@ export async function createTransactionAction(formData: FormData) {
     const digitsByCode = new Map(activeCurrencies.map((currency) => [currency.code, currency.decimal_digits]));
     let fromAmountMinor: number | null = null;
     let toAmountMinor: number | null = null;
+    let loanPrincipalMinor: number | null = null;
+    let loanInterestMinor: number | null = null;
+    let loanFeeMinor: number | null = null;
 
     if (transactionType === "expense" || transactionType === "transfer") {
       if (!fromAccountId) throw new Error("Vui lòng chọn tài khoản nguồn.");
       const source = accountById.get(fromAccountId);
       if (!source) throw new Error("Tài khoản nguồn không hợp lệ.");
-      fromAmountMinor = parseMajorAmountToMinor(fromAmountInput, digitsByCode.get(source.currency_code) ?? 0);
+      const sourceDigits = digitsByCode.get(source.currency_code) ?? 0;
+      fromAmountMinor = parseMajorAmountToMinor(fromAmountInput, sourceDigits);
       if (fromAmountMinor === null || fromAmountMinor <= 0) throw new Error(`Số tiền nguồn không hợp lệ cho ${source.currency_code}.`);
+      if (transactionType === "expense" && transactionPurpose === "loan_payment") {
+        loanPrincipalMinor = parseMajorAmountToMinor(loanPrincipalInput || "0", sourceDigits);
+        loanInterestMinor = parseMajorAmountToMinor(loanInterestInput || "0", sourceDigits);
+        loanFeeMinor = parseMajorAmountToMinor(loanFeeInput || "0", sourceDigits);
+        if ([loanPrincipalMinor, loanInterestMinor, loanFeeMinor].some((value) => value === null || value! < 0)) throw new Error("Phân bổ gốc/lãi/phí khoản vay không hợp lệ.");
+        if ((loanPrincipalMinor ?? 0) + (loanInterestMinor ?? 0) + (loanFeeMinor ?? 0) !== fromAmountMinor) throw new Error("Tổng gốc + lãi + phí phải bằng số tiền Chi tiền.");
+      }
     }
 
     if (transactionType === "income") {
@@ -125,16 +153,22 @@ export async function createTransactionAction(formData: FormData) {
       }
     }
 
-    const { error } = await supabase.rpc("create_financial_transaction_v005", {
+    const { error } = await (supabase as any).rpc("create_financial_transaction_v060", {
       p_transaction_type: transactionType,
       p_title: title,
-      p_category_id: transactionType === "transfer" ? null : categoryId,
+      p_category_id: transactionType === "transfer" || transactionPurpose !== "standard" ? null : categoryId,
       p_notes: notes || null,
       p_transaction_date: transactionDate,
       p_from_account_id: fromAccountId,
       p_to_account_id: toAccountId,
       p_from_amount_minor: fromAmountMinor,
-      p_to_amount_minor: toAmountMinor
+      p_to_amount_minor: toAmountMinor,
+      p_transaction_purpose: transactionType === "transfer" ? "transfer" : transactionPurpose,
+      p_credit_card_id: transactionPurpose === "credit_card_payment" ? creditCardId : null,
+      p_loan_id: transactionPurpose === "loan_payment" ? loanId : null,
+      p_loan_principal_minor: transactionPurpose === "loan_payment" ? loanPrincipalMinor : null,
+      p_loan_interest_minor: transactionPurpose === "loan_payment" ? loanInterestMinor : null,
+      p_loan_fee_minor: transactionPurpose === "loan_payment" ? loanFeeMinor : null
     });
 
     if (error) throw new Error(safeDbMessage(error, "Không thể tạo giao dịch. Vui lòng kiểm tra dữ liệu và thử lại."));
@@ -142,7 +176,11 @@ export async function createTransactionAction(formData: FormData) {
     revalidatePath("/transactions");
     revalidatePath("/overview");
     revalidatePath("/accounts");
-    redirect(destination("message", "Đã ghi nhận giao dịch với Category Engine và cập nhật số dư."));
+    revalidatePath("/credit-cards");
+    revalidatePath("/loans");
+    revalidatePath("/goals");
+    revalidatePath("/net-worth");
+    redirect(destination("message", transactionPurpose === "credit_card_payment" ? "Đã chi tiền thanh toán thẻ và giảm dư nợ tín dụng." : transactionPurpose === "loan_payment" ? "Đã chi tiền thanh toán khoản vay và cập nhật dư nợ." : transactionType === "transfer" ? "Đã chuyển tiền; mục tiêu liên kết (nếu có) đã tự đồng bộ." : "Đã ghi nhận giao dịch và cập nhật số dư."));
   } catch (error) {
     if (error && typeof error === "object" && "digest" in error) throw error;
     redirect(destination("error", error instanceof Error ? error.message : "Không thể tạo giao dịch."));
@@ -155,13 +193,17 @@ export async function deleteTransactionAction(formData: FormData) {
 
   try {
     const { supabase } = await requireUser();
-    const { error } = await supabase.rpc("delete_financial_transaction_v005", { p_transaction_id: transactionId });
+    const { error } = await (supabase as any).rpc("delete_financial_transaction_v060", { p_transaction_id: transactionId });
     if (error) throw new Error(safeDbMessage(error, "Không thể xóa giao dịch."));
 
     revalidatePath("/transactions");
     revalidatePath("/overview");
     revalidatePath("/accounts");
-    redirect(destination("message", "Đã xóa giao dịch và hoàn nguyên số dư."));
+    revalidatePath("/credit-cards");
+    revalidatePath("/loans");
+    revalidatePath("/goals");
+    revalidatePath("/net-worth");
+    redirect(destination("message", "Đã xóa giao dịch và hoàn nguyên số dư/liability/goal liên quan."));
   } catch (error) {
     if (error && typeof error === "object" && "digest" in error) throw error;
     redirect(destination("error", error instanceof Error ? error.message : "Không thể xóa giao dịch."));
@@ -185,9 +227,10 @@ export async function updateTransactionAction(formData: FormData) {
     if (!categoryId || !accountId) throw new Error("Vui lòng chọn danh mục và tài khoản.");
 
     const { supabase, userId } = await requireUser();
-    const { data: transaction, error: transactionError } = await supabase.from("transactions").select("transaction_type").eq("id", transactionId).eq("user_id", userId).maybeSingle();
+    const { data: transaction, error: transactionError } = await supabase.from("transactions").select("transaction_type, transaction_purpose").eq("id", transactionId).eq("user_id", userId).maybeSingle();
     if (transactionError || !transaction) throw new Error("Không tìm thấy giao dịch.");
-    if (!['income','expense'].includes(transaction.transaction_type)) throw new Error("V0.0.12 chỉ cho phép sửa khoản thu/chi. Chuyển tiền vẫn giữ bất biến để bảo vệ ledger.");
+    if (!['income','expense'].includes(transaction.transaction_type)) throw new Error("Chỉ cho phép sửa khoản thu/chi thông thường. Chuyển tiền vẫn giữ bất biến để bảo vệ ledger.");
+    if ((transaction as any).transaction_purpose && (transaction as any).transaction_purpose !== 'standard') throw new Error("Khoản Chi tiền đang liên kết thẻ tín dụng/khoản vay. Hãy xóa và ghi lại để bảo vệ dữ liệu dư nợ.");
 
     const [{ data: category, error: categoryError }, { data: account, error: accountError }] = await Promise.all([
       supabase.from("categories").select("category_type,is_archived").eq("id", categoryId).eq("user_id", userId).maybeSingle(),

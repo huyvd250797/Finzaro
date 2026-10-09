@@ -68,6 +68,6 @@ test("saved theme is applied before splash paint", () => {
 });
 
 test("current feature release follows X.Y.Z at V0.3.0", () => {
-  assert.match(version, /APP_VERSION = "0\.5\.0"/);
-  assert.match(version, /Financial Goals Planner/);
+  assert.match(version, /APP_VERSION = "0\.6\.0"/);
+  assert.match(version, /Investment & Asset Tracking/);
 });

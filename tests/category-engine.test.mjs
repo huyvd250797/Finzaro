@@ -53,7 +53,7 @@ test("category management supports icon setup and archive lifecycle", () => {
 });
 
 test("Transaction Core is upgraded to structured category IDs", () => {
-  assert.match(txActions, /create_financial_transaction_v005/);
+  assert.match(txActions, /create_financial_transaction_v060/);
   assert.match(txActions, /p_category_id/);
   assert.doesNotMatch(txActions, /p_category_label/);
   assert.match(txData, /categories\(id, name, icon_name, icon_color, category_type, parent_id, is_archived\)/);
@@ -62,6 +62,6 @@ test("Transaction Core is upgraded to structured category IDs", () => {
 });
 
 test("current app version is V0.3.0 Forecasting & Scenario Planning", () => {
-  assert.match(version, /APP_VERSION = "0\.5\.0"/);
-  assert.match(version, /Financial Goals Planner/);
+  assert.match(version, /APP_VERSION = "0\.6\.0"/);
+  assert.match(version, /Investment & Asset Tracking/);
 });

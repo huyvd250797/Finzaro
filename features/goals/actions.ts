@@ -26,7 +26,7 @@ function safeMessage(error: unknown, fallback: string) {
   if (!error || typeof error !== "object" || !("message" in error)) return fallback;
   const message = String(error.message);
   if (/transaction_unique|duplicate key/i.test(message)) return "Giao dịch này đã được liên kết với một lần đóng góp/rút tiền khác.";
-  const allowed = ["Savings goal", "Linked savings account", "currency", "Archived", "ledger amount", "transaction"];
+  const allowed = ["Savings goal", "Linked savings account", "savings account", "currency", "Archived", "ledger amount", "transaction"];
   return allowed.some((part) => message.toLowerCase().includes(part.toLowerCase())) ? message : fallback;
 }
 
@@ -61,9 +61,10 @@ async function validateGoalMetadata(formData: FormData, mode: "create" | "update
   if (targetAmountMinor === null || targetAmountMinor <= 0) throw new Error(`Số tiền mục tiêu không hợp lệ cho ${currencyCode}.`);
 
   if (linkedAccountId) {
-    const { data: account, error: accountError } = await supabase.from("accounts").select("id, currency_code, is_archived").eq("id", linkedAccountId).eq("user_id", userId).maybeSingle();
+    const { data: account, error: accountError } = await supabase.from("accounts").select("id, currency_code, is_archived, account_type").eq("id", linkedAccountId).eq("user_id", userId).maybeSingle();
     if (accountError || !account) throw new Error("Không tìm thấy tài khoản liên kết.");
     if (account.currency_code !== currencyCode) throw new Error("Tiền tệ mục tiêu phải trùng với tài khoản liên kết.");
+    if (account.account_type !== "savings") throw new Error("Mục tiêu chỉ có thể liên kết với tài khoản tiết kiệm.");
     if (account.is_archived) throw new Error("Không thể liên kết tài khoản đã lưu trữ.");
   }
 
@@ -142,9 +143,10 @@ export async function addSavingsGoalEntryAction(formData: FormData) {
     if (entryType === "adjustment" && transactionId) throw new Error("Điều chỉnh thủ công không thể liên kết Transaction.");
 
     const { supabase, userId } = await requireUser();
-    const { data: goal, error: goalError } = await supabase.from("savings_goals").select("currency_code, is_archived").eq("id", goalId).eq("user_id", userId).maybeSingle();
+    const { data: goal, error: goalError } = await supabase.from("savings_goals").select("currency_code, is_archived, linked_account_id").eq("id", goalId).eq("user_id", userId).maybeSingle();
     if (goalError || !goal) throw new Error("Không tìm thấy mục tiêu tiết kiệm.");
     if (goal.is_archived) throw new Error("Mục tiêu đã lưu trữ không thể nhận cập nhật mới.");
+    if ((goal as any).linked_account_id && entryType !== "adjustment" && !transactionId) throw new Error("Mục tiêu này đang liên kết tài khoản tiết kiệm. Hãy dùng Chuyển tiền để tiến độ tự đồng bộ, tránh ghi trùng.");
     const { data: currency, error: currencyError } = await supabase.from("supported_currencies").select("decimal_digits").eq("code", goal.currency_code).eq("is_active", true).maybeSingle();
     if (currencyError || !currency) throw new Error("Không thể đọc cấu hình tiền tệ mục tiêu.");
 

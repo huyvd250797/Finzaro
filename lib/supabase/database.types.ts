@@ -225,6 +225,7 @@ export type Database = {
           title: string;
           transaction_date: string;
           transaction_type: string;
+          transaction_purpose: string;
           updated_at: string;
           user_id: string;
         };
@@ -237,6 +238,7 @@ export type Database = {
           title: string;
           transaction_date?: string;
           transaction_type: string;
+          transaction_purpose?: string;
           updated_at?: string;
           user_id: string;
         };
@@ -249,6 +251,7 @@ export type Database = {
           title?: string;
           transaction_date?: string;
           transaction_type?: string;
+          transaction_purpose?: string;
           updated_at?: string;
           user_id?: string;
         };

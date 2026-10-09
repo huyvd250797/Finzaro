@@ -29,6 +29,7 @@ export async function saveNetWorthSnapshotAction(formData: FormData) {
       currency_code: currencyCode,
       account_assets_minor: summary.account_assets_minor,
       deposit_assets_minor: summary.deposit_assets_minor,
+      investment_assets_minor: summary.investment_assets_minor,
       loan_liabilities_minor: summary.loan_liabilities_minor,
       credit_card_liabilities_minor: summary.credit_card_liabilities_minor,
       total_assets_minor: summary.total_assets_minor,

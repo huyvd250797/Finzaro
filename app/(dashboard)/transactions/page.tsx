@@ -13,6 +13,8 @@ import { minorToMajorInput } from "@/features/accounts/money";
 import { updateTransactionAction } from "@/features/transactions/actions";
 import { isTransactionType } from "@/features/transactions/constants";
 import { currencyDigits, filterTransactions, loadLedger, monthTotals, currentMonthKey, quickTransactionSuggestions, transactionEntry, type LedgerCurrency, type TransactionView } from "@/features/transactions/data";
+import { loadLoans, loanProjections } from "@/features/loans/data";
+import { loadCreditCards, projectCreditCards } from "@/features/credit-cards/data";
 import { requireUser } from "@/lib/auth";
 import { formatMinorMoney } from "@/lib/utils";
 
@@ -69,6 +71,19 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
   const expenseSuggestions = quickTransactionSuggestions(ledger.transactions, ledger.currencies, "expense");
   const incomeSuggestions = quickTransactionSuggestions(ledger.transactions, ledger.currencies, "income");
   const transferSuggestions = quickTransactionSuggestions(ledger.transactions, ledger.currencies, "transfer");
+  const [loanData, creditData] = await Promise.all([loadLoans(supabase, userId, false), loadCreditCards(supabase, userId, false)]);
+  const loanRows = loanProjections(loanData.loans, loanData.payments, loanData.accounts, today).filter((loan) => !loan.is_archived && loan.remaining_principal_minor > 0);
+  const cardRows = projectCreditCards(creditData.cards, creditData.statements, creditData.payments, creditData.accounts, today).filter((card) => !card.is_archived && card.current_balance_minor > 0);
+  const creditCardOptions = cardRows.map((card) => { const cardDigits = currencyDigits(ledger.currencies, card.currency_code); return { id: card.id, name: card.name, bank_name: card.bank_name, last4: card.last4, currency_code: card.currency_code, current_balance_minor: card.current_balance_minor, balance_label: formatMinorMoney(card.current_balance_minor, card.currency_code, cardDigits) }; });
+  const loanOptions = loanRows.map((loan) => {
+    const loanDigits = currencyDigits(ledger.currencies, loan.currency_code);
+    const next = loan.schedule.find((row) => row.remaining_minor < loan.remaining_principal_minor) ?? loan.schedule[0] ?? null;
+    const principal = Math.min(loan.remaining_principal_minor, next?.principal_minor ?? loan.remaining_principal_minor);
+    const interest = next?.interest_minor ?? 0;
+    const fee = 0;
+    const toMajor = (minor: number) => minorToMajorInput(minor, loanDigits);
+    return { id: loan.id, name: loan.name, lender_name: loan.lender_name, currency_code: loan.currency_code, remaining_principal_minor: loan.remaining_principal_minor, remaining_label: formatMinorMoney(loan.remaining_principal_minor, loan.currency_code, loanDigits), suggested_total: toMajor(principal + interest + fee), suggested_principal: toMajor(principal), suggested_interest: toMajor(interest), suggested_fee: toMajor(fee) };
+  });
   const newType = params.new && isTransactionType(params.new) ? params.new : null;
   const editing = params.edit ? ledger.transactions.find((tx) => tx.id === params.edit && (tx.transaction_type === "income" || tx.transaction_type === "expense")) ?? null : null;
   const filtered = filterTransactions(ledger.transactions, { q: params.q, type: params.type, account: params.account, category: params.category, from: params.from, to: params.to });
@@ -76,7 +91,7 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
   const totals = monthTotals(ledger.transactions, defaultCurrency, currentMonthKey(timeZone));
 
   return <div className="mx-auto max-w-[1500px] min-w-0 px-4 py-6 md:px-6 lg:px-8 lg:py-8">
-    <div className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-sm font-semibold text-[var(--primary)]">Money · Ledger</p><h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">Giao dịch</h1><p className="mt-2 max-w-3xl text-sm text-[var(--muted-foreground)]">Thu nhập, chi tiêu, chuyển tiền và chỉnh sửa các khoản thu/chi đã nhập với số dư được tái tính atomic.</p></div><InstantTransactionLauncher initialType={newType} expense={<TransactionEntryForm type="expense" accounts={activeAccounts} categories={expenseCategories} today={today} suggestions={expenseSuggestions} />} income={<TransactionEntryForm type="income" accounts={activeAccounts} categories={incomeCategories} today={today} suggestions={incomeSuggestions} />} transfer={<TransactionEntryForm type="transfer" accounts={activeAccounts} categories={[]} today={today} suggestions={transferSuggestions} />} /></div>
+    <div className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-sm font-semibold text-[var(--primary)]">Money · Ledger</p><h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">Giao dịch</h1><p className="mt-2 max-w-3xl text-sm text-[var(--muted-foreground)]">Thu tiền, Chi tiền (kể cả trả thẻ/khoản vay) và Chuyển tiền giữa tài khoản với liên kết Goal tự động.</p></div><InstantTransactionLauncher initialType={newType} expense={<TransactionEntryForm type="expense" accounts={activeAccounts} categories={expenseCategories} today={today} suggestions={expenseSuggestions} creditCards={creditCardOptions} loans={loanOptions} />} income={<TransactionEntryForm type="income" accounts={activeAccounts} categories={incomeCategories} today={today} suggestions={incomeSuggestions} />} transfer={<TransactionEntryForm type="transfer" accounts={activeAccounts} categories={[]} today={today} suggestions={transferSuggestions} />} /></div>
     <AuthMessage error={params.error} message={params.message} />
     {editing && <EditTransactionForm transaction={editing} accounts={activeAccounts} categories={editing.transaction_type === "income" ? incomeCategories : expenseCategories} currencies={ledger.currencies} />}
 

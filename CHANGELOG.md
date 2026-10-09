@@ -1,5 +1,19 @@
 # Changelog
 
+## V0.6.0 — Investment & Asset Tracking
+- Thêm `/assets`, `investment_assets`, `asset_valuations`, asset allocation và unrealized gain/loss.
+- Tích hợp Investment Assets vào Net Worth snapshot và Dashboard.
+- Nâng Transaction Core lên `create_financial_transaction_v060` / `delete_financial_transaction_v060`.
+- Chi tiền có thể thanh toán trực tiếp Credit Card hoặc Loan đang quản lý trong app.
+- Loan payment hỗ trợ split Principal / Interest / Fee; chỉ Principal giảm dư nợ.
+- Transfer vào/ra Savings Account liên kết tự động tăng/giảm Savings Goal.
+- Hạn chế một Savings Account cho một active Goal để tránh double-count.
+- Recurring Transfer cũng đi qua V0.6.0 core để Goal liên kết tự đồng bộ.
+- Liability-linked transactions không được tính vào lifestyle expense/category totals.
+- Backfill `transaction_purpose` cho payment Credit Card/Loan và Transfer cũ để báo cáo không double-count sau nâng cấp.
+- Goal auto-sync chỉ áp dụng cho Savings Account; DB chặn một Savings Account liên kết nhiều active Goal.
+- Version bump `0.5.0 → 0.6.0`.
+
 ## V0.5.0 — Financial Goals Planner
 - Thêm module Financial Goals Planner và route `/goal-planner`.
 - Điều phối nhiều Savings Goal theo monthly funding pool.
@@ -42,4 +56,4 @@
 
 ## Next
 
-V0.5.0 — Financial Goals Planner.
+V0.7.0 — Advanced Debt Strategy.

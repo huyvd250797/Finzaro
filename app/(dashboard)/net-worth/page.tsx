@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Banknote, CircleDollarSign, CreditCard, Landmark, RefreshCw, Scale, ShieldCheck, TrendingDown, TrendingUp, WalletCards } from "lucide-react";
+import { ArrowRight, Banknote, CircleDollarSign, Coins, CreditCard, Landmark, RefreshCw, Scale, ShieldCheck, TrendingDown, TrendingUp, WalletCards } from "lucide-react";
 import { AuthMessage } from "@/components/auth-message";
 import { PendingSubmitButton } from "@/components/pending-submit-button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -48,7 +48,8 @@ export default async function NetWorthPage({ searchParams }: { searchParams: Sea
 
   const assetRows = [
     { label: "Tài khoản", value: summary.account_assets_minor, icon: WalletCards, href: "/accounts" },
-    { label: "Tiền gửi", value: summary.deposit_assets_minor, icon: Landmark, href: "/deposits" }
+    { label: "Tiền gửi", value: summary.deposit_assets_minor, icon: Landmark, href: "/deposits" },
+    { label: "Đầu tư & tài sản", value: summary.investment_assets_minor, icon: Coins, href: "/assets" }
   ];
   const liabilityRows = [
     { label: "Khoản vay", value: summary.loan_liabilities_minor, icon: CircleDollarSign, href: "/loans" },
@@ -79,7 +80,7 @@ export default async function NetWorthPage({ searchParams }: { searchParams: Sea
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Card className="fin-card border-emerald-500/20"><CardContent><Scale className="size-5 text-[var(--primary)]" /><p className="fin-stat-label">Net Worth · {selectedCurrency}</p><p className={`fin-stat-value ${positiveNetWorth ? "text-emerald-600" : "text-rose-500"}`}>{formatMinorMoney(summary.net_worth_minor, selectedCurrency, digits)}</p><p className="fin-stat-help">Tài sản − Nợ phải trả</p></CardContent></Card>
-        <Card className="fin-card"><CardContent><TrendingUp className="size-5 text-emerald-600" /><p className="fin-stat-label">Tổng tài sản</p><p className="fin-stat-value">{formatMinorMoney(summary.total_assets_minor, selectedCurrency, digits)}</p><p className="fin-stat-help">Account + principal tiền gửi</p></CardContent></Card>
+        <Card className="fin-card"><CardContent><TrendingUp className="size-5 text-emerald-600" /><p className="fin-stat-label">Tổng tài sản</p><p className="fin-stat-value">{formatMinorMoney(summary.total_assets_minor, selectedCurrency, digits)}</p><p className="fin-stat-help">Account + tiền gửi + tài sản định giá</p></CardContent></Card>
         <Card className="fin-card"><CardContent><TrendingDown className="size-5 text-rose-500" /><p className="fin-stat-label">Tổng nghĩa vụ nợ</p><p className="fin-stat-value">{formatMinorMoney(summary.total_liabilities_minor, selectedCurrency, digits)}</p><p className="fin-stat-help">Loan + Credit Card balance</p></CardContent></Card>
         <Card className="fin-card"><CardContent><Banknote className="size-5 text-sky-600" /><p className="fin-stat-label">Tài sản thanh khoản</p><p className="fin-stat-value">{formatMinorMoney(summary.liquid_assets_minor, selectedCurrency, digits)}</p><p className="fin-stat-help">Số dư Account có thể truy cập</p></CardContent></Card>
       </div>
@@ -100,7 +101,7 @@ export default async function NetWorthPage({ searchParams }: { searchParams: Sea
         <Card className="fin-card"><CardHeader><div><h2 className="font-black">Cấu trúc thanh khoản</h2><p className="mt-1 text-xs text-[var(--muted-foreground)]">Breakdown số dư Account</p></div></CardHeader><CardContent className="space-y-3">{accountBreakdown.length === 0 ? <div className="rounded-xl border border-dashed border-[var(--border)] p-6 text-center text-xs text-[var(--muted-foreground)]">Chưa có Account bằng {selectedCurrency}.</div> : accountBreakdown.map((row) => { const percent = summary.account_assets_minor > 0 ? Math.round((row.value / summary.account_assets_minor) * 1000) / 10 : 0; return <div key={row.label}><div className="flex justify-between gap-3 text-xs"><span className="font-bold">{row.label}</span><span className="font-black">{formatMinorMoney(row.value, selectedCurrency, digits)} · {percent}%</span></div><div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[var(--muted)]"><div className="h-full rounded-full bg-[var(--primary)]" style={{ width: `${Math.min(100, Math.max(0, percent))}%` }} /></div></div>; })}<div className="mt-4 rounded-xl bg-[var(--muted)] p-3 text-[11px] leading-5 text-[var(--muted-foreground)]"><strong className="text-[var(--foreground)]">Không double-count Savings Goals:</strong> Goal là lớp planning/progress, không phải tài sản độc lập. Tiền gửi được tính theo principal hiện tại; lãi dự kiến chỉ hiển thị riêng và chưa cộng vào Net Worth.</div></CardContent></Card>
       </div>
 
-      <Card className="mt-4 fin-card"><CardContent className="flex flex-wrap items-center gap-4 p-5"><div className="grid size-11 place-items-center rounded-xl bg-[var(--sidebar-accent)] text-[var(--primary)]"><TrendingUp className="size-5" /></div><div className="min-w-[220px] flex-1"><h2 className="font-black">Financial Position coverage</h2><p className="mt-1 text-xs leading-5 text-[var(--muted-foreground)]">{summary.active_accounts} account · {summary.active_deposits} tiền gửi · {summary.active_loans} khoản vay · {summary.active_credit_cards} thẻ có dư nợ. Lãi tiền gửi dự kiến {formatMinorMoney(summary.projected_deposit_interest_minor, selectedCurrency, digits)} chưa được ghi nhận vào tài sản ròng.</p></div><Link href="/reports" className="fin-secondary-btn">Mở báo cáo <ArrowRight className="size-3.5" /></Link></CardContent></Card>
+      <Card className="mt-4 fin-card"><CardContent className="flex flex-wrap items-center gap-4 p-5"><div className="grid size-11 place-items-center rounded-xl bg-[var(--sidebar-accent)] text-[var(--primary)]"><TrendingUp className="size-5" /></div><div className="min-w-[220px] flex-1"><h2 className="font-black">Financial Position coverage</h2><p className="mt-1 text-xs leading-5 text-[var(--muted-foreground)]">{summary.active_accounts} account · {summary.active_deposits} tiền gửi · {summary.active_investment_assets} tài sản đầu tư · {summary.active_loans} khoản vay · {summary.active_credit_cards} thẻ có dư nợ. Lãi tiền gửi dự kiến {formatMinorMoney(summary.projected_deposit_interest_minor, selectedCurrency, digits)} chưa được ghi nhận vào tài sản ròng.</p></div><Link href="/reports" className="fin-secondary-btn">Mở báo cáo <ArrowRight className="size-3.5" /></Link></CardContent></Card>
     </div>
   );
 }

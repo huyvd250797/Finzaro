@@ -41,7 +41,7 @@ test("Planner is discoverable from desktop and mobile navigation", () => {
   assert.match(mobile, /href: "\/goal-planner"/);
 });
 
-test("current app version is V0.5.0 Financial Goals Planner", () => {
-  assert.match(version, /APP_VERSION = "0\.5\.0"/);
-  assert.match(version, /Financial Goals Planner/);
+test("current app version is V0.6.0 Investment & Asset Tracking", () => {
+  assert.match(version, /APP_VERSION = "0\.6\.0"/);
+  assert.match(version, /Investment & Asset Tracking/);
 });

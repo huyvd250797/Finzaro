@@ -42,8 +42,8 @@ test("account balances are hardened after ledger activation", () => {
 
 test("transaction actions validate accounts and call RPCs", () => {
   assert.match(actions, /requireUser/);
-  assert.match(actions, /create_financial_transaction_v005/);
-  assert.match(actions, /delete_financial_transaction_v005/);
+  assert.match(actions, /create_financial_transaction_v060/);
+  assert.match(actions, /delete_financial_transaction_v060/);
   assert.match(actions, /parseMajorAmountToMinor/);
   assert.doesNotMatch(actions, /service_role/i);
 });
@@ -61,6 +61,6 @@ test("transaction UI and dashboard read real ledger data", () => {
 });
 
 test("current app version is V0.3.0 Forecasting & Scenario Planning", () => {
-  assert.match(version, /APP_VERSION = "0\.5\.0"/);
-  assert.match(version, /Financial Goals Planner/);
+  assert.match(version, /APP_VERSION = "0\.6\.0"/);
+  assert.match(version, /Investment & Asset Tracking/);
 });

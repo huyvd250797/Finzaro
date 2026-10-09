@@ -87,6 +87,6 @@ test("dashboard surfaces Loan & Debt summary", () => {
 });
 
 test("current app version is V0.3.0 Forecasting & Scenario Planning", () => {
-  assert.match(version, /APP_VERSION = "0\.5\.0"/);
-  assert.match(version, /Financial Goals Planner/);
+  assert.match(version, /APP_VERSION = "0\.6\.0"/);
+  assert.match(version, /Investment & Asset Tracking/);
 });

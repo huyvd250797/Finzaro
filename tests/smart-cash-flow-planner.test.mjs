@@ -51,8 +51,8 @@ test("Cash Flow Planner is discoverable from desktop and mobile navigation", () 
 });
 
 test("current app version is V0.4.1 Smart Cash Flow Planner deploy fix", () => {
-  assert.match(version, /APP_VERSION = "0\.5\.0"/);
-  assert.match(version, /Financial Goals Planner/);
+  assert.match(version, /APP_VERSION = "0\.6\.0"/);
+  assert.match(version, /Investment & Asset Tracking/);
 });
 
 

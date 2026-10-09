@@ -12,6 +12,7 @@ import {
   CalendarClock,
   CalendarRange,
   CircleDollarSign,
+  Coins,
   CreditCard,
   Ellipsis,
   HeartPulse,
@@ -40,6 +41,7 @@ const moduleItems = [
   { href: "/deposits", label: "Tiền gửi", icon: Landmark },
   { href: "/loans", label: "Khoản vay", icon: CircleDollarSign },
   { href: "/credit-cards", label: "Thẻ tín dụng", icon: CreditCard },
+  { href: "/assets", label: "Đầu tư", icon: Coins },
   { href: "/net-worth", label: "Tài sản ròng", icon: Scale },
   { href: "/health", label: "Sức khỏe", icon: HeartPulse },
   { href: "/forecast", label: "Dự báo", icon: Activity },
@@ -49,7 +51,7 @@ const moduleItems = [
 ];
 
 const quickTransactions = [
-  { href: "/transactions?new=expense", label: "Chi tiêu", hint: "Ghi khoản tiền đi ra", icon: ArrowUpRight, tone: "text-rose-500 bg-rose-500/10" },
+  { href: "/transactions?new=expense", label: "Chi tiền", hint: "Chi tiêu hoặc trả thẻ / khoản vay", icon: ArrowUpRight, tone: "text-rose-500 bg-rose-500/10" },
   { href: "/transactions?new=income", label: "Thu nhập", hint: "Ghi khoản tiền đi vào", icon: ArrowDownLeft, tone: "text-emerald-600 bg-emerald-500/10" },
   { href: "/transactions?new=transfer", label: "Chuyển tiền", hint: "Giữa các tài khoản", icon: ArrowLeftRight, tone: "text-sky-600 bg-sky-500/10" }
 ];

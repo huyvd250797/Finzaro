@@ -3,6 +3,7 @@ import type { Database } from "@/lib/supabase/database.types";
 import { depositProjections, loadDeposits } from "@/features/deposits/data";
 import { loanProjections, loadLoans } from "@/features/loans/data";
 import { loadCreditCards, projectCreditCards } from "@/features/credit-cards/data";
+import { investmentAssetViews, loadInvestmentAssets } from "@/features/assets/data";
 
 export type NetWorthSnapshot = {
   id: string;
@@ -11,6 +12,7 @@ export type NetWorthSnapshot = {
   currency_code: string;
   account_assets_minor: number;
   deposit_assets_minor: number;
+  investment_assets_minor: number;
   loan_liabilities_minor: number;
   credit_card_liabilities_minor: number;
   total_assets_minor: number;
@@ -28,6 +30,7 @@ export type PositionSummary = {
   ewallet_minor: number;
   savings_minor: number;
   deposit_assets_minor: number;
+  investment_assets_minor: number;
   projected_deposit_interest_minor: number;
   loan_liabilities_minor: number;
   credit_card_liabilities_minor: number;
@@ -39,6 +42,7 @@ export type PositionSummary = {
   liquidity_coverage_percent: number;
   active_accounts: number;
   active_deposits: number;
+  active_investment_assets: number;
   active_loans: number;
   active_credit_cards: number;
 };
@@ -46,10 +50,11 @@ export type PositionSummary = {
 export type PositionCurrency = { code: string; name: string; symbol: string; decimal_digits: number };
 
 export async function loadNetWorthData(supabase: SupabaseClient<Database>, userId: string, today: string) {
-  const [depositData, loanData, creditData, accountResult, currencyResult, snapshotResult] = await Promise.all([
+  const [depositData, loanData, creditData, assetData, accountResult, currencyResult, snapshotResult] = await Promise.all([
     loadDeposits(supabase, userId, false),
     loadLoans(supabase, userId, false),
     loadCreditCards(supabase, userId, false),
+    loadInvestmentAssets(supabase, userId, false),
     supabase.from("accounts").select("id, account_type, currency_code, current_balance_minor, is_archived").eq("user_id", userId).eq("is_archived", false),
     supabase.from("supported_currencies").select("code, name, symbol, decimal_digits").eq("is_active", true).order("code"),
     (supabase as any).from("net_worth_snapshots").select("*").eq("user_id", userId).order("snapshot_date", { ascending: true }).limit(240)
@@ -64,12 +69,14 @@ export async function loadNetWorthData(supabase: SupabaseClient<Database>, userI
   const deposits = depositProjections(depositData.deposits, depositData.entries, depositData.accounts, today);
   const loans = loanProjections(loanData.loans, loanData.payments, loanData.accounts, today);
   const cards = projectCreditCards(creditData.cards, creditData.statements, creditData.payments, creditData.accounts, today);
+  const investmentAssets = investmentAssetViews(assetData.assets, assetData.valuations, assetData.accounts);
 
   const usedCodes = new Set<string>();
   for (const account of accounts) usedCodes.add(account.currency_code);
   for (const row of deposits) if (!row.is_archived) usedCodes.add(row.currency_code);
   for (const row of loans) if (!row.is_archived && row.remaining_principal_minor > 0) usedCodes.add(row.currency_code);
   for (const row of cards) if (!row.is_archived && row.current_balance_minor > 0) usedCodes.add(row.currency_code);
+  for (const row of investmentAssets) if (!row.is_archived && row.current_value_minor > 0) usedCodes.add(row.currency_code);
 
   const summaries = currencies.filter((currency) => usedCodes.has(currency.code)).map((currency): PositionSummary => {
     const accountRows = accounts.filter((account) => account.currency_code === currency.code);
@@ -78,11 +85,13 @@ export async function loadNetWorthData(supabase: SupabaseClient<Database>, userI
     const depositRows = deposits.filter((row) => !row.is_archived && row.currency_code === currency.code);
     const loanRows = loans.filter((row) => !row.is_archived && row.currency_code === currency.code);
     const cardRows = cards.filter((row) => !row.is_archived && row.currency_code === currency.code);
+    const assetRows = investmentAssets.filter((row) => !row.is_archived && row.currency_code === currency.code);
     const depositAssets = depositRows.reduce((sum, row) => sum + row.principal_minor, 0);
     const projectedDepositInterest = depositRows.reduce((sum, row) => sum + row.projected_interest_minor, 0);
+    const investmentAssetsValue = assetRows.reduce((sum, row) => sum + row.current_value_minor, 0);
     const loanLiabilities = loanRows.reduce((sum, row) => sum + row.remaining_principal_minor, 0);
     const cardLiabilities = cardRows.reduce((sum, row) => sum + row.current_balance_minor, 0);
-    const totalAssets = accountAssets + depositAssets;
+    const totalAssets = accountAssets + depositAssets + investmentAssetsValue;
     const totalLiabilities = loanLiabilities + cardLiabilities;
     const liquidAssets = accountAssets;
     const netWorth = totalAssets - totalLiabilities;
@@ -94,6 +103,7 @@ export async function loadNetWorthData(supabase: SupabaseClient<Database>, userI
       ewallet_minor: byType("ewallet"),
       savings_minor: byType("savings"),
       deposit_assets_minor: depositAssets,
+      investment_assets_minor: investmentAssetsValue,
       projected_deposit_interest_minor: projectedDepositInterest,
       loan_liabilities_minor: loanLiabilities,
       credit_card_liabilities_minor: cardLiabilities,
@@ -105,6 +115,7 @@ export async function loadNetWorthData(supabase: SupabaseClient<Database>, userI
       liquidity_coverage_percent: totalLiabilities > 0 ? Math.round((liquidAssets / totalLiabilities) * 1000) / 10 : liquidAssets > 0 ? 999 : 0,
       active_accounts: accountRows.length,
       active_deposits: depositRows.length,
+      active_investment_assets: assetRows.length,
       active_loans: loanRows.filter((row) => row.remaining_principal_minor > 0).length,
       active_credit_cards: cardRows.filter((row) => row.current_balance_minor > 0).length
     };
@@ -116,7 +127,8 @@ export async function loadNetWorthData(supabase: SupabaseClient<Database>, userI
     snapshots: (snapshotResult.data ?? []) as NetWorthSnapshot[],
     deposits,
     loans,
-    cards
+    cards,
+    investmentAssets
   };
 }
 
@@ -129,6 +141,7 @@ export function positionForCurrency(summaries: PositionSummary[], currencyCode: 
     ewallet_minor: 0,
     savings_minor: 0,
     deposit_assets_minor: 0,
+    investment_assets_minor: 0,
     projected_deposit_interest_minor: 0,
     loan_liabilities_minor: 0,
     credit_card_liabilities_minor: 0,
@@ -140,6 +153,7 @@ export function positionForCurrency(summaries: PositionSummary[], currencyCode: 
     liquidity_coverage_percent: 0,
     active_accounts: 0,
     active_deposits: 0,
+    active_investment_assets: 0,
     active_loans: 0,
     active_credit_cards: 0
   } satisfies PositionSummary;
