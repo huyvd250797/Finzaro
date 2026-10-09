@@ -11,6 +11,8 @@ Quy tắc tăng version:
 - Tăng `X` → reset `Y = 0`, `Z = 0`.
 - Tăng `Y` → reset `Z = 0`.
 - Tăng `Z` → giữ nguyên `X.Y`.
+- **Mỗi lần source được hiệu chỉnh và đóng gói thành một release mới để push/deploy, version bắt buộc phải tăng.** Không phát hành hai gói source khác nhau cùng một version.
+- Bugfix, deploy fix, UI/UX fix, performance tuning hoặc thay đổi nhỏ nối tiếp cùng feature line → tăng `Z` tuần tự (`0.7.1` → `0.7.2` → `0.7.3`...).
 
 Ví dụ:
 

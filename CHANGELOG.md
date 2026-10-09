@@ -1,10 +1,25 @@
-# V0.7.1 Deploy TypeScript Fix 2
+# V0.7.4 — Money Thousands + Full Mobile Taskbar
+
+- All `MoneyCalculatorInput` displays now group thousands with dots (for example `1.000.000`).
+- Decimal money remains entered with the `.` calculator key and stored canonically; visible decimal money uses `1.234,56` so thousands and decimals are unambiguous.
+- Numeric money placeholders are formatted with the same visible grouping.
+- Reworked the mobile center `+` control so it no longer relies on a negative top margin.
+- Removed CSS paint containment that clipped the floating `+` button.
+- Added reserved top space plus safe-area bottom padding while keeping the taskbar fixed to the viewport bottom; dashboard content and the PWA update prompt now also clear the taller safe-area-aware bar.
+- Added regression tests for money display formatting and taskbar clipping.
+- No database migration required.
+
+# V0.7.3 — Deploy TypeScript Fix 2
+
+- Fixed LoanForm money inputs referencing undefined `code`; both now use the in-scope `selectedCurrency`.
+- Added a regression test covering the Loans Vercel type-check failure.
+- No database migration required.
+
+# V0.7.2 — Deploy TypeScript Fix
 
 - Fixed Transactions credit-card query typing when generated `Database` types do not yet include `credit_cards`, preventing `never` inference during Vercel type checking.
 - Fixed Next.js 16 `revalidatePath` callback signature by wrapping it in a unary `forEach` callback.
 - Added regression tests for both Vercel build failures.
-- Fixed LoanForm money inputs referencing undefined `code`; both now use the in-scope `selectedCurrency`.
-- Added a regression test covering the Loans Vercel type-check failure.
 - No database migration required.
 
 # Finzaro Changelog

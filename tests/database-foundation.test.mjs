@@ -10,7 +10,7 @@ const envExample = fs.readFileSync(path.join(root, ".env.example"), "utf8");
 const pkg = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
 
 test("current package version and Supabase dependencies are present", () => {
-  assert.equal(pkg.version, "0.7.1");
+  assert.equal(pkg.version, "0.7.4");
   assert.ok(pkg.dependencies["@supabase/ssr"]);
   assert.ok(pkg.dependencies["@supabase/supabase-js"]);
   assert.ok(pkg.devDependencies.supabase);

@@ -77,7 +77,7 @@ export function MobileNav() {
   ];
 
   return <>
-    <nav className="fin-mobile-taskbar fixed inset-x-0 bottom-0 z-[80] border-t border-[var(--border)] bg-[color:var(--card)]/96 px-2 pb-[max(env(safe-area-inset-bottom),8px)] pt-1.5 shadow-[0_-10px_30px_-24px_rgba(0,0,0,.35)] backdrop-blur-xl lg:hidden">
+    <nav className="fin-mobile-taskbar fixed inset-x-0 bottom-0 z-[80] overflow-visible border-t border-[var(--border)] bg-[color:var(--card)]/96 px-2 pb-[max(env(safe-area-inset-bottom),8px)] pt-7 shadow-[0_-10px_30px_-24px_rgba(0,0,0,.35)] backdrop-blur-xl lg:hidden">
       <div className="grid grid-cols-[1fr_1fr_72px_1fr_1fr] items-end">
         {leftItems.map((item) => {
           const Icon = item.icon;
@@ -85,8 +85,8 @@ export function MobileNav() {
           return <Link key={item.href} href={item.href} prefetch className={cn("mobile-tabbar-item", active ? "text-[var(--primary)]" : "text-[var(--muted-foreground)]")}><span className={cn("mobile-tabbar-icon", active && "bg-[var(--sidebar-accent)]")}><Icon className="size-[18px]" /></span><span className="mobile-tabbar-label">{item.label}</span></Link>;
         })}
 
-        <button type="button" onClick={() => setSheet("transaction")} aria-label="Thêm giao dịch" className="group -mt-7 flex min-h-16 min-w-0 flex-col items-center justify-end gap-1 text-[10px] font-semibold text-[var(--foreground)] active:scale-[.97]">
-          <span className="grid size-13 place-items-center rounded-full border-[5px] border-[var(--card)] bg-[var(--primary)] text-white shadow-[0_10px_25px_-10px_rgba(11,143,104,.75)] transition group-active:scale-95"><Plus className="size-6" strokeWidth={2.4} /></span>
+        <button type="button" onClick={() => setSheet("transaction")} aria-label="Thêm giao dịch" className="group relative flex min-h-14 min-w-0 flex-col items-center justify-end gap-1 text-[10px] font-semibold text-[var(--foreground)] active:scale-[.97]">
+          <span className="absolute -top-6 left-1/2 grid size-13 -translate-x-1/2 place-items-center rounded-full border-[5px] border-[var(--card)] bg-[var(--primary)] text-white shadow-[0_10px_25px_-10px_rgba(11,143,104,.75)] transition group-active:scale-95"><Plus className="size-6" strokeWidth={2.4} /></span>
           <span className="mobile-tabbar-label">Thêm GD</span>
         </button>
 

@@ -37,9 +37,9 @@ test("transaction quick suggestions show two horizontal cards and cap at ten", (
   assert.match(txData, /limit = 10/);
 });
 
-test("money calculator keeps dot decimals and supports bottom-sheet arithmetic", () => {
+test("money calculator keeps dot decimal input while displaying Vietnamese money grouping", () => {
   assert.match(money, /groupedWhole/);
-  assert.match(money, /fraction !== undefined \? `\.\$\{fraction\}`/);
+  assert.match(money, /fraction !== undefined \? `,\$\{fraction\}`/);
   assert.doesNotMatch(money, /Intl\.NumberFormat\("vi-VN"/);
   assert.match(money, /Máy tính số tiền/);
   assert.match(money, /chooseOperator/);
@@ -54,9 +54,9 @@ test("Cash Flow Planner is discoverable from desktop and mobile navigation", () 
   assert.match(mobile, /href: "\/cash-flow"/);
 });
 
-test("current app version is V0.7.1 Mobile Money UX + Debt Funding", () => {
-  assert.match(version, /APP_VERSION = "0\.7\.1"/);
-  assert.match(version, /Mobile Money UX \+ Debt Funding/);
+test("current app version is V0.7.4 Money Thousands + Full Mobile Taskbar", () => {
+  assert.match(version, /APP_VERSION = "0\.7\.4"/);
+  assert.match(version, /Money Thousands \+ Full Mobile Taskbar/);
 });
 
 

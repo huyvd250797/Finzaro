@@ -67,7 +67,7 @@ test("saved theme is applied before splash paint", () => {
   assert.match(layout, /document\.documentElement\.style\.colorScheme/);
 });
 
-test("current feature release follows X.Y.Z at V0.7.1", () => {
-  assert.match(version, /APP_VERSION = "0\.7\.1"/);
-  assert.match(version, /Mobile Money UX \+ Debt Funding/);
+test("current feature release follows X.Y.Z at V0.7.4", () => {
+  assert.match(version, /APP_VERSION = "0\.7\.4"/);
+  assert.match(version, /Money Thousands \+ Full Mobile Taskbar/);
 });

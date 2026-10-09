@@ -161,7 +161,7 @@ export function PwaRegister() {
   };
 
   return (
-    <div className="fixed inset-x-3 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-[100] mx-auto max-w-md lg:bottom-5" role="status" aria-live="polite">
+    <div className="fixed inset-x-3 bottom-[calc(6.25rem+env(safe-area-inset-bottom))] z-[100] mx-auto max-w-md lg:bottom-5" role="status" aria-live="polite">
       <div className="rounded-2xl border border-emerald-500/30 bg-[color:var(--card)]/98 p-4 shadow-2xl backdrop-blur-xl">
         <div className="flex items-start gap-3">
           <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-[var(--sidebar-accent)] text-[var(--primary)]"><Sparkles className="size-4.5" /></div>

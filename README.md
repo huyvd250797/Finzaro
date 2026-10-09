@@ -1,16 +1,14 @@
-# Finzaro V0.7.1 — Mobile Money UX + Debt Funding
+# Finzaro V0.7.4 — Money Thousands + Full Mobile Taskbar
 
-Finzaro is a personal-finance PWA built with Next.js, Supabase and Vercel. V0.7.1 keeps the V0.7.0 Advanced Debt Strategy/SSI foundation and hardens mobile money entry, bottom-sheet UX, debt-funded cash inflows and transaction loading.
+Finzaro is a personal-finance PWA built with Next.js, Supabase and Vercel. V0.7.4 builds on V0.7.1 Mobile Money UX + Debt Funding and includes the V0.7.2/V0.7.3 Vercel TypeScript fixes plus consistent dot-grouped money display and a fully visible fixed mobile taskbar.
 
-## V0.7.1 highlights
+## V0.7.4 highlights
 
-- Every money-entry surface uses the shared calculator-style amount picker; tapping **Xong** closes it immediately.
-- Mobile taskbar stays pinned to the viewport bottom while dialogs/bottom sheets scroll independently.
-- Inputs are width-constrained to prevent modal/bottom-sheet overflow.
-- Income can be funded from an existing **Credit Card** (cash in + card debt up) or a **new Loan** (cash in + Loan created).
-- Debt-funded inflows are deliberately excluded from true Income totals/reports.
-- Interest and percentage fields accept comma or dot input and normalize to dot decimals.
-- Transaction loading is reduced by parallel fetches and a lightweight Credit Card options query.
+- All money calculator fields display thousands with dots, for example `1.000.000`; decimal values display as `1.234,56` while storage remains canonical.
+- Mobile taskbar stays fixed at the viewport bottom and reserves enough vertical space for the center `+` button, including iPhone/PWA safe areas.
+- Includes the V0.7.2 and V0.7.3 Vercel TypeScript deploy fixes.
+- Retains V0.7.1 debt-funded cash inflows, calculator-style money entry, bottom-sheet UX and transaction-loading optimizations.
+- No new database migration is required after V0.7.1.
 
 ## V0.7.1 database upgrade
 

@@ -66,7 +66,7 @@ test("V0.0.9 preserves proactive PWA updates", () => {
   assert.match(pwa, /SKIP_WAITING/);
 });
 
-test("current app version is V0.7.1 Mobile Money UX + Debt Funding", () => {
-  assert.match(version, /APP_VERSION = "0\.7\.1"/);
-  assert.match(version, /Mobile Money UX \+ Debt Funding/);
+test("current app version is V0.7.4 Money Thousands + Full Mobile Taskbar", () => {
+  assert.match(version, /APP_VERSION = "0\.7\.4"/);
+  assert.match(version, /Money Thousands \+ Full Mobile Taskbar/);
 });
