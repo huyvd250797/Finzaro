@@ -42,8 +42,8 @@ test("account balances are hardened after ledger activation", () => {
 
 test("transaction actions validate accounts and call RPCs", () => {
   assert.match(actions, /requireUser/);
-  assert.match(actions, /create_financial_transaction_v060/);
-  assert.match(actions, /delete_financial_transaction_v060/);
+  assert.match(actions, /create_financial_transaction_v071/);
+  assert.match(actions, /delete_financial_transaction_v071/);
   assert.match(actions, /parseMajorAmountToMinor/);
   assert.doesNotMatch(actions, /service_role/i);
 });
@@ -60,7 +60,7 @@ test("transaction UI and dashboard read real ledger data", () => {
   assert.doesNotMatch(overview, /demo-data/);
 });
 
-test("current app version is V0.7.0 Advanced Debt Strategy", () => {
-  assert.match(version, /APP_VERSION = "0\.7\.0"/);
-  assert.match(version, /Advanced Debt Strategy/);
+test("current app version is V0.7.1 Mobile Money UX + Debt Funding", () => {
+  assert.match(version, /APP_VERSION = "0\.7\.1"/);
+  assert.match(version, /Mobile Money UX \+ Debt Funding/);
 });

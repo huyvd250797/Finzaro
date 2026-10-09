@@ -54,7 +54,7 @@ const moduleItems = [
 
 const quickTransactions = [
   { href: "/transactions?new=expense", label: "Chi tiền", hint: "Chi tiêu hoặc trả thẻ / khoản vay", icon: ArrowUpRight, tone: "text-rose-500 bg-rose-500/10" },
-  { href: "/transactions?new=income", label: "Thu nhập", hint: "Ghi khoản tiền đi vào", icon: ArrowDownLeft, tone: "text-emerald-600 bg-emerald-500/10" },
+  { href: "/transactions?new=income", label: "Thu nhập", hint: "Thu thường hoặc giải ngân nợ", icon: ArrowDownLeft, tone: "text-emerald-600 bg-emerald-500/10" },
   { href: "/transactions?new=transfer", label: "Chuyển tiền", hint: "Giữa các tài khoản", icon: ArrowLeftRight, tone: "text-sky-600 bg-sky-500/10" }
 ];
 
@@ -77,7 +77,7 @@ export function MobileNav() {
   ];
 
   return <>
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--border)] bg-[color:var(--card)]/96 px-2 pb-[max(env(safe-area-inset-bottom),8px)] pt-1.5 shadow-[0_-10px_30px_-24px_rgba(0,0,0,.35)] backdrop-blur-xl lg:hidden">
+    <nav className="fin-mobile-taskbar fixed inset-x-0 bottom-0 z-[80] border-t border-[var(--border)] bg-[color:var(--card)]/96 px-2 pb-[max(env(safe-area-inset-bottom),8px)] pt-1.5 shadow-[0_-10px_30px_-24px_rgba(0,0,0,.35)] backdrop-blur-xl lg:hidden">
       <div className="grid grid-cols-[1fr_1fr_72px_1fr_1fr] items-end">
         {leftItems.map((item) => {
           const Icon = item.icon;
@@ -99,7 +99,7 @@ export function MobileNav() {
       </div>
     </nav>
 
-    {sheet && <div className="fixed inset-0 z-50 overflow-hidden lg:hidden" role="dialog" aria-modal="true" aria-label={sheet === "modules" ? "Chọn module Finzaro" : "Thêm giao dịch"}>
+    {sheet && <div className="fixed inset-0 z-[90] overflow-hidden lg:hidden" role="dialog" aria-modal="true" aria-label={sheet === "modules" ? "Chọn module Finzaro" : "Thêm giao dịch"}>
       <button aria-label="Đóng" className="absolute inset-0 bg-black/45 backdrop-blur-[2px] animate-[fade-in_.18s_ease-out]" onClick={() => setSheet(null)} />
       <section className="absolute inset-x-0 bottom-0 max-h-[84dvh] overflow-y-auto overscroll-contain rounded-t-[30px] border-t border-[var(--border)] bg-[var(--card)] pb-[max(env(safe-area-inset-bottom),16px)] shadow-2xl [touch-action:pan-y] animate-[sheet-up_.24s_cubic-bezier(.2,.8,.2,1)]">
         <div className="sticky top-0 z-10 bg-[color:var(--card)]/96 px-4 pt-3 backdrop-blur-xl">

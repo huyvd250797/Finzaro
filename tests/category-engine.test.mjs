@@ -53,7 +53,7 @@ test("category management supports icon setup and archive lifecycle", () => {
 });
 
 test("Transaction Core is upgraded to structured category IDs", () => {
-  assert.match(txActions, /create_financial_transaction_v060/);
+  assert.match(txActions, /create_financial_transaction_v071/);
   assert.match(txActions, /p_category_id/);
   assert.doesNotMatch(txActions, /p_category_label/);
   assert.match(txData, /categories\(id, name, icon_name, icon_color, category_type, parent_id, is_archived\)/);
@@ -61,7 +61,7 @@ test("Transaction Core is upgraded to structured category IDs", () => {
   assert.match(txPage, /name="category"/);
 });
 
-test("current app version is V0.7.0 Advanced Debt Strategy", () => {
-  assert.match(version, /APP_VERSION = "0\.7\.0"/);
-  assert.match(version, /Advanced Debt Strategy/);
+test("current app version is V0.7.1 Mobile Money UX + Debt Funding", () => {
+  assert.match(version, /APP_VERSION = "0\.7\.1"/);
+  assert.match(version, /Mobile Money UX \+ Debt Funding/);
 });

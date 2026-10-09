@@ -3,6 +3,7 @@ import { Archive, ArchiveRestore, Banknote, Landmark, Pencil, PiggyBank, Plus, S
 import { AuthMessage } from "@/components/auth-message";
 import { InstantReveal } from "@/components/instant-reveal";
 import { PendingSubmitButton } from "@/components/pending-submit-button";
+import { MoneyCalculatorInput } from "@/components/money-calculator-input";
 import { Card, CardContent } from "@/components/ui/card";
 import { ACCOUNT_TYPE_LABELS, type AccountType } from "@/features/accounts/constants";
 import { createAccountAction, setAccountArchivedAction, updateAccountAction } from "@/features/accounts/actions";
@@ -76,7 +77,7 @@ function AccountForm({ currencies, account }: { currencies: Currency[]; account?
 
           <label className="block">
             <span className="mb-2 block text-xs font-bold uppercase tracking-wide text-[var(--muted-foreground)]">{editing ? "Số dư hiện tại" : "Số dư ban đầu"}</span>
-            {editing ? <div className="flex h-11 items-center rounded-xl border border-[var(--border)] bg-[var(--muted)] px-4 text-sm font-bold">{account ? formatMinorMoney(account.current_balance_minor, account.currency_code, currencyMeta(currencies, account.currency_code).decimal_digits) : "—"}</div> : <input name="balance" inputMode="decimal" defaultValue="0" required placeholder="0" className="h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-4 text-sm outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--ring)]" />}
+            {editing ? <div className="flex h-11 items-center rounded-xl border border-[var(--border)] bg-[var(--muted)] px-4 text-sm font-bold">{account ? formatMinorMoney(account.current_balance_minor, account.currency_code, currencyMeta(currencies, account.currency_code).decimal_digits) : "—"}</div> : <MoneyCalculatorInput name="balance" defaultValue="0" required decimalDigits={0} placeholder="0" />}
             <span className="mt-1.5 block text-[11px] leading-5 text-[var(--muted-foreground)]">{editing ? "Không sửa số dư trực tiếp để tránh phá ledger. Hãy tạo giao dịch Income / Expense / Transfer." : "Opening balance chỉ đặt khi tạo tài khoản; sau đó Transaction Core sẽ duy trì current balance."}</span>
           </label>
 

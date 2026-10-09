@@ -35,8 +35,8 @@ export function InstantTransactionLauncher({ expense, income, transfer, initialT
         })}
       </div>
       {type && (
-        <div className="fixed inset-0 z-[90] flex items-center justify-center overflow-hidden bg-black/40 p-3 pt-[max(env(safe-area-inset-top),12px)] backdrop-blur-[2px] sm:p-6" onMouseDown={(event) => { if (event.target === event.currentTarget) setType(null); }} onClickCapture={(event) => { const target = event.target as Element; if (target.closest("[data-instant-close]")) { event.preventDefault(); setType(null); } }}>
-          <div className="modal-scroll-area mx-auto max-h-[calc(100dvh-24px-env(safe-area-inset-top)-env(safe-area-inset-bottom))] w-full max-w-4xl overflow-y-auto overscroll-contain rounded-[24px] [touch-action:pan-y] sm:max-h-[calc(100dvh-48px)]">
+        <div className="fixed inset-0 z-[90] flex items-end justify-center overflow-hidden bg-black/40 p-0 backdrop-blur-[2px] sm:items-center sm:p-6" onMouseDown={(event) => { if (event.target === event.currentTarget) setType(null); }} onClickCapture={(event) => { const target = event.target as Element; if (target.closest("[data-instant-close]")) { event.preventDefault(); setType(null); } }}>
+          <div className="modal-scroll-area mx-auto max-h-[88dvh] w-full max-w-4xl overflow-x-hidden overflow-y-auto overscroll-contain rounded-t-[28px] pb-[max(env(safe-area-inset-bottom),8px)] [touch-action:pan-y] sm:max-h-[calc(100dvh-48px)] sm:rounded-[24px] sm:pb-0">
             <div className="mb-2 flex flex-wrap gap-2 rounded-2xl bg-[var(--card)] p-2 shadow-xl">{buttons.map((item) => { const Icon = item.icon; return <button key={item.type} type="button" onClick={() => setType(item.type)} className={cn("inline-flex h-9 items-center gap-1.5 rounded-xl px-3 text-xs font-bold", type === item.type ? "bg-[var(--primary)] text-white" : "bg-[var(--muted)] text-[var(--muted-foreground)]")}><Icon className="size-3.5" />{item.label}</button>; })}</div>
             {panels[type]}
           </div>

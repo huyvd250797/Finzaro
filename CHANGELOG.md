@@ -1,5 +1,27 @@
 # Finzaro Changelog
 
+## V0.7.1 — Mobile Money UX + Debt Funding
+
+### Added
+- App-wide `MoneyCalculatorInput` bottom sheet for money-entry fields; **Xong** commits the displayed value and closes the calculator.
+- Decimal-safe `%` / interest inputs that normalize iPhone comma input to canonical dot-decimal values.
+- `Thu nhập → Lấy tiền từ thẻ tín dụng`: credits the receiving Account and increases the selected Credit Card debt atomically.
+- `Thu nhập → Giải ngân khoản vay mới`: captures loan terms, creates the Loan and credits the receiving Account atomically.
+- `liability_funding_events` audit linkage plus rollback-aware `delete_financial_transaction_v071`.
+
+### Changed
+- Mobile create/edit overlays now behave as bottom sheets and are capped to the real dynamic viewport.
+- Mobile taskbar remains fixed against the viewport bottom; overlay scroll locking no longer fixes/repositions `<body>` on iOS/PWA.
+- Form controls are width-hardened so long values cannot push past modal/bottom-sheet boundaries.
+- Borrowed funds are excluded from real-income totals and monthly report cashflow.
+- Transaction-page loading now parallelizes core requests, reads active Credit Cards directly, and reuses Ledger account/currency data instead of invoking the heavier full Loan loader.
+- Money parsing accepts both `,` and `.` user input while storing canonical values according to currency precision.
+- Version `0.7.0 → 0.7.1`.
+
+### Database upgrade
+- Run `supabase/sql-editor/V0.7.1_mobile_money_debt_funding.sql` after the V0.7.0 schema.
+- Optional smoke verification: `supabase/sql-editor/V0.7.1_mobile_money_debt_funding_verify.sql`.
+
 ## V0.7.0 — Advanced Debt Strategy
 
 ### Added

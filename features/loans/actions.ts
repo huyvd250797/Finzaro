@@ -34,7 +34,7 @@ async function loanPayload(formData: FormData, mode: "create" | "update") {
   const name = text(formData, "name");
   const lenderName = text(formData, "lender_name");
   const principalInput = text(formData, "original_principal");
-  const annualRateInput = text(formData, "annual_rate_percent");
+  const annualRateInput = text(formData, "annual_rate_percent").replace(/,/g, ".");
   const termInput = text(formData, "term_months");
   const startDate = text(formData, "start_date");
   const firstPaymentDate = text(formData, "first_payment_date");

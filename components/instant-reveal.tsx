@@ -19,8 +19,8 @@ export function InstantReveal({ children, label, initialOpen = false, icon = tru
 
   return <>
     <button type="button" onClick={() => setOpen(true)} className={cn("inline-flex h-10 items-center gap-2 rounded-xl bg-[var(--primary)] px-4 text-sm font-bold text-white transition active:scale-[0.98]", className)}>{icon && <Plus className="size-4" />}{label}</button>
-    {open && <div className="fixed inset-0 z-[90] flex items-center justify-center overflow-hidden bg-black/40 p-3 pt-[max(env(safe-area-inset-top),12px)] backdrop-blur-[2px] sm:p-6" onMouseDown={(event) => { if (event.target === event.currentTarget) setOpen(false); }} onClickCapture={(event) => { const target = event.target as Element; if (target.closest("[data-instant-close]")) { event.preventDefault(); setOpen(false); } }}>
-      <div className="modal-scroll-area mx-auto max-h-[calc(100dvh-24px-env(safe-area-inset-top)-env(safe-area-inset-bottom))] w-full max-w-4xl overflow-y-auto overscroll-contain rounded-[24px] [touch-action:pan-y] sm:max-h-[calc(100dvh-48px)]">{children}</div>
+    {open && <div className="fixed inset-0 z-[90] flex items-end justify-center overflow-hidden bg-black/40 p-0 backdrop-blur-[2px] sm:items-center sm:p-6" onMouseDown={(event) => { if (event.target === event.currentTarget) setOpen(false); }} onClickCapture={(event) => { const target = event.target as Element; if (target.closest("[data-instant-close]")) { event.preventDefault(); setOpen(false); } }}>
+      <div className="modal-scroll-area mx-auto max-h-[88dvh] w-full max-w-4xl overflow-x-hidden overflow-y-auto overscroll-contain rounded-t-[28px] pb-[max(env(safe-area-inset-bottom),8px)] [touch-action:pan-y] sm:max-h-[calc(100dvh-48px)] sm:rounded-[24px] sm:pb-0">{children}</div>
     </div>}
   </>;
 }

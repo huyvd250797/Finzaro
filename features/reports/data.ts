@@ -106,7 +106,7 @@ export function reportTotals(transactions: TransactionView[], currency: string) 
   let transferOut = 0;
   let transferIn = 0;
   for (const transaction of transactions) {
-    if (transaction.transaction_type === "income") {
+    if (transaction.transaction_type === "income" && transaction.transaction_purpose === "standard") {
       const entry = transactionEntry(transaction, "income");
       if (entry?.currency_code === currency) income += Math.abs(entry.amount_minor);
     } else if (transaction.transaction_type === "expense") {
@@ -136,7 +136,7 @@ export function monthlyCashflow(transactions: TransactionView[], currency: strin
     let expense = 0;
     for (const transaction of transactions) {
       if (!transaction.transaction_date.startsWith(key)) continue;
-      if (transaction.transaction_type === "income") {
+      if (transaction.transaction_type === "income" && transaction.transaction_purpose === "standard") {
         const entry = transactionEntry(transaction, "income");
         if (entry?.currency_code === currency) income += Math.abs(entry.amount_minor);
       } else if (transaction.transaction_type === "expense") {

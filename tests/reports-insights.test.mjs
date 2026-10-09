@@ -38,7 +38,7 @@ test("Financial Insights are rule based and CSV export is authenticated", () => 
   assert.match(exportRoute, /Unauthorized/);
 });
 
-test("current app version is V0.7.0 Advanced Debt Strategy", () => {
-  assert.match(version, /APP_VERSION = "0\.7\.0"/);
-  assert.match(version, /Advanced Debt Strategy/);
+test("current app version is V0.7.1 Mobile Money UX + Debt Funding", () => {
+  assert.match(version, /APP_VERSION = "0\.7\.1"/);
+  assert.match(version, /Mobile Money UX \+ Debt Funding/);
 });

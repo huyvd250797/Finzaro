@@ -1,6 +1,26 @@
-# Finzaro V0.7.0 — Advanced Debt Strategy
+# Finzaro V0.7.1 — Mobile Money UX + Debt Funding
 
-Finzaro is a personal-finance PWA built with Next.js, Supabase and Vercel. V0.7.0 adds debt payoff optimization and extends Investment & Asset Tracking with SSI FastConnect market-data valuation for Vietnam stock holdings.
+Finzaro is a personal-finance PWA built with Next.js, Supabase and Vercel. V0.7.1 keeps the V0.7.0 Advanced Debt Strategy/SSI foundation and hardens mobile money entry, bottom-sheet UX, debt-funded cash inflows and transaction loading.
+
+## V0.7.1 highlights
+
+- Every money-entry surface uses the shared calculator-style amount picker; tapping **Xong** closes it immediately.
+- Mobile taskbar stays pinned to the viewport bottom while dialogs/bottom sheets scroll independently.
+- Inputs are width-constrained to prevent modal/bottom-sheet overflow.
+- Income can be funded from an existing **Credit Card** (cash in + card debt up) or a **new Loan** (cash in + Loan created).
+- Debt-funded inflows are deliberately excluded from true Income totals/reports.
+- Interest and percentage fields accept comma or dot input and normalize to dot decimals.
+- Transaction loading is reduced by parallel fetches and a lightweight Credit Card options query.
+
+## V0.7.1 database upgrade
+
+If the database is already on V0.7.0, run:
+
+`supabase/sql-editor/V0.7.1_mobile_money_debt_funding.sql`
+
+Optional verification:
+
+`supabase/sql-editor/V0.7.1_mobile_money_debt_funding_verify.sql`
 
 ## V0.7.0 highlights
 
@@ -41,7 +61,7 @@ Finzaro V0.7.0 uses SSI's current Market Data Securities Summary with periodic s
 
 ## Deploy
 
-1. Run the V0.7.0 SQL file in Supabase SQL Editor.
+1. Run the V0.7.0 SQL file if needed, then run the V0.7.1 SQL upgrade in Supabase SQL Editor.
 2. Optionally configure SSI FastConnect server environment variables in Vercel.
 3. Push source to GitHub.
 4. Deploy/redeploy on Vercel.

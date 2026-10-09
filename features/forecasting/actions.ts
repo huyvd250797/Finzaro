@@ -18,8 +18,8 @@ export async function saveForecastScenarioAction(formData: FormData) {
     const name = text(formData, "name");
     const currencyCode = text(formData, "currency_code").toUpperCase();
     const horizonDays = Number(text(formData, "horizon_days"));
-    const incomeAdjust = Number(text(formData, "income_adjust_percent"));
-    const expenseAdjust = Number(text(formData, "expense_adjust_percent"));
+    const incomeAdjust = Number(text(formData, "income_adjust_percent").replace(/,/g, "."));
+    const expenseAdjust = Number(text(formData, "expense_adjust_percent").replace(/,/g, "."));
     const extraIncome = integer(formData, "extra_income_minor");
     const extraExpense = integer(formData, "extra_expense_minor");
     const extraDebt = integer(formData, "extra_debt_payment_minor");

@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { Calculator, TrendingDown } from "lucide-react";
 import { simulateExtraMonthlyPayment, type LoanInterestMethod, type LoanPaymentFrequency } from "@/features/loans/data";
 import { formatMinorMoney } from "@/lib/utils";
+import { MoneyCalculatorInput } from "@/components/money-calculator-input";
 
 export function LoanSimulator({
   principalMinor,
@@ -24,7 +25,7 @@ export function LoanSimulator({
 }) {
   const [extraMajor, setExtraMajor] = useState("0");
   const extraMinor = useMemo(() => {
-    const parsed = Number(extraMajor.replace(/,/g, ""));
+    const parsed = Number(extraMajor.replace(/,/g, "."));
     if (!Number.isFinite(parsed) || parsed <= 0) return 0;
     return Math.round(parsed * 10 ** decimalDigits);
   }, [extraMajor, decimalDigits]);
@@ -41,7 +42,7 @@ export function LoanSimulator({
       </div>
       <label className="mt-4 block">
         <span className="mb-2 block text-[11px] font-bold uppercase tracking-wide text-[var(--muted-foreground)]">Trả thêm mỗi tháng · {currencyCode}</span>
-        <input value={extraMajor} onChange={(event) => setExtraMajor(event.target.value)} inputMode="decimal" placeholder="3000000" className="h-11 w-full max-w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm outline-none focus:border-[var(--primary)]" />
+        <MoneyCalculatorInput value={extraMajor} onValueChange={setExtraMajor} decimalDigits={decimalDigits} currencyCode={currencyCode} placeholder="3000000" />
       </label>
       <div className="mt-4 grid gap-2 sm:grid-cols-3">
         <div className="rounded-xl bg-[var(--card)] p-3"><p className="text-[10px] font-black uppercase text-[var(--muted-foreground)]">Thời gian mới</p><p className="mt-1 text-lg font-black">{result.months} tháng</p></div>

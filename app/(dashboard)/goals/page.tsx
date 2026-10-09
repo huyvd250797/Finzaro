@@ -18,6 +18,7 @@ import { AuthMessage } from "@/components/auth-message";
 import { CategoryIconPicker } from "@/components/category-icon-picker";
 import { InstantReveal } from "@/components/instant-reveal";
 import { PendingSubmitButton } from "@/components/pending-submit-button";
+import { MoneyCalculatorInput } from "@/components/money-calculator-input";
 import { Card, CardContent } from "@/components/ui/card";
 import { minorToMajorInput } from "@/features/accounts/money";
 import { CategoryIcon, iconColorValue } from "@/features/categories/icons";
@@ -110,7 +111,7 @@ function GoalForm({
 
           <label className="block">
             <span className="mb-2 block text-xs font-black uppercase tracking-wide text-[var(--muted-foreground)]">Số tiền mục tiêu</span>
-            <input name="target_amount" inputMode="decimal" required defaultValue={editing ? minorToMajorInput(editing.target_amount_minor, digits) : ""} placeholder={currency === "VND" ? "VD: 100000000" : "VD: 10000.00"} className="h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-4 text-sm outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--ring)]" />
+            <MoneyCalculatorInput name="target_amount" required defaultValue={editing ? minorToMajorInput(editing.target_amount_minor, digits) : ""} decimalDigits={digits} currencyCode={currency} placeholder={currency === "VND" ? "VD: 100000000" : "VD: 10000.00"} />
           </label>
 
           <label className="block">
@@ -167,7 +168,7 @@ function EntryForm({ goal, today, digits, transactions }: { goal: SavingsGoalPro
           <input type="hidden" name="goal_id" value={goal.id} />
           <label className="block"><span className="mb-2 block text-xs font-black uppercase tracking-wide text-[var(--muted-foreground)]">Loại</span><select name="entry_type" defaultValue="contribution" className="h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 text-sm"><option value="contribution">Đóng góp</option><option value="withdrawal">Rút khỏi mục tiêu</option><option value="adjustment">Điều chỉnh thủ công (+/-)</option></select></label>
           <label className="block"><span className="mb-2 block text-xs font-black uppercase tracking-wide text-[var(--muted-foreground)]">Ngày</span><input type="date" name="entry_date" required defaultValue={today} className="h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 text-sm" /></label>
-          <label className="block md:col-span-2"><span className="mb-2 block text-xs font-black uppercase tracking-wide text-[var(--muted-foreground)]">Số tiền · {goal.currency_code}</span><input name="amount" inputMode="decimal" required placeholder={goal.currency_code === "VND" ? "VD: 5000000" : "VD: 500.00"} className="h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-4 text-sm outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--ring)]" /><span className="mt-1 block text-[11px] text-[var(--muted-foreground)]">Với Điều chỉnh thủ công có thể nhập số âm để giảm tiến độ.</span></label>
+          <label className="block md:col-span-2"><span className="mb-2 block text-xs font-black uppercase tracking-wide text-[var(--muted-foreground)]">Số tiền · {goal.currency_code}</span><MoneyCalculatorInput name="amount" required decimalDigits={digits} currencyCode={goal.currency_code} allowNegative placeholder={goal.currency_code === "VND" ? "VD: 5000000" : "VD: 500.00"} /><span className="mt-1 block text-[11px] text-[var(--muted-foreground)]">Với Điều chỉnh thủ công có thể nhập số âm để giảm tiến độ.</span></label>
           <label className="block md:col-span-2"><span className="mb-2 block text-xs font-black uppercase tracking-wide text-[var(--muted-foreground)]">Liên kết Transaction · tùy chọn</span><select name="transaction_id" defaultValue="" className="h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 text-sm"><option value="">Không liên kết</option>{candidates.slice(0, 50).map(({ transaction, label }) => <option key={transaction.id} value={transaction.id}>{label}</option>)}</select><span className="mt-1 block text-[11px] text-[var(--muted-foreground)]">Transaction phải cùng currency, đúng chiều tiền và nếu goal có tài khoản liên kết thì phải đi qua tài khoản đó.</span></label>
           <label className="block md:col-span-2"><span className="mb-2 block text-xs font-black uppercase tracking-wide text-[var(--muted-foreground)]">Ghi chú</span><input name="notes" maxLength={500} placeholder="VD: Trích lương tháng 10" className="h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-4 text-sm" /></label>
           <div className="flex justify-end gap-2 md:col-span-2"><button type="button" data-instant-close className="h-10 rounded-xl border border-[var(--border)] px-4 text-sm font-black">Hủy</button><PendingSubmitButton idleLabel="Ghi nhận" pendingLabel="Đang ghi nhận..." className="h-10 rounded-xl bg-[var(--primary)] px-5 text-sm font-black text-white" /></div>

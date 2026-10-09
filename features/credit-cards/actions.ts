@@ -41,10 +41,10 @@ async function cardPayload(formData: FormData, mode: "create" | "update") {
   const last4 = text(formData, "last4");
   const limitInput = text(formData, "credit_limit");
   const balanceInput = text(formData, "current_balance") || "0";
-  const annualRateInput = text(formData, "annual_rate_percent") || "0";
+  const annualRateInput = (text(formData, "annual_rate_percent") || "0").replace(/,/g, ".");
   const statementDayInput = text(formData, "statement_day") || "20";
   const dueDaysInput = text(formData, "due_days_after_statement") || "15";
-  const minimumPercentInput = text(formData, "minimum_payment_percent") || "5";
+  const minimumPercentInput = (text(formData, "minimum_payment_percent") || "5").replace(/,/g, ".");
   const minimumFloorInput = text(formData, "minimum_payment_floor") || "0";
   const linkedAccountId = text(formData, "linked_payment_account_id") || null;
   const iconName = text(formData, "icon_name") || "CreditCard";

@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { AuthMessage } from "@/components/auth-message";
 import { PendingSubmitButton } from "@/components/pending-submit-button";
+import { MoneyCalculatorInput } from "@/components/money-calculator-input";
 import { InstantReveal } from "@/components/instant-reveal";
 import { Card, CardContent } from "@/components/ui/card";
 import { minorToMajorInput } from "@/features/accounts/money";
@@ -120,13 +121,13 @@ function BudgetForm({
 
           <label className="block md:col-span-3">
             <span className="mb-2 block text-xs font-bold uppercase tracking-wide text-[var(--muted-foreground)]">Hạn mức ngân sách</span>
-            <input
+            <MoneyCalculatorInput
               name="amount"
-              inputMode="decimal"
               required
               defaultValue={editing ? minorToMajorInput(editing.amount_minor, editingDigits) : ""}
+              decimalDigits={editing ? editingDigits : (defaultCurrency === "VND" ? 0 : 2)}
+              currencyCode={editing?.currency_code ?? defaultCurrency}
               placeholder={defaultCurrency === "VND" ? "VD: 5000000" : "VD: 500.00"}
-              className="h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-4 text-sm outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--ring)]"
             />
           </label>
 

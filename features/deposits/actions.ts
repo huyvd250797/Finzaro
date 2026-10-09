@@ -40,7 +40,7 @@ async function depositPayload(formData: FormData, mode: "create" | "update") {
   const name = text(formData, "name");
   const institutionName = text(formData, "institution_name");
   const principalInput = text(formData, "principal");
-  const rateInput = text(formData, "annual_rate_percent");
+  const rateInput = text(formData, "annual_rate_percent").replace(/,/g, ".");
   const termInput = text(formData, "term_months");
   const startDate = text(formData, "start_date");
   const interestMethod = text(formData, "interest_method");

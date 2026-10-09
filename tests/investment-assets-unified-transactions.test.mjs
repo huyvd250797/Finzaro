@@ -22,7 +22,7 @@ test("Transaction Core supports credit card and loan payments", () => {
   assert.match(migration, /loan_payment/);
   assert.match(migration, /insert into public\.credit_card_payments/i);
   assert.match(migration, /insert into public\.loan_payments/i);
-  assert.match(txAction, /create_financial_transaction_v060/);
+  assert.match(txAction, /create_financial_transaction_v071/);
 });
 
 test("Loan payment preserves principal interest fee split", () => {

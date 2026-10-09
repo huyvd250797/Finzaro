@@ -191,7 +191,7 @@ export function monthTotals(transactions: TransactionView[], defaultCurrency: st
   let expense = 0;
   for (const transaction of transactions) {
     if (!transaction.transaction_date.startsWith(targetMonth)) continue;
-    if (transaction.transaction_type === "income") {
+    if (transaction.transaction_type === "income" && transaction.transaction_purpose === "standard") {
       const entry = transactionEntry(transaction, "income");
       if (entry?.currency_code === defaultCurrency) income += entry.amount_minor;
     } else if (transaction.transaction_type === "expense" && transaction.transaction_purpose === "standard") {

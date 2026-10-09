@@ -5,6 +5,8 @@ import { ArrowDownRight, ArrowUpRight, BookmarkPlus, PiggyBank, Scale, Trash2, W
 import { deleteForecastScenarioAction, saveForecastScenarioAction } from "@/features/forecasting/actions";
 import type { ForecastMonthPoint, ForecastScenario } from "@/features/forecasting/data";
 import { PendingSubmitButton } from "@/components/pending-submit-button";
+import { DecimalInput } from "@/components/decimal-input";
+import { MoneyCalculatorInput } from "@/components/money-calculator-input";
 import { cn } from "@/lib/utils";
 
 type ScenarioState = {
@@ -114,12 +116,12 @@ export function ScenarioPlanner({
           </div>
 
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
-            <label><span className="field-label">Điều chỉnh thu nhập (%)</span><input type="number" min={-90} max={300} step="1" value={scenario.incomeAdjustPercent} onChange={(e) => setScenario((prev) => ({ ...prev, incomeAdjustPercent: Number(e.target.value) }))} className="fin-input" /></label>
-            <label><span className="field-label">Điều chỉnh chi tiêu (%)</span><input type="number" min={-90} max={300} step="1" value={scenario.expenseAdjustPercent} onChange={(e) => setScenario((prev) => ({ ...prev, expenseAdjustPercent: Number(e.target.value) }))} className="fin-input" /></label>
-            <label><span className="field-label">Thu nhập thêm / tháng</span><input inputMode="decimal" value={scenario.extraIncomeMajor} onChange={(e) => setScenario((prev) => ({ ...prev, extraIncomeMajor: e.target.value }))} placeholder="0" className="fin-input" /></label>
-            <label><span className="field-label">Chi thêm / tháng</span><input inputMode="decimal" value={scenario.extraExpenseMajor} onChange={(e) => setScenario((prev) => ({ ...prev, extraExpenseMajor: e.target.value }))} placeholder="0" className="fin-input" /></label>
-            <label><span className="field-label">Trả nợ thêm / tháng</span><input inputMode="decimal" value={scenario.extraDebtMajor} onChange={(e) => setScenario((prev) => ({ ...prev, extraDebtMajor: e.target.value }))} placeholder="0" className="fin-input" /></label>
-            <label><span className="field-label">Reserve tiết kiệm / tháng</span><input inputMode="decimal" value={scenario.savingsReserveMajor} onChange={(e) => setScenario((prev) => ({ ...prev, savingsReserveMajor: e.target.value }))} placeholder="0" className="fin-input" /></label>
+            <label><span className="field-label">Điều chỉnh thu nhập (%)</span><DecimalInput value={String(scenario.incomeAdjustPercent)} onValueChange={(value) => setScenario((prev) => ({ ...prev, incomeAdjustPercent: Number(value) || 0 }))} min={-90} max={300} maxDecimals={2} allowNegative /></label>
+            <label><span className="field-label">Điều chỉnh chi tiêu (%)</span><DecimalInput value={String(scenario.expenseAdjustPercent)} onValueChange={(value) => setScenario((prev) => ({ ...prev, expenseAdjustPercent: Number(value) || 0 }))} min={-90} max={300} maxDecimals={2} allowNegative /></label>
+            <label><span className="field-label">Thu nhập thêm / tháng</span><MoneyCalculatorInput value={scenario.extraIncomeMajor} onValueChange={(value) => setScenario((prev) => ({ ...prev, extraIncomeMajor: value }))} decimalDigits={decimalDigits} currencyCode={currencyCode} /></label>
+            <label><span className="field-label">Chi thêm / tháng</span><MoneyCalculatorInput value={scenario.extraExpenseMajor} onValueChange={(value) => setScenario((prev) => ({ ...prev, extraExpenseMajor: value }))} decimalDigits={decimalDigits} currencyCode={currencyCode} /></label>
+            <label><span className="field-label">Trả nợ thêm / tháng</span><MoneyCalculatorInput value={scenario.extraDebtMajor} onValueChange={(value) => setScenario((prev) => ({ ...prev, extraDebtMajor: value }))} decimalDigits={decimalDigits} currencyCode={currencyCode} /></label>
+            <label><span className="field-label">Reserve tiết kiệm / tháng</span><MoneyCalculatorInput value={scenario.savingsReserveMajor} onValueChange={(value) => setScenario((prev) => ({ ...prev, savingsReserveMajor: value }))} decimalDigits={decimalDigits} currencyCode={currencyCode} /></label>
           </div>
 
           <div className="mt-5 grid grid-cols-2 gap-2">
