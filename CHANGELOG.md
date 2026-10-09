@@ -1,5 +1,15 @@
 # Changelog
 
+## V0.5.0 — Financial Goals Planner
+- Thêm module Financial Goals Planner và route `/goal-planner`.
+- Điều phối nhiều Savings Goal theo monthly funding pool.
+- Thêm strategy Priority/Balanced, auto-allocation, reorder priority và completion estimate.
+- Liên kết Smart Cash Flow Planner: Savings Reserve được dùng làm gợi ý funding mặc định.
+- Thêm `financial_goal_plans`, `financial_goal_allocations`, RLS và RPC atomic save.
+- Tích hợp Dashboard, Sidebar và mobile module sheet.
+- Version bump `0.4.1 → 0.5.0`.
+
+
 ## V0.4.1 — Smart Cash Flow Planner · Deploy Fix
 
 - Fixed Vercel/Next.js build failure caused by importing the non-existent `Backspace` export from `lucide-react`.

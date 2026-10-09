@@ -1,0 +1,10 @@
+begin;
+select plan(6);
+select has_table('public', 'financial_goal_plans', 'financial_goal_plans exists');
+select has_table('public', 'financial_goal_allocations', 'financial_goal_allocations exists');
+select has_column('public', 'financial_goal_plans', 'monthly_available_minor', 'monthly pool exists');
+select has_column('public', 'financial_goal_allocations', 'monthly_allocation_minor', 'goal allocation exists');
+select has_function('public', 'save_financial_goal_plan_v050', array['text','bigint','text','text','jsonb'], 'atomic planner save RPC exists');
+select ok((select relrowsecurity from pg_class where oid='public.financial_goal_plans'::regclass), 'RLS enabled on goal plans');
+select * from finish();
+rollback;

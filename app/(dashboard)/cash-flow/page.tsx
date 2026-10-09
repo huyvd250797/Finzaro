@@ -25,7 +25,7 @@ export default async function CashFlowPage({ searchParams }: { searchParams: Sea
   return <div className="mx-auto max-w-[1500px] px-4 py-6 md:px-6 lg:px-8 lg:py-8">
     <div className="flex flex-wrap items-end justify-between gap-4">
       <div><p className="text-sm font-semibold text-[var(--primary)]">Planning · Monthly Allocation</p><h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">Smart Cash Flow Planner</h1><p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--muted-foreground)]">Biến Forecast thành kế hoạch hành động theo từng tháng: giữ tiền cho nghĩa vụ, savings reserve, trả nợ thêm và xác định Safe to Spend trước khi chi.</p></div>
-      <div className="flex gap-2"><Link href="/forecast" className="fin-secondary-btn">Dự báo</Link><Link href="/health" className="fin-primary-btn">Sức khỏe tài chính <ArrowRight className="size-4" /></Link></div>
+      <div className="flex flex-wrap gap-2"><Link href="/forecast" className="fin-secondary-btn">Dự báo</Link><Link href="/goal-planner" className="fin-secondary-btn">Kế hoạch mục tiêu</Link><Link href="/health" className="fin-primary-btn">Sức khỏe tài chính <ArrowRight className="size-4" /></Link></div>
     </div>
 
     <AuthMessage error={params.error} message={params.message} />

@@ -206,6 +206,7 @@ export default async function GoalsPage({ searchParams }: { searchParams: Search
           <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--muted-foreground)]">Biến kế hoạch thành mục tiêu đo được: theo dõi đóng góp, target date, số tiền còn thiếu và tốc độ cần tiết kiệm mỗi tháng mà không làm sai Transaction Ledger.</p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <Link href="/goal-planner" className="inline-flex h-10 items-center rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm font-black text-[var(--primary)]">Kế hoạch mục tiêu</Link>
           <Link href={includeArchived ? "/goals" : "/goals?show=archived"} className="inline-flex h-10 items-center rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm font-black">{includeArchived ? "Đang hoạt động" : "Đã lưu trữ"}</Link>
           <InstantReveal label="Mục tiêu mới"><GoalForm currencies={currencies} accounts={goalData.accounts} /></InstantReveal>
         </div>

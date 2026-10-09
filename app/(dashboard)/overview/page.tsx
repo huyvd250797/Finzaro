@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Activity, AlertTriangle, ArrowRight, Banknote, CalendarClock, CalendarRange, CircleDollarSign, CreditCard, HeartPulse, Landmark, PiggyBank, Plus, Scale, Smartphone, Target, TrendingDown, TrendingUp, WalletCards } from "lucide-react";
+import { Activity, AlertTriangle, ArrowRight, Banknote, CalendarClock, CalendarRange, CircleDollarSign, CreditCard, HeartPulse, Landmark, PiggyBank, Plus, Scale, Smartphone, Sparkles, Target, TrendingDown, TrendingUp, WalletCards } from "lucide-react";
 import { formatMinorMoney } from "@/lib/utils";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { StatCard } from "@/components/stat-card";
@@ -8,6 +8,7 @@ import { TransactionList } from "@/components/transaction-list";
 import { CategoryIcon, iconColorValue } from "@/features/categories/icons";
 import { budgetProgress, budgetSummary, loadBudgets, monthStartFromKey } from "@/features/budgets/data";
 import { loadSavingsGoals, savingsGoalProgress, savingsGoalSummary } from "@/features/goals/data";
+import { loadFinancialGoalPlan } from "@/features/goals/planner-data";
 import { depositProjections, depositSummary, loadDeposits } from "@/features/deposits/data";
 import { loanProjections, loanSummary, loadLoans } from "@/features/loans/data";
 import { creditCardSummary, loadCreditCards, projectCreditCards } from "@/features/credit-cards/data";
@@ -35,19 +36,21 @@ export default async function OverviewPage() {
   const totalMinor = accounts.filter((account) => account.currency_code === defaultCurrency).reduce((sum, account) => sum + account.current_balance_minor, 0);
   const currentMonth = currentMonthKey(timeZone);
   const recurringTodayKey = recurringToday(timeZone);
-  const [currentBudgets, recurring, goalData, depositData, loanData, creditCardData, healthSnapshotResult] = await Promise.all([
+  const [currentBudgets, recurring, goalData, depositData, loanData, creditCardData, healthSnapshotResult, goalPlanData] = await Promise.all([
     loadBudgets(supabase, userId, monthStartFromKey(currentMonth), false),
     loadRecurringData(supabase, userId),
     loadSavingsGoals(supabase, userId, false),
     loadDeposits(supabase, userId, false),
     loadLoans(supabase, userId, false),
     loadCreditCards(supabase, userId, false),
-    (supabase as any).from("financial_health_snapshots").select("overall_score, data_confidence, snapshot_date").eq("user_id", userId).eq("currency_code", defaultCurrency).order("snapshot_date", { ascending: false }).limit(1).maybeSingle()
+    (supabase as any).from("financial_health_snapshots").select("overall_score, data_confidence, snapshot_date").eq("user_id", userId).eq("currency_code", defaultCurrency).order("snapshot_date", { ascending: false }).limit(1).maybeSingle(),
+    loadFinancialGoalPlan(supabase, userId, defaultCurrency)
   ]);
   const budgetRows = budgetProgress(currentBudgets, ledger.transactions, ledger.categories);
   const budgetState = budgetSummary(budgetRows, defaultCurrency);
   const goalProgress = savingsGoalProgress(goalData.goals, goalData.entries, goalData.accounts, recurringTodayKey);
   const goalState = savingsGoalSummary(goalProgress, defaultCurrency);
+  const goalPlanAllocated = goalPlanData.allocations.reduce((sum, row) => sum + row.monthly_allocation_minor, 0);
   const dashboardGoals = goalProgress.filter((goal) => !goal.is_archived && goal.currency_code === defaultCurrency).slice(0, 3);
   const depositRows = depositProjections(depositData.deposits, depositData.entries, depositData.accounts, recurringTodayKey);
   const depositState = depositSummary(depositRows, defaultCurrency);
@@ -160,6 +163,14 @@ export default async function OverviewPage() {
             <Link href="/goals" className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[var(--border)] px-3 text-xs font-bold">Mở mục tiêu <ArrowRight className="size-3.5" /></Link>
           </div>
           {dashboardGoals.length > 0 && <div className="mt-4 grid gap-2 sm:grid-cols-3">{dashboardGoals.map((goal) => <div key={goal.id} className="rounded-xl border border-[var(--border)] p-3"><div className="flex items-center gap-2"><span className="grid size-8 place-items-center rounded-lg bg-[var(--sidebar-accent)]" style={{ color: iconColorValue(goal.icon_color) }}><CategoryIcon name={goal.icon_name} className="size-3.5" /></span><span className="min-w-0 flex-1 truncate text-xs font-black">{goal.name}</span><span className="text-[10px] font-black text-[var(--muted-foreground)]">{goal.percent}%</span></div><div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[var(--muted)]"><div className={`h-full rounded-full ${goal.status === "behind" || goal.status === "overdue" ? "bg-amber-500" : goal.status === "completed" ? "bg-emerald-500" : "bg-[var(--primary)]"}`} style={{width:`${Math.max(0, Math.min(100, goal.percent))}%`}} /></div></div>)}</div>}
+        </CardContent>
+      </Card>
+
+      <Card className="mt-4 fin-card border-violet-500/20">
+        <CardContent className="flex min-w-0 flex-wrap items-center gap-4 p-5">
+          <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-violet-500/10 text-violet-600"><Sparkles className="size-5" /></div>
+          <div className="min-w-[180px] flex-1"><h2 className="font-black">Financial Goals Planner</h2><p className="mt-1 text-xs text-[var(--muted-foreground)]">{goalPlanData.plan ? `Nguồn tiền ${formatMinorMoney(goalPlanData.plan.monthly_available_minor, defaultCurrency, digits)}/tháng · đã phân bổ ${formatMinorMoney(goalPlanAllocated, defaultCurrency, digits)} cho ${goalPlanData.allocations.length} mục tiêu.` : "Điều phối nhiều Savings Goal trên cùng nguồn tiền và phát hiện thiếu hụt trước target date."}</p></div>
+          <Link href="/goal-planner" className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[var(--border)] px-3 text-xs font-bold">Lập kế hoạch mục tiêu <ArrowRight className="size-3.5" /></Link>
         </CardContent>
       </Card>
 
