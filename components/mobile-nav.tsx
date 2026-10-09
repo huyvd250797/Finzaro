@@ -26,6 +26,7 @@ import {
   Sparkles,
   Shapes,
   Target,
+  TrendingDown,
   WalletCards,
   X
 } from "lucide-react";
@@ -41,6 +42,7 @@ const moduleItems = [
   { href: "/deposits", label: "Tiền gửi", icon: Landmark },
   { href: "/loans", label: "Khoản vay", icon: CircleDollarSign },
   { href: "/credit-cards", label: "Thẻ tín dụng", icon: CreditCard },
+  { href: "/debt-strategy", label: "Trả nợ", icon: TrendingDown },
   { href: "/assets", label: "Đầu tư", icon: Coins },
   { href: "/net-worth", label: "Tài sản ròng", icon: Scale },
   { href: "/health", label: "Sức khỏe", icon: HeartPulse },

@@ -127,6 +127,8 @@ const required = [
   "supabase/sql-editor/V0.5.0_financial_goals_planner_verify.sql",
   "supabase/sql-editor/V0.6.0_investment_assets_unified_transactions.sql",
   "supabase/sql-editor/V0.6.0_investment_assets_unified_transactions_verify.sql",
+  "supabase/sql-editor/V0.7.0_advanced_debt_strategy_ssi_market_data.sql",
+  "supabase/sql-editor/V0.7.0_advanced_debt_strategy_ssi_market_data_verify.sql",
   "supabase/tests/category-engine.test.sql",
   "supabase/tests/budget-engine.test.sql",
   "supabase/tests/recurring-calendar.test.sql",
@@ -153,19 +155,20 @@ const required = [
   "docs/V0.4.0_SMART_CASH_FLOW_PLANNER_SETUP.md",
   "docs/V0.5.0_FINANCIAL_GOALS_PLANNER_SETUP.md",
   "docs/V0.6.0_INVESTMENT_ASSET_TRACKING_SETUP.md",
+  "docs/V0.7.0_ADVANCED_DEBT_STRATEGY_SSI_MARKET_DATA_SETUP.md",
   "docs/VERSIONING.md",
   "public/sw.js",
   ".env.example",
   "vercel.json"
 ];
 
-test("V0.6.0 required files exist", () => {
+test("V0.7.0 required files exist", () => {
   for (const file of required) assert.equal(existsSync(file), true, `${file} is missing`);
 });
 
-test("package version is 0.6.0", () => {
+test("package version is 0.7.0", () => {
   const pkg = JSON.parse(readFileSync("package.json", "utf8"));
-  assert.equal(pkg.version, "0.6.0");
+  assert.equal(pkg.version, "0.7.0");
   assert.match(pkg.dependencies.next, /16/);
   assert.ok(pkg.dependencies["@supabase/ssr"]);
 });

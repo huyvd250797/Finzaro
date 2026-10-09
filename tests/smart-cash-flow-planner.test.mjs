@@ -50,9 +50,9 @@ test("Cash Flow Planner is discoverable from desktop and mobile navigation", () 
   assert.match(mobile, /href: "\/cash-flow"/);
 });
 
-test("current app version is V0.4.1 Smart Cash Flow Planner deploy fix", () => {
-  assert.match(version, /APP_VERSION = "0\.6\.0"/);
-  assert.match(version, /Investment & Asset Tracking/);
+test("current app version is V0.7.0 Advanced Debt Strategy", () => {
+  assert.match(version, /APP_VERSION = "0\.7\.0"/);
+  assert.match(version, /Advanced Debt Strategy/);
 });
 
 

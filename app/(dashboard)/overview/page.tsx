@@ -220,6 +220,14 @@ export default async function OverviewPage() {
         </CardContent>
       </Card>
 
+      <Card className="mt-4 fin-card border-orange-500/20">
+        <CardContent className="flex min-w-0 flex-wrap items-center gap-4 p-5">
+          <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-orange-500/10 text-orange-600"><TrendingDown className="size-5" /></div>
+          <div className="min-w-[180px] flex-1"><h2 className="font-black">Advanced Debt Strategy</h2><p className="mt-1 text-xs text-[var(--muted-foreground)]">So sánh Avalanche/Snowball trên {loanState.count + creditCardState.count} khoản nợ · Loan {formatMinorMoney(loanState.remaining, defaultCurrency, digits)} · Card {formatMinorMoney(creditCardState.totalBalance, defaultCurrency, digits)}.</p></div>
+          <Link href="/debt-strategy" className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[var(--border)] px-3 text-xs font-bold">Tối ưu trả nợ <ArrowRight className="size-3.5" /></Link>
+        </CardContent>
+      </Card>
+
       <div className="mt-4 grid gap-4 xl:grid-cols-[1.45fr_.8fr]">
         <Card><CardHeader><div><h2 className="font-bold">Dòng tiền 6 tháng</h2><p className="mt-1 text-xs text-[var(--muted-foreground)]">Income / Expense thật theo {defaultCurrency}; transfer được loại khỏi cash-flow spending.</p></div><span className="rounded-lg bg-[var(--muted)] px-2.5 py-1.5 text-xs font-semibold">6 tháng</span></CardHeader><CardContent><CashflowChart data={series} decimalDigits={digits} /></CardContent></Card>
         <Card><CardHeader><div><h2 className="font-bold">Chi tiêu theo nhóm</h2><p className="mt-1 text-xs text-[var(--muted-foreground)]">Top category tháng hiện tại · {defaultCurrency}</p></div></CardHeader><CardContent className="space-y-4">{categories.length === 0 ? <div className="rounded-xl border border-dashed border-[var(--border)] p-6 text-center"><p className="text-sm font-semibold">Chưa có chi tiêu tháng này</p><p className="mt-1 text-xs text-[var(--muted-foreground)]">Danh mục sẽ xuất hiện khi bạn ghi nhận Expense.</p></div> : categories.map((item)=><div key={item.label}><div className="mb-1.5 flex items-center justify-between gap-3 text-sm"><span className="flex min-w-0 items-center gap-2 font-medium"><span className="grid size-7 shrink-0 place-items-center rounded-lg bg-[var(--sidebar-accent)]" style={{ color: iconColorValue(item.icon_color) }}><CategoryIcon name={item.icon_name} className="size-3.5" /></span><span className="truncate">{item.label}</span></span><span className="text-xs font-semibold text-[var(--muted-foreground)]">{formatMinorMoney(item.value, defaultCurrency, digits)}</span></div><div className="h-2 rounded-full bg-[var(--muted)]"><div className="h-2 rounded-full bg-[var(--primary)]" style={{width:`${item.percent}%`}} /></div></div>)}</CardContent></Card>

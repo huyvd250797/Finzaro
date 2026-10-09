@@ -37,3 +37,13 @@ if (!key.startsWith("sb_publishable_") && !key.startsWith("eyJ")) {
 console.log(`Finzaro environment OK: ${process.env.NEXT_PUBLIC_FINZARO_ENV ?? "development"}`);
 console.log(`Supabase host: ${url.hostname}`);
 console.log(`Site URL: ${siteUrl ?? "request origin fallback"}`);
+
+const ssiApiKey = process.env.SSI_FASTCONNECT_API_KEY?.trim();
+const ssiApiSecret = process.env.SSI_FASTCONNECT_API_SECRET?.trim();
+if (Boolean(ssiApiKey) !== Boolean(ssiApiSecret)) {
+  console.warn("Warning: SSI FastConnect requires both SSI_FASTCONNECT_API_KEY and SSI_FASTCONNECT_API_SECRET. Auto market pricing will stay disabled until both are configured.");
+} else if (ssiApiKey && ssiApiSecret) {
+  console.log("SSI FastConnect market data: configured (server-only credentials)");
+} else {
+  console.log("SSI FastConnect market data: optional / not configured");
+}

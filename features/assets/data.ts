@@ -23,6 +23,13 @@ export type InvestmentAsset = {
   quantity: number | null;
   cost_basis_minor: number;
   current_value_minor: number;
+  ticker_symbol: string | null;
+  exchange: "HOSE" | "HNX" | "UPCOM" | "OTHER" | null;
+  average_buy_price_minor: number | null;
+  market_price_minor: number | null;
+  market_price_updated_at: string | null;
+  market_data_provider: "manual" | "ssi";
+  auto_price_enabled: boolean;
   institution_name: string | null;
   purchase_date: string | null;
   valuation_date: string;

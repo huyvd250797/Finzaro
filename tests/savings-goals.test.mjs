@@ -66,7 +66,7 @@ test("V0.0.9 preserves proactive PWA updates", () => {
   assert.match(pwa, /SKIP_WAITING/);
 });
 
-test("current app version is V0.3.0 Forecasting & Scenario Planning", () => {
-  assert.match(version, /APP_VERSION = "0\.6\.0"/);
-  assert.match(version, /Investment & Asset Tracking/);
+test("current app version is V0.7.0 Advanced Debt Strategy", () => {
+  assert.match(version, /APP_VERSION = "0\.7\.0"/);
+  assert.match(version, /Advanced Debt Strategy/);
 });

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Activity, BarChart3, CalendarClock, CalendarRange, CircleDollarSign, Coins, CreditCard, HeartPulse, Landmark, LayoutDashboard, PiggyBank, ReceiptText, Scale, Settings2, Shapes, Sparkles, Target, WalletCards } from "lucide-react";
+import { Activity, BarChart3, CalendarClock, CalendarRange, CircleDollarSign, Coins, CreditCard, HeartPulse, Landmark, LayoutDashboard, PiggyBank, ReceiptText, Scale, Settings2, Shapes, Sparkles, Target, TrendingDown, WalletCards } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
 import { APP_RELEASE_NAME, APP_VERSION_LABEL } from "@/lib/app-version";
 import { cn } from "@/lib/utils";
@@ -19,6 +19,7 @@ const nav = [
   { href: "/deposits", label: "Tiền gửi & lãi suất", icon: Landmark },
   { href: "/loans", label: "Khoản vay & dư nợ", icon: CircleDollarSign },
   { href: "/credit-cards", label: "Thẻ tín dụng", icon: CreditCard },
+  { href: "/debt-strategy", label: "Chiến lược trả nợ", icon: TrendingDown },
   { href: "/assets", label: "Đầu tư & tài sản", icon: Coins },
   { href: "/net-worth", label: "Tài sản ròng", icon: Scale },
   { href: "/health", label: "Sức khỏe tài chính", icon: HeartPulse },
@@ -42,8 +43,8 @@ export function AppSidebar() {
       <div className="mt-auto space-y-3">
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--muted)] p-4">
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[var(--primary)]"><Sparkles className="size-4" /> Tiếp theo</div>
-          <p className="mt-2 text-sm font-semibold">Advanced Debt Strategy</p>
-          <p className="mt-1 text-xs leading-5 text-[var(--muted-foreground)]">V0.7.0 sẽ tối ưu chiến lược trả nợ Avalanche/Snowball trên dữ liệu Loan + Credit Card đã liên kết transaction.</p>
+          <p className="mt-2 text-sm font-semibold">Credit Intelligence</p>
+          <p className="mt-1 text-xs leading-5 text-[var(--muted-foreground)]">V0.8.0 dự kiến tối ưu utilization, statement payment và chiến lược dùng thẻ dựa trên Credit Card Manager.</p>
         </div>
         <Link href="/settings" className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-[var(--muted-foreground)] transition hover:bg-[var(--muted)] hover:text-[var(--foreground)]"><Settings2 className="size-4.5" /> Cài đặt</Link>
         <div className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--muted-foreground)]">Finzaro {APP_VERSION_LABEL} · {APP_RELEASE_NAME}</div>

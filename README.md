@@ -1,73 +1,52 @@
-# Finzaro V0.6.0 — Investment & Asset Tracking
+# Finzaro V0.7.0 — Advanced Debt Strategy
 
-> Feature release: mở rộng Net Worth sang tài sản đầu tư/thực và hợp nhất Transaction Core với Credit Card, Loan và Savings Goal liên kết.
+Finzaro is a personal-finance PWA built with Next.js, Supabase and Vercel. V0.7.0 adds debt payoff optimization and extends Investment & Asset Tracking with SSI FastConnect market-data valuation for Vietnam stock holdings.
 
-## V0.6.0 highlights
-- Module **Đầu tư & tài sản** tại `/assets`: vàng, cổ phiếu, quỹ/ETF, bất động sản, xe, góp vốn, collectibles và tài sản khác.
-- Theo dõi Quantity, Cost Basis, Current Value, valuation date, linked account, icon/color và lịch sử định giá.
-- Investment Assets được cộng vào Net Worth theo từng currency, không tự quy đổi FX.
-- **Chi tiền** có 3 mục đích: chi tiêu thông thường, thanh toán Credit Card, thanh toán Loan.
-- Thanh toán Credit Card từ Transaction Core tự giảm `credit_cards.current_balance_minor` và tạo payment history.
-- Thanh toán Loan từ Transaction Core tách Gốc/Lãi/Phí; chỉ phần Gốc làm giảm dư nợ.
-- **Chuyển tiền** vẫn là Account → Account. Khi chuyển vào/ra Savings Account đang liên kết Savings Goal, Goal tự tạo contribution/withdrawal từ ledger.
-- Mỗi Savings Account chỉ liên kết tối đa một active Goal để tránh double-count.
-- Xóa transaction V0.6.0 hoàn nguyên Account + Credit Card/Loan + Goal link trong cùng workflow.
-- Quick Suggestions chỉ dùng transaction thông thường, tránh tự điền nhầm payment liability.
+## V0.7.0 highlights
 
-## Database
-Chạy duy nhất SQL mới:
+- **Advanced Debt Strategy** at `/debt-strategy`.
+- Combines active **Loans + Credit Cards** in the user's default currency.
+- Simulates **Debt Avalanche** (highest APR first) and **Debt Snowball** (smallest balance first).
+- User can enter an extra monthly repayment budget, compare payoff months and estimated interest, view payoff order and save the preferred plan.
+- Existing V0.6.0 liability-linked transactions remain unchanged: `Chi tiền` can pay Credit Card/Loan; `Chuyển tiền` remains account-to-account and linked Savings Goal transfers auto-sync progress.
+- Stock assets can now store **ticker symbol, exchange, quantity, average buy price, market price and market update time**.
+- Optional **SSI FastConnect Market Data** integration automatically refreshes enabled Vietnam stock positions from the server and recalculates Market Value + unrealized gain/loss.
+- SSI API Key/Secret are **server-only**. Finzaro never exposes them as `NEXT_PUBLIC_*` and this release does not place stock orders.
+- Automated SSI price refresh is throttled in valuation history so repeated refreshes do not generate thousands of valuation rows.
+- Vietnam stock quotations are normalized to VND/share before valuation (SSI/market displays commonly quote prices in 1,000-VND units), so quantity × market price produces the correct VND market value.
 
-`supabase/sql-editor/V0.6.0_investment_assets_unified_transactions.sql`
+## Database upgrade
 
-Sau đó có thể kiểm tra bằng:
+If the database is already on V0.6.0, run only:
 
-`supabase/sql-editor/V0.6.0_investment_assets_unified_transactions_verify.sql`
+`supabase/sql-editor/V0.7.0_advanced_debt_strategy_ssi_market_data.sql`
 
-Không chạy lại SQL V0.5.0 trở xuống nếu database hiện đã ở V0.5.0.
+Optional verification:
 
-## Environment
-Không có ENV mới.
+`supabase/sql-editor/V0.7.0_advanced_debt_strategy_ssi_market_data_verify.sql`
 
----
-# Finzaro V0.5.0 — Financial Goals Planner
+## Optional SSI FastConnect configuration
 
-> Feature release: điều phối nhiều Savings Goal trên cùng nguồn tiền, ưu tiên mục tiêu, phân bổ tự động/cân bằng và ước tính target date mới.
+Manual Investment Asset valuation works without SSI. To enable automatic Vietnam stock pricing, add these **server-only** Vercel environment variables:
 
-## V0.5.0 highlights
-- Financial Goals Planner tại `/goal-planner`.
-- Nguồn tiền mặc định lấy từ Savings Reserve của Smart Cash Flow Planner khi có.
-- Strategy: **Theo ưu tiên** hoặc **Cân bằng**.
-- Phân bổ tự động và chỉnh allocation từng goal.
-- Cảnh báo thiếu hụt monthly funding.
-- Ước tính ngày hoàn thành mới theo allocation.
-- Lưu plan + allocations bằng RPC atomic và RLS.
-- Không tự tạo Transaction hoặc thay đổi số dư.
+```env
+SSI_FASTCONNECT_API_KEY=...
+SSI_FASTCONNECT_API_SECRET=...
+SSI_FASTCONNECT_CLIENT_ID=...
+```
 
-Xem `docs/V0.5.0_FINANCIAL_GOALS_PLANNER_SETUP.md` để cấu hình database.
+Do not use `NEXT_PUBLIC_` for these secrets. See `docs/V0.7.0_ADVANCED_DEBT_STRATEGY_SSI_MARKET_DATA_SETUP.md`.
 
----
-
-# Finzaro V0.4.1 — Smart Cash Flow Planner · Deploy Fix
-
-Finzaro V0.4.1 is a patch release for V0.4.0. It fixes a Vercel/Next.js production build error in the Money Calculator keypad.
-
-## Fixed
-
-`components/money-calculator-input.tsx` imported `Backspace` from `lucide-react`, but the installed Lucide package does not export that symbol. V0.4.1 removes that dependency and renders the backspace glyph as a small inline SVG.
-
-## Database
-
-No new SQL is required for V0.4.1. If V0.4.0 database setup was already applied, do not run any additional migration for this patch.
-
-## Environment
-
-No new environment variables are required.
+Finzaro V0.7.0 uses SSI's current Market Data Securities Summary with periodic server-side refresh. SSI also provides WebSocket push streaming, but current SSI documentation requires an authenticated streaming session/OTP; Finzaro therefore keeps the PWA/Vercel integration server-safe rather than exposing streaming credentials in the browser.
 
 ## Deploy
 
-1. Replace the V0.4.0 source with this V0.4.1 package.
-2. Push to GitHub.
-3. Redeploy on Vercel.
-4. The installed Finzaro PWA can use its update prompt to load V0.4.1.
+1. Run the V0.7.0 SQL file in Supabase SQL Editor.
+2. Optionally configure SSI FastConnect server environment variables in Vercel.
+3. Push source to GitHub.
+4. Deploy/redeploy on Vercel.
+5. Open the installed PWA and use the existing **Cập nhật ngay** update prompt when available.
 
-All Smart Cash Flow Planner features, horizontal quick suggestions and Money Calculator behavior from V0.4.0 remain intact.
+## Next planned feature
+
+**Finzaro V0.8.0 — Credit Intelligence**: utilization optimization, statement strategy, payment priority and interest-avoidance guidance.
