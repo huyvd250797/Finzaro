@@ -14,6 +14,7 @@ import { updateTransactionAction } from "@/features/transactions/actions";
 import { isTransactionType } from "@/features/transactions/constants";
 import { currencyDigits, filterTransactions, loadLedger, monthTotals, currentMonthKey, quickTransactionSuggestions, transactionEntry, type LedgerCurrency, type TransactionView } from "@/features/transactions/data";
 import { loanProjections, type Loan, type LoanPayment } from "@/features/loans/data";
+import type { CreditCard } from "@/features/credit-cards/data";
 import { requireUser } from "@/lib/auth";
 import { formatMinorMoney } from "@/lib/utils";
 
@@ -56,7 +57,7 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
     loadLedger(supabase, userId, { limit: 500 }),
     (supabase as any).from("loans").select("*").eq("user_id", userId).eq("is_archived", false).order("created_at", { ascending: false }),
     (supabase as any).from("loan_payments").select("*").eq("user_id", userId).order("payment_date", { ascending: false }).order("created_at", { ascending: false }).limit(5000),
-    supabase.from("credit_cards").select("id, name, bank_name, last4, currency_code, current_balance_minor").eq("user_id", userId).eq("is_archived", false).order("created_at", { ascending: false })
+    (supabase as any).from("credit_cards").select("id, name, bank_name, last4, currency_code, current_balance_minor").eq("user_id", userId).eq("is_archived", false).order("created_at", { ascending: false })
   ]);
   if (loansError) throw loansError;
   if (loanPaymentsError) throw loanPaymentsError;
@@ -79,7 +80,7 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
   const incomeSuggestions = quickTransactionSuggestions(ledger.transactions, ledger.currencies, "income");
   const transferSuggestions = quickTransactionSuggestions(ledger.transactions, ledger.currencies, "transfer");
   const loanRows = loanProjections((activeLoans ?? []) as Loan[], (loanPayments ?? []) as LoanPayment[], ledger.accounts, today).filter((loan) => !loan.is_archived && loan.remaining_principal_minor > 0);
-  const allCardRows = activeCards ?? [];
+  const allCardRows = (activeCards ?? []) as Pick<CreditCard, "id" | "name" | "bank_name" | "last4" | "currency_code" | "current_balance_minor">[];
   const toCardOption = (card: (typeof allCardRows)[number]) => { const cardDigits = currencyDigits(ledger.currencies, card.currency_code); return { id: card.id, name: card.name, bank_name: card.bank_name, last4: card.last4, currency_code: card.currency_code, current_balance_minor: card.current_balance_minor, balance_label: formatMinorMoney(card.current_balance_minor, card.currency_code, cardDigits) }; };
   const creditCardPaymentOptions = allCardRows.filter((card) => card.current_balance_minor > 0).map(toCardOption);
   const creditCardFundingOptions = allCardRows.map(toCardOption);

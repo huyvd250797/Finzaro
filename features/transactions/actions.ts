@@ -200,7 +200,7 @@ export async function createTransactionAction(formData: FormData) {
     });
     if (error) throw new Error(safeDbMessage(error, "Không thể tạo giao dịch. Vui lòng kiểm tra dữ liệu và thử lại."));
 
-    ["/transactions", "/overview", "/accounts", "/credit-cards", "/loans", "/goals", "/net-worth", "/debt-strategy", "/reports", "/health", "/forecast", "/cash-flow"].forEach(revalidatePath);
+    ["/transactions", "/overview", "/accounts", "/credit-cards", "/loans", "/goals", "/net-worth", "/debt-strategy", "/reports", "/health", "/forecast", "/cash-flow"].forEach((path) => revalidatePath(path));
     const message = transactionPurpose === "credit_card_payment" ? "Đã chi tiền thanh toán thẻ và giảm dư nợ tín dụng."
       : transactionPurpose === "loan_payment" ? "Đã chi tiền thanh toán khoản vay và cập nhật dư nợ."
       : transactionPurpose === "credit_card_borrow" ? "Đã ghi nhận tiền vào tài khoản và tăng dư nợ thẻ tín dụng."
@@ -221,7 +221,7 @@ export async function deleteTransactionAction(formData: FormData) {
     const { supabase } = await requireUser();
     const { error } = await (supabase as any).rpc("delete_financial_transaction_v071", { p_transaction_id: transactionId });
     if (error) throw new Error(safeDbMessage(error, "Không thể xóa giao dịch."));
-    ["/transactions", "/overview", "/accounts", "/credit-cards", "/loans", "/goals", "/net-worth", "/debt-strategy", "/reports", "/health", "/forecast", "/cash-flow"].forEach(revalidatePath);
+    ["/transactions", "/overview", "/accounts", "/credit-cards", "/loans", "/goals", "/net-worth", "/debt-strategy", "/reports", "/health", "/forecast", "/cash-flow"].forEach((path) => revalidatePath(path));
     redirect(destination("message", "Đã xóa giao dịch và hoàn nguyên số dư/liability/goal liên quan."));
   } catch (error) {
     if (error && typeof error === "object" && "digest" in error) throw error;

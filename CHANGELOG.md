@@ -1,3 +1,10 @@
+# V0.7.1 Deploy TypeScript Fix
+
+- Fixed Transactions credit-card query typing when generated `Database` types do not yet include `credit_cards`, preventing `never` inference during Vercel type checking.
+- Fixed Next.js 16 `revalidatePath` callback signature by wrapping it in a unary `forEach` callback.
+- Added regression tests for both Vercel build failures.
+- No database migration required.
+
 # Finzaro Changelog
 
 ## V0.7.1 — Mobile Money UX + Debt Funding
