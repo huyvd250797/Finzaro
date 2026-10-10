@@ -55,7 +55,7 @@ export default async function ReportCalendarPage({ searchParams }: { searchParam
   const fallbackDay = period === currentMonth ? now.day : 1;
   const selectedDay = validSelectedDay(params.day, period, bounds.days, fallbackDay);
 
-  const ledger = await loadLedger(supabase, userId, { fromDate: bounds.from, toDate: bounds.to, limit: 10000 });
+  const ledger = await loadLedger(supabase, userId, { fromDate: bounds.from, toDate: bounds.to, fetchAll: true });
   const digits = currencyDigits(ledger.currencies, currency);
   const totals = periodFlowTotals(ledger.transactions, currency);
   const daily = dailyFlowTotals(ledger.transactions, currency, period);

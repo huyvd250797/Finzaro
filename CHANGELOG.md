@@ -1,3 +1,15 @@
+# V1.0.0 — Production Release
+
+- Promoted the V0.8.0 Release Candidate to the first production baseline without adding a new finance module.
+- Added root/dashboard/global error recovery and a custom 404 surface so transient rendering failures do not leave a blank app.
+- Hardened response headers with anti-framing, COOP, HSTS in production, MIME-sniffing protection, referrer policy and restricted browser permissions.
+- Added a `prebuild` environment validation gate and stricter placeholder/HTTPS checks for production deploys.
+- Pinned application and build dependencies to exact versions in `package.json` to reduce deployment drift.
+- Removed the silent 10,000-row ceiling from Reports/Calendar/category drill-down/CSV export by adding full-range pagination with a visible 100,000-row safety ceiling.
+- Removed the silent 10,000-row ceiling from Category historical usage counting.
+- Preserved the V0.8.0 Reports UX, 84-icon Category library, atomic liability funding and conservative authenticated-PWA cache strategy.
+- Added a read-only V1.0.0 Supabase production verification script and pgTAP production smoke checks; no V1.0.0 schema migration is required.
+
 # V0.8.0 — Release Candidate
 
 - Reworked Reports into three focused surfaces: `Tổng quan`, `Lịch`, and `Phân tích` without adding a new top-level finance module.

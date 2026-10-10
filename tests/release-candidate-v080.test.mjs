@@ -54,10 +54,10 @@ test("mobile navigation promotes Reports and keeps Recurring in module sheet", a
   assert.match(nav, /pathname\.startsWith/);
 });
 
-test("current release is V0.8.0 Release Candidate", async () => {
-  const pkg = JSON.parse(await read("package.json"));
-  const version = await read("lib/app-version.ts");
-  assert.equal(pkg.version, "0.8.0");
-  assert.match(version, /APP_VERSION = "0\.8\.0"/);
-  assert.match(version, /APP_RELEASE_NAME = "Release Candidate"/);
+test("V0.8.0 remains recorded as the Release Candidate baseline", async () => {
+  const doc = await read("docs/V0.8.0_RELEASE_CANDIDATE.md");
+  const changelog = await read("CHANGELOG.md");
+  assert.match(doc, /V0\.8\.0/);
+  assert.match(doc, /Release Candidate/);
+  assert.match(changelog, /V0\.8\.0/);
 });

@@ -70,7 +70,7 @@ test("app provides launch splash and finance visual system", () => {
   assert.match(css, /SF Pro Display/);
 });
 
-test("current app version is V0.8.0 Release Candidate", () => {
-  assert.match(version, /APP_VERSION = "0\.8\.0"/);
-  assert.match(version, /Release Candidate/);
+test("current app version is V1.0.0 Production Release", () => {
+  assert.match(version, /APP_VERSION = "1\.0\.0"/);
+  assert.match(version, /Production Release/);
 });

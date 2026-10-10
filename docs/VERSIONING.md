@@ -26,5 +26,6 @@ Lưu ý: release từng được dự kiến tên `V0.0.13 – Net Worth & Finan
 
 ## Current baseline
 
-- `V0.8.0` is the current Release Candidate baseline. Any subsequent source package must increment the version before distribution.
-- The next production target is `V1.0.0`; any RC-only fixes before that must use a new version rather than reusing `V0.8.0`.
+- `V1.0.0` is the current Production Release baseline. Any subsequent source package must increment the version before distribution.
+- Production bugfixes that do not introduce a new UX release use `V1.0.x`.
+- Planned UI/UX releases start at `V1.1.0`; do not reuse `V1.0.0` for any modified source package.

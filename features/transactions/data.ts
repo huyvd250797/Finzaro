@@ -45,9 +45,12 @@ export type TransactionView = {
 export async function loadLedger(
   supabase: SupabaseClient<Database>,
   userId: string,
-  options: { fromDate?: string; toDate?: string; limit?: number } = {}
+  options: { fromDate?: string; toDate?: string; limit?: number; fetchAll?: boolean } = {}
 ) {
-  const requestedLimit = Math.max(1, Math.min(options.limit ?? 500, 10000));
+  // Interactive ledger screens stay bounded, while reports/exports can request the
+  // complete date range. Production reports must never silently truncate totals.
+  const fetchAll = options.fetchAll === true;
+  const requestedLimit = fetchAll ? 100001 : Math.max(1, Math.min(options.limit ?? 500, 10000));
   const transactionPromise = (async () => {
     const rows: unknown[] = [];
     const batchSize = Math.min(1000, requestedLimit);
@@ -71,6 +74,9 @@ export async function loadLedger(
       rows.push(...page);
       if (page.length < pageSize) break;
       offset += page.length;
+    }
+    if (fetchAll && rows.length > 100000) {
+      throw new Error("Khoảng báo cáo vượt quá 100.000 giao dịch. Hãy thu hẹp khoảng thời gian trước khi tiếp tục.");
     }
     return rows;
   })();

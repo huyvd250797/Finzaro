@@ -33,6 +33,37 @@ export async function loadCategories(supabase: SupabaseClient<Database>, userId:
   return (data ?? []) as CategoryRow[];
 }
 
+export async function loadCategoryUsageCounts(supabase: SupabaseClient<Database>, userId: string) {
+  const counts = new Map<string, number>();
+  const pageSize = 1000;
+  let offset = 0;
+  let fetched = 0;
+
+  while (true) {
+    const { data, error } = await supabase
+      .from("transactions")
+      .select("category_id")
+      .eq("user_id", userId)
+      .not("category_id", "is", null)
+      .order("created_at", { ascending: true })
+      .range(offset, offset + pageSize - 1);
+    if (error) throw error;
+    const rows = data ?? [];
+    for (const row of rows) {
+      if (!row.category_id) continue;
+      counts.set(row.category_id, (counts.get(row.category_id) ?? 0) + 1);
+    }
+    fetched += rows.length;
+    if (rows.length < pageSize) break;
+    if (fetched >= 100000) {
+      throw new Error("Lịch sử giao dịch quá lớn để đếm mức sử dụng danh mục an toàn. Hãy thu hẹp dữ liệu hoặc tối ưu báo cáo trước khi tiếp tục.");
+    }
+    offset += rows.length;
+  }
+
+  return counts;
+}
+
 export function categoryDepth(category: CategoryRow, categoryById: Map<string, CategoryRow>) {
   let depth = 0;
   let current = category;

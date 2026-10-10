@@ -51,7 +51,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
   const year = validYear(params.year, now.year);
   const bounds = mode === "month" ? monthBounds(period) : yearBounds(year);
 
-  const ledger = await loadLedger(supabase, userId, { fromDate: bounds.from, toDate: bounds.to, limit: 10000 });
+  const ledger = await loadLedger(supabase, userId, { fromDate: bounds.from, toDate: bounds.to, fetchAll: true });
   const digits = currencyDigits(ledger.currencies, currency);
   const transactions = periodTransactions(ledger.transactions, bounds.from, bounds.to);
   const totals = periodFlowTotals(transactions, currency);

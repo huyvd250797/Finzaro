@@ -8,7 +8,7 @@ import { CategoryIconPicker } from "@/components/category-icon-picker";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { createCategoryAction, setCategoryArchivedAction, updateCategoryAction } from "@/features/categories/actions";
 import { CATEGORY_TYPE_LABELS, isCategoryType, type CategoryType } from "@/features/categories/constants";
-import { categoryDepth, categoryPath, loadCategories, type CategoryRow } from "@/features/categories/data";
+import { categoryDepth, categoryPath, loadCategories, loadCategoryUsageCounts, type CategoryRow } from "@/features/categories/data";
 import { CategoryIcon, iconColorValue } from "@/features/categories/icons";
 import { requireUser } from "@/lib/auth";
 
@@ -128,15 +128,10 @@ function CategorySection({ type, categories, showArchived, usageCounts }: { type
 export default async function CategoriesPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
   const { supabase, userId } = await requireUser();
-  const [categories, usageResult] = await Promise.all([
+  const [categories, usageCounts] = await Promise.all([
     loadCategories(supabase, userId, true),
-    supabase.from("transactions").select("category_id").eq("user_id", userId).not("category_id", "is", null).limit(10000)
+    loadCategoryUsageCounts(supabase, userId)
   ]);
-  const usageCounts = new Map<string, number>();
-  for (const row of usageResult.data ?? []) {
-    if (!row.category_id) continue;
-    usageCounts.set(row.category_id, (usageCounts.get(row.category_id) ?? 0) + 1);
-  }
   const newType = params.new && isCategoryType(params.new) ? params.new : null;
   const editing = params.edit ? categories.find((category) => category.id === params.edit) ?? null : null;
   const showArchived = params.show === "archived";

@@ -44,7 +44,7 @@ export function AppSidebar() {
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--muted)] p-4">
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[var(--primary)]"><Sparkles className="size-4" /> Tiếp theo</div>
           <p className="mt-2 text-sm font-semibold">Production Release</p>
-          <p className="mt-1 text-xs leading-5 text-[var(--muted-foreground)]">Sau Release Candidate, Finzaro hướng tới V1.0.0 với feature set hiện tại được khóa và tập trung production readiness.</p>
+          <p className="mt-1 text-xs leading-5 text-[var(--muted-foreground)]">V1.0.0 là Production Release ổn định; các bản tiếp theo tập trung UI/UX, thao tác và hiệu năng thay vì mở rộng module lõi.</p>
         </div>
         <Link href="/settings" className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-[var(--muted-foreground)] transition hover:bg-[var(--muted)] hover:text-[var(--foreground)]"><Settings2 className="size-4.5" /> Cài đặt</Link>
         <div className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--muted-foreground)]">Finzaro {APP_VERSION_LABEL} · {APP_RELEASE_NAME}</div>

@@ -1,35 +1,46 @@
-# Finzaro V0.8.0 — Release Candidate
+# Finzaro V1.0.0 — Production Release
 
-Finzaro is a personal-finance PWA built with Next.js, Supabase and Vercel. V0.8.0 is the Release Candidate before V1.0.0: the finance-module feature set is frozen, while existing data is made easier to inspect through a redesigned Reports experience and a broader Category icon library.
+Finzaro is a personal-finance PWA built with Next.js, Supabase and Vercel. V1.0.0 promotes the V0.8.0 Release Candidate to the first production baseline. The finance feature set is frozen; this release focuses on correctness, deterministic recovery, deploy safety and long-history reporting.
 
-## V0.8.0 highlights
+## Production baseline
 
-- Reports hub at `/reports` with **Tổng quan / Lịch / Phân tích**.
-- Monthly and yearly Income/Expense overview, net cashflow and category distribution.
-- Calendar view shows **Thu màu xanh lá + Chi màu đỏ in the same day cell**; `0đ` is not rendered.
-- Category drill-down shows 6-month or 12-month trends and the underlying transactions.
-- Existing advanced filters, Cash Flow Trend, Financial Insights, Budget vs Actual and Recurring commitments remain available at `/reports/analysis`.
-- Reports continue to exclude Loan/Credit Card funding from real Income.
-- Mobile taskbar now gives Reports direct access; recurring schedules remain under the module sheet.
-- Category icon picker now contains **84 icons**, Vietnamese labels and search.
+- Account, Transaction Ledger, Category, Budget, Recurring, Savings, Deposits, Loans, Credit Cards, Net Worth, Health, Forecast, Cash Flow, Goals, Investments and Debt Strategy remain intact.
+- Reports keep the V0.8.0 **Tổng quan / Lịch / Phân tích** experience, monthly/yearly views, category drill-down and green Income/red Expense calendar lines with `0đ` hidden.
+- Category picker keeps the expanded 84-icon searchable library.
+- Loan/Credit Card funding remains excluded from real Income analytics.
+- Reports and CSV export now paginate the complete selected range instead of silently truncating at 10,000 transactions.
+- Category usage checks are also paginated rather than capped at 10,000 historical rows.
+- Production error boundaries, 404 recovery and hardened security headers are included.
+- Runtime dependencies are pinned to exact versions in `package.json` to reduce deploy drift.
 
-## Database upgrade
+## Database status
 
-If the database is already on V0.7.5, run:
+If the database is already on V0.8.0, **V1.0.0 requires no schema migration**.
 
-`supabase/sql-editor/V0.8.0_release_candidate.sql`
+Run the read-only production verification script:
 
-Optional verification:
+`supabase/sql-editor/V1.0.0_production_release_verify.sql`
 
-`supabase/sql-editor/V0.8.0_release_candidate_verify.sql`
+It verifies core tables, RLS, transaction RPCs, production indexes and the V0.8.0 category-icon constraint. It does not alter financial data.
 
-The V0.8.0 migration only expands the Category icon allow-list and does not alter financial values or ledger history.
+If the database is older, apply missing migrations in order through V0.8.0 first.
 
-If the database is older, apply missing migrations in order, including V0.7.1 and V0.7.5 first.
+## Environment
 
-## Optional SSI FastConnect configuration
+Copy `.env.example` when configuring local/Vercel environments. Required public variables:
 
-Manual Investment Asset valuation works without SSI. To enable automatic Vietnam stock pricing, add these **server-only** Vercel environment variables:
+```env
+NEXT_PUBLIC_FINZARO_ENV=production
+NEXT_PUBLIC_SITE_URL=https://your-production-domain.example
+NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
+```
+
+`npm run build` runs the environment validator first and fails early when required Supabase values are missing or placeholders remain.
+
+### Optional SSI FastConnect
+
+Manual Investment Asset valuation works without SSI. To enable automatic Vietnam stock pricing, configure these **server-only** variables:
 
 ```env
 SSI_FASTCONNECT_API_KEY=...
@@ -37,16 +48,21 @@ SSI_FASTCONNECT_API_SECRET=...
 SSI_FASTCONNECT_CLIENT_ID=...
 ```
 
-Do not use `NEXT_PUBLIC_` for these secrets. See `docs/V0.7.0_ADVANCED_DEBT_STRATEGY_SSI_MARKET_DATA_SETUP.md`.
+Never prefix SSI secrets with `NEXT_PUBLIC_`.
 
-## Deploy
+## Production deploy
 
-1. Apply any missing database migrations, then run `V0.8.0_release_candidate.sql`.
-2. Optionally configure SSI FastConnect server environment variables in Vercel.
-3. Run `npm run lint`, `npm run typecheck`, `npm run test` and `npm run build` in a dependency-complete environment.
-4. Push source to GitHub and deploy/redeploy on Vercel.
-5. Open the installed PWA and use the existing **Cập nhật ngay** prompt when available.
+1. Confirm V0.8.0 database migration is applied.
+2. Run `supabase/sql-editor/V1.0.0_production_release_verify.sql`.
+3. Configure Vercel Production environment variables.
+4. Run `npm install` in a dependency-complete environment.
+5. Run `npm run check` (`lint → typecheck → tests → production build`).
+6. Push to GitHub and deploy/redeploy on Vercel.
+7. Verify Supabase Auth redirect URLs for the production domain.
+8. Smoke-test Login, Transaction, Transfer, Credit Card payment, Loan payment, Savings transfer, Reports Calendar and PWA update.
 
-## Next planned release
+Full release notes and checklist: `docs/V1.0.0_PRODUCTION_RELEASE.md`.
 
-**Finzaro V1.0.0 — Production Release**: no broad feature expansion; final end-to-end verification, validation/error-state consistency, security review and production readiness.
+## Next line
+
+After V1.0.0, Finzaro moves to UI/UX-first releases rather than broad feature expansion: V1.1.0 Design System & Visual Polish, V1.2.0 Mobile UX Optimization and V1.3.0 Transaction UX Redesign.

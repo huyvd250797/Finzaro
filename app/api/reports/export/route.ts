@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     const timeZone = preferences?.timezone ?? "Asia/Ho_Chi_Minh";
     const params = Object.fromEntries(request.nextUrl.searchParams.entries());
     const range = resolveReportRange(params.range, params.from, params.to, timeZone);
-    const ledger = await loadLedger(supabase, userId, { fromDate: range.from, toDate: range.to, limit: 10000 });
+    const ledger = await loadLedger(supabase, userId, { fromDate: range.from, toDate: range.to, fetchAll: true });
     const currency = ledger.currencies.some((item) => item.code === params.currency) ? params.currency : defaultCurrency;
     const requestedFilters = normalizeReportFilters({ ...params, currency }, range, defaultCurrency);
     const filters = {

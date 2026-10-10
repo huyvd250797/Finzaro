@@ -40,7 +40,7 @@ test("Dashboard total balance is sourced from Account Core through ledger loader
   assert.match(overview, /formatMinorMoney/);
 });
 
-test("current app version is V0.8.0 Release Candidate", () => {
-  assert.match(version, /APP_VERSION = "0\.8\.0"/);
-  assert.match(version, /Release Candidate/);
+test("current app version is V1.0.0 Production Release", () => {
+  assert.match(version, /APP_VERSION = "1\.0\.0"/);
+  assert.match(version, /Production Release/);
 });

@@ -74,7 +74,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
   const range = resolveReportRange(params.range, params.from, params.to, timeZone);
   const previousRange = previousComparableRange(range);
 
-  const ledger = await loadLedger(supabase, userId, { fromDate: previousRange.from, toDate: range.to, limit: 10000 });
+  const ledger = await loadLedger(supabase, userId, { fromDate: previousRange.from, toDate: range.to, fetchAll: true });
   const currency = ledger.currencies.some((item) => item.code === params.currency) ? params.currency! : defaultCurrency;
   const requestedFilters = normalizeReportFilters({ ...params, currency }, range, defaultCurrency);
   const normalized = {
