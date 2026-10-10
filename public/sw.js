@@ -1,9 +1,16 @@
 const APP_VERSION = new URL(self.location.href).searchParams.get("v") || "unknown";
 const CACHE_NAME = `finzaro-static-v${APP_VERSION}`;
-const STATIC_SHELL = ["/offline", "/pwa-error", "/icons/finzaro-v0012-192.png", "/icons/finzaro-v0012-512.png", "/icons/finzaro-v0012-apple.png"];
+const REQUIRED_SHELL = ["/offline", "/pwa-error"];
+const OPTIONAL_SHELL = ["/icons/finzaro-v0012-192.png", "/icons/finzaro-v0012-512.png", "/icons/finzaro-v0012-apple.png"];
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_SHELL)));
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE_NAME);
+    // Recovery pages are required. Optional artwork must never prevent a new
+    // service worker from installing during a deploy or transient CDN miss.
+    await cache.addAll(REQUIRED_SHELL);
+    await Promise.allSettled(OPTIONAL_SHELL.map((url) => cache.add(url)));
+  })());
 });
 
 self.addEventListener("message", (event) => {
@@ -14,7 +21,9 @@ self.addEventListener("message", (event) => {
 self.addEventListener("activate", (event) => {
   event.waitUntil((async () => {
     const keys = await caches.keys();
-    await Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key)));
+    await Promise.all(keys
+      .filter((key) => key.startsWith("finzaro-static-v") && key !== CACHE_NAME)
+      .map((key) => caches.delete(key)));
     await self.clients.claim();
     const clients = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
     for (const client of clients) client.postMessage({ type: "FINZARO_SW_ACTIVATED", version: APP_VERSION });

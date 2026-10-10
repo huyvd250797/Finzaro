@@ -53,7 +53,7 @@ test("quick transaction suggestions use responsive grid and styled date shell", 
   assert.match(dateInput, /opacity-0/);
 });
 
-test("current app version is V0.7.4 Money Thousands + Full Mobile Taskbar", () => {
-  assert.match(version, /APP_VERSION = "0\.7\.4"/);
-  assert.match(version, /Money Thousands \+ Full Mobile Taskbar/);
+test("current app version is V0.7.5 Release Stabilization", () => {
+  assert.match(version, /APP_VERSION = "0\.7\.5"/);
+  assert.match(version, /Release Stabilization/);
 });

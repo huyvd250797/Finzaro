@@ -1,18 +1,31 @@
-# Finzaro V0.7.4 — Money Thousands + Full Mobile Taskbar
+# Finzaro V0.7.5 — Release Stabilization
 
-Finzaro is a personal-finance PWA built with Next.js, Supabase and Vercel. V0.7.4 builds on V0.7.1 Mobile Money UX + Debt Funding and includes the V0.7.2/V0.7.3 Vercel TypeScript fixes plus consistent dot-grouped money display and a fully visible fixed mobile taskbar.
+Finzaro is a personal-finance PWA built with Next.js, Supabase and Vercel. V0.7.5 freezes the current feature set and focuses only on release stability, transaction integrity, mobile/PWA resilience and predictable production deployment.
 
-## V0.7.4 highlights
+## V0.7.5 highlights
 
-- All money calculator fields display thousands with dots, for example `1.000.000`; decimal values display as `1.234,56` while storage remains canonical.
-- Mobile taskbar stays fixed at the viewport bottom and reserves enough vertical space for the center `+` button, including iPhone/PWA safe areas.
-- Includes the V0.7.2 and V0.7.3 Vercel TypeScript deploy fixes.
-- Retains V0.7.1 debt-funded cash inflows, calculator-style money entry, bottom-sheet UX and transaction-loading optimizations.
-- No new database migration is required after V0.7.1.
+- No new user-facing feature or module.
+- Fixes the money calculator operator edge case without changing canonical amount storage.
+- Makes modal/bottom-sheet scroll locking safe when overlays are nested.
+- Hardens service-worker installation and cache cleanup so optional icon failures do not block PWA updates and unrelated origin caches are not deleted.
+- Keeps V0.7.4 dot-grouped money display and the fully visible, fixed, safe-area-aware mobile taskbar.
+- Adds database indexes matching existing user/date history queries for Loan Payments, Credit Card Payments and Asset Valuations.
+
+## V0.7.5 database stabilization
+
+If the database is already on V0.7.1 or later, run:
+
+`supabase/sql-editor/V0.7.5_release_stabilization.sql`
+
+Optional verification:
+
+`supabase/sql-editor/V0.7.5_release_stabilization_verify.sql`
+
+This migration only adds idempotent indexes and does not modify existing financial records.
 
 ## V0.7.1 database upgrade
 
-If the database is already on V0.7.0, run:
+If the database is still on V0.7.0, run first:
 
 `supabase/sql-editor/V0.7.1_mobile_money_debt_funding.sql`
 
@@ -59,12 +72,12 @@ Finzaro V0.7.0 uses SSI's current Market Data Securities Summary with periodic s
 
 ## Deploy
 
-1. Run the V0.7.0 SQL file if needed, then run the V0.7.1 SQL upgrade in Supabase SQL Editor.
+1. Apply any missing V0.7.1 migration, then apply `V0.7.5_release_stabilization.sql`.
 2. Optionally configure SSI FastConnect server environment variables in Vercel.
-3. Push source to GitHub.
-4. Deploy/redeploy on Vercel.
-5. Open the installed PWA and use the existing **Cập nhật ngay** update prompt when available.
+3. Run `npm run lint`, `npm run typecheck`, `npm run test` and `npm run build` in a dependency-complete environment.
+4. Push source to GitHub and deploy/redeploy on Vercel.
+5. Open the installed PWA and use the existing **Cập nhật ngay** prompt when available.
 
-## Next planned feature
+## Next planned release
 
-**Finzaro V0.8.0 — Credit Intelligence**: utilization optimization, statement strategy, payment priority and interest-avoidance guidance.
+**Finzaro V0.8.0 — Release Candidate**: no feature expansion; full end-to-end release verification, validation/error-state consistency and production readiness.

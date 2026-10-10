@@ -22,3 +22,8 @@ Ví dụ:
 - `1.0.0` — khi Finzaro có thay đổi workflow/architecture lớn đủ để coi là major release → tăng `X`.
 
 Lưu ý: release từng được dự kiến tên `V0.0.13 – Net Worth & Financial Position` được phát hành thành **V0.1.0** để bắt đầu áp dụng quy ước mới.
+
+
+## Current baseline
+
+- `V0.7.5` is the Release Stabilization baseline. Any subsequent source package must increment the version before distribution.

@@ -166,6 +166,14 @@ export function MoneyCalculatorInput({
   }
 
   function chooseOperator(nextOperator: Operator) {
+    // Pressing another operator before entering the next operand should replace
+    // the pending operator, not apply the previous operation to the same value.
+    if (accumulator !== null && operator && !entry) {
+      setOperator(nextOperator);
+      setExpression(`${formatMoney(numberToCanonical(accumulator, decimalDigits), decimalDigits)} ${operatorLabel[nextOperator]}`);
+      return;
+    }
+
     const current = canonicalToNumber(entry || currentValue);
     let nextAccumulator = current;
     if (accumulator !== null && operator) nextAccumulator = calculate(accumulator, operator, current);

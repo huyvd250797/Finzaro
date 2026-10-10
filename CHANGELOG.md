@@ -1,3 +1,12 @@
+# V0.7.5 — Release Stabilization
+
+- Feature freeze: no new user-facing module or workflow.
+- Fixed consecutive calculator operator handling so changing `+ / - / × / ÷` before the next operand replaces the pending operator instead of reapplying the previous amount.
+- Made overlay scroll locking reference-counted to keep nested modal/bottom-sheet states stable on iPhone/PWA.
+- Hardened service-worker installation: recovery pages remain required, optional icon caching cannot abort installation, and activation only deletes old Finzaro cache namespaces.
+- Added user/date indexes for Loan Payments, Credit Card Payments and Asset Valuations to protect loading performance as history grows.
+- Added V0.7.5 SQL Editor migration + verification files and release-stabilization regression tests.
+
 # V0.7.4 — Money Thousands + Full Mobile Taskbar
 
 - All `MoneyCalculatorInput` displays now group thousands with dots (for example `1.000.000`).

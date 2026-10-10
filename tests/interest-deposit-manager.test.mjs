@@ -58,7 +58,7 @@ test("dashboard and navigation surface Deposit Manager", () => {
   assert.match(sidebar, /\/net-worth/);
 });
 
-test("current app version is V0.7.4 Money Thousands + Full Mobile Taskbar", () => {
-  assert.match(version, /APP_VERSION = "0\.7\.4"/);
-  assert.match(version, /Money Thousands \+ Full Mobile Taskbar/);
+test("current app version is V0.7.5 Release Stabilization", () => {
+  assert.match(version, /APP_VERSION = "0\.7\.5"/);
+  assert.match(version, /Release Stabilization/);
 });
