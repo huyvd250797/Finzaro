@@ -60,7 +60,7 @@ test("transaction UI and dashboard read real ledger data", () => {
   assert.doesNotMatch(overview, /demo-data/);
 });
 
-test("current app version is V0.7.5 Release Stabilization", () => {
-  assert.match(version, /APP_VERSION = "0\.7\.5"/);
-  assert.match(version, /Release Stabilization/);
+test("current app version is V0.8.0 Release Candidate", () => {
+  assert.match(version, /APP_VERSION = "0\.8\.0"/);
+  assert.match(version, /Release Candidate/);
 });

@@ -1,11 +1,13 @@
 import type { LucideIcon } from "lucide-react";
 import {
-  Baby, Banknote, BedDouble, Bike, BookOpen, Briefcase, Building2, Bus, CakeSlice, Camera, Car,
-  CircleDollarSign, Coins, Coffee, CreditCard, Dog, Donut, Dumbbell, Film, Fuel, Gamepad2, Gift,
-  GraduationCap, HeartPulse, Home, Landmark, Laptop, MoreHorizontal, Music, PartyPopper, PawPrint,
-  PiggyBank, Plane, ReceiptText, RotateCcw, Shapes, Shield, Shirt, ShoppingBag, ShoppingCart,
-  Smartphone, Soup, Stethoscope, Store, TrainFront, TrendingUp, Tv, Users, Utensils, WalletCards,
-  Wifi, Wrench
+  AlarmClock, Ambulance, Apple, Baby, Banknote, Bath, BedDouble, Beer, Bike, BookOpen, Briefcase,
+  Building2, Bus, CakeSlice, Camera, Car, Cat, CircleDollarSign, Clapperboard, Cloud, Coins, Coffee,
+  CreditCard, Dog, Donut, Dumbbell, Film, Fish, Flower2, Fuel, Gamepad2, Gift, GraduationCap,
+  HandCoins, HandHeart, HeartPulse, Home, Hotel, KeyRound, Landmark, Laptop, Library, Mail, MapPin,
+  Medal, Monitor, Moon, MoreHorizontal, Music, Package, Palette, PartyPopper, PawPrint, Phone,
+  PiggyBank, Pill, Plane, ReceiptText, RotateCcw, School, Scissors, Shapes, Shield, Shirt,
+  ShoppingBag, ShoppingCart, Smartphone, Soup, Sparkles, Stethoscope, Store, Sun, Ticket,
+  TrainFront, TrendingUp, Trophy, Tv, Umbrella, Users, Utensils, WalletCards, Wifi, Wrench, Zap
 } from "lucide-react";
 
 export const CATEGORY_ICONS = {
@@ -14,8 +16,30 @@ export const CATEGORY_ICONS = {
   MoreHorizontal, Coffee, Plane, Bus, TrainFront, Fuel, Baby, PawPrint, Dog, Shirt, Smartphone,
   Wifi, CreditCard, Dumbbell, Stethoscope, BookOpen, Film, Music, Landmark, WalletCards, PiggyBank,
   Building2, Coins, Banknote, CakeSlice, Camera, Donut, PartyPopper, Shield, Soup, Bike, BedDouble,
-  Tv, Wrench
+  Tv, Wrench, AlarmClock, Ambulance, Apple, Bath, Beer, Cat, Clapperboard, Cloud, Fish, Flower2,
+  HandCoins, HandHeart, Hotel, KeyRound, Library, Mail, MapPin, Medal, Monitor, Moon, Package,
+  Palette, Phone, Pill, School, Scissors, Sparkles, Sun, Ticket, Trophy, Umbrella, Zap
 } satisfies Record<string, LucideIcon>;
+
+export const CATEGORY_ICON_LABELS: Record<keyof typeof CATEGORY_ICONS, string> = {
+  Shapes: "Khác", Briefcase: "Công việc", Gift: "Quà tặng", Laptop: "Máy tính", Store: "Cửa hàng",
+  TrendingUp: "Tăng trưởng", RotateCcw: "Hoàn tiền", CircleDollarSign: "Tiền", Utensils: "Ăn uống", Home: "Nhà ở",
+  Car: "Ô tô", ShoppingBag: "Mua sắm", ShoppingCart: "Đi chợ", ReceiptText: "Hóa đơn", HeartPulse: "Sức khỏe",
+  GraduationCap: "Giáo dục", Gamepad2: "Trò chơi", Users: "Gia đình/Nhóm", MoreHorizontal: "Khác", Coffee: "Cà phê",
+  Plane: "Máy bay", Bus: "Xe buýt", TrainFront: "Tàu", Fuel: "Xăng dầu", Baby: "Trẻ em",
+  PawPrint: "Thú cưng", Dog: "Chó", Shirt: "Quần áo", Smartphone: "Điện thoại", Wifi: "Internet",
+  CreditCard: "Thẻ tín dụng", Dumbbell: "Thể thao", Stethoscope: "Khám bệnh", BookOpen: "Sách", Film: "Phim",
+  Music: "Âm nhạc", Landmark: "Ngân hàng", WalletCards: "Ví/Tài khoản", PiggyBank: "Tiết kiệm", Building2: "Doanh nghiệp",
+  Coins: "Đầu tư", Banknote: "Tiền mặt", CakeSlice: "Sinh nhật", Camera: "Máy ảnh", Donut: "Đồ ăn nhẹ",
+  PartyPopper: "Tiệc tùng", Shield: "Bảo hiểm", Soup: "Ẩm thực", Bike: "Xe đạp", BedDouble: "Nghỉ ngơi",
+  Tv: "Truyền hình", Wrench: "Sửa chữa", AlarmClock: "Thời gian", Ambulance: "Cấp cứu", Apple: "Thực phẩm",
+  Bath: "Sinh hoạt", Beer: "Đồ uống", Cat: "Mèo", Clapperboard: "Giải trí", Cloud: "Cloud/Dịch vụ",
+  Fish: "Hải sản", Flower2: "Hoa/Cây cảnh", HandCoins: "Nhận tiền", HandHeart: "Từ thiện", Hotel: "Khách sạn",
+  KeyRound: "Thuê nhà/Chìa khóa", Library: "Thư viện", Mail: "Bưu chính", MapPin: "Địa điểm", Medal: "Thành tích",
+  Monitor: "Thiết bị", Moon: "Ban đêm", Package: "Giao hàng", Palette: "Nghệ thuật", Phone: "Điện thoại gọi",
+  Pill: "Thuốc", School: "Trường học", Scissors: "Làm đẹp", Sparkles: "Chăm sóc", Sun: "Du lịch/Ngoài trời",
+  Ticket: "Vé", Trophy: "Giải thưởng", Umbrella: "Bảo vệ", Zap: "Điện/Năng lượng"
+};
 
 export const CATEGORY_ICON_COLORS = {
   emerald: "#0d8b66",

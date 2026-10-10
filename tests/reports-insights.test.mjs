@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 
 const read = (path) => fs.readFileSync(path, "utf8");
-const page = read("app/(dashboard)/reports/page.tsx");
+const page = read("app/(dashboard)/reports/analysis/page.tsx");
 const data = read("features/reports/data.ts");
 const exportRoute = read("app/api/reports/export/route.ts");
 const version = read("lib/app-version.ts");
@@ -38,7 +38,7 @@ test("Financial Insights are rule based and CSV export is authenticated", () => 
   assert.match(exportRoute, /Unauthorized/);
 });
 
-test("current app version is V0.7.5 Release Stabilization", () => {
-  assert.match(version, /APP_VERSION = "0\.7\.5"/);
-  assert.match(version, /Release Stabilization/);
+test("current app version is V0.8.0 Release Candidate", () => {
+  assert.match(version, /APP_VERSION = "0\.8\.0"/);
+  assert.match(version, /Release Candidate/);
 });

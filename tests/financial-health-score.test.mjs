@@ -55,6 +55,6 @@ test("Financial Health is discoverable from dashboard and navigation", () => {
 });
 
 test("Financial Health remains available after V0.3.0", () => {
-  assert.match(version, /APP_VERSION = "0\.7\.5"/);
+  assert.match(version, /APP_VERSION = "0\.8\.0"/);
   assert.match(sidebar, /href: "\/health"/);
 });

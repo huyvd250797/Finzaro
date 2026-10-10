@@ -26,4 +26,5 @@ Lưu ý: release từng được dự kiến tên `V0.0.13 – Net Worth & Finan
 
 ## Current baseline
 
-- `V0.7.5` is the Release Stabilization baseline. Any subsequent source package must increment the version before distribution.
+- `V0.8.0` is the current Release Candidate baseline. Any subsequent source package must increment the version before distribution.
+- The next production target is `V1.0.0`; any RC-only fixes before that must use a new version rather than reusing `V0.8.0`.

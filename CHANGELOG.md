@@ -1,3 +1,15 @@
+# V0.8.0 — Release Candidate
+
+- Reworked Reports into three focused surfaces: `Tổng quan`, `Lịch`, and `Phân tích` without adding a new top-level finance module.
+- Added monthly/yearly overview with Income/Expense toggle, net cashflow summary, donut category breakdown and category drill-down.
+- Added Transaction Calendar at `/reports/calendar`; every day can show both Income (green) and Expense (red), and `0đ` values are intentionally hidden.
+- Added category detail trend views for 6-month and annual analysis with direct drill-down to transaction history.
+- Preserved existing advanced report filters and insights under `/reports/analysis` and increased report-ledger read ceiling from 5,000 to 10,000 rows per selected range.
+- Promoted Reports to the mobile taskbar; Recurring remains accessible from the module sheet.
+- Expanded Category icons from 52 to 84 options, added Vietnamese labels and icon search.
+- Added V0.8.0 database migration to expand the Category icon CHECK constraint so UI validation and Supabase validation remain aligned.
+- Standard Income remains the only Income counted in Reports; debt funding from Loans/Credit Cards is still excluded from real income analytics.
+
 # V0.7.5 — Release Stabilization
 
 - Feature freeze: no new user-facing module or workflow.

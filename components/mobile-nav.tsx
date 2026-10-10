@@ -49,6 +49,7 @@ const moduleItems = [
   { href: "/forecast", label: "Dự báo", icon: Activity },
   { href: "/cash-flow", label: "Dòng tiền", icon: CalendarRange },
   { href: "/reports", label: "Báo cáo", icon: BarChart3 },
+  { href: "/recurring", label: "Định kỳ", icon: CalendarClock },
   { href: "/settings", label: "Cài đặt", icon: Settings2 }
 ];
 
@@ -72,7 +73,7 @@ export function MobileNav() {
     { href: "/transactions", label: "Giao dịch", icon: ReceiptText }
   ];
   const rightItems = [
-    { href: "/recurring", label: "Lịch", icon: CalendarClock },
+    { href: "/reports", label: "Báo cáo", icon: BarChart3 },
     { href: "#more", label: "Thêm", icon: Ellipsis, more: true }
   ];
 
@@ -92,7 +93,7 @@ export function MobileNav() {
 
         {rightItems.map((item) => {
           const Icon = item.icon;
-          const active = item.more ? sheet === "modules" : pathname === item.href;
+          const active = item.more ? sheet === "modules" : pathname === item.href || pathname.startsWith(`${item.href}/`);
           if (item.more) return <button key={item.label} type="button" onClick={() => setSheet("modules")} className={cn("mobile-tabbar-item", active ? "text-[var(--primary)]" : "text-[var(--muted-foreground)]")}><span className={cn("mobile-tabbar-icon", active && "bg-[var(--sidebar-accent)]")}><Icon className="size-[18px]" /></span><span className="mobile-tabbar-label">{item.label}</span></button>;
           return <Link key={item.href} href={item.href} prefetch className={cn("mobile-tabbar-item", active ? "text-[var(--primary)]" : "text-[var(--muted-foreground)]")}><span className={cn("mobile-tabbar-icon", active && "bg-[var(--sidebar-accent)]")}><Icon className="size-[18px]" /></span><span className="mobile-tabbar-label">{item.label}</span></Link>;
         })}
@@ -113,7 +114,7 @@ export function MobileNav() {
         {sheet === "transaction" ? <div className="space-y-2 px-4 pb-4">
           {quickTransactions.map((item) => { const Icon = item.icon; return <Link key={item.href} href={item.href} prefetch onClick={() => setSheet(null)} className="flex min-w-0 items-center gap-3 rounded-2xl border border-[var(--border)] bg-[var(--background)] p-3.5 transition active:scale-[.99]"><span className={cn("grid size-11 shrink-0 place-items-center rounded-2xl", item.tone)}><Icon className="size-5" /></span><span className="min-w-0 flex-1"><span className="block text-sm font-black">{item.label}</span><span className="mt-0.5 block truncate text-xs text-[var(--muted-foreground)]">{item.hint}</span></span></Link>; })}
         </div> : <div className="grid grid-cols-3 gap-2.5 px-4 pb-4">
-          {moduleItems.map((item) => { const Icon = item.icon; const active = pathname === item.href; return <Link key={item.href} href={item.href} prefetch onClick={() => setSheet(null)} className={cn("min-w-0 rounded-2xl border p-3 text-center transition active:scale-[.98]", active ? "border-[var(--primary)] bg-[var(--sidebar-accent)]" : "border-[var(--border)] bg-[var(--background)]")}><span className={cn("mx-auto grid size-10 place-items-center rounded-xl", active ? "bg-[var(--primary)] text-white" : "bg-[var(--muted)] text-[var(--primary)]")}><Icon className="size-[18px]" /></span><p className="mt-2 truncate text-[11px] font-bold">{item.label}</p></Link>; })}
+          {moduleItems.map((item) => { const Icon = item.icon; const active = pathname === item.href || pathname.startsWith(`${item.href}/`); return <Link key={item.href} href={item.href} prefetch onClick={() => setSheet(null)} className={cn("min-w-0 rounded-2xl border p-3 text-center transition active:scale-[.98]", active ? "border-[var(--primary)] bg-[var(--sidebar-accent)]" : "border-[var(--border)] bg-[var(--background)]")}><span className={cn("mx-auto grid size-10 place-items-center rounded-xl", active ? "bg-[var(--primary)] text-white" : "bg-[var(--muted)] text-[var(--primary)]")}><Icon className="size-[18px]" /></span><p className="mt-2 truncate text-[11px] font-bold">{item.label}</p></Link>; })}
         </div>}
       </section>
     </div>}

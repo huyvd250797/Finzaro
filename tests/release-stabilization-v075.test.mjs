@@ -37,10 +37,9 @@ test("PWA install keeps recovery pages mandatory and optional assets non-blockin
   assert.doesNotMatch(sw, /keys\.filter\(\(key\) => key !== CACHE_NAME\)/);
 });
 
-test("V0.7.5 exposes the release version and label", async () => {
-  const pkg = JSON.parse(await read("package.json"));
-  assert.equal(pkg.version, "0.7.5");
-  const version = await read("lib/app-version.ts");
-  assert.match(version, /APP_VERSION = "0\.7\.5"/);
-  assert.match(version, /APP_RELEASE_NAME = "Release Stabilization"/);
+test("V0.7.5 remains recorded as the stabilization baseline", async () => {
+  const changelog = await read("CHANGELOG.md");
+  assert.match(changelog, /V0\.7\.5 — Release Stabilization/);
+  const docs = await read("docs/V0.7.5_RELEASE_STABILIZATION.md");
+  assert.match(docs, /Release Stabilization/);
 });

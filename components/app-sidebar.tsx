@@ -35,7 +35,7 @@ export function AppSidebar() {
       <BrandLogo className="px-2" />
       <nav className="mt-7 flex-1 space-y-1 overflow-y-auto pr-1">
         {nav.map((item) => {
-          const active = pathname === item.href;
+          const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
           const Icon = item.icon;
           return <Link key={item.href} href={item.href} prefetch className={cn("flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition active:scale-[0.99]", active ? "bg-[var(--sidebar-accent)] text-[var(--primary)]" : "text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]")}><Icon className="size-4.5" />{item.label}</Link>;
         })}
@@ -43,8 +43,8 @@ export function AppSidebar() {
       <div className="mt-auto space-y-3">
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--muted)] p-4">
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[var(--primary)]"><Sparkles className="size-4" /> Tiếp theo</div>
-          <p className="mt-2 text-sm font-semibold">Credit Intelligence</p>
-          <p className="mt-1 text-xs leading-5 text-[var(--muted-foreground)]">V0.8.0 dự kiến tối ưu utilization, statement payment và chiến lược dùng thẻ dựa trên Credit Card Manager.</p>
+          <p className="mt-2 text-sm font-semibold">Production Release</p>
+          <p className="mt-1 text-xs leading-5 text-[var(--muted-foreground)]">Sau Release Candidate, Finzaro hướng tới V1.0.0 với feature set hiện tại được khóa và tập trung production readiness.</p>
         </div>
         <Link href="/settings" className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-[var(--muted-foreground)] transition hover:bg-[var(--muted)] hover:text-[var(--foreground)]"><Settings2 className="size-4.5" /> Cài đặt</Link>
         <div className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--muted-foreground)]">Finzaro {APP_VERSION_LABEL} · {APP_RELEASE_NAME}</div>
