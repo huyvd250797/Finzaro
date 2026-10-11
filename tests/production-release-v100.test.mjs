@@ -4,12 +4,12 @@ import { readFile } from "node:fs/promises";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("current release is V1.1.1 Transfer & Reports Reliability Fix", async () => {
+test("current release is V1.1.2 Deposit Transfer & Reports Reliability Fix", async () => {
   const pkg = JSON.parse(await read("package.json"));
   const version = await read("lib/app-version.ts");
-  assert.equal(pkg.version, "1.1.1");
-  assert.match(version, /APP_VERSION = "1\.1\.1"/);
-  assert.match(version, /APP_RELEASE_NAME = "Transfer & Reports Reliability Fix"/);
+  assert.equal(pkg.version, "1.1.2");
+  assert.match(version, /APP_VERSION = "1\.1\.2"/);
+  assert.match(version, /APP_RELEASE_NAME = "Deposit Transfer & Reports Reliability Fix"/);
 });
 
 test("production dependencies are pinned and build validates environment first", async () => {
@@ -43,8 +43,9 @@ test("reports never silently stop at ten thousand transactions", async () => {
   assert.match(ledger, /fetchAll\?: boolean/);
   assert.match(ledger, /fetchAll \? 100001/);
   assert.match(ledger, /rows\.length > 100000/);
-  assert.match(reportData, /loadLedger\(supabase, userId/);
-  assert.match(reportData, /fetchAll: true/);
+  assert.match(reportData, /report_flow_rows_v112/);
+  assert.match(reportData, /range\(offset, offset \+ pageSize - 1\)/);
+  assert.match(reportData, /rawTransactions.length > 100000/);
   for (const path of [
     "app/(dashboard)/reports/page.tsx",
     "app/(dashboard)/reports/calendar/page.tsx",

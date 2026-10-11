@@ -1,3 +1,12 @@
+# V1.1.2 — Deposit Transfer & Reports Reliability Fix
+
+- Fixed the Transfer data model: the Tiền gửi module is `public.deposits`, not an Account with `account_type = savings`. Active Deposit records now appear directly as Transfer destinations.
+- Added atomic Account → Deposit funding with optional same-currency Savings Goal contribution and exact rollback metadata.
+- Added `delete_financial_transaction_v112` so deleting Deposit funding reverses the source Account, Deposit principal and associated Goal entry.
+- Replaced the failing Reports embedded-relation hydration path with paginated `report_flow_rows_v112`; added a relation-free fallback that works during migration rollout.
+- Added a Reports-specific recovery boundary and regression coverage for Deposit destinations, Goal funding and report loading.
+- Added the required V1.1.2 Supabase migration and read-only verification script.
+
 # V1.1.1 — Transfer & Reports Reliability Fix
 
 - Fixed Transfer destination UX so active Savings accounts are explicitly grouped first and exposed as quick-select chips on mobile.

@@ -40,7 +40,7 @@ test("Dashboard total balance is sourced from Account Core through ledger loader
   assert.match(overview, /formatMinorMoney/);
 });
 
-test("current app version is V1.1.1 Transfer & Reports Reliability Fix", () => {
-  assert.match(version, /APP_VERSION = "1\.1\.1"/);
-  assert.match(version, /Transfer & Reports Reliability Fix/);
+test("current app version is V1.1.2 Deposit Transfer & Reports Reliability Fix", () => {
+  assert.match(version, /APP_VERSION = "1\.1\.2"/);
+  assert.match(version, /Deposit Transfer & Reports Reliability Fix/);
 });

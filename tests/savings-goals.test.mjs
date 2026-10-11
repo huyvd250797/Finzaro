@@ -66,7 +66,7 @@ test("V0.0.9 preserves proactive PWA updates", () => {
   assert.match(pwa, /SKIP_WAITING/);
 });
 
-test("current app version is V1.1.1 Transfer & Reports Reliability Fix", () => {
-  assert.match(version, /APP_VERSION = "1\.1\.1"/);
-  assert.match(version, /Transfer & Reports Reliability Fix/);
+test("current app version is V1.1.2 Deposit Transfer & Reports Reliability Fix", () => {
+  assert.match(version, /APP_VERSION = "1\.1\.2"/);
+  assert.match(version, /Deposit Transfer & Reports Reliability Fix/);
 });

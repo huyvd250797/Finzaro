@@ -163,6 +163,10 @@ const required = [
   "docs/V1.0.2_NEXTJS_SECURITY_PATCH.md",
   "docs/V1.1.0_UI_DESIGN_SYSTEM_VISUAL_POLISH.md",
   "docs/V1.1.1_TRANSFER_REPORTS_RELIABILITY_FIX.md",
+  "docs/V1.1.2_DEPOSIT_TRANSFER_REPORTS_RELIABILITY_FIX.md",
+  "supabase/migrations/20261011170000_transfer_deposit_reports_v112.sql",
+  "supabase/sql-editor/V1.1.2_transfer_deposit_reports_reliability.sql",
+  "supabase/sql-editor/V1.1.2_transfer_deposit_reports_reliability_verify.sql",
   "supabase/migrations/20261011150000_ui_design_system_visual_polish_v110.sql",
   "supabase/sql-editor/V1.1.0_ui_design_system_visual_polish.sql",
   "supabase/sql-editor/V1.1.0_ui_design_system_visual_polish_verify.sql",
@@ -176,9 +180,9 @@ test("V0.7.1 required files exist", () => {
   for (const file of required) assert.equal(existsSync(file), true, `${file} is missing`);
 });
 
-test("package version is 1.1.1", () => {
+test("package version is 1.1.2", () => {
   const pkg = JSON.parse(readFileSync("package.json", "utf8"));
-  assert.equal(pkg.version, "1.1.1");
+  assert.equal(pkg.version, "1.1.2");
   assert.match(pkg.dependencies.next, /16/);
   assert.ok(pkg.dependencies["@supabase/ssr"]);
 });

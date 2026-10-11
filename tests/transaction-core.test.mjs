@@ -60,7 +60,7 @@ test("transaction UI and dashboard read real ledger data", () => {
   assert.doesNotMatch(overview, /demo-data/);
 });
 
-test("current app version is V1.1.1 Transfer & Reports Reliability Fix", () => {
-  assert.match(version, /APP_VERSION = "1\.1\.1"/);
-  assert.match(version, /Transfer & Reports Reliability Fix/);
+test("current app version is V1.1.2 Deposit Transfer & Reports Reliability Fix", () => {
+  assert.match(version, /APP_VERSION = "1\.1\.2"/);
+  assert.match(version, /Deposit Transfer & Reports Reliability Fix/);
 });

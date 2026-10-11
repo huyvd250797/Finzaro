@@ -67,7 +67,7 @@ test("saved theme is applied before splash paint", () => {
   assert.match(layout, /document\.documentElement\.style\.colorScheme/);
 });
 
-test("current feature release follows X.Y.Z at V1.1.1", () => {
-  assert.match(version, /APP_VERSION = "1\.1\.1"/);
-  assert.match(version, /Transfer & Reports Reliability Fix/);
+test("current feature release follows X.Y.Z at V1.1.2", () => {
+  assert.match(version, /APP_VERSION = "1\.1\.2"/);
+  assert.match(version, /Deposit Transfer & Reports Reliability Fix/);
 });
