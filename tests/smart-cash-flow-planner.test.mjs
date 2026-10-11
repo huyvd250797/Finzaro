@@ -54,9 +54,9 @@ test("Cash Flow Planner is discoverable from desktop and mobile navigation", () 
   assert.match(mobile, /href: "\/cash-flow"/);
 });
 
-test("current app version is V1.0.2 Next.js Security Patch", () => {
-  assert.match(version, /APP_VERSION = "1\.0\.2"/);
-  assert.match(version, /Next.js Security Patch/);
+test("current app version is V1.1.0 UI Design System & Visual Polish", () => {
+  assert.match(version, /APP_VERSION = "1\.1\.0"/);
+  assert.match(version, /UI Design System & Visual Polish/);
 });
 
 

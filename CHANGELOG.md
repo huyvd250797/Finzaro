@@ -1,3 +1,14 @@
+# V1.1.0 — UI Design System & Visual Polish
+
+- Introduced centralized surface/radius/shadow/semantic UI tokens and refined shared Card/Button primitives for a more consistent visual system.
+- Added optional **Thêm vào mục tiêu** when transferring into a Savings account. A new `create_transfer_with_goal_v110` RPC updates the transfer and Goal contribution atomically and avoids duplicate Goal progress when the Goal is already linked to the destination Savings account.
+- Reworked Reports Calendar day cells for mobile readability with a wider scrollable grid, larger cells and non-truncated Income/Expense values; zero values remain hidden.
+- Replaced the center-covered donut with an interactive full pie: slices/legend items are selectable, selection reveals category/percentage/amount, and large slices render labels inside the pie.
+- Compacted Reports Overview so Expense, Income and Net sit on one three-card row.
+- Added a report-specific paginated ledger loader and parallel supporting queries so overview/calendar/category/analysis no longer fetch unnecessary account/category data.
+- Added Reports loading skeletons and retained the V1.0.2 Next.js 16.4.0 security stack.
+- Added V1.1.0 migration + verification scripts and regression coverage for the new Savings/Goal and Reports/UI behavior.
+
 # V1.0.2 — Next.js Security Patch
 
 - Upgraded Next.js from `16.0.0` to `16.4.0` after Vercel blocked the vulnerable framework version.

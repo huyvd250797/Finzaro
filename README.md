@@ -1,29 +1,31 @@
-# Finzaro V1.0.2 — Next.js Security Patch
+# Finzaro V1.1.0 — UI Design System & Visual Polish
 
-Finzaro is a personal-finance PWA built with Next.js, Supabase and Vercel. V1.0.2 is the security/deployment patch for the V1.0.0 production baseline. The finance feature set is frozen; this release focuses on correctness, deterministic recovery, deploy safety and long-history reporting.
+Finzaro is a personal-finance PWA built with Next.js, Supabase and Vercel. V1.1.0 starts the post-production UI/UX line on top of the V1.0.x production baseline. It does not add a new top-level finance module; it refines the design system, reduces report friction and completes the Savings → Goal transfer workflow.
 
-## Production baseline
+## V1.1.0 highlights
 
-- Account, Transaction Ledger, Category, Budget, Recurring, Savings, Deposits, Loans, Credit Cards, Net Worth, Health, Forecast, Cash Flow, Goals, Investments and Debt Strategy remain intact.
-- Reports keep the V0.8.0 **Tổng quan / Lịch / Phân tích** experience, monthly/yearly views, category drill-down and green Income/red Expense calendar lines with `0đ` hidden.
-- Category picker keeps the expanded 84-icon searchable library.
-- Loan/Credit Card funding remains excluded from real Income analytics.
-- Reports and CSV export now paginate the complete selected range instead of silently truncating at 10,000 transactions.
-- Category usage checks are also paginated rather than capped at 10,000 historical rows.
-- Production error boundaries, 404 recovery and hardened security headers are included.
-- Runtime dependencies are pinned to exact versions in `package.json` to reduce deploy drift.
+- Centralized visual tokens for cards, controls, semantic states, focus rings and reduced-motion behavior.
+- Refined shared `Card` and `Button` primitives so screens inherit the same radius, spacing and interaction language.
+- Transfer can target a Savings account and optionally **Thêm vào mục tiêu**. The account balance and selected Goal progress are updated atomically by a dedicated Supabase RPC, with double-count protection when the Goal is already linked to that Savings account.
+- Reports Overview keeps **Chi tiêu / Thu nhập / Ròng** on one compact three-column row.
+- Reports Calendar uses larger horizontally scrollable day cells on narrow phones so both daily Income and Expense amounts remain readable; `0đ` stays hidden.
+- Category composition uses a full interactive pie instead of a center-covered donut. Tap/click a slice or legend item to see Category, percentage and amount; large slices label themselves inside the pie.
+- Report pages use a report-specific ledger loader that only requests supporting Accounts/Categories when needed and loads independent datasets in parallel.
+- V1.0.2 framework security stack remains intact: Next.js 16.4.0, React 19.3.0, Node 22.x.
 
-## Database status
+## Database migration
 
-If the database is already on V0.8.0, **V1.0.2 requires no schema migration**.
+V1.1.0 **requires one database migration** for the atomic Savings → Goal transfer RPC:
 
-Run the read-only production verification script:
+`supabase/sql-editor/V1.1.0_ui_design_system_visual_polish.sql`
 
-`supabase/sql-editor/V1.0.0_production_release_verify.sql`
+Then run the read-only verification script:
 
-It verifies core tables, RLS, transaction RPCs, production indexes and the V0.8.0 category-icon constraint. It does not alter financial data.
+`supabase/sql-editor/V1.1.0_ui_design_system_visual_polish_verify.sql`
 
-If the database is older, apply missing migrations in order through V0.8.0 first.
+The migration does not rewrite historical balances. It adds `create_transfer_with_goal_v110`, which reuses the existing V0.7.1 financial transaction RPC and inserts Goal contribution data in the same PostgreSQL transaction.
+
+If the database is older than V0.8.0, apply all missing migrations in order before V1.1.0.
 
 ## Environment
 
@@ -52,21 +54,20 @@ Never prefix SSI secrets with `NEXT_PUBLIC_`.
 
 ## Production deploy
 
-1. Confirm V0.8.0 database migration is applied.
-2. Run `supabase/sql-editor/V1.0.0_production_release_verify.sql`.
-3. Configure Vercel Production environment variables.
-4. Run `npm install` in a dependency-complete environment.
-5. Run `npm run check` (`lint → typecheck → tests → production build`).
-6. Push to GitHub and deploy/redeploy on Vercel.
-7. Verify Supabase Auth redirect URLs for the production domain.
-8. Smoke-test Login, Transaction, Transfer, Credit Card payment, Loan payment, Savings transfer, Reports Calendar and PWA update.
+1. Confirm the database is at least V0.8.0.
+2. Run `supabase/sql-editor/V1.1.0_ui_design_system_visual_polish.sql` once.
+3. Run `supabase/sql-editor/V1.1.0_ui_design_system_visual_polish_verify.sql`.
+4. Configure Vercel Production environment variables.
+5. Run `npm install` in a dependency-complete environment.
+6. Run `npm run check` (`lint → typecheck → tests → production build`).
+7. Push to GitHub and deploy/redeploy on Vercel.
+8. Smoke-test normal Transfer, Savings + Goal transfer, deletion/rollback, Reports Overview, Calendar, pie interaction and PWA update.
 
-Full release notes and checklist: `docs/V1.0.0_PRODUCTION_RELEASE.md`.
+Full V1.1.0 notes: `docs/V1.1.0_UI_DESIGN_SYSTEM_VISUAL_POLISH.md`.
 
 ## Next line
 
-After V1.0.2, Finzaro moves to UI/UX-first releases rather than broad feature expansion: V1.1.0 Design System & Visual Polish, V1.2.0 Mobile UX Optimization and V1.3.0 Transaction UX Redesign.
-
+After V1.1.0, the planned UX sequence is V1.2.0 Mobile UX Optimization, V1.3.0 Transaction UX Redesign and V1.4.0 Quick Actions. Any modified source package must increment the version again.
 
 ## V1.0.2 Next.js security patch
 

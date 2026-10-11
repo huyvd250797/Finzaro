@@ -15,7 +15,8 @@ import {
   yearBounds,
   type ReportFlowType
 } from "@/features/reports/experience";
-import { currencyDigits, loadLedger } from "@/features/transactions/data";
+import { loadReportLedger } from "@/features/reports/data";
+import { currencyDigits } from "@/features/transactions/data";
 import { requireUser } from "@/lib/auth";
 import { cn, formatMinorMoney } from "@/lib/utils";
 
@@ -54,7 +55,7 @@ export default async function ReportCategoryPage({ params, searchParams }: { par
   const chartMonthKeys = mode === "month" ? monthKeysEndingAt(period, 6) : Array.from({ length: 12 }, (_, index) => `${year}-${String(index + 1).padStart(2, "0")}`);
   const loadFrom = mode === "month" ? monthBounds(chartMonthKeys[0]).from : yearBounds(year).from;
   const loadTo = mode === "month" ? monthBounds(period).to : yearBounds(year).to;
-  const ledger = await loadLedger(supabase, userId, { fromDate: loadFrom, toDate: loadTo, fetchAll: true });
+  const ledger = await loadReportLedger(supabase, userId, { fromDate: loadFrom, toDate: loadTo, includeCategories: true });
   const category = ledger.categories.find((item) => item.id === categoryId);
 
   if (!category) {

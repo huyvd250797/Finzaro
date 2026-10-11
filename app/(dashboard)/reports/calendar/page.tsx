@@ -12,7 +12,8 @@ import {
   shiftMonthKey,
   validMonthKey
 } from "@/features/reports/experience";
-import { currencyDigits, loadLedger } from "@/features/transactions/data";
+import { loadReportLedger } from "@/features/reports/data";
+import { currencyDigits } from "@/features/transactions/data";
 import { requireUser } from "@/lib/auth";
 import { cn, formatMinorMoney } from "@/lib/utils";
 
@@ -55,7 +56,7 @@ export default async function ReportCalendarPage({ searchParams }: { searchParam
   const fallbackDay = period === currentMonth ? now.day : 1;
   const selectedDay = validSelectedDay(params.day, period, bounds.days, fallbackDay);
 
-  const ledger = await loadLedger(supabase, userId, { fromDate: bounds.from, toDate: bounds.to, fetchAll: true });
+  const ledger = await loadReportLedger(supabase, userId, { fromDate: bounds.from, toDate: bounds.to });
   const digits = currencyDigits(ledger.currencies, currency);
   const totals = periodFlowTotals(ledger.transactions, currency);
   const daily = dailyFlowTotals(ledger.transactions, currency, period);
@@ -85,22 +86,26 @@ export default async function ReportCalendarPage({ searchParams }: { searchParam
       </CardContent></Card>
 
       <Card className="mt-4 overflow-hidden"><CardContent className="p-2 sm:p-4">
-        <div className="grid grid-cols-7">{WEEKDAYS.map((day) => <div key={day} className="py-2 text-center text-[10px] font-black text-[var(--muted-foreground)] sm:text-xs">{day}</div>)}</div>
-        <div className="grid grid-cols-7 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--border)] gap-px">
-          {cells.map((cell) => {
-            if (!cell.current || !cell.date) return <div key={cell.key} className="min-h-[78px] bg-[var(--background)] p-1.5 opacity-35 sm:min-h-[96px] sm:p-2"><p className="text-center text-[11px] font-bold text-[var(--muted-foreground)] sm:text-xs">{cell.day}</p></div>;
-            const values = daily.get(cell.date) ?? { income: 0, expense: 0 };
-            const selected = cell.date === selectedDay;
-            return <Link key={cell.key} href={`/reports/calendar?period=${period}&day=${cell.date}`} className={cn("min-h-[78px] min-w-0 bg-[var(--card)] p-1.5 transition active:opacity-75 sm:min-h-[96px] sm:p-2", selected && "bg-sky-500/15 ring-2 ring-inset ring-sky-500")}>
-              <p className={cn("text-center text-[11px] font-black sm:text-xs", selected ? "text-sky-500" : "text-[var(--foreground)]")}>{cell.day}</p>
-              <div className="mt-2 space-y-1 text-right">
-                {values.income > 0 && <p className="truncate text-[9px] font-black leading-3 text-emerald-500 sm:text-[11px]">{signedMoney(values.income, "+", currency, digits)}</p>}
-                {values.expense > 0 && <p className="truncate text-[9px] font-black leading-3 text-rose-500 sm:text-[11px]">{signedMoney(values.expense, "-", currency, digits)}</p>}
-              </div>
-            </Link>;
-          })}
+        <div className="overflow-x-auto overscroll-x-contain pb-1 [scrollbar-width:thin]">
+          <div className="min-w-[700px] lg:min-w-0">
+            <div className="grid grid-cols-7">{WEEKDAYS.map((day) => <div key={day} className="py-2 text-center text-[10px] font-black text-[var(--muted-foreground)] sm:text-xs">{day}</div>)}</div>
+            <div className="grid grid-cols-7 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--border)] gap-px">
+              {cells.map((cell) => {
+                if (!cell.current || !cell.date) return <div key={cell.key} className="min-h-[102px] bg-[var(--background)] p-2 opacity-35 sm:min-h-[112px]"><p className="text-center text-xs font-bold text-[var(--muted-foreground)]">{cell.day}</p></div>;
+                const values = daily.get(cell.date) ?? { income: 0, expense: 0 };
+                const selected = cell.date === selectedDay;
+                return <Link key={cell.key} href={`/reports/calendar?period=${period}&day=${cell.date}`} className={cn("min-h-[102px] min-w-0 bg-[var(--card)] p-2.5 transition hover:bg-[var(--muted)]/55 active:opacity-75 sm:min-h-[112px]", selected && "bg-sky-500/15 ring-2 ring-inset ring-sky-500")}>
+                  <p className={cn("text-center text-xs font-black", selected ? "text-sky-500" : "text-[var(--foreground)]")}>{cell.day}</p>
+                  <div className="mt-3 space-y-1.5 text-right tabular-nums">
+                    {values.income > 0 && <p className="whitespace-nowrap text-[11px] font-black leading-4 text-emerald-500 sm:text-xs">{signedMoney(values.income, "+", currency, digits)}</p>}
+                    {values.expense > 0 && <p className="whitespace-nowrap text-[11px] font-black leading-4 text-rose-500 sm:text-xs">{signedMoney(values.expense, "-", currency, digits)}</p>}
+                  </div>
+                </Link>;
+              })}
+            </div>
+          </div>
         </div>
-        <div className="mt-3 flex flex-wrap items-center gap-3 text-[10px] font-bold text-[var(--muted-foreground)]"><span className="inline-flex items-center gap-1.5"><span className="size-2 rounded-full bg-emerald-500" />Thu nhập</span><span className="inline-flex items-center gap-1.5"><span className="size-2 rounded-full bg-rose-500" />Chi tiêu</span><span className="ml-auto">0đ được ẩn</span></div>
+        <div className="mt-3 flex flex-wrap items-center gap-3 text-[10px] font-bold text-[var(--muted-foreground)]"><span className="inline-flex items-center gap-1.5"><span className="size-2 rounded-full bg-emerald-500" />Thu nhập</span><span className="inline-flex items-center gap-1.5"><span className="size-2 rounded-full bg-rose-500" />Chi tiêu</span><span className="ml-auto">Vuốt ngang trên điện thoại · 0đ được ẩn</span></div>
       </CardContent></Card>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-3">

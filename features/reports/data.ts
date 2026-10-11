@@ -21,6 +21,84 @@ export type CategorySpendRow = { id: string; label: string; icon_name: string; i
 export type AccountSpendRow = { id: string; label: string; amount: number; percent: number };
 export type Insight = { tone: "positive" | "warning" | "negative" | "neutral"; title: string; description: string };
 
+export async function loadReportLedger(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+  options: { fromDate: string; toDate: string; includeAccounts?: boolean; includeCategories?: boolean }
+) {
+  const transactionPromise = (async () => {
+    const rows: unknown[] = [];
+    const batchSize = 1000;
+    let offset = 0;
+    while (rows.length <= 100000) {
+      const { data, error } = await supabase
+        .from("transactions")
+        .select("id, transaction_type, transaction_purpose, title, category_id, category_label, notes, transaction_date, created_at, categories(id, name, icon_name, icon_color, category_type, parent_id, is_archived), transaction_entries(id, transaction_id, account_id, currency_code, amount_minor, entry_role)")
+        .eq("user_id", userId)
+        .gte("transaction_date", options.fromDate)
+        .lte("transaction_date", options.toDate)
+        .order("transaction_date", { ascending: false })
+        .order("created_at", { ascending: false })
+        .range(offset, offset + batchSize - 1);
+      if (error) throw error;
+      const page = data ?? [];
+      rows.push(...page);
+      if (page.length < batchSize) break;
+      offset += page.length;
+    }
+    if (rows.length > 100000) throw new Error("Khoảng báo cáo vượt quá 100.000 giao dịch. Hãy thu hẹp khoảng thời gian trước khi tiếp tục.");
+    return rows;
+  })();
+
+  const accountPromise = options.includeAccounts
+    ? supabase.from("accounts").select("id, name, account_type, currency_code, institution_name, is_archived, current_balance_minor").eq("user_id", userId)
+    : Promise.resolve({ data: [], error: null });
+  const categoryPromise = options.includeCategories
+    ? supabase.from("categories").select("id, user_id, name, category_type, parent_id, icon_name, icon_color, system_key, is_system, is_archived, sort_order, created_at, updated_at").eq("user_id", userId).order("sort_order")
+    : Promise.resolve({ data: [], error: null });
+
+  const [transactionRows, currencyResult, accountResult, categoryResult] = await Promise.all([
+    transactionPromise,
+    supabase.from("supported_currencies").select("code, decimal_digits, symbol").eq("is_active", true),
+    accountPromise,
+    categoryPromise
+  ]);
+
+  if (currencyResult.error) throw currencyResult.error;
+  if (accountResult.error) throw accountResult.error;
+  if (categoryResult.error) throw categoryResult.error;
+
+  const accounts = (accountResult.data ?? []) as LedgerAccount[];
+  const accountMap = new Map(accounts.map((account) => [account.id, account]));
+  type RawEntry = { id: string; transaction_id: string; account_id: string; currency_code: string; amount_minor: number; entry_role: string };
+  type RawCategory = { id: string; name: string; icon_name: string; icon_color: string | null; category_type: "income" | "expense"; parent_id: string | null; is_archived: boolean };
+  type RawTransaction = Omit<TransactionView, "entries" | "category"> & { categories: RawCategory | RawCategory[] | null; transaction_entries: RawEntry[] | null };
+
+  const transactions = (transactionRows as RawTransaction[]).map((transaction) => {
+    const nestedCategory = Array.isArray(transaction.categories) ? transaction.categories[0] ?? null : transaction.categories;
+    return {
+      id: transaction.id,
+      transaction_type: transaction.transaction_type,
+      transaction_purpose: transaction.transaction_purpose ?? "standard",
+      title: transaction.title,
+      category_id: transaction.category_id,
+      category_label: transaction.category_label,
+      category: nestedCategory,
+      notes: transaction.notes,
+      transaction_date: transaction.transaction_date,
+      created_at: transaction.created_at,
+      entries: (transaction.transaction_entries ?? []).map((entry) => ({ ...entry, account: accountMap.get(entry.account_id) ?? null }))
+    } satisfies TransactionView;
+  });
+
+  return {
+    transactions,
+    currencies: (currencyResult.data ?? []) as Array<{ code: string; decimal_digits: number; symbol: string }>,
+    accounts,
+    categories: (categoryResult.data ?? []) as CategoryRow[]
+  };
+}
+
 function parseIsoDate(value: string) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
   const d = new Date(`${value}T00:00:00Z`);

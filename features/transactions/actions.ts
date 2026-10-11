@@ -81,6 +81,7 @@ export async function createTransactionAction(formData: FormData) {
     const newLoanInterestMethod = text(formData, "new_loan_interest_method") || "annuity";
     const newLoanPaymentFrequency = text(formData, "new_loan_payment_frequency") || "monthly";
     const newLoanUpfrontFeeInput = text(formData, "new_loan_upfront_fee") || "0";
+    const savingsGoalId = text(formData, "savings_goal_id") || null;
 
     if (!isTransactionType(transactionType)) throw new Error("Loại giao dịch không hợp lệ.");
     if (title.length < 1 || title.length > 140) throw new Error("Nội dung giao dịch phải từ 1 đến 140 ký tự.");
@@ -116,12 +117,12 @@ export async function createTransactionAction(formData: FormData) {
     const accountIds = Array.from(new Set([fromAccountId, toAccountId].filter((value): value is string => Boolean(value))));
     if (accountIds.length === 0) throw new Error("Vui lòng chọn tài khoản.");
     const [{ data: accounts, error: accountError }, { data: currencies, error: currencyError }] = await Promise.all([
-      supabase.from("accounts").select("id, currency_code, is_archived").eq("user_id", userId).in("id", accountIds),
+      supabase.from("accounts").select("id, currency_code, account_type, is_archived").eq("user_id", userId).in("id", accountIds),
       supabase.from("supported_currencies").select("code, decimal_digits").eq("is_active", true)
     ]);
     if (accountError || !accounts || accounts.length !== accountIds.length) throw new Error("Không tìm thấy tài khoản hợp lệ.");
     if (currencyError || !currencies) throw new Error("Không thể đọc cấu hình tiền tệ.");
-    const ownedAccounts = accounts as Array<{ id: string; currency_code: string; is_archived: boolean }>;
+    const ownedAccounts = accounts as Array<{ id: string; currency_code: string; account_type: string; is_archived: boolean }>;
     if (ownedAccounts.some((account) => account.is_archived)) throw new Error("Không thể tạo giao dịch trên tài khoản đã lưu trữ.");
     const accountById = new Map(ownedAccounts.map((account) => [account.id, account]));
     const digitsByCode = new Map((currencies as Array<{ code: string; decimal_digits: number }>).map((currency) => [currency.code, currency.decimal_digits]));
@@ -171,19 +172,37 @@ export async function createTransactionAction(formData: FormData) {
       const effectiveToInput = toAmountInput || (source.currency_code === destinationAccount.currency_code ? fromAmountInput : "");
       toAmountMinor = parseMajorAmountToMinor(effectiveToInput, digitsByCode.get(destinationAccount.currency_code) ?? 0);
       if (toAmountMinor === null || toAmountMinor <= 0) throw new Error(source.currency_code === destinationAccount.currency_code ? "Số tiền chuyển không hợp lệ." : `Chuyển khác tiền tệ cần nhập số tiền nhận bằng ${destinationAccount.currency_code}.`);
+      if (savingsGoalId) {
+        if (destinationAccount.account_type !== "savings") throw new Error("Chỉ có thể thêm tiền vào mục tiêu khi tài khoản đích là tài khoản tiết kiệm.");
+        const { data: goal, error: goalError } = await supabase.from("savings_goals").select("id, currency_code, linked_account_id, is_archived").eq("id", savingsGoalId).eq("user_id", userId).maybeSingle();
+        if (goalError || !goal || goal.is_archived) throw new Error("Mục tiêu tiết kiệm không hợp lệ hoặc đã lưu trữ.");
+        if (goal.currency_code !== destinationAccount.currency_code) throw new Error("Tiền tệ của mục tiêu phải trùng với tài khoản tiết kiệm nhận tiền.");
+        if (goal.linked_account_id && goal.linked_account_id !== toAccountId) throw new Error("Mục tiêu này đang liên kết với một tài khoản tiết kiệm khác.");
+      }
     }
 
-    const { error } = await (supabase as any).rpc("create_financial_transaction_v071", {
+    const result = transactionType === "transfer"
+      ? await (supabase as any).rpc("create_transfer_with_goal_v110", {
+          p_title: title,
+          p_notes: notes || null,
+          p_transaction_date: transactionDate,
+          p_from_account_id: fromAccountId,
+          p_to_account_id: toAccountId,
+          p_from_amount_minor: fromAmountMinor,
+          p_to_amount_minor: toAmountMinor,
+          p_savings_goal_id: savingsGoalId
+        })
+      : await (supabase as any).rpc("create_financial_transaction_v071", {
       p_transaction_type: transactionType,
       p_title: title,
-      p_category_id: transactionType === "transfer" || transactionPurpose !== "standard" ? null : categoryId,
+      p_category_id: transactionPurpose !== "standard" ? null : categoryId,
       p_notes: notes || null,
       p_transaction_date: transactionDate,
       p_from_account_id: fromAccountId,
       p_to_account_id: toAccountId,
       p_from_amount_minor: fromAmountMinor,
       p_to_amount_minor: toAmountMinor,
-      p_transaction_purpose: transactionType === "transfer" ? "transfer" : transactionPurpose,
+      p_transaction_purpose: transactionPurpose,
       p_credit_card_id: transactionPurpose === "credit_card_payment" || transactionPurpose === "credit_card_borrow" ? creditCardId : null,
       p_loan_id: transactionPurpose === "loan_payment" ? loanId : null,
       p_loan_principal_minor: transactionPurpose === "loan_payment" ? loanPrincipalMinor : null,
@@ -198,13 +217,14 @@ export async function createTransactionAction(formData: FormData) {
       p_new_loan_payment_frequency: transactionPurpose === "loan_borrow" ? newLoanPaymentFrequency : null,
       p_new_loan_upfront_fee_minor: transactionPurpose === "loan_borrow" ? newLoanUpfrontFeeMinor : 0
     });
-    if (error) throw new Error(safeDbMessage(error, "Không thể tạo giao dịch. Vui lòng kiểm tra dữ liệu và thử lại."));
+    if (result.error) throw new Error(safeDbMessage(result.error, "Không thể tạo giao dịch. Vui lòng kiểm tra dữ liệu và thử lại."));
 
     ["/transactions", "/overview", "/accounts", "/credit-cards", "/loans", "/goals", "/net-worth", "/debt-strategy", "/reports", "/health", "/forecast", "/cash-flow"].forEach((path) => revalidatePath(path));
     const message = transactionPurpose === "credit_card_payment" ? "Đã chi tiền thanh toán thẻ và giảm dư nợ tín dụng."
       : transactionPurpose === "loan_payment" ? "Đã chi tiền thanh toán khoản vay và cập nhật dư nợ."
       : transactionPurpose === "credit_card_borrow" ? "Đã ghi nhận tiền vào tài khoản và tăng dư nợ thẻ tín dụng."
       : transactionPurpose === "loan_borrow" ? "Đã ghi nhận tiền giải ngân và tự tạo khoản vay mới."
+      : transactionType === "transfer" && savingsGoalId ? "Đã chuyển tiền vào tài khoản tiết kiệm và tăng tiến độ mục tiêu đã chọn."
       : transactionType === "transfer" ? "Đã chuyển tiền; mục tiêu liên kết (nếu có) đã tự đồng bộ."
       : "Đã ghi nhận giao dịch và cập nhật số dư.";
     redirect(destination("message", message));

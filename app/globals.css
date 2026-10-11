@@ -209,3 +209,51 @@ select.fin-input { white-space: nowrap; }
   .modal-scroll-area > * { max-width: 100%; overflow-x: hidden; }
   form { max-width: 100%; overflow-x: clip; }
 }
+
+/* V1.1.0 — UI Design System & Visual Polish */
+:root {
+  --surface-raised: #ffffff;
+  --surface-soft: #f0f5f3;
+  --success: #0f9f70;
+  --danger: #e64b65;
+  --info: #2f7fe8;
+  --warning: #d98b13;
+  --radius-card: 1.25rem;
+  --radius-control: .9rem;
+  --shadow-card: 0 18px 46px -36px rgba(10, 45, 35, .42), 0 1px 2px rgba(10, 45, 35, .05);
+}
+.dark {
+  --surface-raised: #111c19;
+  --surface-soft: #15231f;
+  --success: #36c997;
+  --danger: #fb7185;
+  --info: #60a5fa;
+  --warning: #fbbf24;
+  --shadow-card: 0 20px 50px -38px rgba(0, 0, 0, .9), 0 1px 2px rgba(0, 0, 0, .32);
+}
+
+button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+:where(button, a, input, select, textarea):focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--primary) 72%, white 12%);
+  outline-offset: 2px;
+}
+.fin-card {
+  border-radius: var(--radius-card);
+  background: var(--card);
+  box-shadow: var(--shadow-card);
+}
+.fin-input, .fin-textarea {
+  border-radius: var(--radius-control);
+  background-color: color-mix(in srgb, var(--background) 92%, var(--card));
+}
+.fin-input:hover, .fin-textarea:hover { border-color: color-mix(in srgb, var(--primary) 28%, var(--border)); }
+.fin-primary-btn { border-radius: var(--radius-control); box-shadow: 0 10px 24px -16px color-mix(in srgb, var(--primary) 75%, transparent); }
+.fin-secondary-btn, .fin-dark-btn { border-radius: var(--radius-control); }
+.fin-section-title { font-size: .95rem; line-height: 1.25rem; font-weight: 900; letter-spacing: -.015em; }
+.fin-section-help { margin-top: .2rem; font-size: .72rem; line-height: 1rem; color: var(--muted-foreground); }
+.fin-kpi-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .5rem; }
+.fin-kpi-value { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-variant-numeric: tabular-nums; }
+@media (min-width: 640px) { .fin-kpi-grid { gap: .75rem; } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}

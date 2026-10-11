@@ -17,7 +17,8 @@ import {
   yearBounds,
   type ReportFlowType
 } from "@/features/reports/experience";
-import { currencyDigits, loadLedger } from "@/features/transactions/data";
+import { loadReportLedger } from "@/features/reports/data";
+import { currencyDigits } from "@/features/transactions/data";
 import { requireUser } from "@/lib/auth";
 import { cn, formatMinorMoney } from "@/lib/utils";
 
@@ -51,7 +52,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
   const year = validYear(params.year, now.year);
   const bounds = mode === "month" ? monthBounds(period) : yearBounds(year);
 
-  const ledger = await loadLedger(supabase, userId, { fromDate: bounds.from, toDate: bounds.to, fetchAll: true });
+  const ledger = await loadReportLedger(supabase, userId, { fromDate: bounds.from, toDate: bounds.to });
   const digits = currencyDigits(ledger.currencies, currency);
   const transactions = periodTransactions(ledger.transactions, bounds.from, bounds.to);
   const totals = periodFlowTotals(transactions, currency);
@@ -94,16 +95,16 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
         <Link href={reportUrl({ mode, period, year, type: "income" })} className={cn("grid min-h-11 place-items-center rounded-xl text-sm font-black", type === "income" ? "bg-emerald-500/12 text-emerald-500 shadow-sm" : "text-[var(--muted-foreground)]")}>Thu nhập</Link>
       </div>
 
-      <div className="mt-4 grid gap-3 sm:grid-cols-3">
-        <Card className="border-rose-500/20 bg-rose-500/[.035]"><CardContent className="p-4"><TrendingDown className="size-5 text-rose-500" /><p className="mt-3 text-xs font-bold text-[var(--muted-foreground)]">Chi tiêu</p><p className="mt-1 break-words text-xl font-black text-rose-500">{formatMinorMoney(totals.expense, currency, digits)}</p></CardContent></Card>
-        <Card className="border-emerald-500/20 bg-emerald-500/[.035]"><CardContent className="p-4"><TrendingUp className="size-5 text-emerald-500" /><p className="mt-3 text-xs font-bold text-[var(--muted-foreground)]">Thu nhập</p><p className="mt-1 break-words text-xl font-black text-emerald-500">{formatMinorMoney(totals.income, currency, digits)}</p></CardContent></Card>
-        <Card className="border-sky-500/20 bg-sky-500/[.035]"><CardContent className="p-4"><CircleDollarSign className="size-5 text-sky-500" /><p className="mt-3 text-xs font-bold text-[var(--muted-foreground)]">Ròng</p><p className={cn("mt-1 break-words text-xl font-black", totals.net < 0 ? "text-rose-500" : "text-sky-500")}>{formatMinorMoney(totals.net, currency, digits)}</p></CardContent></Card>
+      <div className="mt-4 grid grid-cols-3 gap-2 sm:gap-3">
+        <Card className="min-w-0 border-rose-500/20 bg-rose-500/[.035]"><CardContent className="p-2.5 sm:p-4"><div className="flex items-center gap-1.5"><TrendingDown className="size-4 shrink-0 text-rose-500 sm:size-5" /><p className="truncate text-[10px] font-black text-[var(--muted-foreground)] sm:text-xs">Chi tiêu</p></div><p className="mt-2 overflow-hidden text-ellipsis text-[11px] font-black tabular-nums text-rose-500 sm:text-lg md:text-xl">{formatMinorMoney(totals.expense, currency, digits)}</p></CardContent></Card>
+        <Card className="min-w-0 border-emerald-500/20 bg-emerald-500/[.035]"><CardContent className="p-2.5 sm:p-4"><div className="flex items-center gap-1.5"><TrendingUp className="size-4 shrink-0 text-emerald-500 sm:size-5" /><p className="truncate text-[10px] font-black text-[var(--muted-foreground)] sm:text-xs">Thu nhập</p></div><p className="mt-2 overflow-hidden text-ellipsis text-[11px] font-black tabular-nums text-emerald-500 sm:text-lg md:text-xl">{formatMinorMoney(totals.income, currency, digits)}</p></CardContent></Card>
+        <Card className="min-w-0 border-sky-500/20 bg-sky-500/[.035]"><CardContent className="p-2.5 sm:p-4"><div className="flex items-center gap-1.5"><CircleDollarSign className="size-4 shrink-0 text-sky-500 sm:size-5" /><p className="truncate text-[10px] font-black text-[var(--muted-foreground)] sm:text-xs">Ròng</p></div><p className={cn("mt-2 overflow-hidden text-ellipsis text-[11px] font-black tabular-nums sm:text-lg md:text-xl", totals.net < 0 ? "text-rose-500" : "text-sky-500")}>{formatMinorMoney(totals.net, currency, digits)}</p></CardContent></Card>
       </div>
 
       <Card className="mt-4">
         <CardContent className="p-4 sm:p-5">
           <div className="flex items-center justify-between gap-3"><div><h2 className="font-black">{type === "expense" ? "Chi tiêu" : "Thu nhập"} theo danh mục</h2><p className="mt-1 text-xs text-[var(--muted-foreground)]">{periodLabel} · {currency}</p></div><span className="text-sm font-black">{formatMinorMoney(selectedTotal, currency, digits)}</span></div>
-          {categories.length === 0 ? <div className="mt-5 rounded-2xl border border-dashed border-[var(--border)] p-8 text-center text-sm text-[var(--muted-foreground)]">Chưa có dữ liệu trong kỳ này.</div> : <div className="mt-5 grid items-center gap-6 lg:grid-cols-[320px_1fr]">
+          {categories.length === 0 ? <div className="mt-5 rounded-2xl border border-dashed border-[var(--border)] p-8 text-center text-sm text-[var(--muted-foreground)]">Chưa có dữ liệu trong kỳ này.</div> : <div className="mt-5 grid items-start gap-6 lg:grid-cols-[360px_1fr]">
             <ReportDonut slices={categories} total={selectedTotal} currency={currency} decimalDigits={digits} centerLabel={type === "expense" ? "Tổng chi" : "Tổng thu"} />
             <div className="divide-y divide-[var(--border)]">
               {categories.slice(0, 10).map((item, index) => {

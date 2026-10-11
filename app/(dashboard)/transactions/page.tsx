@@ -52,16 +52,18 @@ function EditTransactionForm({ transaction, accounts, categories, currencies }: 
 export default async function TransactionsPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
   const { supabase, userId } = await requireUser();
-  const [{ data: preferences }, ledger, { data: activeLoans, error: loansError }, { data: loanPayments, error: loanPaymentsError }, { data: activeCards, error: cardsError }] = await Promise.all([
+  const [{ data: preferences }, ledger, { data: activeLoans, error: loansError }, { data: loanPayments, error: loanPaymentsError }, { data: activeCards, error: cardsError }, { data: activeGoals, error: goalsError }] = await Promise.all([
     supabase.from("user_preferences").select("currency_code, timezone").eq("id", userId).maybeSingle(),
     loadLedger(supabase, userId, { limit: 500 }),
     (supabase as any).from("loans").select("*").eq("user_id", userId).eq("is_archived", false).order("created_at", { ascending: false }),
     (supabase as any).from("loan_payments").select("*").eq("user_id", userId).order("payment_date", { ascending: false }).order("created_at", { ascending: false }).limit(5000),
-    (supabase as any).from("credit_cards").select("id, name, bank_name, last4, currency_code, current_balance_minor").eq("user_id", userId).eq("is_archived", false).order("created_at", { ascending: false })
+    (supabase as any).from("credit_cards").select("id, name, bank_name, last4, currency_code, current_balance_minor").eq("user_id", userId).eq("is_archived", false).order("created_at", { ascending: false }),
+    (supabase as any).from("savings_goals").select("id, name, currency_code, linked_account_id, target_amount_minor").eq("user_id", userId).eq("is_archived", false).order("target_date", { ascending: true, nullsFirst: false }).order("created_at", { ascending: true })
   ]);
   if (loansError) throw loansError;
   if (loanPaymentsError) throw loanPaymentsError;
   if (cardsError) throw cardsError;
+  if (goalsError) throw goalsError;
   const defaultCurrency = preferences?.currency_code ?? "VND";
   const timeZone = preferences?.timezone ?? "Asia/Ho_Chi_Minh";
   const activeAccounts = ledger.accounts.filter((account) => !account.is_archived).map((account) => ({
@@ -84,6 +86,13 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
   const toCardOption = (card: (typeof allCardRows)[number]) => { const cardDigits = currencyDigits(ledger.currencies, card.currency_code); return { id: card.id, name: card.name, bank_name: card.bank_name, last4: card.last4, currency_code: card.currency_code, current_balance_minor: card.current_balance_minor, balance_label: formatMinorMoney(card.current_balance_minor, card.currency_code, cardDigits) }; };
   const creditCardPaymentOptions = allCardRows.filter((card) => card.current_balance_minor > 0).map(toCardOption);
   const creditCardFundingOptions = allCardRows.map(toCardOption);
+  const savingsGoalOptions = ((activeGoals ?? []) as Array<{ id: string; name: string; currency_code: string; linked_account_id: string | null; target_amount_minor: number }>).map((goal) => ({
+    id: goal.id,
+    name: goal.name,
+    currency_code: goal.currency_code,
+    linked_account_id: goal.linked_account_id,
+    target_label: formatMinorMoney(goal.target_amount_minor, goal.currency_code, currencyDigits(ledger.currencies, goal.currency_code))
+  }));
   const loanOptions = loanRows.map((loan) => {
     const loanDigits = currencyDigits(ledger.currencies, loan.currency_code);
     const next = loan.schedule.find((row) => row.remaining_minor < loan.remaining_principal_minor) ?? loan.schedule[0] ?? null;
@@ -100,7 +109,7 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
   const totals = monthTotals(ledger.transactions, defaultCurrency, currentMonthKey(timeZone));
 
   return <div className="mx-auto max-w-[1500px] min-w-0 px-4 py-6 md:px-6 lg:px-8 lg:py-8">
-    <div className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-sm font-semibold text-[var(--primary)]">Money · Ledger</p><h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">Giao dịch</h1><p className="mt-2 max-w-3xl text-sm text-[var(--muted-foreground)]">Thu tiền (kể cả giải ngân từ thẻ/khoản vay), Chi tiền trả nợ và Chuyển tiền giữa tài khoản với liên kết Goal tự động.</p></div><InstantTransactionLauncher initialType={newType} expense={<TransactionEntryForm type="expense" accounts={activeAccounts} categories={expenseCategories} today={today} suggestions={expenseSuggestions} creditCards={creditCardPaymentOptions} loans={loanOptions} />} income={<TransactionEntryForm type="income" accounts={activeAccounts} categories={incomeCategories} today={today} suggestions={incomeSuggestions} creditCards={creditCardFundingOptions} />} transfer={<TransactionEntryForm type="transfer" accounts={activeAccounts} categories={[]} today={today} suggestions={transferSuggestions} />} /></div>
+    <div className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-sm font-semibold text-[var(--primary)]">Money · Ledger</p><h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">Giao dịch</h1><p className="mt-2 max-w-3xl text-sm text-[var(--muted-foreground)]">Thu tiền (kể cả giải ngân từ thẻ/khoản vay), Chi tiền trả nợ và Chuyển tiền giữa tài khoản với liên kết Goal tự động.</p></div><InstantTransactionLauncher initialType={newType} expense={<TransactionEntryForm type="expense" accounts={activeAccounts} categories={expenseCategories} today={today} suggestions={expenseSuggestions} creditCards={creditCardPaymentOptions} loans={loanOptions} />} income={<TransactionEntryForm type="income" accounts={activeAccounts} categories={incomeCategories} today={today} suggestions={incomeSuggestions} creditCards={creditCardFundingOptions} />} transfer={<TransactionEntryForm type="transfer" accounts={activeAccounts} categories={[]} today={today} suggestions={transferSuggestions} savingsGoals={savingsGoalOptions} />} /></div>
     <AuthMessage error={params.error} message={params.message} />
     {editing && <EditTransactionForm transaction={editing} accounts={activeAccounts} categories={editing.transaction_type === "income" ? incomeCategories : expenseCategories} currencies={ledger.currencies} />}
 

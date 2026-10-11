@@ -4,12 +4,12 @@ import { readFile } from "node:fs/promises";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("current release is V1.0.2 Next.js Security Patch", async () => {
+test("current release is V1.1.0 UI Design System & Visual Polish", async () => {
   const pkg = JSON.parse(await read("package.json"));
   const version = await read("lib/app-version.ts");
-  assert.equal(pkg.version, "1.0.2");
-  assert.match(version, /APP_VERSION = "1\.0\.2"/);
-  assert.match(version, /APP_RELEASE_NAME = "Next.js Security Patch"/);
+  assert.equal(pkg.version, "1.1.0");
+  assert.match(version, /APP_VERSION = "1\.1\.0"/);
+  assert.match(version, /APP_RELEASE_NAME = "UI Design System & Visual Polish"/);
 });
 
 test("production dependencies are pinned and build validates environment first", async () => {
@@ -39,20 +39,25 @@ test("production security and deterministic error recovery are present", async (
 
 test("reports never silently stop at ten thousand transactions", async () => {
   const ledger = await read("features/transactions/data.ts");
+  const reportData = await read("features/reports/data.ts");
   assert.match(ledger, /fetchAll\?: boolean/);
   assert.match(ledger, /fetchAll \? 100001/);
   assert.match(ledger, /rows\.length > 100000/);
+  assert.match(reportData, /while \(rows\.length <= 100000\)/);
+  assert.match(reportData, /rows\.length > 100000/);
   for (const path of [
     "app/(dashboard)/reports/page.tsx",
     "app/(dashboard)/reports/calendar/page.tsx",
     "app/(dashboard)/reports/analysis/page.tsx",
-    "app/(dashboard)/reports/category/[categoryId]/page.tsx",
-    "app/api/reports/export/route.ts"
+    "app/(dashboard)/reports/category/[categoryId]/page.tsx"
   ]) {
     const source = await read(path);
-    assert.match(source, /fetchAll: true/);
+    assert.match(source, /loadReportLedger/);
     assert.doesNotMatch(source, /limit: 10000/);
   }
+  const exportRoute = await read("app/api/reports/export/route.ts");
+  assert.match(exportRoute, /fetchAll: true/);
+  assert.doesNotMatch(exportRoute, /limit: 10000/);
 });
 
 test("category historical usage counting is paginated instead of capped", async () => {
@@ -64,7 +69,7 @@ test("category historical usage counting is paginated instead of capped", async 
   assert.doesNotMatch(page, /\.limit\(10000\)/);
 });
 
-test("V1.0.2 reuses the read-only V1.0.0 production database verification", async () => {
+test("V1.1.0 retains the read-only V1.0.0 production database verification", async () => {
   const verify = await read("supabase/sql-editor/V1.0.0_production_release_verify.sql");
   assert.match(verify, /Read-only verification/);
   assert.match(verify, /transactions_rls_ok/);

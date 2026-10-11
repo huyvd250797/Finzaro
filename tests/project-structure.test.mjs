@@ -143,6 +143,7 @@ const required = [
   "supabase/tests/forecasting-scenarios.test.sql",
   "supabase/tests/smart-cash-flow-planner.test.sql",
   "supabase/tests/financial-goals-planner.test.sql",
+  "supabase/tests/ui-design-system-v110.test.sql",
   "docs/V0.0.5_CATEGORY_ENGINE_SETUP.md",
   "docs/V0.0.6_BUDGET_ENGINE_SETUP.md",
   "docs/V0.0.7_RECURRING_CALENDAR_SETUP.md",
@@ -160,6 +161,10 @@ const required = [
   "docs/V0.7.0_ADVANCED_DEBT_STRATEGY_SSI_MARKET_DATA_SETUP.md",
   "docs/V0.7.1_MOBILE_MONEY_DEBT_FUNDING_SETUP.md",
   "docs/V1.0.2_NEXTJS_SECURITY_PATCH.md",
+  "docs/V1.1.0_UI_DESIGN_SYSTEM_VISUAL_POLISH.md",
+  "supabase/migrations/20261011150000_ui_design_system_visual_polish_v110.sql",
+  "supabase/sql-editor/V1.1.0_ui_design_system_visual_polish.sql",
+  "supabase/sql-editor/V1.1.0_ui_design_system_visual_polish_verify.sql",
   "docs/VERSIONING.md",
   "public/sw.js",
   ".env.example",
@@ -170,9 +175,9 @@ test("V0.7.1 required files exist", () => {
   for (const file of required) assert.equal(existsSync(file), true, `${file} is missing`);
 });
 
-test("package version is 1.0.2", () => {
+test("package version is 1.1.0", () => {
   const pkg = JSON.parse(readFileSync("package.json", "utf8"));
-  assert.equal(pkg.version, "1.0.2");
+  assert.equal(pkg.version, "1.1.0");
   assert.match(pkg.dependencies.next, /16/);
   assert.ok(pkg.dependencies["@supabase/ssr"]);
 });

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Clock3, CreditCard, Landmark, Repeat2, Sparkles, X } from "lucide-react";
+import { Clock3, CreditCard, Landmark, Repeat2, Sparkles, Target, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { createTransactionAction } from "@/features/transactions/actions";
 import type { TransactionType } from "@/features/transactions/constants";
@@ -21,6 +21,7 @@ type AccountOption = { id: string; name: string; currency_code: string; institut
 type CategoryOption = { id: string; name: string; icon_name: string; icon_color: string | null; parent_id: string | null };
 export type CreditCardPaymentOption = { id: string; name: string; bank_name: string | null; last4: string | null; currency_code: string; current_balance_minor: number; balance_label: string };
 export type LoanPaymentOption = { id: string; name: string; lender_name: string | null; currency_code: string; remaining_principal_minor: number; remaining_label: string; suggested_total: string; suggested_principal: string; suggested_interest: string; suggested_fee: string };
+export type SavingsGoalTransferOption = { id: string; name: string; currency_code: string; linked_account_id: string | null; target_label: string };
 type ExpensePurpose = "standard" | "credit_card_payment" | "loan_payment";
 type IncomePurpose = "standard" | "credit_card_borrow" | "loan_borrow";
 
@@ -31,7 +32,8 @@ export function TransactionEntryForm({
   today,
   suggestions,
   creditCards = [],
-  loans = []
+  loans = [],
+  savingsGoals = []
 }: {
   type: TransactionType;
   accounts: AccountOption[];
@@ -40,6 +42,7 @@ export function TransactionEntryForm({
   suggestions: QuickTransactionSuggestion[];
   creditCards?: CreditCardPaymentOption[];
   loans?: LoanPaymentOption[];
+  savingsGoals?: SavingsGoalTransferOption[];
 }) {
   const isTransfer = type === "transfer";
   const [title, setTitle] = useState("");
@@ -57,6 +60,8 @@ export function TransactionEntryForm({
   const [loanPrincipal, setLoanPrincipal] = useState("");
   const [loanInterest, setLoanInterest] = useState("");
   const [loanFee, setLoanFee] = useState("");
+  const [addToGoal, setAddToGoal] = useState(false);
+  const [savingsGoalId, setSavingsGoalId] = useState("");
 
   const accountIds = useMemo(() => new Set(accounts.map((account) => account.id)), [accounts]);
   const categoryIds = useMemo(() => new Set(categories.map((category) => category.id)), [categories]);
@@ -65,6 +70,12 @@ export function TransactionEntryForm({
   const visibleSuggestions = suggestions.slice(0, 10);
   const selectedCard = creditCards.find((card) => card.id === creditCardId) ?? null;
   const selectedLoan = loans.find((loan) => loan.id === loanId) ?? null;
+  const compatibleSavingsGoals = useMemo(() => {
+    if (!isTransfer || !toAccount || toAccount.account_type !== "savings") return [];
+    const linked = savingsGoals.filter((goal) => goal.currency_code === toAccount.currency_code && goal.linked_account_id === toAccount.id);
+    if (linked.length > 0) return linked;
+    return savingsGoals.filter((goal) => goal.currency_code === toAccount.currency_code && !goal.linked_account_id);
+  }, [isTransfer, savingsGoals, toAccount]);
   const nextMonth = addMonthsClamped(today, 1);
 
   function applySuggestion(suggestion: QuickTransactionSuggestion) {
@@ -77,6 +88,8 @@ export function TransactionEntryForm({
     setToAmount(suggestion.to_amount);
     if (!isTransfer && suggestion.category_id && categoryIds.has(suggestion.category_id)) setCategoryId(suggestion.category_id);
     setNotes(suggestion.notes);
+    setAddToGoal(false);
+    setSavingsGoalId("");
     setSelectedSuggestion(suggestion.id);
   }
 
@@ -104,7 +117,7 @@ export function TransactionEntryForm({
           <div>
             <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--primary)]">New transaction</p>
             <h2 className="mt-1 text-lg font-black">{TRANSACTION_TYPE_LABELS[type]}</h2>
-            <p className="mt-1 text-xs text-[var(--muted-foreground)]">{type === "expense" ? "Chi tiêu thông thường hoặc thanh toán trực tiếp dư nợ thẻ/khoản vay." : type === "transfer" ? "Chuyển giữa tài khoản; Savings Goal liên kết sẽ tự đồng bộ tiến độ." : "Thu nhập thông thường hoặc tiền vay/ứng từ thẻ tín dụng."}</p>
+            <p className="mt-1 text-xs text-[var(--muted-foreground)]">{type === "expense" ? "Chi tiêu thông thường hoặc thanh toán trực tiếp dư nợ thẻ/khoản vay." : type === "transfer" ? "Chuyển giữa tài khoản; khi chuyển vào tiết kiệm có thể chọn thêm trực tiếp vào một mục tiêu." : "Thu nhập thông thường hoặc tiền vay/ứng từ thẻ tín dụng."}</p>
           </div>
           <button type="button" data-instant-close aria-label="Đóng" className="grid size-9 shrink-0 place-items-center rounded-xl border border-[var(--border)]"><X className="size-4" /></button>
         </div>
@@ -136,7 +149,17 @@ export function TransactionEntryForm({
 
               <label className="md:col-span-2"><span className="field-label">Nội dung</span><input name="title" value={title} onChange={(event) => setTitle(event.target.value)} required maxLength={140} placeholder={type === "income" ? incomePurpose === "credit_card_borrow" ? "VD: Ứng tiền Visa VCB" : incomePurpose === "loan_borrow" ? "VD: Giải ngân vay mua xe" : "VD: Lương tháng 10" : type === "expense" ? expensePurpose === "credit_card_payment" ? "VD: Thanh toán Visa VCB" : expensePurpose === "loan_payment" ? "VD: Trả khoản vay mua xe" : "VD: Siêu thị cuối tuần" : "VD: Chuyển quỹ dự phòng"} className="fin-input" /></label>
               {(type === "expense" || type === "transfer") && <label><span className="field-label">Tài khoản nguồn</span><select name="from_account_id" value={fromAccountId} onChange={(event) => setFromAccountId(event.target.value)} required className="fin-input"><option value="">Chọn tài khoản</option>{accounts.map((account) => <option key={account.id} value={account.id}>{account.name} · {account.currency_code}</option>)}</select></label>}
-              {(type === "income" || type === "transfer") && <label><span className="field-label">{type === "income" ? "Tài khoản nhận" : "Tài khoản đích"}</span><select name="to_account_id" value={toAccountId} onChange={(event) => setToAccountId(event.target.value)} required className="fin-input"><option value="">Chọn tài khoản</option>{accounts.map((account) => <option key={account.id} value={account.id}>{account.name} · {account.currency_code}</option>)}</select>{isTransfer && toAccount?.account_type === "savings" && <span className="mt-1.5 block text-[11px] text-[var(--primary)]">Nếu tài khoản tiết kiệm này liên kết Savings Goal, tiến độ Goal sẽ tự tăng.</span>}</label>}
+              {(type === "income" || type === "transfer") && <label><span className="field-label">{type === "income" ? "Tài khoản nhận" : "Tài khoản đích"}</span><select name="to_account_id" value={toAccountId} onChange={(event) => { setToAccountId(event.target.value); setAddToGoal(false); setSavingsGoalId(""); }} required className="fin-input"><option value="">Chọn tài khoản</option>{accounts.map((account) => <option key={account.id} value={account.id}>{account.name} · {account.currency_code}</option>)}</select>{isTransfer && toAccount?.account_type === "savings" && <span className="mt-1.5 block text-[11px] text-[var(--primary)]">Nếu tài khoản tiết kiệm này liên kết Savings Goal, tiến độ Goal sẽ tự tăng.</span>}</label>}
+
+              {isTransfer && toAccount?.account_type === "savings" && <div className="md:col-span-2 rounded-2xl border border-emerald-500/20 bg-emerald-500/[.055] p-3.5 sm:p-4">
+                <label className="flex cursor-pointer items-start gap-3">
+                  <input type="checkbox" checked={addToGoal} onChange={(event) => { setAddToGoal(event.target.checked); if (!event.target.checked) setSavingsGoalId(""); }} className="mt-0.5 size-4 shrink-0 accent-[var(--primary)]" />
+                  <span className="min-w-0 flex-1"><span className="flex items-center gap-1.5 text-sm font-black"><Target className="size-4 text-[var(--primary)]" /> Thêm vào mục tiêu</span><span className="mt-1 block text-[11px] leading-4 text-[var(--muted-foreground)]">Khi lưu, tiền vào tài khoản tiết kiệm và tiến độ mục tiêu được tăng trong cùng một transaction database.</span></span>
+                </label>
+                {addToGoal && <div className="mt-3">
+                  {compatibleSavingsGoals.length > 0 ? <label><span className="field-label">Mục tiêu đang có</span><select name="savings_goal_id" value={savingsGoalId} onChange={(event) => setSavingsGoalId(event.target.value)} required className="fin-input"><option value="">Chọn mục tiêu</option>{compatibleSavingsGoals.map((goal) => <option key={goal.id} value={goal.id}>{goal.name} · mục tiêu {goal.target_label}{goal.linked_account_id === toAccount.id ? " · đã liên kết tài khoản này" : ""}</option>)}</select></label> : <div className="rounded-xl border border-dashed border-[var(--border)] bg-[var(--card)] p-3 text-[11px] text-[var(--muted-foreground)]">Không có mục tiêu hoạt động cùng tiền tệ phù hợp với tài khoản này. <Link href="/goals" className="font-black text-[var(--primary)]">Mở Mục tiêu</Link></div>}
+                </div>}
+              </div>}
 
               {((type === "expense" && expensePurpose === "credit_card_payment") || (type === "income" && incomePurpose === "credit_card_borrow")) && <label><span className="field-label flex items-center gap-1.5"><CreditCard className="size-3.5" /> {type === "income" ? "Thẻ tín dụng nguồn" : "Thẻ tín dụng"}</span><select name="credit_card_id" value={creditCardId} onChange={(event) => chooseCard(event.target.value)} required className="fin-input"><option value="">{type === "income" ? "Chọn thẻ dùng để lấy tiền" : "Chọn thẻ cần thanh toán"}</option>{creditCards.map((card) => <option key={card.id} value={card.id} disabled={Boolean((type === "income" ? toAccount : fromAccount) && (type === "income" ? toAccount : fromAccount)?.currency_code !== card.currency_code)}>{card.name}{card.last4 ? ` · •••• ${card.last4}` : ""} · dư nợ {card.balance_label}</option>)}</select>{selectedCard && <span className="mt-1.5 block text-[11px] text-[var(--muted-foreground)]">Dư nợ hiện tại: {selectedCard.balance_label}{type === "income" ? " · số tiền giao dịch sẽ được cộng thêm vào dư nợ." : ""}</span>}</label>}
               {type === "expense" && expensePurpose === "loan_payment" && <label><span className="field-label flex items-center gap-1.5"><Landmark className="size-3.5" /> Khoản vay</span><select name="loan_id" value={loanId} onChange={(event) => chooseLoan(event.target.value)} required className="fin-input"><option value="">Chọn khoản vay</option>{loans.map((loan) => <option key={loan.id} value={loan.id} disabled={Boolean(fromAccount && fromAccount.currency_code !== loan.currency_code)}>{loan.name} · còn {loan.remaining_label}</option>)}</select>{selectedLoan && <span className="mt-1.5 block text-[11px] text-[var(--muted-foreground)]">Finzaro đã gợi ý gốc/lãi theo kỳ kế tiếp; có thể chỉnh lại trước khi lưu.</span>}</label>}
