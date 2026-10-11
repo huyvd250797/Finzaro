@@ -1,8 +1,12 @@
-# Finzaro V1.1.3 — Reports Runtime Reliability Fix
+# Finzaro V1.1.4 — Reports Recovery & PWA Refresh Fix
 
-Finzaro is a personal-finance PWA built with Next.js, Supabase and Vercel. V1.1.3 is a focused runtime patch for Reports while preserving the V1.1.2 Deposit transfer model.
+Finzaro is a personal-finance PWA built with Next.js, Supabase and Vercel. V1.1.4 hardens Reports with layered ledger fallbacks and automatically recovers installed PWAs that are still running an older deployment bundle.
 
-## V1.1.3 highlights
+## V1.1.4 highlights
+
+- Reports now try direct ledger reads, the canonical Transactions loader, then a legacy-core reader before giving up.
+- All Reports routes are force-dynamic and do not reuse authenticated RSC output.
+- Installed PWA clients hard-refresh once when `/api/version` reports a newer server version.
 
 - **Transfer → Tiền gửi** now reads real records from the `deposits` module instead of treating `accounts.account_type="savings"` as the same thing.
 - A Deposit transfer atomically decreases the source Account and increases the Deposit principal. **Thêm vào mục tiêu** can also advance an existing same-currency Goal in the same PostgreSQL transaction.
@@ -15,7 +19,7 @@ Finzaro is a personal-finance PWA built with Next.js, Supabase and Vercel. V1.1.
 
 ## Database migration
 
-V1.1.3 adds **no new migration**. The existing V1.1.2 migration is still required for Deposit funding and Goal rollback:
+V1.1.4 adds **no new migration**. The existing V1.1.2 migration is still required for Deposit funding and Goal rollback:
 
 `supabase/sql-editor/V1.1.2_transfer_deposit_reports_reliability.sql`
 
@@ -65,7 +69,7 @@ Never prefix SSI secrets with `NEXT_PUBLIC_`.
 7. Push to GitHub and deploy/redeploy on Vercel.
 8. Smoke-test Account → Deposit transfer, optional Goal contribution, deletion rollback, Reports Overview/Calendar/Analysis, and PWA update.
 
-V1.1.3 patch notes: `docs/V1.1.3_REPORTS_RUNTIME_RELIABILITY_FIX.md`.
+V1.1.4 patch notes: `docs/V1.1.4_REPORTS_RECOVERY_PWA_REFRESH_FIX.md`.
 
 V1.1.2 Deposit transfer notes remain at `docs/V1.1.2_DEPOSIT_TRANSFER_REPORTS_RELIABILITY_FIX.md`.
 
@@ -73,7 +77,7 @@ Full V1.1.0 UI/UX notes remain at `docs/V1.1.0_UI_DESIGN_SYSTEM_VISUAL_POLISH.md
 
 ## Next line
 
-After V1.1.3, the planned UX sequence remains V1.2.0 Mobile UX Optimization, V1.3.0 Transaction UX Redesign and V1.4.0 Quick Actions. Any modified source package must increment the version again.
+After V1.1.4, the planned UX sequence remains V1.2.0 Mobile UX Optimization, V1.3.0 Transaction UX Redesign and V1.4.0 Quick Actions. Any modified source package must increment the version again.
 
 ## V1.0.2 Next.js security patch
 

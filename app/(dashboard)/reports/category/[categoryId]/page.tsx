@@ -20,6 +20,8 @@ import { currencyDigits } from "@/features/transactions/data";
 import { requireUser } from "@/lib/auth";
 import { cn, formatMinorMoney } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 export const metadata = { title: "Chi tiết danh mục" };
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;

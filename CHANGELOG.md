@@ -1,3 +1,11 @@
+# V1.1.4 — Reports Recovery & PWA Refresh Fix
+
+- Added three-tier Reports recovery: direct ledger, canonical Transactions loader, then V0.0.4-compatible legacy core reader.
+- Reports no longer throw the authenticated shell when a ledger read strategy fails; failures are retained in Runtime Logs and the next fallback is attempted.
+- Marked all Reports routes force-dynamic with `revalidate = 0` to avoid stale authenticated RSC output.
+- Added installed-PWA server-version hard refresh so an old bundle such as V1.1.2 cannot remain active after a newer deployment is available.
+- No database migration is required for V1.1.4.
+
 # V1.1.3 — Reports Runtime Reliability Fix
 
 - Removed the V1.1.2 report RPC from the default Reports runtime path; Overview, Calendar, Category Detail and Analysis now read the stable Transaction Ledger tables directly.

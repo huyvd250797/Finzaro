@@ -50,16 +50,49 @@ export function PwaRegister() {
     setDismissed(false);
   }, []);
 
+  const hardRefreshToVersion = useCallback(async (version: string) => {
+    if (typeof window === "undefined" || version === APP_VERSION) return;
+    const key = `finzaro-hard-refresh-${version}`;
+    try {
+      if (sessionStorage.getItem(key) === "1") return;
+      sessionStorage.setItem(key, "1");
+    } catch {
+      // Continue even when storage is unavailable; one reload is preferable to
+      // leaving an installed PWA on an obsolete Next.js bundle.
+    }
+
+    try {
+      if ("caches" in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.filter((name) => name.startsWith("finzaro-static-v")).map((name) => caches.delete(name)));
+      }
+    } catch {
+      // Cache cleanup is best effort.
+    }
+
+    const url = new URL(window.location.href);
+    url.searchParams.set("__finzaro_version", version);
+    url.searchParams.set("__finzaro_refresh", Date.now().toString());
+    window.location.replace(url.toString());
+  }, []);
+
   const checkServerVersion = useCallback(async () => {
     try {
       const response = await fetch(`/api/version?t=${Date.now()}`, { cache: "no-store", headers: { "Cache-Control": "no-cache" } });
       if (!response.ok) return;
       const data = (await response.json()) as VersionPayload;
-      if (data.version && data.version !== APP_VERSION) showUpdate(data.version, data.release);
+      if (data.version && data.version !== APP_VERSION) {
+        showUpdate(data.version, data.release);
+        // V1.1.4: an installed PWA may stay alive across deployments and keep an
+        // obsolete Server Component bundle. Auto hard-refresh once per server
+        // version so the header, Reports loader and error boundary all come from
+        // the same deployment instead of mixing V1.1.2/V1.1.3 assets.
+        void hardRefreshToVersion(data.version);
+      }
     } catch {
       // Offline is expected for a PWA. The service-worker update path will retry later.
     }
-  }, [showUpdate]);
+  }, [hardRefreshToVersion, showUpdate]);
 
   useEffect(() => {
     if (!("serviceWorker" in navigator) || process.env.NODE_ENV !== "production") return;

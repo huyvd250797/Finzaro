@@ -38,6 +38,8 @@ import { currencyDigits } from "@/features/transactions/data";
 import { requireUser } from "@/lib/auth";
 import { formatMinorMoney } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 export const metadata = { title: "Phân tích tài chính" };
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;

@@ -26,6 +26,6 @@ Lưu ý: release từng được dự kiến tên `V0.0.13 – Net Worth & Finan
 
 ## Current baseline
 
-- `V1.0.0` remains the Production Release baseline. `V1.1.3` is the current Reports Runtime Reliability Fix on top of the V1.1.0 UI/UX release. Any subsequent source package must increment the version before distribution.
+- `V1.0.0` remains the Production Release baseline. `V1.1.4` is the current Reports Recovery & PWA Refresh Fix on top of the V1.1.0 UI/UX release. Any subsequent source package must increment the version before distribution.
 - Production hotfixes on this UX line use `V1.1.x`; the next planned UX feature release is `V1.2.0`.
-- Do not reuse `V1.1.3` for any modified source package.
+- Do not reuse `V1.1.4` for any modified source package.

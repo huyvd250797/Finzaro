@@ -2,7 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/database.types";
 import type { CategoryRow } from "@/features/categories/data";
 import { categoryScopeIds } from "@/features/budgets/data";
-import { transactionEntry, type LedgerAccount, type LedgerCurrency, type LedgerEntry, type TransactionCategory, type TransactionView } from "@/features/transactions/data";
+import { loadLedger, transactionEntry, type LedgerAccount, type LedgerCurrency, type LedgerEntry, type TransactionCategory, type TransactionView } from "@/features/transactions/data";
 
 export type ReportRangeKey = "this_month" | "last_month" | "3m" | "6m" | "12m" | "ytd" | "custom";
 export type ReportFilters = {
@@ -20,6 +20,19 @@ export type MonthlyCashflowRow = { key: string; month: string; income: number; e
 export type CategorySpendRow = { id: string; label: string; icon_name: string; icon_color: string | null; amount: number; percent: number };
 export type AccountSpendRow = { id: string; label: string; amount: number; percent: number };
 export type Insight = { tone: "positive" | "warning" | "negative" | "neutral"; title: string; description: string };
+
+export type ReportLedgerDiagnostics = {
+  strategy: "direct" | "canonical" | "legacy-core" | "empty";
+  warnings: string[];
+};
+
+export type ReportLedgerResult = {
+  transactions: TransactionView[];
+  currencies: LedgerCurrency[];
+  accounts: LedgerAccount[];
+  categories: CategoryRow[];
+  diagnostics: ReportLedgerDiagnostics;
+};
 
 type RawReportTransaction = {
   id: string;
@@ -40,6 +53,18 @@ const REPORT_TRANSACTION_PROJECTIONS = [
   "id, transaction_type, title, category_id, category_label, notes, transaction_date, created_at",
   "id, transaction_type, title, category_label, notes, transaction_date, created_at"
 ] as const;
+
+function errorSummary(error: unknown) {
+  const value = error as { code?: unknown; message?: unknown; details?: unknown; hint?: unknown } | null;
+  const pieces = [value?.code, value?.message, value?.details, value?.hint]
+    .map((part) => typeof part === "string" ? part.trim() : "")
+    .filter(Boolean);
+  return pieces.join(" · ").slice(0, 500) || (error instanceof Error ? error.message : "Unknown report data error");
+}
+
+function reportLog(strategy: string, error: unknown) {
+  console.error(`[Finzaro Reports] ${strategy} failed`, error);
+}
 
 function schemaCompatibilityError(error: any) {
   const code = String(error?.code ?? "");
@@ -110,7 +135,6 @@ async function loadReportEntriesDirect(
 ) {
   if (transactionIds.length === 0) return [] as RawReportEntry[];
   const entries: RawReportEntry[] = [];
-  // Keep the IN query comfortably below URL/proxy limits on Vercel/PostgREST.
   const chunkSize = 60;
   for (let index = 0; index < transactionIds.length; index += chunkSize) {
     const chunk = transactionIds.slice(index, index + chunkSize);
@@ -121,6 +145,30 @@ async function loadReportEntriesDirect(
       .in("transaction_id", chunk);
     if (error) throw error;
     entries.push(...((data ?? []) as RawReportEntry[]));
+  }
+  return entries;
+}
+
+async function loadReportEntriesLegacyCore(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+  transactionIds: Set<string>
+) {
+  if (transactionIds.size === 0) return [] as RawReportEntry[];
+  const entries: RawReportEntry[] = [];
+  const pageSize = 1000;
+  let offset = 0;
+  while (offset <= 200000) {
+    const { data, error } = await (supabase as any)
+      .from("transaction_entries")
+      .select("id, transaction_id, account_id, currency_code, amount_minor, entry_role")
+      .eq("user_id", userId)
+      .range(offset, offset + pageSize - 1);
+    if (error) throw error;
+    const page = (data ?? []) as RawReportEntry[];
+    for (const entry of page) if (transactionIds.has(entry.transaction_id)) entries.push(entry);
+    if (page.length < pageSize) break;
+    offset += page.length;
   }
   return entries;
 }
@@ -188,25 +236,12 @@ async function loadReportAccountsBestEffort(
   return ((legacy.data ?? []) as any[]).map((row) => ({ ...row, current_balance_minor: 0 })) as LedgerAccount[];
 }
 
-export async function loadReportLedger(
-  supabase: SupabaseClient<Database>,
-  userId: string,
-  options: { fromDate: string; toDate: string; includeAccounts?: boolean; includeCategories?: boolean }
+function hydrateReportRows(
+  rawTransactions: RawReportTransaction[],
+  entries: RawReportEntry[],
+  categories: CategoryRow[],
+  accounts: LedgerAccount[]
 ) {
-  // V1.1.3 reliability fix: Reports no longer depend on a versioned RPC or on
-  // embedded PostgREST relations. The mandatory path is only the stable ledger
-  // core (transactions + transaction_entries). Metadata is best-effort, so an
-  // optional Account/Category schema mismatch can no longer blank the whole page.
-  const rawTransactions = await loadReportTransactionsDirect(supabase, userId, options.fromDate, options.toDate);
-  const entries = await loadReportEntriesDirect(supabase, userId, rawTransactions.map((transaction) => transaction.id));
-
-  const entryCurrencies = Array.from(new Set(entries.map((entry) => entry.currency_code).filter(Boolean)));
-  const [currencies, categories, accounts] = await Promise.all([
-    loadReportCurrenciesBestEffort(supabase, entryCurrencies),
-    loadReportCategoriesBestEffort(supabase, userId),
-    options.includeAccounts ? loadReportAccountsBestEffort(supabase, userId) : Promise.resolve([] as LedgerAccount[])
-  ]);
-
   const categoryMap = new Map(categories.map((category) => [category.id, category]));
   const accountMap = new Map(accounts.map((account) => [account.id, account]));
   const entriesByTransaction = new Map<string, LedgerEntry[]>();
@@ -221,7 +256,7 @@ export async function loadReportLedger(
     entriesByTransaction.set(entry.transaction_id, list);
   }
 
-  const transactions = rawTransactions.map((transaction): TransactionView => {
+  return rawTransactions.map((transaction): TransactionView => {
     const categoryId = transaction.category_id ?? null;
     const category = categoryId ? categoryMap.get(categoryId) ?? null : null;
     const transactionPurpose = transaction.transaction_purpose
@@ -248,12 +283,125 @@ export async function loadReportLedger(
       entries: (entriesByTransaction.get(transaction.id) ?? []).sort((a, b) => a.entry_role.localeCompare(b.entry_role))
     };
   });
+}
 
+async function directReportLedger(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+  options: { fromDate: string; toDate: string; includeAccounts?: boolean; includeCategories?: boolean }
+): Promise<ReportLedgerResult> {
+  const rawTransactions = await loadReportTransactionsDirect(supabase, userId, options.fromDate, options.toDate);
+  const entries = await loadReportEntriesDirect(supabase, userId, rawTransactions.map((transaction) => transaction.id));
+  const entryCurrencies = Array.from(new Set(entries.map((entry) => entry.currency_code).filter(Boolean)));
+  const [currencies, categories, accounts] = await Promise.all([
+    loadReportCurrenciesBestEffort(supabase, entryCurrencies),
+    loadReportCategoriesBestEffort(supabase, userId),
+    options.includeAccounts ? loadReportAccountsBestEffort(supabase, userId) : Promise.resolve([] as LedgerAccount[])
+  ]);
   return {
-    transactions,
+    transactions: hydrateReportRows(rawTransactions, entries, categories, accounts),
     currencies,
     accounts: options.includeAccounts ? accounts : [],
-    categories: options.includeCategories ? categories : []
+    categories: options.includeCategories ? categories : [],
+    diagnostics: { strategy: "direct", warnings: [] }
+  };
+}
+
+async function canonicalReportLedger(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+  options: { fromDate: string; toDate: string; includeAccounts?: boolean; includeCategories?: boolean },
+  warnings: string[]
+): Promise<ReportLedgerResult> {
+  const ledger = await loadLedger(supabase, userId, { fromDate: options.fromDate, toDate: options.toDate, fetchAll: true });
+  return {
+    transactions: ledger.transactions,
+    currencies: ledger.currencies.length ? ledger.currencies : [fallbackCurrency("VND")],
+    accounts: options.includeAccounts ? ledger.accounts : [],
+    categories: options.includeCategories ? ledger.categories : [],
+    diagnostics: { strategy: "canonical", warnings }
+  };
+}
+
+async function legacyCoreReportLedger(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+  options: { fromDate: string; toDate: string; includeAccounts?: boolean; includeCategories?: boolean },
+  warnings: string[]
+): Promise<ReportLedgerResult> {
+  const rows: RawReportTransaction[] = [];
+  const pageSize = 750;
+  let offset = 0;
+  while (rows.length <= 100000) {
+    const { data, error } = await (supabase as any)
+      .from("transactions")
+      .select("id, transaction_type, title, category_label, notes, transaction_date, created_at")
+      .eq("user_id", userId)
+      .gte("transaction_date", options.fromDate)
+      .lte("transaction_date", options.toDate)
+      .order("transaction_date", { ascending: false })
+      .order("created_at", { ascending: false })
+      .range(offset, offset + pageSize - 1);
+    if (error) throw error;
+    const page = (data ?? []) as RawReportTransaction[];
+    rows.push(...page);
+    if (page.length < pageSize) break;
+    offset += page.length;
+  }
+  const ids = new Set(rows.map((row) => row.id));
+  const entries = await loadReportEntriesLegacyCore(supabase, userId, ids);
+  const entryCurrencies = Array.from(new Set(entries.map((entry) => entry.currency_code).filter(Boolean)));
+  const [currencies, categories, accounts] = await Promise.all([
+    loadReportCurrenciesBestEffort(supabase, entryCurrencies),
+    loadReportCategoriesBestEffort(supabase, userId),
+    options.includeAccounts ? loadReportAccountsBestEffort(supabase, userId) : Promise.resolve([] as LedgerAccount[])
+  ]);
+  return {
+    transactions: hydrateReportRows(rows, entries, categories, accounts),
+    currencies,
+    accounts: options.includeAccounts ? accounts : [],
+    categories: options.includeCategories ? categories : [],
+    diagnostics: { strategy: "legacy-core", warnings }
+  };
+}
+
+export async function loadReportLedger(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+  options: { fromDate: string; toDate: string; includeAccounts?: boolean; includeCategories?: boolean }
+): Promise<ReportLedgerResult> {
+  const warnings: string[] = [];
+
+  try {
+    return await directReportLedger(supabase, userId, options);
+  } catch (error) {
+    reportLog("direct ledger", error);
+    warnings.push(`direct: ${errorSummary(error)}`);
+  }
+
+  try {
+    return await canonicalReportLedger(supabase, userId, options, warnings);
+  } catch (error) {
+    reportLog("canonical transaction loader", error);
+    warnings.push(`canonical: ${errorSummary(error)}`);
+  }
+
+  try {
+    return await legacyCoreReportLedger(supabase, userId, options, warnings);
+  } catch (error) {
+    reportLog("legacy core ledger", error);
+    warnings.push(`legacy: ${errorSummary(error)}`);
+  }
+
+  // Reports must never crash the entire authenticated shell. Returning an empty
+  // result keeps navigation usable while Runtime Logs retain the exact database
+  // error. This path is only reached if even the V0.0.4 core ledger cannot be read.
+  return {
+    transactions: [],
+    currencies: [fallbackCurrency("VND")],
+    accounts: [],
+    categories: [],
+    diagnostics: { strategy: "empty", warnings }
   };
 }
 
