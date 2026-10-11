@@ -1,3 +1,12 @@
+# V1.0.1 — Production Deploy Fix
+
+- Fixed Vercel dependency resolution that could backtrack between React 19.2 and React DOM 19.3 and exceed the build time limit.
+- Aligned `react` and `react-dom` to 19.3.0 and aligned `@types/react` / `@types/react-dom` to 19.3.0.
+- Updated TypeScript to 5.9.3 to match the resolved toolchain.
+- Pinned the deployment runtime to Node 22.x / npm 10.x.
+- Added deterministic Vercel install flags and project `.npmrc` to avoid peer-resolution loops, audit/fund network work, and unnecessary registry churn during deploy.
+- No database schema or financial-data changes.
+
 # V1.0.0 — Production Release
 
 - Promoted the V0.8.0 Release Candidate to the first production baseline without adding a new finance module.

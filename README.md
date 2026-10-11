@@ -1,6 +1,6 @@
-# Finzaro V1.0.0 — Production Release
+# Finzaro V1.0.1 — Production Deploy Fix
 
-Finzaro is a personal-finance PWA built with Next.js, Supabase and Vercel. V1.0.0 promotes the V0.8.0 Release Candidate to the first production baseline. The finance feature set is frozen; this release focuses on correctness, deterministic recovery, deploy safety and long-history reporting.
+Finzaro is a personal-finance PWA built with Next.js, Supabase and Vercel. V1.0.1 is the deployment hotfix for the V1.0.0 production baseline. The finance feature set is frozen; this release focuses on correctness, deterministic recovery, deploy safety and long-history reporting.
 
 ## Production baseline
 
@@ -15,7 +15,7 @@ Finzaro is a personal-finance PWA built with Next.js, Supabase and Vercel. V1.0.
 
 ## Database status
 
-If the database is already on V0.8.0, **V1.0.0 requires no schema migration**.
+If the database is already on V0.8.0, **V1.0.1 requires no schema migration**.
 
 Run the read-only production verification script:
 
@@ -65,4 +65,12 @@ Full release notes and checklist: `docs/V1.0.0_PRODUCTION_RELEASE.md`.
 
 ## Next line
 
-After V1.0.0, Finzaro moves to UI/UX-first releases rather than broad feature expansion: V1.1.0 Design System & Visual Polish, V1.2.0 Mobile UX Optimization and V1.3.0 Transaction UX Redesign.
+After V1.0.1, Finzaro moves to UI/UX-first releases rather than broad feature expansion: V1.1.0 Design System & Visual Polish, V1.2.0 Mobile UX Optimization and V1.3.0 Transaction UX Redesign.
+
+
+## V1.0.1 deployment fix
+
+- Aligns `react`, `react-dom`, `@types/react`, and `@types/react-dom` to 19.3.0.
+- Aligns TypeScript to 5.9.3 and pins Vercel/CI runtime to Node 22.x / npm 10.x.
+- Vercel install bypasses expensive peer-dependency backtracking with `--legacy-peer-deps`, while direct React packages remain explicitly aligned.
+- No database migration is required.

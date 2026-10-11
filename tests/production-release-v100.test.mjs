@@ -4,12 +4,12 @@ import { readFile } from "node:fs/promises";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("current release is V1.0.0 Production Release", async () => {
+test("current release is V1.0.1 Production Deploy Fix", async () => {
   const pkg = JSON.parse(await read("package.json"));
   const version = await read("lib/app-version.ts");
-  assert.equal(pkg.version, "1.0.0");
-  assert.match(version, /APP_VERSION = "1\.0\.0"/);
-  assert.match(version, /APP_RELEASE_NAME = "Production Release"/);
+  assert.equal(pkg.version, "1.0.1");
+  assert.match(version, /APP_VERSION = "1\.0\.1"/);
+  assert.match(version, /APP_RELEASE_NAME = "Production Deploy Fix"/);
 });
 
 test("production dependencies are pinned and build validates environment first", async () => {
@@ -64,7 +64,7 @@ test("category historical usage counting is paginated instead of capped", async 
   assert.doesNotMatch(page, /\.limit\(10000\)/);
 });
 
-test("V1.0.0 ships read-only production database verification", async () => {
+test("V1.0.1 reuses the read-only V1.0.0 production database verification", async () => {
   const verify = await read("supabase/sql-editor/V1.0.0_production_release_verify.sql");
   assert.match(verify, /Read-only verification/);
   assert.match(verify, /transactions_rls_ok/);

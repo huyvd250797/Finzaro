@@ -86,7 +86,7 @@ test("dashboard surfaces Loan & Debt summary", () => {
   assert.match(overview, /loanSummary/);
 });
 
-test("current app version is V1.0.0 Production Release", () => {
-  assert.match(version, /APP_VERSION = "1\.0\.0"/);
-  assert.match(version, /Production Release/);
+test("current app version is V1.0.1 Production Deploy Fix", () => {
+  assert.match(version, /APP_VERSION = "1\.0\.1"/);
+  assert.match(version, /Production Deploy Fix/);
 });
