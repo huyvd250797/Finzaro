@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("V1.1.5 Reports runtime does not require the versioned report RPC", async () => {
+test("V1.1.6 Reports runtime does not require the versioned report RPC", async () => {
   const data = await read("features/reports/data.ts");
   assert.match(data, /loadReportTransactionsDirect/);
   assert.match(data, /loadReportEntriesDirect/);
@@ -12,7 +12,7 @@ test("V1.1.5 Reports runtime does not require the versioned report RPC", async (
   assert.doesNotMatch(data, /categories\(id, name/);
 });
 
-test("V1.1.5 retries legacy-compatible transaction projections", async () => {
+test("V1.1.6 retries legacy-compatible transaction projections", async () => {
   const data = await read("features/reports/data.ts");
   assert.match(data, /REPORT_TRANSACTION_PROJECTIONS/);
   assert.match(data, /transaction_purpose/);
@@ -21,7 +21,7 @@ test("V1.1.5 retries legacy-compatible transaction projections", async () => {
   assert.match(data, /PGRST200/);
 });
 
-test("V1.1.5 optional metadata cannot blank the whole Reports module", async () => {
+test("V1.1.6 optional metadata cannot blank the whole Reports module", async () => {
   const data = await read("features/reports/data.ts");
   assert.match(data, /loadReportCurrenciesBestEffort/);
   assert.match(data, /loadReportCategoriesBestEffort/);
@@ -30,17 +30,17 @@ test("V1.1.5 optional metadata cannot blank the whole Reports module", async () 
   assert.match(data, /fallbackCurrency/);
 });
 
-test("V1.1.5 recovery copy no longer requires a Reports migration", async () => {
+test("V1.1.6 recovery copy no longer requires a Reports migration", async () => {
   const boundary = await read("app/(dashboard)/reports/error.tsx");
   assert.match(boundary, /APP_VERSION_LABEL/);
-  assert.match(boundary, /không còn để lỗi truy vấn ledger làm sập toàn bộ Báo cáo/);
+  assert.match(boundary, /đã sửa lỗi React Server Component boundary/);
   assert.doesNotMatch(boundary, /chạy migration V1\.1\.2/);
 });
 
-test("V1.1.5 release metadata is current", async () => {
+test("V1.1.6 release metadata is current", async () => {
   const pkg = JSON.parse(await read("package.json"));
   const version = await read("lib/app-version.ts");
-  assert.equal(pkg.version, "1.1.5");
-  assert.match(version, /APP_VERSION = "1\.1\.5"/);
-  assert.match(version, /Reports Render & Pie Stability Fix/);
+  assert.equal(pkg.version, "1.1.6");
+  assert.match(version, /APP_VERSION = "1\.1\.6"/);
+  assert.match(version, /Reports RSC Boundary Root Cause Fix/);
 });

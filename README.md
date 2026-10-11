@@ -1,8 +1,13 @@
-# Finzaro V1.1.5 — Reports Render & Pie Stability Fix
+# Finzaro V1.1.6 — Reports RSC Boundary Root Cause Fix
 
-Finzaro is a personal-finance PWA built with Next.js, Supabase and Vercel. V1.1.5 fixes the remaining Reports render crash by replacing the SVG pie renderer, hardening report formatting/timezone handling and isolating visualization failures from the Reports route.
+Finzaro is a personal-finance PWA built with Next.js, Supabase and Vercel. V1.1.6 fixes the confirmed root cause of the persistent Reports render crash: a Server Component was invoking a helper exported from a `"use client"` module.
 
-## V1.1.5 highlights
+## V1.1.6 highlights
+
+- **Root-cause fix:** `/reports/page.tsx` no longer calls `reportSliceColor()` across the React Server Component → Client Component boundary.
+- Moved the shared Reports palette into `features/reports/palette.ts`, a server-safe module used by both the server-rendered category list and the interactive client pie.
+- Added a regression test that scans Reports server routes and prevents executable lower-case helpers from being imported from `"use client"` modules.
+- Preserved the V1.1.5 conic-gradient pie, V1.1.4 ledger recovery, dynamic Reports rendering and PWA version refresh.
 
 - Replaced the V1.1.x SVG pie renderer with a defensive `conic-gradient` renderer that still supports tapping a slice to inspect category, percentage and amount.
 - Added a local visualization error boundary so a chart problem can never blank the entire Reports page.
@@ -24,7 +29,7 @@ Finzaro is a personal-finance PWA built with Next.js, Supabase and Vercel. V1.1.
 
 ## Database migration
 
-V1.1.5 adds **no new migration**. The existing V1.1.2 migration is still required for Deposit funding and Goal rollback:
+V1.1.6 adds **no new migration**. The existing V1.1.2 migration is still required for Deposit funding and Goal rollback:
 
 `supabase/sql-editor/V1.1.2_transfer_deposit_reports_reliability.sql`
 
@@ -74,7 +79,9 @@ Never prefix SSI secrets with `NEXT_PUBLIC_`.
 7. Push to GitHub and deploy/redeploy on Vercel.
 8. Smoke-test Account → Deposit transfer, optional Goal contribution, deletion rollback, Reports Overview/Calendar/Analysis, and PWA update.
 
-V1.1.5 patch notes: `docs/V1.1.5_REPORTS_RENDER_PIE_STABILITY_FIX.md`.
+V1.1.6 patch notes: `docs/V1.1.6_REPORTS_RSC_BOUNDARY_ROOT_CAUSE_FIX.md`.
+
+V1.1.5 pie stability notes remain at `docs/V1.1.5_REPORTS_RENDER_PIE_STABILITY_FIX.md`.
 
 V1.1.2 Deposit transfer notes remain at `docs/V1.1.2_DEPOSIT_TRANSFER_REPORTS_RELIABILITY_FIX.md`.
 
@@ -82,7 +89,7 @@ Full V1.1.0 UI/UX notes remain at `docs/V1.1.0_UI_DESIGN_SYSTEM_VISUAL_POLISH.md
 
 ## Next line
 
-After V1.1.5, the planned UX sequence remains V1.2.0 Mobile UX Optimization, V1.3.0 Transaction UX Redesign and V1.4.0 Quick Actions. Any modified source package must increment the version again.
+After V1.1.6, the planned UX sequence remains V1.2.0 Mobile UX Optimization, V1.3.0 Transaction UX Redesign and V1.4.0 Quick Actions. Any modified source package must increment the version again.
 
 ## V1.0.2 Next.js security patch
 

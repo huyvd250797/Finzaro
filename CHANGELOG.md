@@ -1,3 +1,12 @@
+# V1.1.6 — Reports RSC Boundary Root Cause Fix
+
+- Fixed the confirmed persistent Reports crash: the server-rendered `/reports` route was importing and invoking `reportSliceColor()` from `components/report-donut.tsx`, a `"use client"` module. Next.js React Server Components cannot execute client-module functions on the server.
+- Moved `REPORT_SLICE_COLORS` and `reportSliceColor()` into the server-safe `features/reports/palette.ts` module.
+- `ReportDonut` remains a Client Component, while the server-rendered category ranking now imports colors only from the shared server-safe palette.
+- Added regression coverage for React Server Component boundary safety across all Reports routes.
+- Preserved the V1.1.5 pie stability, V1.1.4 data recovery/PWA refresh and V1.1.2 Deposit → Goal transaction integrity.
+- No database migration is required for V1.1.6.
+
 # V1.1.5 — Reports Render & Pie Stability Fix
 
 - Replaced the interactive SVG pie implementation introduced in V1.1.0 with a safer `conic-gradient` pie while preserving direct slice tap selection, large-slice labels and category detail display.

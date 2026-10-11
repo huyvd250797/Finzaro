@@ -4,12 +4,12 @@ import { readFile } from "node:fs/promises";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("V1.1.5 release metadata is consistent", async () => {
+test("V1.1.6 release metadata is consistent", async () => {
   const pkg = JSON.parse(await read("package.json"));
   const version = await read("lib/app-version.ts");
-  assert.equal(pkg.version, "1.1.5");
-  assert.match(version, /APP_VERSION = "1\.1\.5"/);
-  assert.match(version, /APP_RELEASE_NAME = "Reports Render & Pie Stability Fix"/);
+  assert.equal(pkg.version, "1.1.6");
+  assert.match(version, /APP_VERSION = "1\.1\.6"/);
+  assert.match(version, /APP_RELEASE_NAME = "Reports RSC Boundary Root Cause Fix"/);
 });
 
 test("Savings transfer can optionally advance a compatible Goal atomically", async () => {
@@ -59,7 +59,7 @@ test("Reports overview keeps three KPI blocks on one row", async () => {
   assert.match(page, /Ròng/);
 });
 
-test("Reports keep the shared loader API with V1.1.5 direct ledger reads", async () => {
+test("Reports keep the shared loader API with V1.1.6 direct ledger reads", async () => {
   const data = await read("features/reports/data.ts");
   assert.match(data, /export async function loadReportLedger/);
   assert.match(data, /includeAccounts\?: boolean/);

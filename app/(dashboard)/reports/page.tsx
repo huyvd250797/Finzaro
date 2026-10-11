@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, CircleDollarSign, TrendingDown, TrendingUp } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { ReportDonut, reportSliceColor } from "@/components/report-donut";
+import { ReportDonut } from "@/components/report-donut";
 import { ReportVisualBoundary } from "@/components/report-visual-boundary";
 import { ReportNavigation } from "@/components/report-navigation";
 import { CategoryIcon, iconColorValue } from "@/features/categories/icons";
@@ -19,6 +19,7 @@ import {
   type ReportFlowType
 } from "@/features/reports/experience";
 import { loadReportLedger } from "@/features/reports/data";
+import { reportSliceColor } from "@/features/reports/palette";
 import { currencyDigits } from "@/features/transactions/data";
 import { requireUser } from "@/lib/auth";
 import { cn, formatMinorMoney } from "@/lib/utils";

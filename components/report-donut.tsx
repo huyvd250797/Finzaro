@@ -3,17 +3,12 @@
 import { useMemo, useState, type KeyboardEvent, type MouseEvent } from "react";
 import { formatMinorMoney } from "@/lib/utils";
 import { cn } from "@/lib/utils";
-
-const SLICE_COLORS = ["#36c997", "#3b82f6", "#f59e0b", "#f43f5e", "#8b5cf6", "#06b6d4", "#84cc16", "#f97316", "#ec4899", "#14b8a6"];
+import { reportSliceColor } from "@/features/reports/palette";
 
 export type DonutSlice = { id?: string; label: string; amount: number; percent: number };
 
 type SafeSlice = { id?: string; label: string; amount: number; percent: number };
 
-export function reportSliceColor(index: number) {
-  const safeIndex = Number.isFinite(index) ? Math.max(0, Math.trunc(index)) : 0;
-  return SLICE_COLORS[safeIndex % SLICE_COLORS.length];
-}
 
 function safeText(value: unknown, fallback: string) {
   return typeof value === "string" && value.trim() ? value.trim() : fallback;
