@@ -4,12 +4,12 @@ import { readFile } from "node:fs/promises";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("V1.1.0 release metadata is consistent", async () => {
+test("V1.1.1 release metadata is consistent", async () => {
   const pkg = JSON.parse(await read("package.json"));
   const version = await read("lib/app-version.ts");
-  assert.equal(pkg.version, "1.1.0");
-  assert.match(version, /APP_VERSION = "1\.1\.0"/);
-  assert.match(version, /APP_RELEASE_NAME = "UI Design System & Visual Polish"/);
+  assert.equal(pkg.version, "1.1.1");
+  assert.match(version, /APP_VERSION = "1\.1\.1"/);
+  assert.match(version, /APP_RELEASE_NAME = "Transfer & Reports Reliability Fix"/);
 });
 
 test("Savings transfer can optionally advance a compatible Goal atomically", async () => {
@@ -59,12 +59,13 @@ test("Reports overview keeps three KPI blocks on one row", async () => {
   assert.match(page, /Ròng/);
 });
 
-test("Reports use the lighter report-specific paginated loader", async () => {
+test("Reports keep the shared report loader API while V1.1.1 uses canonical ledger hydration", async () => {
   const data = await read("features/reports/data.ts");
   assert.match(data, /export async function loadReportLedger/);
-  assert.match(data, /Promise\.all/);
   assert.match(data, /includeAccounts\?: boolean/);
   assert.match(data, /includeCategories\?: boolean/);
+  assert.match(data, /loadLedger\(supabase, userId/);
+  assert.match(data, /fetchAll: true/);
   for (const path of [
     "app/(dashboard)/reports/page.tsx",
     "app/(dashboard)/reports/calendar/page.tsx",

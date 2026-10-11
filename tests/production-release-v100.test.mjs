@@ -4,12 +4,12 @@ import { readFile } from "node:fs/promises";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("current release is V1.1.0 UI Design System & Visual Polish", async () => {
+test("current release is V1.1.1 Transfer & Reports Reliability Fix", async () => {
   const pkg = JSON.parse(await read("package.json"));
   const version = await read("lib/app-version.ts");
-  assert.equal(pkg.version, "1.1.0");
-  assert.match(version, /APP_VERSION = "1\.1\.0"/);
-  assert.match(version, /APP_RELEASE_NAME = "UI Design System & Visual Polish"/);
+  assert.equal(pkg.version, "1.1.1");
+  assert.match(version, /APP_VERSION = "1\.1\.1"/);
+  assert.match(version, /APP_RELEASE_NAME = "Transfer & Reports Reliability Fix"/);
 });
 
 test("production dependencies are pinned and build validates environment first", async () => {
@@ -43,8 +43,8 @@ test("reports never silently stop at ten thousand transactions", async () => {
   assert.match(ledger, /fetchAll\?: boolean/);
   assert.match(ledger, /fetchAll \? 100001/);
   assert.match(ledger, /rows\.length > 100000/);
-  assert.match(reportData, /while \(rows\.length <= 100000\)/);
-  assert.match(reportData, /rows\.length > 100000/);
+  assert.match(reportData, /loadLedger\(supabase, userId/);
+  assert.match(reportData, /fetchAll: true/);
   for (const path of [
     "app/(dashboard)/reports/page.tsx",
     "app/(dashboard)/reports/calendar/page.tsx",
@@ -69,7 +69,7 @@ test("category historical usage counting is paginated instead of capped", async 
   assert.doesNotMatch(page, /\.limit\(10000\)/);
 });
 
-test("V1.1.0 retains the read-only V1.0.0 production database verification", async () => {
+test("V1.1.1 retains the read-only V1.0.0 production database verification", async () => {
   const verify = await read("supabase/sql-editor/V1.0.0_production_release_verify.sql");
   assert.match(verify, /Read-only verification/);
   assert.match(verify, /transactions_rls_ok/);

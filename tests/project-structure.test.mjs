@@ -162,6 +162,7 @@ const required = [
   "docs/V0.7.1_MOBILE_MONEY_DEBT_FUNDING_SETUP.md",
   "docs/V1.0.2_NEXTJS_SECURITY_PATCH.md",
   "docs/V1.1.0_UI_DESIGN_SYSTEM_VISUAL_POLISH.md",
+  "docs/V1.1.1_TRANSFER_REPORTS_RELIABILITY_FIX.md",
   "supabase/migrations/20261011150000_ui_design_system_visual_polish_v110.sql",
   "supabase/sql-editor/V1.1.0_ui_design_system_visual_polish.sql",
   "supabase/sql-editor/V1.1.0_ui_design_system_visual_polish_verify.sql",
@@ -175,9 +176,9 @@ test("V0.7.1 required files exist", () => {
   for (const file of required) assert.equal(existsSync(file), true, `${file} is missing`);
 });
 
-test("package version is 1.1.0", () => {
+test("package version is 1.1.1", () => {
   const pkg = JSON.parse(readFileSync("package.json", "utf8"));
-  assert.equal(pkg.version, "1.1.0");
+  assert.equal(pkg.version, "1.1.1");
   assert.match(pkg.dependencies.next, /16/);
   assert.ok(pkg.dependencies["@supabase/ssr"]);
 });

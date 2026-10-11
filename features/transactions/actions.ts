@@ -23,6 +23,10 @@ function validDate(value: string) {
 function safeDbMessage(error: unknown, fallback: string) {
   if (!error || typeof error !== "object") return fallback;
   const message = "message" in error ? String(error.message) : "";
+  const code = "code" in error ? String(error.code) : "";
+  if (message.includes("create_transfer_with_goal_v110") || code === "PGRST202") {
+    return "Supabase chưa có RPC Savings → Goal của V1.1.0. Hãy chạy V1.1.0_ui_design_system_visual_polish.sql rồi thử lại.";
+  }
   const known = [
     "Authentication required",
     "Invalid transaction type",

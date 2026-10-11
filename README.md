@@ -1,8 +1,8 @@
-# Finzaro V1.1.0 — UI Design System & Visual Polish
+# Finzaro V1.1.1 — Transfer & Reports Reliability Fix
 
-Finzaro is a personal-finance PWA built with Next.js, Supabase and Vercel. V1.1.0 starts the post-production UI/UX line on top of the V1.0.x production baseline. It does not add a new top-level finance module; it refines the design system, reduces report friction and completes the Savings → Goal transfer workflow.
+Finzaro is a personal-finance PWA built with Next.js, Supabase and Vercel. V1.1.1 is a reliability patch on top of V1.1.0: it makes Savings destinations explicit in Transfer, restores the production-proven report ledger hydration path, and keeps the V1.1.0 UI/UX design work intact.
 
-## V1.1.0 highlights
+## V1.1.1 highlights
 
 - Centralized visual tokens for cards, controls, semantic states, focus rings and reduced-motion behavior.
 - Refined shared `Card` and `Button` primitives so screens inherit the same radius, spacing and interaction language.
@@ -10,10 +10,12 @@ Finzaro is a personal-finance PWA built with Next.js, Supabase and Vercel. V1.1.
 - Reports Overview keeps **Chi tiêu / Thu nhập / Ròng** on one compact three-column row.
 - Reports Calendar uses larger horizontally scrollable day cells on narrow phones so both daily Income and Expense amounts remain readable; `0đ` stays hidden.
 - Category composition uses a full interactive pie instead of a center-covered donut. Tap/click a slice or legend item to see Category, percentage and amount; large slices label themselves inside the pie.
-- Report pages use a report-specific ledger loader that only requests supporting Accounts/Categories when needed and loads independent datasets in parallel.
+- Report pages use the production-proven canonical Transaction Ledger hydration path with full-range pagination, restoring data reliability while retaining the V1.1.0 Reports UI.
 - V1.0.2 framework security stack remains intact: Next.js 16.4.0, React 19.3.0, Node 22.x.
 
 ## Database migration
+
+V1.1.1 does **not** add a new database migration. It still requires the existing V1.1.0 Savings → Goal RPC migration to have been applied:
 
 V1.1.0 **requires one database migration** for the atomic Savings → Goal transfer RPC:
 
@@ -63,11 +65,13 @@ Never prefix SSI secrets with `NEXT_PUBLIC_`.
 7. Push to GitHub and deploy/redeploy on Vercel.
 8. Smoke-test normal Transfer, Savings + Goal transfer, deletion/rollback, Reports Overview, Calendar, pie interaction and PWA update.
 
-Full V1.1.0 notes: `docs/V1.1.0_UI_DESIGN_SYSTEM_VISUAL_POLISH.md`.
+V1.1.1 patch notes: `docs/V1.1.1_TRANSFER_REPORTS_RELIABILITY_FIX.md`.
+
+Full V1.1.0 UI/UX notes remain at `docs/V1.1.0_UI_DESIGN_SYSTEM_VISUAL_POLISH.md`.
 
 ## Next line
 
-After V1.1.0, the planned UX sequence is V1.2.0 Mobile UX Optimization, V1.3.0 Transaction UX Redesign and V1.4.0 Quick Actions. Any modified source package must increment the version again.
+After V1.1.1, the planned UX sequence remains V1.2.0 Mobile UX Optimization, V1.3.0 Transaction UX Redesign and V1.4.0 Quick Actions. Any modified source package must increment the version again.
 
 ## V1.0.2 Next.js security patch
 

@@ -1,3 +1,11 @@
+# V1.1.1 — Transfer & Reports Reliability Fix
+
+- Fixed Transfer destination UX so active Savings accounts are explicitly grouped first and exposed as quick-select chips on mobile.
+- Restored the Goal selector flow after selecting a Savings destination; linked Goals are prioritized and protected against accidental double-goal updates.
+- Reverted Reports transaction hydration to the production-proven `loadLedger(..., fetchAll: true)` path after the lighter V1.1.0 loader caused empty/failed reports on some Supabase deployments.
+- Kept the V1.1.0 Reports Calendar, interactive pie, three-KPI overview row and design-system polish unchanged.
+- No new database migration is introduced; the existing V1.1.0 Savings → Goal RPC migration is still required.
+
 # V1.1.0 — UI Design System & Visual Polish
 
 - Introduced centralized surface/radius/shadow/semantic UI tokens and refined shared Card/Button primitives for a more consistent visual system.
