@@ -53,7 +53,7 @@ test("quick transaction suggestions use responsive grid and styled date shell", 
   assert.match(dateInput, /opacity-0/);
 });
 
-test("current app version is V1.0.1 Production Deploy Fix", () => {
-  assert.match(version, /APP_VERSION = "1\.0\.1"/);
-  assert.match(version, /Production Deploy Fix/);
+test("current app version is V1.0.2 Next.js Security Patch", () => {
+  assert.match(version, /APP_VERSION = "1\.0\.2"/);
+  assert.match(version, /Next.js Security Patch/);
 });

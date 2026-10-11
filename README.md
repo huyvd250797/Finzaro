@@ -1,6 +1,6 @@
-# Finzaro V1.0.1 — Production Deploy Fix
+# Finzaro V1.0.2 — Next.js Security Patch
 
-Finzaro is a personal-finance PWA built with Next.js, Supabase and Vercel. V1.0.1 is the deployment hotfix for the V1.0.0 production baseline. The finance feature set is frozen; this release focuses on correctness, deterministic recovery, deploy safety and long-history reporting.
+Finzaro is a personal-finance PWA built with Next.js, Supabase and Vercel. V1.0.2 is the security/deployment patch for the V1.0.0 production baseline. The finance feature set is frozen; this release focuses on correctness, deterministic recovery, deploy safety and long-history reporting.
 
 ## Production baseline
 
@@ -15,7 +15,7 @@ Finzaro is a personal-finance PWA built with Next.js, Supabase and Vercel. V1.0.
 
 ## Database status
 
-If the database is already on V0.8.0, **V1.0.1 requires no schema migration**.
+If the database is already on V0.8.0, **V1.0.2 requires no schema migration**.
 
 Run the read-only production verification script:
 
@@ -65,8 +65,16 @@ Full release notes and checklist: `docs/V1.0.0_PRODUCTION_RELEASE.md`.
 
 ## Next line
 
-After V1.0.1, Finzaro moves to UI/UX-first releases rather than broad feature expansion: V1.1.0 Design System & Visual Polish, V1.2.0 Mobile UX Optimization and V1.3.0 Transaction UX Redesign.
+After V1.0.2, Finzaro moves to UI/UX-first releases rather than broad feature expansion: V1.1.0 Design System & Visual Polish, V1.2.0 Mobile UX Optimization and V1.3.0 Transaction UX Redesign.
 
+
+## V1.0.2 Next.js security patch
+
+- Upgrades `next` from `16.0.0` to `16.4.0` to clear Vercel's vulnerable Next.js deployment block and include the security fixes shipped across the 16.x line.
+- Upgrades `eslint-config-next` to `16.4.0` so framework and lint tooling stay on the same release.
+- Keeps React / React DOM at `19.3.0`, which is the React line used by Next.js 16.4.
+- Removes `--legacy-peer-deps`; dependency conflicts are no longer intentionally masked during Vercel install.
+- No database migration or financial-data change is required.
 
 ## V1.0.1 deployment fix
 

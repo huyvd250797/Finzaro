@@ -26,6 +26,6 @@ Lưu ý: release từng được dự kiến tên `V0.0.13 – Net Worth & Finan
 
 ## Current baseline
 
-- `V1.0.0` remains the Production Release baseline. `V1.0.1` is the current Production Deploy Fix. Any subsequent source package must increment the version before distribution.
+- `V1.0.0` remains the Production Release baseline. `V1.0.2` is the current Next.js Security Patch. Any subsequent source package must increment the version before distribution.
 - Production bugfixes that do not introduce a new UX release use `V1.0.x`.
-- Planned UI/UX releases start at `V1.1.0`; do not reuse `V1.0.1` for any modified source package.
+- Planned UI/UX releases start at `V1.1.0`; do not reuse `V1.0.2` for any modified source package.

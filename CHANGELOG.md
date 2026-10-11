@@ -1,3 +1,11 @@
+# V1.0.2 — Next.js Security Patch
+
+- Upgraded Next.js from `16.0.0` to `16.4.0` after Vercel blocked the vulnerable framework version.
+- Upgraded `eslint-config-next` from `16.0.0` to `16.4.0` to keep lint tooling aligned with the framework.
+- Kept React / React DOM / React types on the aligned `19.3.0` line.
+- Removed the Vercel/npm `legacy-peer-deps` bypass; installs now resolve the declared peer graph normally while still skipping audit/fund network work.
+- No database schema or financial-data changes.
+
 # V1.0.1 — Production Deploy Fix
 
 - Fixed Vercel dependency resolution that could backtrack between React 19.2 and React DOM 19.3 and exceed the build time limit.

@@ -66,7 +66,7 @@ test("V0.0.9 preserves proactive PWA updates", () => {
   assert.match(pwa, /SKIP_WAITING/);
 });
 
-test("current app version is V1.0.1 Production Deploy Fix", () => {
-  assert.match(version, /APP_VERSION = "1\.0\.1"/);
-  assert.match(version, /Production Deploy Fix/);
+test("current app version is V1.0.2 Next.js Security Patch", () => {
+  assert.match(version, /APP_VERSION = "1\.0\.2"/);
+  assert.match(version, /Next.js Security Patch/);
 });

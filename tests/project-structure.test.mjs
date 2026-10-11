@@ -159,6 +159,7 @@ const required = [
   "docs/V0.6.0_INVESTMENT_ASSET_TRACKING_SETUP.md",
   "docs/V0.7.0_ADVANCED_DEBT_STRATEGY_SSI_MARKET_DATA_SETUP.md",
   "docs/V0.7.1_MOBILE_MONEY_DEBT_FUNDING_SETUP.md",
+  "docs/V1.0.2_NEXTJS_SECURITY_PATCH.md",
   "docs/VERSIONING.md",
   "public/sw.js",
   ".env.example",
@@ -169,9 +170,9 @@ test("V0.7.1 required files exist", () => {
   for (const file of required) assert.equal(existsSync(file), true, `${file} is missing`);
 });
 
-test("package version is 1.0.1", () => {
+test("package version is 1.0.2", () => {
   const pkg = JSON.parse(readFileSync("package.json", "utf8"));
-  assert.equal(pkg.version, "1.0.1");
+  assert.equal(pkg.version, "1.0.2");
   assert.match(pkg.dependencies.next, /16/);
   assert.ok(pkg.dependencies["@supabase/ssr"]);
 });
