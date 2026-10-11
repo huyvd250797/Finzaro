@@ -1,3 +1,12 @@
+# V1.1.3 — Reports Runtime Reliability Fix
+
+- Removed the V1.1.2 report RPC from the default Reports runtime path; Overview, Calendar, Category Detail and Analysis now read the stable Transaction Ledger tables directly.
+- Added schema-compatible transaction projection fallback so Reports can still load when optional newer columns are not yet present in the PostgREST schema cache.
+- Made Category, Account and Currency metadata best-effort. Optional metadata failures no longer blank the entire Reports module.
+- Reduced Transaction Entry IN-query chunk size and removed embedded PostgREST relations from the mandatory report path.
+- Updated the Reports recovery message so V1.1.3 no longer incorrectly tells users that the report RPC migration is required.
+- No V1.1.3 database migration is required. V1.1.2 remains required only for Account → Deposit funding / Goal rollback.
+
 # V1.1.2 — Deposit Transfer & Reports Reliability Fix
 
 - Fixed the Transfer data model: the Tiền gửi module is `public.deposits`, not an Account with `account_type = savings`. Active Deposit records now appear directly as Transfer destinations.

@@ -1,20 +1,21 @@
-# Finzaro V1.1.2 — Deposit Transfer & Reports Reliability Fix
+# Finzaro V1.1.3 — Reports Runtime Reliability Fix
 
-Finzaro is a personal-finance PWA built with Next.js, Supabase and Vercel. V1.1.2 fixes the remaining Transfer/Reports regressions without adding a new top-level finance module.
+Finzaro is a personal-finance PWA built with Next.js, Supabase and Vercel. V1.1.3 is a focused runtime patch for Reports while preserving the V1.1.2 Deposit transfer model.
 
-## V1.1.2 highlights
+## V1.1.3 highlights
 
 - **Transfer → Tiền gửi** now reads real records from the `deposits` module instead of treating `accounts.account_type="savings"` as the same thing.
 - A Deposit transfer atomically decreases the source Account and increases the Deposit principal. **Thêm vào mục tiêu** can also advance an existing same-currency Goal in the same PostgreSQL transaction.
 - Deposit funding stores rollback metadata so deleting the transaction reverses the Account, Deposit and exact Goal contribution.
-- Reports now use a flattened, paginated `report_flow_rows_v112` RPC instead of embedded PostgREST relation hydration.
-- If the V1.1.2 report RPC is temporarily unavailable, Reports uses a relation-free fallback loader (`transactions` + chunked `transaction_entries`) rather than the failing V1.1.1 path.
+- Reports now read `transactions` + `transaction_entries` directly and do **not** depend on `report_flow_rows_v112` at runtime.
+- Optional Account/Category/Currency metadata is best-effort; a metadata/schema-cache mismatch can no longer blank the entire Reports module.
+- Transaction queries automatically retry a legacy-safe field projection when newer optional columns are unavailable in the PostgREST schema cache.
 - Existing V1.1.0 visual work remains: larger Calendar cells, green Income/red Expense, full interactive pie, and the compact three-KPI Overview row.
 - Next.js 16.4.0 / React 19.3.0 / Node 22.x security stack remains unchanged.
 
 ## Database migration
 
-V1.1.2 **requires one new migration** for Deposit funding and the optimized Reports RPC:
+V1.1.3 adds **no new migration**. The existing V1.1.2 migration is still required for Deposit funding and Goal rollback:
 
 `supabase/sql-editor/V1.1.2_transfer_deposit_reports_reliability.sql`
 
@@ -26,7 +27,7 @@ The earlier V1.1.0 migration is still required if it has not already been applie
 
 `supabase/sql-editor/V1.1.0_ui_design_system_visual_polish.sql`
 
-The V1.1.2 migration does not rewrite historical financial rows. It adds the Deposit-funding event linkage/RPCs, expands the allowed transaction-purpose constraint with `deposit_funding`, and adds the read-only report flow RPC.
+The V1.1.2 migration does not rewrite historical financial rows. V1.1.3 no longer requires its report RPC at runtime; the V1.1.2 migration remains necessary for Deposit-funding transaction integrity.
 
 ## Environment
 
@@ -64,13 +65,15 @@ Never prefix SSI secrets with `NEXT_PUBLIC_`.
 7. Push to GitHub and deploy/redeploy on Vercel.
 8. Smoke-test Account → Deposit transfer, optional Goal contribution, deletion rollback, Reports Overview/Calendar/Analysis, and PWA update.
 
-V1.1.2 patch notes: `docs/V1.1.2_DEPOSIT_TRANSFER_REPORTS_RELIABILITY_FIX.md`.
+V1.1.3 patch notes: `docs/V1.1.3_REPORTS_RUNTIME_RELIABILITY_FIX.md`.
+
+V1.1.2 Deposit transfer notes remain at `docs/V1.1.2_DEPOSIT_TRANSFER_REPORTS_RELIABILITY_FIX.md`.
 
 Full V1.1.0 UI/UX notes remain at `docs/V1.1.0_UI_DESIGN_SYSTEM_VISUAL_POLISH.md`.
 
 ## Next line
 
-After V1.1.2, the planned UX sequence remains V1.2.0 Mobile UX Optimization, V1.3.0 Transaction UX Redesign and V1.4.0 Quick Actions. Any modified source package must increment the version again.
+After V1.1.3, the planned UX sequence remains V1.2.0 Mobile UX Optimization, V1.3.0 Transaction UX Redesign and V1.4.0 Quick Actions. Any modified source package must increment the version again.
 
 ## V1.0.2 Next.js security patch
 

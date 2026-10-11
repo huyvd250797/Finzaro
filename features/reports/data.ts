@@ -21,126 +21,69 @@ export type CategorySpendRow = { id: string; label: string; icon_name: string; i
 export type AccountSpendRow = { id: string; label: string; amount: number; percent: number };
 export type Insight = { tone: "positive" | "warning" | "negative" | "neutral"; title: string; description: string };
 
-type ReportRpcRow = {
-  transaction_id: string;
+type RawReportTransaction = {
+  id: string;
   transaction_type: string;
-  transaction_purpose: string | null;
+  transaction_purpose?: string | null;
   title: string;
-  category_id: string | null;
+  category_id?: string | null;
   category_label: string | null;
   notes: string | null;
   transaction_date: string;
-  transaction_created_at: string;
-  category_name: string | null;
-  category_icon_name: string | null;
-  category_icon_color: string | null;
-  category_type: CategoryRow["category_type"] | null;
-  category_parent_id: string | null;
-  category_is_archived: boolean | null;
-  entry_id: string;
-  account_id: string;
-  currency_code: string;
-  amount_minor: number | string;
-  entry_role: string;
-  account_name: string;
-  account_type: string;
-  account_currency_code: string;
-  account_institution_name: string | null;
-  account_is_archived: boolean;
-  account_current_balance_minor: number | string;
+  created_at: string;
 };
 
-type RawReportTransaction = Omit<TransactionView, "entries" | "category">;
 type RawReportEntry = Omit<LedgerEntry, "account">;
 
-function hydrateReportRows(rows: ReportRpcRow[]) {
-  const transactionMap = new Map<string, TransactionView>();
-  for (const row of rows) {
-    let transaction = transactionMap.get(row.transaction_id);
-    if (!transaction) {
-      const category: TransactionCategory | null = row.category_id && row.category_name
-        ? {
-            id: row.category_id,
-            name: row.category_name,
-            icon_name: row.category_icon_name ?? "Shapes",
-            icon_color: row.category_icon_color,
-            category_type: row.category_type ?? (row.transaction_type === "income" ? "income" : "expense"),
-            parent_id: row.category_parent_id,
-            is_archived: Boolean(row.category_is_archived)
-          }
-        : null;
-      transaction = {
-        id: row.transaction_id,
-        transaction_type: row.transaction_type,
-        transaction_purpose: row.transaction_purpose ?? "standard",
-        title: row.title,
-        category_id: row.category_id,
-        category_label: row.category_label,
-        category,
-        notes: row.notes,
-        transaction_date: row.transaction_date,
-        created_at: row.transaction_created_at,
-        entries: []
-      };
-      transactionMap.set(row.transaction_id, transaction);
-    }
-    const account: LedgerAccount = {
-      id: row.account_id,
-      name: row.account_name,
-      account_type: row.account_type,
-      currency_code: row.account_currency_code,
-      institution_name: row.account_institution_name,
-      is_archived: Boolean(row.account_is_archived),
-      current_balance_minor: Number(row.account_current_balance_minor)
-    };
-    transaction.entries.push({
-      id: row.entry_id,
-      transaction_id: row.transaction_id,
-      account_id: row.account_id,
-      currency_code: row.currency_code,
-      amount_minor: Number(row.amount_minor),
-      entry_role: row.entry_role,
-      account
-    });
-  }
-  return Array.from(transactionMap.values()).map((transaction) => ({
-    ...transaction,
-    entries: transaction.entries.sort((a, b) => a.entry_role.localeCompare(b.entry_role))
-  }));
+const REPORT_TRANSACTION_PROJECTIONS = [
+  "id, transaction_type, transaction_purpose, title, category_id, category_label, notes, transaction_date, created_at",
+  "id, transaction_type, title, category_id, category_label, notes, transaction_date, created_at",
+  "id, transaction_type, title, category_label, notes, transaction_date, created_at"
+] as const;
+
+function schemaCompatibilityError(error: any) {
+  const code = String(error?.code ?? "");
+  const message = String(error?.message ?? "").toLowerCase();
+  return code === "42703" || code === "PGRST204" || code === "PGRST200" || message.includes("column") || message.includes("schema cache");
 }
 
-async function loadReportRowsRpc(supabase: SupabaseClient<Database>, fromDate: string, toDate: string) {
-  const rows: ReportRpcRow[] = [];
-  const pageSize = 1000;
-  let offset = 0;
-  while (rows.length <= 200000) {
-    const result = await (supabase as any)
-      .rpc("report_flow_rows_v112", { p_from_date: fromDate, p_to_date: toDate })
-      .range(offset, offset + pageSize - 1);
-    if (result.error) return { rows: null, error: result.error as unknown };
-    const page = (result.data ?? []) as ReportRpcRow[];
-    rows.push(...page);
-    if (page.length < pageSize) return { rows, error: null };
-    offset += page.length;
-  }
-  throw new Error("Khoảng báo cáo vượt quá giới hạn an toàn 200.000 ledger rows. Hãy thu hẹp khoảng thời gian.");
-}
-
-async function loadReportRowsFallback(
+async function findWorkingTransactionProjection(
   supabase: SupabaseClient<Database>,
   userId: string,
   fromDate: string,
-  toDate: string,
-  accounts: LedgerAccount[],
-  categories: CategoryRow[]
+  toDate: string
 ) {
-  const rawTransactions: RawReportTransaction[] = [];
-  const pageSize = 1000;
+  let lastError: unknown = null;
+  for (const projection of REPORT_TRANSACTION_PROJECTIONS) {
+    const { error } = await (supabase as any)
+      .from("transactions")
+      .select(projection)
+      .eq("user_id", userId)
+      .gte("transaction_date", fromDate)
+      .lte("transaction_date", toDate)
+      .limit(1);
+    if (!error) return projection;
+    lastError = error;
+    if (!schemaCompatibilityError(error)) throw error;
+  }
+  throw lastError ?? new Error("Không thể đọc lịch sử giao dịch cho Báo cáo.");
+}
+
+async function loadReportTransactionsDirect(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+  fromDate: string,
+  toDate: string
+) {
+  const projection = await findWorkingTransactionProjection(supabase, userId, fromDate, toDate);
+  const rows: RawReportTransaction[] = [];
+  const pageSize = 750;
   let offset = 0;
-  while (rawTransactions.length <= 100000) {
+
+  while (rows.length <= 100000) {
     const { data, error } = await (supabase as any)
       .from("transactions")
-      .select("id, transaction_type, transaction_purpose, title, category_id, category_label, notes, transaction_date, created_at")
+      .select(projection)
       .eq("user_id", userId)
       .gte("transaction_date", fromDate)
       .lte("transaction_date", toDate)
@@ -149,17 +92,28 @@ async function loadReportRowsFallback(
       .range(offset, offset + pageSize - 1);
     if (error) throw error;
     const page = (data ?? []) as RawReportTransaction[];
-    rawTransactions.push(...page);
+    rows.push(...page);
     if (page.length < pageSize) break;
     offset += page.length;
   }
-  if (rawTransactions.length > 100000) throw new Error("Khoảng báo cáo vượt quá 100.000 giao dịch. Hãy thu hẹp khoảng thời gian.");
 
+  if (rows.length > 100000) {
+    throw new Error("Khoảng báo cáo vượt quá 100.000 giao dịch. Hãy thu hẹp khoảng thời gian.");
+  }
+  return rows;
+}
+
+async function loadReportEntriesDirect(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+  transactionIds: string[]
+) {
+  if (transactionIds.length === 0) return [] as RawReportEntry[];
   const entries: RawReportEntry[] = [];
-  const ids = rawTransactions.map((transaction) => transaction.id);
-  const chunkSize = 150;
-  for (let index = 0; index < ids.length; index += chunkSize) {
-    const chunk = ids.slice(index, index + chunkSize);
+  // Keep the IN query comfortably below URL/proxy limits on Vercel/PostgREST.
+  const chunkSize = 60;
+  for (let index = 0; index < transactionIds.length; index += chunkSize) {
+    const chunk = transactionIds.slice(index, index + chunkSize);
     const { data, error } = await (supabase as any)
       .from("transaction_entries")
       .select("id, transaction_id, account_id, currency_code, amount_minor, entry_role")
@@ -168,9 +122,93 @@ async function loadReportRowsFallback(
     if (error) throw error;
     entries.push(...((data ?? []) as RawReportEntry[]));
   }
+  return entries;
+}
 
-  const accountMap = new Map(accounts.map((account) => [account.id, account]));
+function fallbackCurrency(code: string): LedgerCurrency {
+  const upper = code.toUpperCase();
+  const zeroDigits = new Set(["VND", "JPY", "KRW"]);
+  return { code: upper, decimal_digits: zeroDigits.has(upper) ? 0 : 2, symbol: upper === "VND" ? "₫" : upper };
+}
+
+async function loadReportCurrenciesBestEffort(
+  supabase: SupabaseClient<Database>,
+  entryCurrencies: string[]
+) {
+  const result = await (supabase as any)
+    .from("supported_currencies")
+    .select("code, decimal_digits, symbol")
+    .eq("is_active", true);
+  const rows = result.error ? [] : ((result.data ?? []) as LedgerCurrency[]);
+  const map = new Map(rows.map((row) => [row.code, row]));
+  for (const code of entryCurrencies) {
+    if (code && !map.has(code)) map.set(code, fallbackCurrency(code));
+  }
+  if (map.size === 0) map.set("VND", fallbackCurrency("VND"));
+  return Array.from(map.values());
+}
+
+async function loadReportCategoriesBestEffort(
+  supabase: SupabaseClient<Database>,
+  userId: string
+) {
+  const modern = await (supabase as any)
+    .from("categories")
+    .select("id, user_id, name, category_type, parent_id, icon_name, icon_color, system_key, is_system, is_archived, sort_order, created_at, updated_at")
+    .eq("user_id", userId)
+    .order("sort_order");
+  if (!modern.error) return (modern.data ?? []) as CategoryRow[];
+  if (!schemaCompatibilityError(modern.error)) return [] as CategoryRow[];
+
+  const legacy = await (supabase as any)
+    .from("categories")
+    .select("id, user_id, name, category_type, parent_id, icon_name, is_system, is_archived, sort_order, created_at, updated_at")
+    .eq("user_id", userId)
+    .order("sort_order");
+  if (legacy.error) return [] as CategoryRow[];
+  return ((legacy.data ?? []) as any[]).map((row) => ({ ...row, icon_color: "#0d8b66", system_key: row.system_key ?? null })) as CategoryRow[];
+}
+
+async function loadReportAccountsBestEffort(
+  supabase: SupabaseClient<Database>,
+  userId: string
+) {
+  const modern = await (supabase as any)
+    .from("accounts")
+    .select("id, name, account_type, currency_code, institution_name, is_archived, current_balance_minor")
+    .eq("user_id", userId);
+  if (!modern.error) return (modern.data ?? []) as LedgerAccount[];
+  if (!schemaCompatibilityError(modern.error)) return [] as LedgerAccount[];
+
+  const legacy = await (supabase as any)
+    .from("accounts")
+    .select("id, name, account_type, currency_code, institution_name, is_archived")
+    .eq("user_id", userId);
+  if (legacy.error) return [] as LedgerAccount[];
+  return ((legacy.data ?? []) as any[]).map((row) => ({ ...row, current_balance_minor: 0 })) as LedgerAccount[];
+}
+
+export async function loadReportLedger(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+  options: { fromDate: string; toDate: string; includeAccounts?: boolean; includeCategories?: boolean }
+) {
+  // V1.1.3 reliability fix: Reports no longer depend on a versioned RPC or on
+  // embedded PostgREST relations. The mandatory path is only the stable ledger
+  // core (transactions + transaction_entries). Metadata is best-effort, so an
+  // optional Account/Category schema mismatch can no longer blank the whole page.
+  const rawTransactions = await loadReportTransactionsDirect(supabase, userId, options.fromDate, options.toDate);
+  const entries = await loadReportEntriesDirect(supabase, userId, rawTransactions.map((transaction) => transaction.id));
+
+  const entryCurrencies = Array.from(new Set(entries.map((entry) => entry.currency_code).filter(Boolean)));
+  const [currencies, categories, accounts] = await Promise.all([
+    loadReportCurrenciesBestEffort(supabase, entryCurrencies),
+    loadReportCategoriesBestEffort(supabase, userId),
+    options.includeAccounts ? loadReportAccountsBestEffort(supabase, userId) : Promise.resolve([] as LedgerAccount[])
+  ]);
+
   const categoryMap = new Map(categories.map((category) => [category.id, category]));
+  const accountMap = new Map(accounts.map((account) => [account.id, account]));
   const entriesByTransaction = new Map<string, LedgerEntry[]>();
   for (const entry of entries) {
     const hydrated: LedgerEntry = {
@@ -183,11 +221,18 @@ async function loadReportRowsFallback(
     entriesByTransaction.set(entry.transaction_id, list);
   }
 
-  return rawTransactions.map((transaction): TransactionView => {
-    const category = transaction.category_id ? categoryMap.get(transaction.category_id) ?? null : null;
+  const transactions = rawTransactions.map((transaction): TransactionView => {
+    const categoryId = transaction.category_id ?? null;
+    const category = categoryId ? categoryMap.get(categoryId) ?? null : null;
+    const transactionPurpose = transaction.transaction_purpose
+      ?? (transaction.transaction_type === "transfer" ? "transfer" : "standard");
     return {
-      ...transaction,
-      transaction_purpose: transaction.transaction_purpose ?? "standard",
+      id: transaction.id,
+      transaction_type: transaction.transaction_type,
+      transaction_purpose: transactionPurpose,
+      title: transaction.title,
+      category_id: categoryId,
+      category_label: transaction.category_label,
       category: category ? {
         id: category.id,
         name: category.name,
@@ -197,39 +242,12 @@ async function loadReportRowsFallback(
         parent_id: category.parent_id,
         is_archived: category.is_archived
       } : null,
+      notes: transaction.notes,
+      transaction_date: transaction.transaction_date,
+      created_at: transaction.created_at,
       entries: (entriesByTransaction.get(transaction.id) ?? []).sort((a, b) => a.entry_role.localeCompare(b.entry_role))
     };
   });
-}
-
-export async function loadReportLedger(
-  supabase: SupabaseClient<Database>,
-  userId: string,
-  options: { fromDate: string; toDate: string; includeAccounts?: boolean; includeCategories?: boolean }
-) {
-  // V1.1.2: Reports use a flattened RPC instead of PostgREST embedded relations.
-  // This removes the relation-hydration regression seen in V1.1.0/V1.1.1 and
-  // reduces report loading to a paginated flow query plus small metadata reads.
-  const [rpcResult, accountResult, currencyResult, categoryResult] = await Promise.all([
-    loadReportRowsRpc(supabase, options.fromDate, options.toDate),
-    supabase.from("accounts").select("id, name, account_type, currency_code, institution_name, is_archived, current_balance_minor").eq("user_id", userId),
-    supabase.from("supported_currencies").select("code, decimal_digits, symbol").eq("is_active", true),
-    supabase.from("categories").select("id, user_id, name, category_type, parent_id, icon_name, icon_color, system_key, is_system, is_archived, sort_order, created_at, updated_at").eq("user_id", userId).order("sort_order")
-  ]);
-  if (accountResult.error) throw accountResult.error;
-  if (currencyResult.error) throw currencyResult.error;
-  if (categoryResult.error) throw categoryResult.error;
-
-  const accounts = (accountResult.data ?? []) as LedgerAccount[];
-  const currencies = (currencyResult.data ?? []) as LedgerCurrency[];
-  const categories = (categoryResult.data ?? []) as CategoryRow[];
-
-  // Deployment-order safe fallback: if V1.1.2 SQL is not installed yet, use a
-  // relation-free loader (transactions + chunked entries) rather than the old
-  // embedded `transactions(..., categories(...), transaction_entries(...))` path.
-  const transactions = rpcResult.rows
-    ? hydrateReportRows(rpcResult.rows)
-    : await loadReportRowsFallback(supabase, userId, options.fromDate, options.toDate, accounts, categories);
 
   return {
     transactions,

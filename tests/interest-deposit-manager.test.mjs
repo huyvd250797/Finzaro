@@ -58,7 +58,7 @@ test("dashboard and navigation surface Deposit Manager", () => {
   assert.match(sidebar, /\/net-worth/);
 });
 
-test("current app version is V1.1.2 Deposit Transfer & Reports Reliability Fix", () => {
-  assert.match(version, /APP_VERSION = "1\.1\.2"/);
-  assert.match(version, /Deposit Transfer & Reports Reliability Fix/);
+test("current app version is V1.1.3 Reports Runtime Reliability Fix", () => {
+  assert.match(version, /APP_VERSION = "1\.1\.3"/);
+  assert.match(version, /Reports Runtime Reliability Fix/);
 });

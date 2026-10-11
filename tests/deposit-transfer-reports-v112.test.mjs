@@ -40,32 +40,32 @@ test("V1.1.2 migration atomically mutates Account, Deposit and optional Goal wit
   assert.match(migration, /delete_financial_transaction_v112/);
 });
 
-test("V1.1.2 Reports use paginated flattened RPC with a relation-free fallback", async () => {
+test("V1.1.3 Reports bypass the V1.1.2 report RPC at runtime while keeping its migration compatible", async () => {
   const data = await read("features/reports/data.ts");
   const migration = await read("supabase/migrations/20261011170000_transfer_deposit_reports_v112.sql");
-  assert.match(data, /report_flow_rows_v112/);
-  assert.match(data, /\.range\(offset, offset \+ pageSize - 1\)/);
-  assert.match(data, /loadReportRowsFallback/);
+  assert.match(data, /loadReportTransactionsDirect/);
+  assert.match(data, /loadReportEntriesDirect/);
+  assert.match(data, /REPORT_TRANSACTION_PROJECTIONS/);
   assert.match(data, /from\("transaction_entries"\)/);
+  assert.doesNotMatch(data, /\.rpc\("report_flow_rows_v112"/);
   assert.doesNotMatch(data, /categories\(id, name/);
   assert.match(migration, /create or replace function public\.report_flow_rows_v112/);
-  assert.match(migration, /t\.transaction_date between p_from_date and p_to_date/);
 });
 
 test("Reports has a dedicated recoverable error boundary", async () => {
   const boundary = await read("app/(dashboard)/reports/error.tsx");
   assert.match(boundary, /Không thể tải dữ liệu Báo cáo/);
-  assert.match(boundary, /V1\.1\.2/);
+  assert.match(boundary, /V1\.1\.3/);
   assert.match(boundary, /reset/);
 });
 
-test("V1.1.2 release metadata and SQL verification are present", async () => {
+test("V1.1.3 metadata keeps the V1.1.2 SQL verification available", async () => {
   const pkg = JSON.parse(await read("package.json"));
   const version = await read("lib/app-version.ts");
   const verify = await read("supabase/sql-editor/V1.1.2_transfer_deposit_reports_reliability_verify.sql");
-  assert.equal(pkg.version, "1.1.2");
-  assert.match(version, /APP_VERSION = "1\.1\.2"/);
-  assert.match(version, /Deposit Transfer & Reports Reliability Fix/);
+  assert.equal(pkg.version, "1.1.3");
+  assert.match(version, /APP_VERSION = "1\.1\.3"/);
+  assert.match(version, /Reports Runtime Reliability Fix/);
   assert.match(verify, /create_deposit_transfer_v112/);
   assert.match(verify, /report_flow_rows_v112/);
 });
