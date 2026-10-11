@@ -61,7 +61,7 @@ test("V0.0.6 keeps proactive PWA update prompt", () => {
   assert.match(pwa, /registration\.update\(\)/);
 });
 
-test("current app version is V1.1.4 Reports Recovery & PWA Refresh Fix", () => {
-  assert.match(version, /APP_VERSION = "1\.1\.4"/);
-  assert.match(version, /Reports Recovery & PWA Refresh Fix/);
+test("current app version is V1.1.5 Reports Render & Pie Stability Fix", () => {
+  assert.match(version, /APP_VERSION = "1\.1\.5"/);
+  assert.match(version, /Reports Render & Pie Stability Fix/);
 });

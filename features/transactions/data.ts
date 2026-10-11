@@ -135,7 +135,8 @@ export function currencyDigits(currencies: LedgerCurrency[], code: string) {
 }
 
 export function transactionEntry(transaction: TransactionView, role: string) {
-  return transaction.entries.find((entry) => entry.entry_role === role) ?? null;
+  if (!transaction || !Array.isArray(transaction.entries)) return null;
+  return transaction.entries.find((entry) => entry?.entry_role === role) ?? null;
 }
 
 export function filterTransactions(

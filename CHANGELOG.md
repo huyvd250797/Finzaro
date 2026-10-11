@@ -1,3 +1,12 @@
+# V1.1.5 — Reports Render & Pie Stability Fix
+
+- Replaced the interactive SVG pie implementation introduced in V1.1.0 with a safer `conic-gradient` pie while preserving direct slice tap selection, large-slice labels and category detail display.
+- Added `ReportVisualBoundary` so visualization failures are contained locally and cannot trigger the Reports route error screen.
+- Hardened `formatMinorMoney` against malformed numeric/currency input and unsupported `Intl` currency values.
+- Hardened Reports timezone parsing and transaction entry reads for legacy data.
+- Preserved V1.1.4 force-dynamic Reports and the three-stage ledger recovery strategy.
+- No database migration is required for V1.1.5.
+
 # V1.1.4 — Reports Recovery & PWA Refresh Fix
 
 - Added three-tier Reports recovery: direct ledger, canonical Transactions loader, then V0.0.4-compatible legacy core reader.

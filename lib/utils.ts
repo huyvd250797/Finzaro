@@ -11,13 +11,24 @@ export function formatMoney(value: number, currency = "VND") {
 }
 
 export function formatMinorMoney(valueMinor: number, currency = "VND", decimalDigits = 0) {
-  const scale = 10 ** decimalDigits;
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency,
-    minimumFractionDigits: decimalDigits,
-    maximumFractionDigits: decimalDigits
-  }).format(valueMinor / scale);
+  const safeValue = Number.isFinite(Number(valueMinor)) ? Number(valueMinor) : 0;
+  const safeDigits = Number.isInteger(Number(decimalDigits)) ? Math.max(0, Math.min(6, Number(decimalDigits))) : 0;
+  const safeCurrency = typeof currency === "string" && /^[A-Z]{3}$/.test(currency.toUpperCase()) ? currency.toUpperCase() : "VND";
+  const scale = 10 ** safeDigits;
+  try {
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: safeCurrency,
+      minimumFractionDigits: safeDigits,
+      maximumFractionDigits: safeDigits
+    }).format(safeValue / scale);
+  } catch {
+    const amount = new Intl.NumberFormat("vi-VN", {
+      minimumFractionDigits: safeDigits,
+      maximumFractionDigits: safeDigits
+    }).format(safeValue / scale);
+    return `${amount} ${safeCurrency}`;
+  }
 }
 
 export function formatCompactMoney(value: number) {

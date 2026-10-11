@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight, CircleDollarSign, TrendingDown, TrendingUp } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { ReportDonut, reportSliceColor } from "@/components/report-donut";
+import { ReportVisualBoundary } from "@/components/report-visual-boundary";
 import { ReportNavigation } from "@/components/report-navigation";
 import { CategoryIcon, iconColorValue } from "@/features/categories/icons";
 import {
@@ -44,7 +45,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
   const params = Object.fromEntries(Object.entries(raw).map(([key, value]) => [key, one(value)])) as Record<string, string | undefined>;
   const { supabase, userId } = await requireUser();
   const { data: preferences } = await supabase.from("user_preferences").select("currency_code, timezone").eq("id", userId).maybeSingle();
-  const currency = preferences?.currency_code ?? "VND";
+  const currency = (preferences?.currency_code ?? "VND").toUpperCase();
   const timeZone = preferences?.timezone ?? "Asia/Ho_Chi_Minh";
   const now = currentYearMonth(timeZone);
   const currentMonth = `${now.year}-${String(now.month).padStart(2, "0")}`;
@@ -107,7 +108,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
         <CardContent className="p-4 sm:p-5">
           <div className="flex items-center justify-between gap-3"><div><h2 className="font-black">{type === "expense" ? "Chi tiêu" : "Thu nhập"} theo danh mục</h2><p className="mt-1 text-xs text-[var(--muted-foreground)]">{periodLabel} · {currency}</p></div><span className="text-sm font-black">{formatMinorMoney(selectedTotal, currency, digits)}</span></div>
           {categories.length === 0 ? <div className="mt-5 rounded-2xl border border-dashed border-[var(--border)] p-8 text-center text-sm text-[var(--muted-foreground)]">Chưa có dữ liệu trong kỳ này.</div> : <div className="mt-5 grid items-start gap-6 lg:grid-cols-[360px_1fr]">
-            <ReportDonut slices={categories} total={selectedTotal} currency={currency} decimalDigits={digits} centerLabel={type === "expense" ? "Tổng chi" : "Tổng thu"} />
+            <ReportVisualBoundary><ReportDonut slices={categories} total={selectedTotal} currency={currency} decimalDigits={digits} centerLabel={type === "expense" ? "Tổng chi" : "Tổng thu"} /></ReportVisualBoundary>
             <div className="divide-y divide-[var(--border)]">
               {categories.slice(0, 10).map((item, index) => {
                 const detailHref = item.id.startsWith("uncategorized-") ? null : `/reports/category/${item.id}?${new URLSearchParams({ mode, type, ...(mode === "month" ? { period } : { year: String(year) }) }).toString()}`;

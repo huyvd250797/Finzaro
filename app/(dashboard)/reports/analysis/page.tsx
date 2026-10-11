@@ -72,7 +72,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
   const params = Object.fromEntries(Object.entries(raw).map(([key, value]) => [key, one(value)])) as Record<string, string | undefined>;
   const { supabase, userId } = await requireUser();
   const { data: preferences } = await supabase.from("user_preferences").select("currency_code, timezone").eq("id", userId).maybeSingle();
-  const defaultCurrency = preferences?.currency_code ?? "VND";
+  const defaultCurrency = (preferences?.currency_code ?? "VND").toUpperCase();
   const timeZone = preferences?.timezone ?? "Asia/Ho_Chi_Minh";
   const range = resolveReportRange(params.range, params.from, params.to, timeZone);
   const previousRange = previousComparableRange(range);

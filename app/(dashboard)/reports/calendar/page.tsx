@@ -49,7 +49,7 @@ export default async function ReportCalendarPage({ searchParams }: { searchParam
   const params = Object.fromEntries(Object.entries(raw).map(([key, value]) => [key, one(value)])) as Record<string, string | undefined>;
   const { supabase, userId } = await requireUser();
   const { data: preferences } = await supabase.from("user_preferences").select("currency_code, timezone").eq("id", userId).maybeSingle();
-  const currency = preferences?.currency_code ?? "VND";
+  const currency = (preferences?.currency_code ?? "VND").toUpperCase();
   const timeZone = preferences?.timezone ?? "Asia/Ho_Chi_Minh";
   const now = currentYearMonth(timeZone);
   const currentMonth = `${now.year}-${String(now.month).padStart(2, "0")}`;

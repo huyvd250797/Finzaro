@@ -12,7 +12,7 @@ test("V1.1.1 Savings-account destination behavior remains available", async () =
   assert.match(form, /linkedSavingsGoal/);
 });
 
-test("V1.1.4 replaces the failing report runtime path while preserving the shared API", async () => {
+test("V1.1.5 replaces the failing report runtime path while preserving the shared API", async () => {
   const data = await read("features/reports/data.ts");
   assert.match(data, /export async function loadReportLedger/);
   assert.match(data, /loadReportTransactionsDirect/);
@@ -30,10 +30,10 @@ test("Savings Goal RPC migration errors remain explicit", async () => {
   assert.match(action, /V1\.1\.0_ui_design_system_visual_polish\.sql/);
 });
 
-test("V1.1.4 metadata is current", async () => {
+test("V1.1.5 metadata is current", async () => {
   const pkg = JSON.parse(await read("package.json"));
   const version = await read("lib/app-version.ts");
-  assert.equal(pkg.version, "1.1.4");
-  assert.match(version, /APP_VERSION = "1\.1\.4"/);
-  assert.match(version, /Reports Recovery & PWA Refresh Fix/);
+  assert.equal(pkg.version, "1.1.5");
+  assert.match(version, /APP_VERSION = "1\.1\.5"/);
+  assert.match(version, /Reports Render & Pie Stability Fix/);
 });

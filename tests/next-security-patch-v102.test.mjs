@@ -6,7 +6,7 @@ const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
 test("V1.1.1 retains the V1.0.2 Next.js security upgrade", async () => {
   const pkg = JSON.parse(await read("package.json"));
-  assert.equal(pkg.version, "1.1.4");
+  assert.equal(pkg.version, "1.1.5");
   assert.equal(pkg.dependencies.next, "16.4.0");
   assert.equal(pkg.devDependencies["eslint-config-next"], "16.4.0");
   assert.notEqual(pkg.dependencies.next, "16.0.0");

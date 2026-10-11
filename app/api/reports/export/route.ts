@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const { data: preferences } = await supabase.from("user_preferences").select("currency_code, timezone").eq("id", userId).maybeSingle();
-    const defaultCurrency = preferences?.currency_code ?? "VND";
+    const defaultCurrency = (preferences?.currency_code ?? "VND").toUpperCase();
     const timeZone = preferences?.timezone ?? "Asia/Ho_Chi_Minh";
     const params = Object.fromEntries(request.nextUrl.searchParams.entries());
     const range = resolveReportRange(params.range, params.from, params.to, timeZone);

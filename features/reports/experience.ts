@@ -12,9 +12,20 @@ export type ReportCategoryRow = {
 };
 
 export function currentYearMonth(timeZone: string) {
-  const parts = new Intl.DateTimeFormat("en-US", { timeZone, year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date());
-  const get = (type: string) => parts.find((part) => part.type === type)?.value ?? "";
-  return { year: Number(get("year")), month: Number(get("month")), day: Number(get("day")) };
+  const fallback = new Date();
+  const fallbackValue = { year: fallback.getUTCFullYear(), month: fallback.getUTCMonth() + 1, day: fallback.getUTCDate() };
+  try {
+    const safeTimeZone = typeof timeZone === "string" && timeZone.trim() ? timeZone.trim() : "Asia/Ho_Chi_Minh";
+    const parts = new Intl.DateTimeFormat("en-US", { timeZone: safeTimeZone, year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(fallback);
+    const get = (type: string) => parts.find((part) => part.type === type)?.value ?? "";
+    const year = Number(get("year"));
+    const month = Number(get("month"));
+    const day = Number(get("day"));
+    if (!Number.isInteger(year) || !Number.isInteger(month) || !Number.isInteger(day) || month < 1 || month > 12 || day < 1 || day > 31) return fallbackValue;
+    return { year, month, day };
+  } catch {
+    return fallbackValue;
+  }
 }
 
 export function validMonthKey(value: string | undefined, fallback: string) {
@@ -43,15 +54,17 @@ export function shiftMonthKey(key: string, offset: number) {
 }
 
 export function flowAmount(transaction: TransactionView, currency: string, type: ReportFlowType) {
-  if (transaction.transaction_type !== type) return 0;
+  if (!transaction || transaction.transaction_type !== type) return 0;
   if (type === "income" && transaction.transaction_purpose !== "standard") return 0;
+  if (!Array.isArray(transaction.entries)) return 0;
   const entry = transactionEntry(transaction, type);
   if (!entry || entry.currency_code !== currency) return 0;
-  return Math.abs(entry.amount_minor);
+  const amount = Number(entry.amount_minor);
+  return Number.isFinite(amount) ? Math.abs(amount) : 0;
 }
 
 export function periodTransactions(transactions: TransactionView[], from: string, to: string) {
-  return transactions.filter((item) => item.transaction_date >= from && item.transaction_date <= to);
+  return (Array.isArray(transactions) ? transactions : []).filter((item) => typeof item?.transaction_date === "string" && item.transaction_date >= from && item.transaction_date <= to);
 }
 
 export function periodFlowTotals(transactions: TransactionView[], currency: string) {
@@ -67,7 +80,7 @@ export function periodFlowTotals(transactions: TransactionView[], currency: stri
 export function dailyFlowTotals(transactions: TransactionView[], currency: string, monthKey: string) {
   const totals = new Map<string, { income: number; expense: number }>();
   for (const transaction of transactions) {
-    if (!transaction.transaction_date.startsWith(monthKey)) continue;
+    if (typeof transaction.transaction_date !== "string" || !transaction.transaction_date.startsWith(monthKey)) continue;
     const row = totals.get(transaction.transaction_date) ?? { income: 0, expense: 0 };
     row.income += flowAmount(transaction, currency, "income");
     row.expense += flowAmount(transaction, currency, "expense");
