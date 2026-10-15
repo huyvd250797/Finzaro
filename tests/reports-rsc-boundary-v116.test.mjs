@@ -21,19 +21,16 @@ function moduleAlias(path) {
   return `@/${relative(root, path).replaceAll("\\", "/").replace(/\.(tsx?|jsx?)$/, "")}`;
 }
 
-test("V1.1.6 moves report palette helpers out of the client component boundary", async () => {
+test("V1.1.7 keeps Reports server/client boundary safe without a chart-only palette dependency", async () => {
   const page = await read("app/(dashboard)/reports/page.tsx");
   const donut = await read("components/report-donut.tsx");
-  const palette = await read("features/reports/palette.ts");
 
   assert.match(donut, /^"use client";/);
   assert.match(page, /import \{ ReportDonut \} from "@\/components\/report-donut"/);
-  assert.doesNotMatch(page, /import \{[^}]*reportSliceColor[^}]*\} from "@\/components\/report-donut"/);
-  assert.match(page, /import \{ reportSliceColor \} from "@\/features\/reports\/palette"/);
-  assert.match(donut, /import \{ reportSliceColor \} from "@\/features\/reports\/palette"/);
-  assert.doesNotMatch(palette, /^"use client";/m);
-  assert.doesNotMatch(palette, /from ["']react["']/);
-  assert.match(palette, /export function reportSliceColor/);
+  assert.doesNotMatch(page, /reportSliceColor/);
+  assert.doesNotMatch(donut, /reportSliceColor/);
+  assert.match(page, /color: iconColorValue\(item\.icon_color\)/);
+  assert.match(donut, /slice\.color/);
 });
 
 test("Reports server routes do not import executable lower-case helpers from use-client modules", async () => {
@@ -63,10 +60,10 @@ test("Reports server routes do not import executable lower-case helpers from use
   assert.deepEqual(violations, []);
 });
 
-test("V1.1.6 release metadata is current", async () => {
+test("V1.1.7 release metadata is current", async () => {
   const pkg = JSON.parse(await read("package.json"));
   const version = await read("lib/app-version.ts");
-  assert.equal(pkg.version, "1.1.6");
-  assert.match(version, /APP_VERSION = "1\.1\.6"/);
-  assert.match(version, /Reports RSC Boundary Root Cause Fix/);
+  assert.equal(pkg.version, "1.1.7");
+  assert.match(version, /APP_VERSION = "1\.1\.7"/);
+  assert.match(version, /Reports UI & Calendar Polish/);
 });

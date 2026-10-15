@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("V1.1.6 pie no longer uses generated SVG arc paths", async () => {
+test("V1.1.7 pie no longer uses generated SVG arc paths", async () => {
   const source = await read("components/report-donut.tsx");
   assert.match(source, /conic-gradient/);
   assert.match(source, /selectFromPoint/);
@@ -12,7 +12,7 @@ test("V1.1.6 pie no longer uses generated SVG arc paths", async () => {
   assert.doesNotMatch(source, /slicePath\(/);
 });
 
-test("V1.1.6 contains visualization errors inside Reports", async () => {
+test("V1.1.7 contains visualization errors inside Reports", async () => {
   const page = await read("app/(dashboard)/reports/page.tsx");
   const boundary = await read("components/report-visual-boundary.tsx");
   assert.match(page, /ReportVisualBoundary/);
@@ -20,7 +20,7 @@ test("V1.1.6 contains visualization errors inside Reports", async () => {
   assert.match(boundary, /visualization recovered/);
 });
 
-test("V1.1.6 hardens report formatting and legacy transaction entries", async () => {
+test("V1.1.7 hardens report formatting and legacy transaction entries", async () => {
   const utils = await read("lib/utils.ts");
   const experience = await read("features/reports/experience.ts");
   const transactions = await read("features/transactions/data.ts");
@@ -31,10 +31,10 @@ test("V1.1.6 hardens report formatting and legacy transaction entries", async ()
   assert.match(transactions, /!Array\.isArray\(transaction\.entries\)/);
 });
 
-test("V1.1.6 release metadata is current", async () => {
+test("V1.1.7 release metadata is current", async () => {
   const pkg = JSON.parse(await read("package.json"));
   const version = await read("lib/app-version.ts");
-  assert.equal(pkg.version, "1.1.6");
-  assert.match(version, /APP_VERSION = "1\.1\.6"/);
-  assert.match(version, /Reports RSC Boundary Root Cause Fix/);
+  assert.equal(pkg.version, "1.1.7");
+  assert.match(version, /APP_VERSION = "1\.1\.7"/);
+  assert.match(version, /Reports UI & Calendar Polish/);
 });

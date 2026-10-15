@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("V1.1.6 Reports has three data strategies and never throws the authenticated shell for ledger read failures", async () => {
+test("V1.1.7 Reports has three data strategies and never throws the authenticated shell for ledger read failures", async () => {
   const data = await read("features/reports/data.ts");
   assert.match(data, /directReportLedger/);
   assert.match(data, /canonicalReportLedger/);
@@ -14,7 +14,7 @@ test("V1.1.6 Reports has three data strategies and never throws the authenticate
   assert.match(data, /loadReportEntriesLegacyCore/);
 });
 
-test("V1.1.6 report routes are force-dynamic and bypass stale RSC output", async () => {
+test("V1.1.7 report routes are force-dynamic and bypass stale RSC output", async () => {
   for (const path of [
     "app/(dashboard)/reports/page.tsx",
     "app/(dashboard)/reports/calendar/page.tsx",
@@ -27,7 +27,7 @@ test("V1.1.6 report routes are force-dynamic and bypass stale RSC output", async
   }
 });
 
-test("V1.1.6 installed PWA hard-refreshes once when server version differs", async () => {
+test("V1.1.7 installed PWA hard-refreshes once when server version differs", async () => {
   const source = await read("components/pwa-register.tsx");
   assert.match(source, /hardRefreshToVersion/);
   assert.match(source, /finzaro-hard-refresh-/);
@@ -36,10 +36,10 @@ test("V1.1.6 installed PWA hard-refreshes once when server version differs", asy
   assert.match(source, /finzaro-static-v/);
 });
 
-test("V1.1.6 release metadata is current", async () => {
+test("V1.1.7 release metadata is current", async () => {
   const pkg = JSON.parse(await read("package.json"));
   const version = await read("lib/app-version.ts");
-  assert.equal(pkg.version, "1.1.6");
-  assert.match(version, /APP_VERSION = "1\.1\.6"/);
-  assert.match(version, /Reports RSC Boundary Root Cause Fix/);
+  assert.equal(pkg.version, "1.1.7");
+  assert.match(version, /APP_VERSION = "1\.1\.7"/);
+  assert.match(version, /Reports UI & Calendar Polish/);
 });

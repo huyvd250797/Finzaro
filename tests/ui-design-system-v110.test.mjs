@@ -4,12 +4,12 @@ import { readFile } from "node:fs/promises";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("V1.1.6 release metadata is consistent", async () => {
+test("V1.1.7 release metadata is consistent", async () => {
   const pkg = JSON.parse(await read("package.json"));
   const version = await read("lib/app-version.ts");
-  assert.equal(pkg.version, "1.1.6");
-  assert.match(version, /APP_VERSION = "1\.1\.6"/);
-  assert.match(version, /APP_RELEASE_NAME = "Reports RSC Boundary Root Cause Fix"/);
+  assert.equal(pkg.version, "1.1.7");
+  assert.match(version, /APP_VERSION = "1\.1\.7"/);
+  assert.match(version, /APP_RELEASE_NAME = "Reports UI & Calendar Polish"/);
 });
 
 test("Savings transfer can optionally advance a compatible Goal atomically", async () => {
@@ -33,8 +33,8 @@ test("Savings transfer can optionally advance a compatible Goal atomically", asy
 
 test("Reports calendar favors readable daily amounts on narrow screens", async () => {
   const page = await read("app/(dashboard)/reports/calendar/page.tsx");
-  assert.match(page, /min-w-\[700px\]/);
-  assert.match(page, /min-h-\[102px\]/);
+  assert.doesNotMatch(page, /min-w-\[700px\]/);
+  assert.match(page, /min-h-\[76px\]/);
   assert.match(page, /whitespace-nowrap/);
   assert.match(page, /text-emerald-500/);
   assert.match(page, /text-rose-500/);
@@ -46,7 +46,7 @@ test("Reports category composition uses an interactive full pie", async () => {
   assert.match(pie, /^"use client"/);
   assert.match(pie, /setSelectedIndex/);
   assert.match(pie, /onClick/);
-  assert.match(pie, /slice\.percent < 14/);
+  assert.match(pie, /slice\.percent < 16/);
   assert.match(pie, /formatMinorMoney/);
   assert.doesNotMatch(pie, /<circle[^>]+fill=.*background/i);
 });
@@ -59,7 +59,7 @@ test("Reports overview keeps three KPI blocks on one row", async () => {
   assert.match(page, /Ròng/);
 });
 
-test("Reports keep the shared loader API with V1.1.6 direct ledger reads", async () => {
+test("Reports keep the shared loader API with V1.1.7 direct ledger reads", async () => {
   const data = await read("features/reports/data.ts");
   assert.match(data, /export async function loadReportLedger/);
   assert.match(data, /includeAccounts\?: boolean/);

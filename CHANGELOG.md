@@ -1,3 +1,14 @@
+# V1.1.7 — Reports UI & Calendar Polish
+
+- Compacted Reports navigation and combined month/year selection with the period navigator to reduce vertical space.
+- Kept Chi tiêu / Thu nhập / Ròng in one compact row on mobile and desktop.
+- Changed pie slices and category progress indicators to use each Category's configured color instead of the Reports palette.
+- Reduced pie size, removed redundant legend rows, preserved direct slice selection and large-slice labels, and moved category annotations into a compact two-column list.
+- Removed the mobile 700px calendar canvas; all seven weekday columns now fit the viewport.
+- Calendar cells show exact green income and red expense on two lines without `0đ` or a currency suffix, preventing amount clipping.
+- Calendar KPI cards now remain three columns at every breakpoint.
+- No database migration is required.
+
 # V1.1.6 — Reports RSC Boundary Root Cause Fix
 
 - Fixed the confirmed persistent Reports crash: the server-rendered `/reports` route was importing and invoking `reportSliceColor()` from `components/report-donut.tsx`, a `"use client"` module. Next.js React Server Components cannot execute client-module functions on the server.

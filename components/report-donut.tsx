@@ -2,13 +2,24 @@
 
 import { useMemo, useState, type KeyboardEvent, type MouseEvent } from "react";
 import { formatMinorMoney } from "@/lib/utils";
-import { cn } from "@/lib/utils";
-import { reportSliceColor } from "@/features/reports/palette";
 
-export type DonutSlice = { id?: string; label: string; amount: number; percent: number };
+export type DonutSlice = {
+  id?: string;
+  label: string;
+  amount: number;
+  percent: number;
+  color?: string;
+};
 
-type SafeSlice = { id?: string; label: string; amount: number; percent: number };
+type SafeSlice = {
+  id?: string;
+  label: string;
+  amount: number;
+  percent: number;
+  color: string;
+};
 
+const FALLBACK_CATEGORY_COLOR = "#0d8b66";
 
 function safeText(value: unknown, fallback: string) {
   return typeof value === "string" && value.trim() ? value.trim() : fallback;
@@ -19,40 +30,31 @@ function safeNumber(value: unknown) {
   return Number.isFinite(number) ? number : 0;
 }
 
+function safeColor(value: unknown) {
+  return typeof value === "string" && /^#[0-9a-fA-F]{6}$/.test(value) ? value : FALLBACK_CATEGORY_COLOR;
+}
+
 function normalizeSlices(slices: DonutSlice[]): SafeSlice[] {
-  const positive = (Array.isArray(slices) ? slices : [])
+  return (Array.isArray(slices) ? slices : [])
     .map((slice, index) => ({
       id: typeof slice?.id === "string" ? slice.id : undefined,
       label: safeText(slice?.label, `Danh mục ${index + 1}`),
       amount: Math.max(0, safeNumber(slice?.amount)),
-      percent: Math.max(0, safeNumber(slice?.percent))
+      percent: Math.max(0, safeNumber(slice?.percent)),
+      color: safeColor(slice?.color)
     }))
     .filter((slice) => slice.amount > 0 && slice.percent > 0);
-
-  if (positive.length <= 10) return positive;
-  const primary = positive.slice(0, 9);
-  const remainder = positive.slice(9);
-  return [
-    ...primary,
-    {
-      id: "other-categories",
-      label: "Khác",
-      amount: remainder.reduce((sum, slice) => sum + slice.amount, 0),
-      percent: Math.round(remainder.reduce((sum, slice) => sum + slice.percent, 0) * 10) / 10
-    }
-  ];
 }
 
 function gradientFor(slices: SafeSlice[]) {
   if (slices.length === 0) return "var(--muted)";
   let cursor = 0;
   const stops: string[] = [];
-  for (let index = 0; index < slices.length; index += 1) {
-    const slice = slices[index];
+  for (const slice of slices) {
     const start = Math.max(0, Math.min(100, cursor));
     cursor += slice.percent;
     const end = Math.max(start, Math.min(100, cursor));
-    stops.push(`${reportSliceColor(index)} ${start}% ${end}%`);
+    stops.push(`${slice.color} ${start}% ${end}%`);
   }
   if (cursor < 100) stops.push(`var(--muted) ${Math.max(0, cursor)}% 100%`);
   return `conic-gradient(from 0deg, ${stops.join(", ")})`;
@@ -72,14 +74,26 @@ function labelPosition(slices: SafeSlice[], index: number) {
   for (let i = 0; i < index; i += 1) before += slices[i].percent;
   const middle = before + slices[index].percent / 2;
   const radians = ((middle * 3.6 - 90) * Math.PI) / 180;
-  const radius = slices[index].percent >= 28 ? 27 : 33;
+  const radius = slices[index].percent >= 32 ? 28 : 34;
   return {
     left: `${50 + Math.cos(radians) * radius}%`,
     top: `${50 + Math.sin(radians) * radius}%`
   };
 }
 
-export function ReportDonut({ slices, total, currency, decimalDigits = 0, centerLabel }: { slices: DonutSlice[]; total: number; currency: string; decimalDigits?: number; centerLabel: string }) {
+export function ReportDonut({
+  slices,
+  total,
+  currency,
+  decimalDigits = 0,
+  centerLabel
+}: {
+  slices: DonutSlice[];
+  total: number;
+  currency: string;
+  decimalDigits?: number;
+  centerLabel: string;
+}) {
   const visible = useMemo(() => normalizeSlices(slices), [slices]);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const safeSelectedIndex = visible.length === 0 ? 0 : Math.min(Math.max(0, selectedIndex), visible.length - 1);
@@ -114,9 +128,9 @@ export function ReportDonut({ slices, total, currency, decimalDigits = 0, center
   }
 
   return (
-    <div className="mx-auto w-full max-w-[340px]">
+    <div className="mx-auto w-full max-w-[280px]">
       <div
-        className="relative mx-auto aspect-square w-full max-w-[310px] cursor-pointer overflow-hidden rounded-full border border-[var(--border)] shadow-[0_14px_25px_rgba(0,0,0,.12)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+        className="relative mx-auto aspect-square w-full max-w-[258px] cursor-pointer overflow-hidden rounded-full border border-[var(--border)]/70 shadow-[0_12px_24px_rgba(0,0,0,.12)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
         style={{ background }}
         role="img"
         tabIndex={visible.length > 0 ? 0 : -1}
@@ -125,12 +139,12 @@ export function ReportDonut({ slices, total, currency, decimalDigits = 0, center
         onKeyDown={handleKey}
       >
         {visible.map((slice, index) => {
-          if (slice.percent < 14) return null;
+          if (slice.percent < 16) return null;
           const position = labelPosition(visible, index);
           return (
             <div
               key={`${slice.id ?? slice.label}-${index}-label`}
-              className="pointer-events-none absolute max-w-[34%] -translate-x-1/2 -translate-y-1/2 text-center text-[9px] font-black leading-tight text-white [text-shadow:0_1px_3px_rgba(0,0,0,.6)] sm:text-[10px]"
+              className="pointer-events-none absolute max-w-[38%] -translate-x-1/2 -translate-y-1/2 text-center text-[9px] font-black leading-tight text-white [text-shadow:0_1px_4px_rgba(0,0,0,.75)] sm:text-[10px]"
               style={position}
             >
               <span className="block truncate">{slice.label}</span>
@@ -141,23 +155,17 @@ export function ReportDonut({ slices, total, currency, decimalDigits = 0, center
       </div>
 
       {selected && (
-        <div className="mt-3 flex items-center gap-3 rounded-2xl border border-[var(--border)] bg-[var(--background)] px-3.5 py-3 shadow-sm" aria-live="polite">
-          <span className="size-3 shrink-0 rounded-full" style={{ backgroundColor: reportSliceColor(safeSelectedIndex) }} />
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-black">{selected.label}</p>
-            <p className="mt-0.5 text-[11px] font-bold text-[var(--muted-foreground)]">{selected.percent}% {safeText(centerLabel, "tổng").toLowerCase()}</p>
+        <div className="mt-2.5 grid grid-cols-[1fr_auto] items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 py-2.5" aria-live="polite">
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: selected.color }} />
+            <div className="min-w-0">
+              <p className="truncate text-xs font-black">{selected.label}</p>
+              <p className="text-[10px] font-bold text-[var(--muted-foreground)]">{selected.percent}%</p>
+            </div>
           </div>
-          <p className="shrink-0 text-sm font-black tabular-nums">{formatMinorMoney(selected.amount, safeText(currency, "VND"), safeNumber(decimalDigits))}</p>
+          <p className="shrink-0 text-xs font-black tabular-nums">{formatMinorMoney(selected.amount, safeText(currency, "VND"), safeNumber(decimalDigits))}</p>
         </div>
       )}
-
-      <div className="mt-3 flex flex-wrap justify-center gap-x-3 gap-y-1.5">
-        {visible.map((slice, index) => (
-          <button key={`${slice.id ?? slice.label}-legend-${index}`} type="button" onClick={() => setSelectedIndex(index)} className={cn("inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-[10px] font-bold transition", safeSelectedIndex === index ? "bg-[var(--muted)] text-[var(--foreground)]" : "text-[var(--muted-foreground)] hover:bg-[var(--muted)]")}>
-            <span className="size-2 rounded-full" style={{ backgroundColor: reportSliceColor(index) }} />{slice.label}
-          </button>
-        ))}
-      </div>
     </div>
   );
 }

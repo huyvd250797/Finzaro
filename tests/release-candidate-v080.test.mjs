@@ -22,8 +22,8 @@ test("Reports RC exposes overview, calendar, analysis and category drill-down", 
   const analysis = await read("app/(dashboard)/reports/analysis/page.tsx");
   const category = await read("app/(dashboard)/reports/category/[categoryId]/page.tsx");
   assert.match(overview, /ReportNavigation active="overview"/);
-  assert.match(overview, /Hàng tháng/);
-  assert.match(overview, /Hàng năm/);
+  assert.match(overview, />Tháng<\/Link>/);
+  assert.match(overview, />Năm<\/Link>/);
   assert.match(calendar, /ReportNavigation active="calendar"/);
   assert.match(calendar, /values\.income > 0/);
   assert.match(calendar, /values\.expense > 0/);

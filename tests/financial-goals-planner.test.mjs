@@ -41,7 +41,7 @@ test("Planner is discoverable from desktop and mobile navigation", () => {
   assert.match(mobile, /href: "\/goal-planner"/);
 });
 
-test("current app version is V1.1.6 Reports RSC Boundary Root Cause Fix", () => {
-  assert.match(version, /APP_VERSION = "1\.1\.6"/);
-  assert.match(version, /Reports RSC Boundary Root Cause Fix/);
+test("current app version is V1.1.7 Reports UI & Calendar Polish", () => {
+  assert.match(version, /APP_VERSION = "1\.1\.7"/);
+  assert.match(version, /Reports UI & Calendar Polish/);
 });
