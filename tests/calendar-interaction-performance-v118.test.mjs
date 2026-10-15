@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("V1.1.8 Calendar day selection is client-side and does not navigate for every tap", async () => {
+test("V1.1.9 Calendar day selection is client-side and does not navigate for every tap", async () => {
   const interactive = await read("components/report-calendar-interactive.tsx");
   assert.match(interactive, /useState\(initialSelectedDay\)/);
   assert.match(interactive, /window\.history\.replaceState/);
@@ -12,7 +12,7 @@ test("V1.1.8 Calendar day selection is client-side and does not navigate for eve
   assert.doesNotMatch(interactive, /href=\{`\/reports\/calendar\?period=.*&day=/);
 });
 
-test("V1.1.8 Calendar uses larger cells and whole-unit amount labels", async () => {
+test("V1.1.9 Calendar uses larger cells and whole-unit amount labels", async () => {
   const interactive = await read("components/report-calendar-interactive.tsx");
   assert.match(interactive, /min-h-\[98px\]/);
   assert.match(interactive, /maximumFractionDigits: 0/);
@@ -21,7 +21,7 @@ test("V1.1.8 Calendar uses larger cells and whole-unit amount labels", async () 
   assert.match(interactive, /text-rose-500/);
 });
 
-test("V1.1.8 supports double tap quick entry for the selected date", async () => {
+test("V1.1.9 supports double tap quick entry for the selected date", async () => {
   const interactive = await read("components/report-calendar-interactive.tsx");
   assert.match(interactive, /now - previous\.at <= 360/);
   assert.match(interactive, /Chi tiền/);
@@ -30,7 +30,7 @@ test("V1.1.8 supports double tap quick entry for the selected date", async () =>
   assert.match(interactive, /new: type, date, return_to/);
 });
 
-test("V1.1.8 selected-day transactions expose swipe Edit Delete actions", async () => {
+test("V1.1.9 selected-day transactions expose swipe Edit Delete actions", async () => {
   const interactive = await read("components/report-calendar-interactive.tsx");
   assert.match(interactive, /overflow-x-auto/);
   assert.match(interactive, /snap-x snap-mandatory/);
@@ -39,7 +39,7 @@ test("V1.1.8 selected-day transactions expose swipe Edit Delete actions", async 
   assert.match(interactive, /name="return_to"/);
 });
 
-test("V1.1.8 create edit delete can return to the exact calendar day", async () => {
+test("V1.1.9 create edit delete can return to the exact calendar day", async () => {
   const actions = await read("features/transactions/actions.ts");
   const page = await read("app/(dashboard)/transactions/page.tsx");
   const form = await read("components/transaction-entry-form.tsx");
@@ -52,16 +52,16 @@ test("V1.1.8 create edit delete can return to the exact calendar day", async () 
   assert.match(form, /defaultValue=\{today\}/);
 });
 
-test("V1.1.8 Calendar uses the canonical fast month-ledger path with hardened fallback", async () => {
+test("V1.1.9 Calendar uses the canonical fast month-ledger path with hardened fallback", async () => {
   const page = await read("app/(dashboard)/reports/calendar/page.tsx");
   assert.match(page, /loadLedger\(supabase, userId, \{ fromDate: bounds\.from, toDate: bounds\.to, fetchAll: true \}\)/);
   assert.match(page, /catch\(\(\) => loadReportLedger/);
 });
 
-test("V1.1.8 release metadata is current", async () => {
+test("V1.1.9 release metadata is current", async () => {
   const pkg = JSON.parse(await read("package.json"));
   const version = await read("lib/app-version.ts");
-  assert.equal(pkg.version, "1.1.8");
-  assert.match(version, /APP_VERSION = "1\.1\.8"/);
-  assert.match(version, /Calendar Interaction & Performance Fix/);
+  assert.equal(pkg.version, "1.1.9");
+  assert.match(version, /APP_VERSION = "1\.1\.9"/);
+  assert.match(version, /Category Grid & Save Performance Fix/);
 });

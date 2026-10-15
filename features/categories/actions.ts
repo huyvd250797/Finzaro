@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { isCategoryIconColor, isCategoryIconName } from "@/features/categories/icons";
-import { isCategoryType } from "@/features/categories/constants";
+import { isCategoryType, type CategoryType } from "@/features/categories/constants";
 import { requireUser } from "@/lib/auth";
 
 function text(formData: FormData, key: string) {
@@ -164,4 +164,36 @@ export async function setCategoryArchivedAction(formData: FormData) {
   revalidatePath("/transactions");
   revalidatePath("/overview");
   redirect(destination("message", archived ? "Đã lưu trữ danh mục. Giao dịch cũ vẫn giữ lịch sử." : "Đã khôi phục danh mục."));
+}
+
+
+export async function reorderCategoriesAction(categoryType: CategoryType, orderedIds: string[]) {
+  if (!isCategoryType(categoryType)) throw new Error("Loại danh mục không hợp lệ.");
+  const ids = Array.from(new Set(orderedIds.filter((id) => /^[0-9a-f-]{36}$/i.test(id))));
+  if (ids.length === 0 || ids.length > 200) throw new Error("Danh sách sắp xếp không hợp lệ.");
+
+  const { supabase, userId } = await requireUser();
+  const { data: rows, error } = await supabase
+    .from("categories")
+    .select("id, category_type, is_archived")
+    .eq("user_id", userId)
+    .eq("category_type", categoryType)
+    .eq("is_archived", false)
+    .in("id", ids);
+  if (error) throw new Error("Không thể kiểm tra danh mục trước khi sắp xếp.");
+  if ((rows ?? []).length !== ids.length) throw new Error("Danh sách sắp xếp chứa danh mục không hợp lệ hoặc đã lưu trữ.");
+
+  const ownedIds = new Set((rows ?? []).map((row) => row.id));
+  if (ids.some((id) => !ownedIds.has(id))) throw new Error("Không thể sắp xếp danh mục không thuộc tài khoản.");
+
+  const updates = await Promise.all(ids.map((id, index) =>
+    supabase.from("categories").update({ sort_order: (index + 1) * 10 }).eq("id", id).eq("user_id", userId)
+  ));
+  if (updates.some((result) => result.error)) throw new Error("Không thể lưu thứ tự danh mục.");
+
+  revalidatePath("/categories");
+  revalidatePath("/transactions");
+  revalidatePath("/recurring");
+  revalidatePath("/budgets");
+  return { ok: true };
 }

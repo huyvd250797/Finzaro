@@ -1,15 +1,15 @@
 import Link from "next/link";
-import { Archive, ChevronRight, RotateCcw, Shapes, X } from "lucide-react";
+import { Archive, Shapes, X } from "lucide-react";
 import { AuthMessage } from "@/components/auth-message";
 import { PendingSubmitButton } from "@/components/pending-submit-button";
 import { InstantReveal } from "@/components/instant-reveal";
+import { CategoryManagerGrid } from "@/components/category-manager-grid";
 import { ConfirmSubmitForm } from "@/components/confirm-submit-form";
 import { CategoryIconPicker } from "@/components/category-icon-picker";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { createCategoryAction, setCategoryArchivedAction, updateCategoryAction } from "@/features/categories/actions";
+import { createCategoryAction, updateCategoryAction } from "@/features/categories/actions";
 import { CATEGORY_TYPE_LABELS, isCategoryType, type CategoryType } from "@/features/categories/constants";
 import { categoryDepth, categoryPath, loadCategories, loadCategoryUsageCounts, type CategoryRow } from "@/features/categories/data";
-import { CategoryIcon, iconColorValue } from "@/features/categories/icons";
 import { requireUser } from "@/lib/auth";
 
 export const metadata = { title: "Danh mục" };
@@ -84,7 +84,18 @@ function CategorySection({ type, categories, showArchived, usageCounts }: { type
   const categoryById = new Map(categories.map((category) => [category.id, category]));
   const visible = categories
     .filter((category) => category.category_type === type && (showArchived || !category.is_archived))
-    .sort((a, b) => categoryDepth(a, categoryById) - categoryDepth(b, categoryById) || a.sort_order - b.sort_order || a.name.localeCompare(b.name, "vi"));
+    .sort((a, b) => a.sort_order - b.sort_order || categoryDepth(a, categoryById) - categoryDepth(b, categoryById) || a.name.localeCompare(b.name, "vi"));
+
+  const managerItems = visible.map((category) => ({
+    id: category.id,
+    name: category.name,
+    icon_name: category.icon_name,
+    icon_color: category.icon_color,
+    is_system: category.is_system,
+    is_archived: category.is_archived,
+    sort_order: category.sort_order,
+    parent_label: category.parent_id ? categoryPath(category, categoryById).split(" › ").slice(0, -1).join(" › ") || null : null
+  }));
 
   return (
     <Card>
@@ -95,31 +106,10 @@ function CategorySection({ type, categories, showArchived, usageCounts }: { type
         </div>
         <InstantReveal label="Thêm" icon={false}><CategoryForm type={type} categories={categories} /></InstantReveal>
       </CardHeader>
-      <CardContent className="space-y-2">
+      <CardContent>
         {visible.length === 0 ? (
           <div className="rounded-xl border border-dashed border-[var(--border)] p-6 text-center text-sm text-[var(--muted-foreground)]">Chưa có danh mục.</div>
-        ) : visible.map((category) => {
-          const depth = categoryDepth(category, categoryById);
-          return (
-            <div key={category.id} className={`flex items-center gap-3 rounded-xl border border-[var(--border)] p-3 ${category.is_archived ? "opacity-55" : ""}`} style={{ marginLeft: `${Math.min(depth, 2) * 14}px` }}>
-              <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-[var(--sidebar-accent)] text-[var(--primary)]" style={{ color: iconColorValue(category.icon_color) }}><CategoryIcon name={category.icon_name} className="size-4.5" /></div>
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <p className="truncate text-sm font-bold">{category.name}</p>
-                  {category.is_system && <span className="rounded-md bg-[var(--muted)] px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide text-[var(--muted-foreground)]">Mặc định</span>}
-                  {category.is_archived && <span className="rounded-md bg-[var(--muted)] px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide text-[var(--muted-foreground)]">Đã lưu trữ</span>}
-                </div>
-                <p className="mt-0.5 truncate text-[11px] text-[var(--muted-foreground)]">{categoryPath(category, categoryById)} · {category.icon_name} · {category.icon_color ?? "#0d8b66"}</p>
-              </div>
-              <InstantReveal label="Sửa" icon={false} className="h-9 border border-[var(--border)] bg-[var(--card)] px-3 text-xs text-[var(--foreground)] shadow-none"><CategoryForm type={category.category_type} categories={categories} editing={category} usageCount={usageCounts.get(category.id) ?? 0} /></InstantReveal>
-              <form action={setCategoryArchivedAction}>
-                <input type="hidden" name="category_id" value={category.id} />
-                <input type="hidden" name="archived" value={category.is_archived ? "false" : "true"} />
-                <button type="submit" title={category.is_archived ? "Khôi phục" : "Lưu trữ"} className="grid size-9 place-items-center rounded-xl border border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]">{category.is_archived ? <RotateCcw className="size-3.5" /> : <Archive className="size-3.5" />}</button>
-              </form>
-            </div>
-          );
-        })}
+        ) : <CategoryManagerGrid type={type} categories={managerItems} showArchived={showArchived} />}
       </CardContent>
     </Card>
   );
@@ -128,12 +118,12 @@ function CategorySection({ type, categories, showArchived, usageCounts }: { type
 export default async function CategoriesPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
   const { supabase, userId } = await requireUser();
-  const [categories, usageCounts] = await Promise.all([
-    loadCategories(supabase, userId, true),
-    loadCategoryUsageCounts(supabase, userId)
-  ]);
+  const categories = await loadCategories(supabase, userId, true);
   const newType = params.new && isCategoryType(params.new) ? params.new : null;
   const editing = params.edit ? categories.find((category) => category.id === params.edit) ?? null : null;
+  // Usage counts are only needed for the edit confirmation. Avoid scanning the
+  // transaction history on the normal Category grid/reorder path.
+  const usageCounts = editing ? await loadCategoryUsageCounts(supabase, userId) : new Map<string, number>();
   const showArchived = params.show === "archived";
 
   return (
@@ -146,7 +136,6 @@ export default async function CategoriesPage({ searchParams }: { searchParams: S
         </div>
         <div className="flex gap-2">
           <Link href={showArchived ? "/categories" : "/categories?show=archived"} className="inline-flex h-10 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-3.5 text-sm font-bold">{showArchived ? <Shapes className="size-4" /> : <Archive className="size-4" />} {showArchived ? "Đang hoạt động" : "Xem đã lưu trữ"}</Link>
-          <Link href="/transactions" className="inline-flex h-10 items-center gap-1.5 rounded-xl bg-[var(--foreground)] px-3.5 text-sm font-bold text-[var(--background)]">Giao dịch <ChevronRight className="size-4" /></Link>
         </div>
       </div>
 
@@ -154,7 +143,7 @@ export default async function CategoriesPage({ searchParams }: { searchParams: S
       {newType && <CategoryForm type={newType} categories={categories} />}
       {editing && <CategoryForm type={editing.category_type} categories={categories} editing={editing} usageCount={usageCounts.get(editing.id) ?? 0} />}
 
-      <div className="mt-5 grid gap-4 xl:grid-cols-2">
+      <div className="mt-5 grid gap-4">
         <CategorySection type="expense" categories={categories} showArchived={showArchived} usageCounts={usageCounts} />
         <CategorySection type="income" categories={categories} showArchived={showArchived} usageCounts={usageCounts} />
       </div>

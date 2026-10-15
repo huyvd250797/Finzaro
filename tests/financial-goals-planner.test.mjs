@@ -41,7 +41,7 @@ test("Planner is discoverable from desktop and mobile navigation", () => {
   assert.match(mobile, /href: "\/goal-planner"/);
 });
 
-test("current app version is V1.1.8 Calendar Interaction & Performance Fix", () => {
-  assert.match(version, /APP_VERSION = "1\.1\.8"/);
-  assert.match(version, /Calendar Interaction & Performance Fix/);
+test("current app version is V1.1.9 Category Grid & Save Performance Fix", () => {
+  assert.match(version, /APP_VERSION = "1\.1\.9"/);
+  assert.match(version, /Category Grid & Save Performance Fix/);
 });

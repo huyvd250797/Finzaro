@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("V1.1.8 pie uses Category colors and keeps a full center-free chart", async () => {
+test("V1.1.9 pie uses Category colors and keeps a full center-free chart", async () => {
   const page = await read("app/(dashboard)/reports/page.tsx");
   const donut = await read("components/report-donut.tsx");
   assert.match(page, /color: iconColorValue\(item\.icon_color\)/);
@@ -15,7 +15,7 @@ test("V1.1.8 pie uses Category colors and keeps a full center-free chart", async
   assert.doesNotMatch(donut, /rounded-full[^\n]*absolute[^\n]*bg-\[var\(--card\)\]/);
 });
 
-test("V1.1.8 Overview reduces vertical control layers and keeps all KPIs on one row", async () => {
+test("V1.1.9 Overview reduces vertical control layers and keeps all KPIs on one row", async () => {
   const page = await read("app/(dashboard)/reports/page.tsx");
   assert.match(page, /grid-cols-\[112px_1fr\]/);
   assert.match(page, /grid grid-cols-3 gap-2/);
@@ -24,7 +24,7 @@ test("V1.1.8 Overview reduces vertical control layers and keeps all KPIs on one 
   assert.doesNotMatch(page, />Hàng tháng<\/Link>/);
 });
 
-test("V1.1.8 keeps the seven-column Calendar while moving interaction into the client component", async () => {
+test("V1.1.9 keeps the seven-column Calendar while moving interaction into the client component", async () => {
   const calendar = await read("app/(dashboard)/reports/calendar/page.tsx");
   const interactive = await read("components/report-calendar-interactive.tsx");
   assert.match(calendar, /ReportCalendarInteractive/);
@@ -34,10 +34,10 @@ test("V1.1.8 keeps the seven-column Calendar while moving interaction into the c
   assert.match(interactive, /grid grid-cols-3/);
 });
 
-test("V1.1.8 release metadata is current", async () => {
+test("V1.1.9 release metadata is current", async () => {
   const pkg = JSON.parse(await read("package.json"));
   const version = await read("lib/app-version.ts");
-  assert.equal(pkg.version, "1.1.8");
-  assert.match(version, /APP_VERSION = "1\.1\.8"/);
-  assert.match(version, /Calendar Interaction & Performance Fix/);
+  assert.equal(pkg.version, "1.1.9");
+  assert.match(version, /APP_VERSION = "1\.1\.9"/);
+  assert.match(version, /Category Grid & Save Performance Fix/);
 });

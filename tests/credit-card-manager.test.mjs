@@ -51,9 +51,11 @@ test("income and expense can be edited atomically while preserving transaction i
   assert.match(txList, /transactions\?edit=/);
 });
 
-test("category editing is available directly from category cards", () => {
-  assert.match(categories, /updateCategoryAction/);
-  assert.match(categories, /InstantReveal label="Sửa"/);
+test("category editing is available directly from category cards", async () => {
+  const manager = await read("components/category-manager-grid.tsx");
+  assert.match(categories, /CategoryManagerGrid/);
+  assert.match(manager, /categories\?edit=/);
+  assert.match(manager, /Pencil/);
 });
 
 test("mobile taskbar has uniform labels and More sheet includes credit cards", () => {
@@ -70,7 +72,7 @@ test("app provides launch splash and finance visual system", () => {
   assert.match(css, /SF Pro Display/);
 });
 
-test("current app version is V1.1.8 Calendar Interaction & Performance Fix", () => {
-  assert.match(version, /APP_VERSION = "1\.1\.8"/);
-  assert.match(version, /Calendar Interaction & Performance Fix/);
+test("current app version is V1.1.9 Category Grid & Save Performance Fix", () => {
+  assert.match(version, /APP_VERSION = "1\.1\.9"/);
+  assert.match(version, /Category Grid & Save Performance Fix/);
 });

@@ -5,6 +5,7 @@ import { Clock3, CreditCard, Landmark, Repeat2, Sparkles, Target, X } from "luci
 import { useMemo, useState } from "react";
 import { createTransactionAction } from "@/features/transactions/actions";
 import type { TransactionType } from "@/features/transactions/constants";
+import type { CategoryType } from "@/features/categories/constants";
 import { TRANSACTION_TYPE_LABELS } from "@/features/transactions/constants";
 import type { QuickTransactionSuggestion } from "@/features/transactions/data";
 import { CategoryIcon, iconColorValue } from "@/features/categories/icons";
@@ -18,7 +19,7 @@ import { addMonthsClamped } from "@/features/loans/data";
 import { cn } from "@/lib/utils";
 
 type AccountOption = { id: string; name: string; currency_code: string; institution_name: string | null; account_type: string; decimal_digits?: number };
-type CategoryOption = { id: string; name: string; icon_name: string; icon_color: string | null; parent_id: string | null };
+type CategoryOption = { id: string; name: string; icon_name: string; icon_color: string | null; parent_id: string | null; category_type: CategoryType; sort_order: number };
 export type CreditCardPaymentOption = { id: string; name: string; bank_name: string | null; last4: string | null; currency_code: string; current_balance_minor: number; balance_label: string };
 export type LoanPaymentOption = { id: string; name: string; lender_name: string | null; currency_code: string; remaining_principal_minor: number; remaining_label: string; suggested_total: string; suggested_principal: string; suggested_interest: string; suggested_fee: string };
 export type SavingsGoalTransferOption = { id: string; name: string; currency_code: string; linked_account_id: string | null; target_label: string };
@@ -207,7 +208,7 @@ export function TransactionEntryForm({
 
               {type === "expense" && expensePurpose === "loan_payment" && <div className="grid gap-3 rounded-2xl border border-[var(--border)] bg-[var(--muted)]/45 p-3 md:col-span-2 md:grid-cols-3"><label><span className="field-label">Tiền gốc</span><MoneyCalculatorInput name="loan_principal" value={loanPrincipal} onValueChange={setLoanPrincipal} decimalDigits={fromAccount?.decimal_digits ?? 0} currencyCode={fromAccount?.currency_code} required /></label><label><span className="field-label">Tiền lãi</span><MoneyCalculatorInput name="loan_interest" value={loanInterest} onValueChange={setLoanInterest} decimalDigits={fromAccount?.decimal_digits ?? 0} currencyCode={fromAccount?.currency_code} required /></label><label><span className="field-label">Phí</span><MoneyCalculatorInput name="loan_fee" value={loanFee} onValueChange={setLoanFee} decimalDigits={fromAccount?.decimal_digits ?? 0} currencyCode={fromAccount?.currency_code} required /></label><p className="text-[11px] leading-4 text-[var(--muted-foreground)] md:col-span-3">Tổng Gốc + Lãi + Phí phải bằng Số tiền Chi tiền. Chỉ phần Gốc làm giảm dư nợ khoản vay.</p></div>}
 
-              {type !== "transfer" && (type === "expense" ? expensePurpose === "standard" : incomePurpose === "standard") && <label><span className="field-label flex items-center justify-between"><span>Danh mục</span><Link href="/categories" className="normal-case tracking-normal text-[var(--primary)]">Quản lý</Link></span><TransactionCategorySelect categories={categories} value={categoryId} onValueChange={setCategoryId} /></label>}
+              {type !== "transfer" && (type === "expense" ? expensePurpose === "standard" : incomePurpose === "standard") && <label className="md:col-span-2"><span className="field-label flex items-center justify-between"><span>Danh mục</span><Link href="/categories" className="normal-case tracking-normal text-[var(--primary)]">Quản lý</Link></span><TransactionCategorySelect categories={categories} value={categoryId} onValueChange={setCategoryId} /></label>}
               <label><span className="field-label">Ngày giao dịch</span><MobileDateInput name="transaction_date" defaultValue={today} ariaLabel="Ngày giao dịch" /></label>
               <label className="md:col-span-2"><span className="field-label">Ghi chú</span><textarea name="notes" value={notes} onChange={(event) => setNotes(event.target.value)} maxLength={500} rows={3} className="fin-textarea" placeholder="Thông tin thêm..." /></label>
               {selectedSuggestion && <div className="md:col-span-2 rounded-xl bg-emerald-500/[.065] px-3 py-2 text-[11px] font-medium text-emerald-700 dark:text-emerald-300">Mẫu đã được tự động điền. Bạn có thể sửa bất kỳ trường nào hoặc bấm lưu ngay.</div>}

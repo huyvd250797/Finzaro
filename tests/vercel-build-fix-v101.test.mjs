@@ -6,7 +6,7 @@ const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
 test("V1.1.2 keeps React runtime and types aligned for Vercel", async () => {
   const pkg = JSON.parse(await read("package.json"));
-  assert.equal(pkg.version, "1.1.8");
+  assert.equal(pkg.version, "1.1.9");
   assert.equal(pkg.dependencies.react, "19.3.0");
   assert.equal(pkg.dependencies["react-dom"], "19.3.0");
   assert.equal(pkg.devDependencies["@types/react"], "19.3.0");
@@ -27,8 +27,8 @@ test("Vercel install avoids registry extras without masking peer conflicts", asy
   assert.match(npmrc, /fund=false/);
 });
 
-test("app version is V1.1.8 Calendar Interaction & Performance Fix", async () => {
+test("app version is V1.1.9 Category Grid & Save Performance Fix", async () => {
   const version = await read("lib/app-version.ts");
-  assert.match(version, /APP_VERSION = "1\.1\.8"/);
-  assert.match(version, /APP_RELEASE_NAME = "Calendar Interaction & Performance Fix"/);
+  assert.match(version, /APP_VERSION = "1\.1\.9"/);
+  assert.match(version, /APP_RELEASE_NAME = "Category Grid & Save Performance Fix"/);
 });

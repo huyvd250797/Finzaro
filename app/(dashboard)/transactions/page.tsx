@@ -12,6 +12,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { minorToMajorInput } from "@/features/accounts/money";
 import { updateTransactionAction } from "@/features/transactions/actions";
 import { isTransactionType } from "@/features/transactions/constants";
+import type { CategoryType } from "@/features/categories/constants";
 import { currencyDigits, filterTransactions, loadLedger, monthTotals, currentMonthKey, quickTransactionSuggestions, transactionEntry, type LedgerCurrency, type TransactionView } from "@/features/transactions/data";
 import { loanProjections, type Loan, type LoanPayment } from "@/features/loans/data";
 import type { CreditCard } from "@/features/credit-cards/data";
@@ -26,7 +27,7 @@ type SearchParams = Promise<{ new?: string; edit?: string; date?: string; return
 function EditTransactionForm({ transaction, accounts, categories, currencies, returnTo }: {
   transaction: TransactionView;
   accounts: Array<{ id: string; name: string; currency_code: string; institution_name: string | null; decimal_digits?: number }>;
-  categories: Array<{ id: string; name: string; icon_name: string; icon_color: string | null; parent_id: string | null }>;
+  categories: Array<{ id: string; name: string; icon_name: string; icon_color: string | null; parent_id: string | null; category_type: CategoryType; sort_order: number }>;
   currencies: LedgerCurrency[];
   returnTo?: string;
 }) {
@@ -43,7 +44,7 @@ function EditTransactionForm({ transaction, accounts, categories, currencies, re
       <label className="md:col-span-2"><span className="field-label">Nội dung</span><input name="title" required maxLength={140} defaultValue={transaction.title} className="fin-input" /></label>
       <label><span className="field-label">Tài khoản</span><select name="account_id" required defaultValue={entry.account_id} className="fin-input">{accounts.map((account) => <option key={account.id} value={account.id}>{account.name} · {account.currency_code}</option>)}</select></label>
       <label><span className="field-label">Số tiền</span><MoneyCalculatorInput name="amount" defaultValue={minorToMajorInput(Math.abs(entry.amount_minor), digits)} decimalDigits={digits} currencyCode={entry.currency_code} required /></label>
-      <label><span className="field-label">Danh mục</span><TransactionCategorySelect categories={categories} defaultValue={transaction.category_id} /></label>
+      <label className="md:col-span-2"><span className="field-label">Danh mục</span><TransactionCategorySelect categories={categories} defaultValue={transaction.category_id} /></label>
       <label><span className="field-label">Ngày giao dịch</span><MobileDateInput name="transaction_date" defaultValue={transaction.transaction_date} ariaLabel="Ngày giao dịch" /></label>
       <label className="md:col-span-2"><span className="field-label">Ghi chú</span><textarea name="notes" rows={3} maxLength={500} defaultValue={transaction.notes ?? ""} className="fin-textarea" /></label>
       <div className="flex justify-end gap-2 md:col-span-2"><Link href={returnTo || "/transactions"} className="fin-secondary-btn">Hủy</Link><PendingSubmitButton idleLabel="Cập nhật giao dịch" pendingLabel="Đang cập nhật..." className="fin-primary-btn" /></div>

@@ -81,6 +81,28 @@ function safeDbMessage(error: unknown, fallback: string) {
   return known.some((item) => message.includes(item)) ? message : fallback;
 }
 
+function revalidateAfterCreate(args: { transactionType: string; transactionPurpose: string; depositId: string | null; savingsGoalId: string | null }) {
+  // Keep the save path lean. Standard transactions only invalidate screens that
+  // display their totals immediately; specialized liability/asset screens are
+  // invalidated only when that module was actually touched.
+  const paths = new Set(["/transactions", "/overview", "/accounts", "/reports"]);
+  if (args.transactionPurpose === "standard") {
+    paths.add("/budgets");
+    paths.add("/health");
+    paths.add("/forecast");
+    paths.add("/cash-flow");
+  }
+  if (args.depositId) { paths.add("/deposits"); paths.add("/net-worth"); }
+  if (args.savingsGoalId) paths.add("/goals");
+  if (args.transactionPurpose.includes("credit_card")) {
+    paths.add("/credit-cards"); paths.add("/debt-strategy"); paths.add("/net-worth"); paths.add("/health");
+  }
+  if (args.transactionPurpose.includes("loan")) {
+    paths.add("/loans"); paths.add("/debt-strategy"); paths.add("/net-worth"); paths.add("/health");
+  }
+  for (const path of paths) revalidatePath(path);
+}
+
 export async function createTransactionAction(formData: FormData) {
   try {
     const transactionType = text(formData, "transaction_type");
@@ -136,17 +158,38 @@ export async function createTransactionAction(formData: FormData) {
     }
 
     const { supabase, userId } = await requireUser();
-    if (transactionType !== "transfer" && transactionPurpose === "standard" && categoryId) {
-      const { data: category, error: categoryError } = await supabase.from("categories").select("id, category_type, is_archived").eq("id", categoryId).eq("user_id", userId).maybeSingle();
-      if (categoryError || !category || category.is_archived || category.category_type !== transactionType) throw new Error("Danh mục không hợp lệ hoặc đã được lưu trữ.");
-    }
-
     const accountIds = Array.from(new Set([fromAccountId, toAccountId].filter((value): value is string => Boolean(value))));
     if (accountIds.length === 0) throw new Error("Vui lòng chọn tài khoản.");
-    const [{ data: accounts, error: accountError }, { data: currencies, error: currencyError }] = await Promise.all([
+
+    // V1.1.9 validates every independent lookup in one network round-trip before
+    // calling the atomic transaction RPC. This removes the category -> account ->
+    // goal/deposit validation waterfall that made Save feel noticeably slow.
+    const categoryPromise = transactionType !== "transfer" && transactionPurpose === "standard" && categoryId
+      ? supabase.from("categories").select("id, category_type, is_archived").eq("id", categoryId).eq("user_id", userId).maybeSingle()
+      : Promise.resolve({ data: null, error: null });
+    const depositPromise = depositId
+      ? (supabase as any).from("deposits").select("id, currency_code, is_archived").eq("id", depositId).eq("user_id", userId).maybeSingle()
+      : Promise.resolve({ data: null, error: null });
+    const goalPromise = savingsGoalId
+      ? (supabase as any).from("savings_goals").select("id, currency_code, linked_account_id, is_archived").eq("id", savingsGoalId).eq("user_id", userId).maybeSingle()
+      : Promise.resolve({ data: null, error: null });
+
+    const [categoryResult, accountResult, currencyResult, depositResult, goalResult] = await Promise.all([
+      categoryPromise,
       supabase.from("accounts").select("id, currency_code, account_type, is_archived").eq("user_id", userId).in("id", accountIds),
-      supabase.from("supported_currencies").select("code, decimal_digits").eq("is_active", true)
+      supabase.from("supported_currencies").select("code, decimal_digits").eq("is_active", true),
+      depositPromise,
+      goalPromise
     ]);
+    const { data: category, error: categoryError } = categoryResult;
+    const { data: accounts, error: accountError } = accountResult;
+    const { data: currencies, error: currencyError } = currencyResult;
+    const { data: deposit, error: depositError } = depositResult as { data: any; error: any };
+    const { data: goal, error: goalError } = goalResult as { data: any; error: any };
+
+    if (transactionType !== "transfer" && transactionPurpose === "standard" && categoryId && (categoryError || !category || category.is_archived || category.category_type !== transactionType)) {
+      throw new Error("Danh mục không hợp lệ hoặc đã được lưu trữ.");
+    }
     if (accountError || !accounts || accounts.length !== accountIds.length) throw new Error("Không tìm thấy tài khoản hợp lệ.");
     if (currencyError || !currencies) throw new Error("Không thể đọc cấu hình tiền tệ.");
     const ownedAccounts = accounts as Array<{ id: string; currency_code: string; account_type: string; is_archived: boolean }>;
@@ -199,18 +242,11 @@ export async function createTransactionAction(formData: FormData) {
       if (!source) throw new Error("Tài khoản nguồn không hợp lệ.");
 
       if (depositId) {
-        const { data: deposit, error: depositError } = await (supabase as any)
-          .from("deposits")
-          .select("id, currency_code, is_archived")
-          .eq("id", depositId)
-          .eq("user_id", userId)
-          .maybeSingle();
         if (depositError || !deposit || deposit.is_archived) throw new Error("Tiền gửi không hợp lệ hoặc đã được lưu trữ.");
         depositCurrencyCode = String(deposit.currency_code);
         if (source.currency_code !== depositCurrencyCode) throw new Error("Tài khoản nguồn và Tiền gửi phải cùng loại tiền tệ.");
         toAmountMinor = fromAmountMinor;
         if (savingsGoalId) {
-          const { data: goal, error: goalError } = await (supabase as any).from("savings_goals").select("id, currency_code, is_archived").eq("id", savingsGoalId).eq("user_id", userId).maybeSingle();
           if (goalError || !goal || goal.is_archived) throw new Error("Mục tiêu tiết kiệm không hợp lệ hoặc đã lưu trữ.");
           if (goal.currency_code !== depositCurrencyCode) throw new Error("Tiền tệ của mục tiêu phải trùng với Tiền gửi nhận tiền.");
         }
@@ -223,7 +259,6 @@ export async function createTransactionAction(formData: FormData) {
         if (toAmountMinor === null || toAmountMinor <= 0) throw new Error(source.currency_code === destinationAccount.currency_code ? "Số tiền chuyển không hợp lệ." : `Chuyển khác tiền tệ cần nhập số tiền nhận bằng ${destinationAccount.currency_code}.`);
         if (savingsGoalId) {
           if (destinationAccount.account_type !== "savings") throw new Error("Chỉ có thể thêm tiền vào mục tiêu khi tài khoản đích là tài khoản tiết kiệm.");
-          const { data: goal, error: goalError } = await (supabase as any).from("savings_goals").select("id, currency_code, linked_account_id, is_archived").eq("id", savingsGoalId).eq("user_id", userId).maybeSingle();
           if (goalError || !goal || goal.is_archived) throw new Error("Mục tiêu tiết kiệm không hợp lệ hoặc đã lưu trữ.");
           if (goal.currency_code !== destinationAccount.currency_code) throw new Error("Tiền tệ của mục tiêu phải trùng với tài khoản tiết kiệm nhận tiền.");
           if (goal.linked_account_id && goal.linked_account_id !== toAccountId) throw new Error("Mục tiêu này đang liên kết với một tài khoản tiết kiệm khác.");
@@ -279,7 +314,7 @@ export async function createTransactionAction(formData: FormData) {
     });
     if (result.error) throw new Error(safeDbMessage(result.error, "Không thể tạo giao dịch. Vui lòng kiểm tra dữ liệu và thử lại."));
 
-    ["/transactions", "/overview", "/accounts", "/deposits", "/credit-cards", "/loans", "/goals", "/net-worth", "/debt-strategy", "/reports", "/health", "/forecast", "/cash-flow"].forEach((path) => revalidatePath(path));
+    revalidateAfterCreate({ transactionType, transactionPurpose, depositId, savingsGoalId });
     const message = transactionPurpose === "credit_card_payment" ? "Đã chi tiền thanh toán thẻ và giảm dư nợ tín dụng."
       : transactionPurpose === "loan_payment" ? "Đã chi tiền thanh toán khoản vay và cập nhật dư nợ."
       : transactionPurpose === "credit_card_borrow" ? "Đã ghi nhận tiền vào tài khoản và tăng dư nợ thẻ tín dụng."
@@ -332,19 +367,26 @@ export async function updateTransactionAction(formData: FormData) {
     if (!categoryId || !accountId) throw new Error("Vui lòng chọn danh mục và tài khoản.");
 
     const { supabase, userId } = await requireUser();
-    const { data: transaction, error: transactionError } = await supabase.from("transactions").select("transaction_type, transaction_purpose").eq("id", transactionId).eq("user_id", userId).maybeSingle();
+    // Fetch all validation rows in parallel so editing a transaction does not wait
+    // through three sequential Supabase round-trips before the update RPC.
+    const [transactionResult, categoryResult, accountResult, currencyResult] = await Promise.all([
+      supabase.from("transactions").select("transaction_type, transaction_purpose").eq("id", transactionId).eq("user_id", userId).maybeSingle(),
+      supabase.from("categories").select("category_type,is_archived").eq("id", categoryId).eq("user_id", userId).maybeSingle(),
+      supabase.from("accounts").select("currency_code,is_archived").eq("id", accountId).eq("user_id", userId).maybeSingle(),
+      supabase.from("supported_currencies").select("code,decimal_digits").eq("is_active", true)
+    ]);
+    const { data: transaction, error: transactionError } = transactionResult;
+    const { data: category, error: categoryError } = categoryResult;
+    const { data: account, error: accountError } = accountResult;
+    const { data: currencyRows, error: currencyConfigError } = currencyResult;
     if (transactionError || !transaction) throw new Error("Không tìm thấy giao dịch.");
     if (!['income','expense'].includes(transaction.transaction_type)) throw new Error("Chỉ cho phép sửa khoản thu/chi thông thường. Chuyển tiền vẫn giữ bất biến để bảo vệ ledger.");
     if ((transaction as any).transaction_purpose && (transaction as any).transaction_purpose !== 'standard') throw new Error("Khoản Chi tiền đang liên kết thẻ tín dụng/khoản vay. Hãy xóa và ghi lại để bảo vệ dữ liệu dư nợ.");
-
-    const [{ data: category, error: categoryError }, { data: account, error: accountError }] = await Promise.all([
-      supabase.from("categories").select("category_type,is_archived").eq("id", categoryId).eq("user_id", userId).maybeSingle(),
-      supabase.from("accounts").select("currency_code,is_archived").eq("id", accountId).eq("user_id", userId).maybeSingle()
-    ]);
     if (categoryError || !category || category.is_archived || category.category_type !== transaction.transaction_type) throw new Error("Danh mục không hợp lệ hoặc đã lưu trữ.");
     if (accountError || !account || account.is_archived) throw new Error("Tài khoản không hợp lệ hoặc đã lưu trữ.");
-    const { data: currencyConfig, error: currencyConfigError } = await supabase.from("supported_currencies").select("decimal_digits").eq("code", account.currency_code).maybeSingle();
-    if (currencyConfigError || !currencyConfig) throw new Error("Không đọc được cấu hình tiền tệ.");
+    if (currencyConfigError || !currencyRows) throw new Error("Không đọc được cấu hình tiền tệ.");
+    const currencyConfig = currencyRows.find((row) => row.code === account.currency_code);
+    if (!currencyConfig) throw new Error("Không đọc được cấu hình tiền tệ.");
     const amountMinor = parseMajorAmountToMinor(amountInput, currencyConfig.decimal_digits);
     if (amountMinor === null || amountMinor <= 0) throw new Error(`Số tiền không hợp lệ cho ${account.currency_code}.`);
 

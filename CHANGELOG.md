@@ -1,3 +1,12 @@
+# V1.1.9 — Category Grid & Save Performance Fix
+
+- Replaced the income/expense category dropdown with a visual 3–4 column block grid using each category's configured icon and color.
+- Added hold-and-drag category ordering backed by the existing `sort_order` field.
+- Updated Category Management to compact category blocks and removed the unexplained high-contrast Transactions shortcut.
+- Parallelized create/edit transaction validation lookups to reduce Supabase round-trips before the atomic RPC.
+- Scoped post-save route invalidation to the financial modules actually affected by the transaction.
+- No database migration is required.
+
 # V1.1.8 — Calendar Interaction & Performance Fix
 
 - Calendar day selection is now client-side after the month loads, eliminating a full server/Supabase reload on every date tap.
