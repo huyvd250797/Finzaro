@@ -4,12 +4,12 @@ import { readFile } from "node:fs/promises";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("current release is V1.1.7 Reports UI & Calendar Polish", async () => {
+test("current release is V1.1.8 Calendar Interaction & Performance Fix", async () => {
   const pkg = JSON.parse(await read("package.json"));
   const version = await read("lib/app-version.ts");
-  assert.equal(pkg.version, "1.1.7");
-  assert.match(version, /APP_VERSION = "1\.1\.7"/);
-  assert.match(version, /APP_RELEASE_NAME = "Reports UI & Calendar Polish"/);
+  assert.equal(pkg.version, "1.1.8");
+  assert.match(version, /APP_VERSION = "1\.1\.8"/);
+  assert.match(version, /APP_RELEASE_NAME = "Calendar Interaction & Performance Fix"/);
 });
 
 test("production dependencies are pinned and build validates environment first", async () => {

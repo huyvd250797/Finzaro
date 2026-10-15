@@ -19,17 +19,19 @@ test("V0.8.0 migration matches SQL Editor script and expands category icons", as
 test("Reports RC exposes overview, calendar, analysis and category drill-down", async () => {
   const overview = await read("app/(dashboard)/reports/page.tsx");
   const calendar = await read("app/(dashboard)/reports/calendar/page.tsx");
+  const interactiveCalendar = await read("components/report-calendar-interactive.tsx");
   const analysis = await read("app/(dashboard)/reports/analysis/page.tsx");
   const category = await read("app/(dashboard)/reports/category/[categoryId]/page.tsx");
   assert.match(overview, /ReportNavigation active="overview"/);
   assert.match(overview, />Tháng<\/Link>/);
   assert.match(overview, />Năm<\/Link>/);
   assert.match(calendar, /ReportNavigation active="calendar"/);
-  assert.match(calendar, /values\.income > 0/);
-  assert.match(calendar, /values\.expense > 0/);
-  assert.match(calendar, /text-emerald-500/);
-  assert.match(calendar, /text-rose-500/);
-  assert.doesNotMatch(calendar, />\+0đ</);
+  assert.match(calendar, /dailyFlowTotals/);
+  assert.match(interactiveCalendar, /cell\.income/);
+  assert.match(interactiveCalendar, /cell\.expense/);
+  assert.match(interactiveCalendar, /text-emerald-500/);
+  assert.match(interactiveCalendar, /text-rose-500/);
+  assert.doesNotMatch(interactiveCalendar, />\+0đ</);
   assert.match(analysis, /ReportNavigation active="analysis"/);
   assert.match(category, /ReportBarChart/);
   assert.match(category, /Theo tháng/);

@@ -1,3 +1,14 @@
+# V1.1.8 — Calendar Interaction & Performance Fix
+
+- Calendar day selection is now client-side after the month loads, eliminating a full server/Supabase reload on every date tap.
+- Increased mobile day-cell height and display space; calendar amounts are rounded to whole major currency units with no decimal fraction.
+- Added double-tap/double-click quick entry on a date with Chi tiền / Thu tiền / Chuyển tiền choices and the selected transaction date prefilled.
+- Added swipe-left actions for the selected day's transaction rows: Edit for ordinary Income/Expense and Delete with balance rollback.
+- Calendar-originated create/edit/delete operations return to the same month, selected date and day-detail scroll position.
+- Prefetches transaction entry routes and reduces ledger payload for calendar-originated transaction/edit flows.
+- Keeps three compact monthly KPI blocks on one row and preserves V1.1.7 Category-color pie/report UI.
+- No database migration is required.
+
 # V1.1.7 — Reports UI & Calendar Polish
 
 - Compacted Reports navigation and combined month/year selection with the period navigator to reduce vertical space.

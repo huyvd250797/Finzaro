@@ -70,7 +70,7 @@ test("app provides launch splash and finance visual system", () => {
   assert.match(css, /SF Pro Display/);
 });
 
-test("current app version is V1.1.7 Reports UI & Calendar Polish", () => {
-  assert.match(version, /APP_VERSION = "1\.1\.7"/);
-  assert.match(version, /Reports UI & Calendar Polish/);
+test("current app version is V1.1.8 Calendar Interaction & Performance Fix", () => {
+  assert.match(version, /APP_VERSION = "1\.1\.8"/);
+  assert.match(version, /Calendar Interaction & Performance Fix/);
 });

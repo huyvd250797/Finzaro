@@ -1,21 +1,21 @@
-# Finzaro V1.1.7 — Reports UI & Calendar Polish
+# Finzaro V1.1.8 — Calendar Interaction & Performance Fix
 
-Finzaro is a personal-finance PWA built with Next.js, Supabase and Vercel. V1.1.7 keeps the V1.1.6 Reports runtime fix and focuses on reducing visual density and making mobile Reports easier to read.
+Finzaro is a personal-finance PWA built with Next.js, Supabase and Vercel. V1.1.8 keeps the stable Reports runtime/UI work and focuses on fast calendar interaction and direct transaction actions from the calendar.
 
-## V1.1.7 highlights
+## V1.1.8 highlights
 
-- Compact Reports navigation and period controls so the Overview reaches data faster.
-- Expense / Income / Net stay in one compact row on mobile.
-- Pie slices use the configured Category color instead of a Reports-only palette.
-- Pie is a full circle with no center overlay; large slices keep inline labels and tapped slices reveal category, percentage and amount.
-- Category legend uses the same icon/color as Categories and is arranged in a compact two-column scroll area.
-- Calendar fits all seven days in the phone viewport, shows Thu/Chi on two lines, hides zero values and removes the currency suffix inside day cells to prevent clipping.
-- Calendar KPI cards stay on one row at every breakpoint.
+- Date taps in Reports Calendar are handled client-side after the month is loaded, so selecting a day no longer reloads the full report ledger.
+- Larger day cells with whole-unit amount display (no decimal fraction) keep Thu/Chi values shorter and easier to read.
+- Double-tap/double-click a day to choose Chi tiền / Thu tiền / Chuyển tiền; the selected date is prefilled automatically.
+- Swipe a transaction row left to reveal Edit/Delete actions. Ordinary Income/Expense can be edited; transfers remain immutable to protect double-entry integrity but can be deleted with rollback.
+- After create/edit/delete from Calendar, Finzaro returns to the same month, selected date and day-detail scroll position.
+- Calendar transaction routes are prefetched and calendar-originated edit flows load a smaller ledger window.
+- Three monthly KPI blocks remain on one compact row.
 - No database migration is required.
 
 ## Database migration
 
-V1.1.6 adds **no new migration**. The existing V1.1.2 migration is still required for Deposit funding and Goal rollback:
+V1.1.8 adds **no new migration**. The existing V1.1.2 migration is still required for Deposit funding and Goal rollback:
 
 `supabase/sql-editor/V1.1.2_transfer_deposit_reports_reliability.sql`
 
@@ -65,7 +65,9 @@ Never prefix SSI secrets with `NEXT_PUBLIC_`.
 7. Push to GitHub and deploy/redeploy on Vercel.
 8. Smoke-test Account → Deposit transfer, optional Goal contribution, deletion rollback, Reports Overview/Calendar/Analysis, and PWA update.
 
-V1.1.7 patch notes: `docs/V1.1.7_REPORTS_UI_CALENDAR_POLISH.md`.
+V1.1.8 patch notes: `docs/V1.1.8_CALENDAR_INTERACTION_PERFORMANCE_FIX.md`.
+
+V1.1.7 visual polish notes remain at `docs/V1.1.7_REPORTS_UI_CALENDAR_POLISH.md`.
 
 V1.1.6 root-cause notes remain at `docs/V1.1.6_REPORTS_RSC_BOUNDARY_ROOT_CAUSE_FIX.md`.
 
@@ -77,7 +79,7 @@ Full V1.1.0 UI/UX notes remain at `docs/V1.1.0_UI_DESIGN_SYSTEM_VISUAL_POLISH.md
 
 ## Next line
 
-After V1.1.7, the planned UX sequence remains V1.2.0 Mobile UX Optimization, V1.3.0 Transaction UX Redesign and V1.4.0 Quick Actions. Any modified source package must increment the version again.
+After V1.1.8, the planned UX sequence remains V1.2.0 Mobile UX Optimization, V1.3.0 Transaction UX Redesign and V1.4.0 Quick Actions. Any modified source package must increment the version again.
 
 ## V1.0.2 Next.js security patch
 

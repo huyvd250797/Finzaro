@@ -35,7 +35,8 @@ export function TransactionEntryForm({
   creditCards = [],
   loans = [],
   savingsGoals = [],
-  deposits = []
+  deposits = [],
+  returnTo = ""
 }: {
   type: TransactionType;
   accounts: AccountOption[];
@@ -46,6 +47,7 @@ export function TransactionEntryForm({
   loans?: LoanPaymentOption[];
   savingsGoals?: SavingsGoalTransferOption[];
   deposits?: DepositTransferOption[];
+  returnTo?: string;
 }) {
   const isTransfer = type === "transfer";
   const [title, setTitle] = useState("");
@@ -158,6 +160,7 @@ export function TransactionEntryForm({
             )}
 
             <form action={createTransactionAction} className="mt-5 grid min-w-0 gap-4 md:grid-cols-2">
+              <input type="hidden" name="return_to" value={returnTo} />
               <input type="hidden" name="transaction_type" value={type} />
               {type === "expense" && <label className="md:col-span-2"><span className="field-label">Mục đích Chi tiền</span><select name="transaction_purpose" value={expensePurpose} onChange={(event) => { setExpensePurpose(event.target.value as ExpensePurpose); setSelectedSuggestion(null); }} className="fin-input"><option value="standard">Chi tiêu thông thường</option><option value="credit_card_payment">Thanh toán thẻ tín dụng</option><option value="loan_payment">Thanh toán khoản vay</option></select><span className="mt-1.5 block text-[11px] leading-4 text-[var(--muted-foreground)]">Thanh toán thẻ/khoản vay sẽ tự giảm dư nợ đang quản lý trong Finzaro.</span></label>}
               {type === "income" && <label className="md:col-span-2"><span className="field-label">Nguồn Thu nhập</span><select name="transaction_purpose" value={incomePurpose} onChange={(event) => { setIncomePurpose(event.target.value as IncomePurpose); setSelectedSuggestion(null); setCreditCardId(""); }} className="fin-input"><option value="standard">Thu nhập thông thường</option><option value="credit_card_borrow">Lấy tiền từ thẻ tín dụng / ứng tiền</option><option value="loan_borrow">Giải ngân khoản vay mới</option></select><span className="mt-1.5 block text-[11px] leading-4 text-[var(--muted-foreground)]">Nguồn vay không được tính là thu nhập thực; Finzaro đồng thời ghi tăng liability để Net Worth không bị sai.</span></label>}

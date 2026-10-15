@@ -182,7 +182,7 @@ test("V0.7.1 required files exist", () => {
 
 test("package version is 1.1.2", () => {
   const pkg = JSON.parse(readFileSync("package.json", "utf8"));
-  assert.equal(pkg.version, "1.1.7");
+  assert.equal(pkg.version, "1.1.8");
   assert.match(pkg.dependencies.next, /16/);
   assert.ok(pkg.dependencies["@supabase/ssr"]);
 });

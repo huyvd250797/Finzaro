@@ -40,7 +40,7 @@ test("V1.1.2 migration atomically mutates Account, Deposit and optional Goal wit
   assert.match(migration, /delete_financial_transaction_v112/);
 });
 
-test("V1.1.7 Reports bypass the V1.1.2 report RPC at runtime while keeping its migration compatible", async () => {
+test("V1.1.8 Reports bypass the V1.1.2 report RPC at runtime while keeping its migration compatible", async () => {
   const data = await read("features/reports/data.ts");
   const migration = await read("supabase/migrations/20261011170000_transfer_deposit_reports_v112.sql");
   assert.match(data, /loadReportTransactionsDirect/);
@@ -59,13 +59,13 @@ test("Reports has a dedicated recoverable error boundary", async () => {
   assert.match(boundary, /reset/);
 });
 
-test("V1.1.7 metadata keeps the V1.1.2 SQL verification available", async () => {
+test("V1.1.8 metadata keeps the V1.1.2 SQL verification available", async () => {
   const pkg = JSON.parse(await read("package.json"));
   const version = await read("lib/app-version.ts");
   const verify = await read("supabase/sql-editor/V1.1.2_transfer_deposit_reports_reliability_verify.sql");
-  assert.equal(pkg.version, "1.1.7");
-  assert.match(version, /APP_VERSION = "1\.1\.7"/);
-  assert.match(version, /Reports UI & Calendar Polish/);
+  assert.equal(pkg.version, "1.1.8");
+  assert.match(version, /APP_VERSION = "1\.1\.8"/);
+  assert.match(version, /Calendar Interaction & Performance Fix/);
   assert.match(verify, /create_deposit_transfer_v112/);
   assert.match(verify, /report_flow_rows_v112/);
 });

@@ -20,6 +20,21 @@ function validDate(value: string) {
   return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
 }
 
+function safeReturnTo(value: string) {
+  const trimmed = value.trim();
+  if (!trimmed.startsWith("/") || trimmed.startsWith("//")) return "";
+  if (!trimmed.startsWith("/reports/calendar")) return "";
+  return trimmed;
+}
+
+function feedbackDestination(returnTo: string, kind: "error" | "message", message: string) {
+  const safe = safeReturnTo(returnTo);
+  if (!safe) return destination(kind, message);
+  const url = new URL(safe, "https://finzaro.local");
+  url.searchParams.set(kind, message);
+  return `${url.pathname}${url.search}${url.hash}`;
+}
+
 function safeDbMessage(error: unknown, fallback: string) {
   if (!error || typeof error !== "object") return fallback;
   const message = "message" in error ? String(error.message) : "";
@@ -93,6 +108,7 @@ export async function createTransactionAction(formData: FormData) {
     const newLoanUpfrontFeeInput = text(formData, "new_loan_upfront_fee") || "0";
     const savingsGoalId = text(formData, "savings_goal_id") || null;
     const depositId = text(formData, "deposit_id") || null;
+    const returnTo = safeReturnTo(text(formData, "return_to"));
 
     if (!isTransactionType(transactionType)) throw new Error("Loại giao dịch không hợp lệ.");
     if (title.length < 1 || title.length > 140) throw new Error("Nội dung giao dịch phải từ 1 đến 140 ký tự.");
@@ -273,7 +289,7 @@ export async function createTransactionAction(formData: FormData) {
       : transactionType === "transfer" && savingsGoalId ? "Đã chuyển tiền vào tài khoản tiết kiệm và tăng tiến độ mục tiêu đã chọn."
       : transactionType === "transfer" ? "Đã chuyển tiền; mục tiêu liên kết (nếu có) đã tự đồng bộ."
       : "Đã ghi nhận giao dịch và cập nhật số dư.";
-    redirect(destination("message", message));
+    redirect(feedbackDestination(returnTo, "message", message));
   } catch (error) {
     if (error && typeof error === "object" && "digest" in error) throw error;
     redirect(destination("error", error instanceof Error ? error.message : "Không thể tạo giao dịch."));
@@ -282,6 +298,7 @@ export async function createTransactionAction(formData: FormData) {
 
 export async function deleteTransactionAction(formData: FormData) {
   const transactionId = text(formData, "transaction_id");
+  const returnTo = safeReturnTo(text(formData, "return_to"));
   if (!transactionId) redirect(destination("error", "Thiếu mã giao dịch."));
   try {
     const { supabase } = await requireUser();
@@ -291,15 +308,16 @@ export async function deleteTransactionAction(formData: FormData) {
     }
     if (deletion.error) throw new Error(safeDbMessage(deletion.error, "Không thể xóa giao dịch."));
     ["/transactions", "/overview", "/accounts", "/deposits", "/credit-cards", "/loans", "/goals", "/net-worth", "/debt-strategy", "/reports", "/health", "/forecast", "/cash-flow"].forEach((path) => revalidatePath(path));
-    redirect(destination("message", "Đã xóa giao dịch và hoàn nguyên số dư/liability/goal liên quan."));
+    redirect(feedbackDestination(returnTo, "message", "Đã xóa giao dịch và hoàn nguyên số dư/liability/goal liên quan."));
   } catch (error) {
     if (error && typeof error === "object" && "digest" in error) throw error;
-    redirect(destination("error", error instanceof Error ? error.message : "Không thể xóa giao dịch."));
+    redirect(feedbackDestination(returnTo, "error", error instanceof Error ? error.message : "Không thể xóa giao dịch."));
   }
 }
 
 export async function updateTransactionAction(formData: FormData) {
   const transactionId = text(formData, "transaction_id");
+  const returnTo = safeReturnTo(text(formData, "return_to"));
   try {
     if (!transactionId) throw new Error("Thiếu mã giao dịch.");
     const title = text(formData, "title");
@@ -340,9 +358,9 @@ export async function updateTransactionAction(formData: FormData) {
     revalidatePath("/accounts");
     revalidatePath("/reports");
     revalidatePath("/budgets");
-    redirect(destination("message", "Đã cập nhật khoản thu/chi và tính lại số dư tài khoản."));
+    redirect(feedbackDestination(returnTo, "message", "Đã cập nhật khoản thu/chi và tính lại số dư tài khoản."));
   } catch (error) {
     if (error && typeof error === "object" && "digest" in error) throw error;
-    redirect(destination("error", error instanceof Error ? error.message : "Không thể cập nhật giao dịch."));
+    redirect(feedbackDestination(returnTo, "error", error instanceof Error ? error.message : "Không thể cập nhật giao dịch."));
   }
 }

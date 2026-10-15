@@ -21,7 +21,7 @@ function moduleAlias(path) {
   return `@/${relative(root, path).replaceAll("\\", "/").replace(/\.(tsx?|jsx?)$/, "")}`;
 }
 
-test("V1.1.7 keeps Reports server/client boundary safe without a chart-only palette dependency", async () => {
+test("V1.1.8 keeps Reports server/client boundary safe without a chart-only palette dependency", async () => {
   const page = await read("app/(dashboard)/reports/page.tsx");
   const donut = await read("components/report-donut.tsx");
 
@@ -60,10 +60,10 @@ test("Reports server routes do not import executable lower-case helpers from use
   assert.deepEqual(violations, []);
 });
 
-test("V1.1.7 release metadata is current", async () => {
+test("V1.1.8 release metadata is current", async () => {
   const pkg = JSON.parse(await read("package.json"));
   const version = await read("lib/app-version.ts");
-  assert.equal(pkg.version, "1.1.7");
-  assert.match(version, /APP_VERSION = "1\.1\.7"/);
-  assert.match(version, /Reports UI & Calendar Polish/);
+  assert.equal(pkg.version, "1.1.8");
+  assert.match(version, /APP_VERSION = "1\.1\.8"/);
+  assert.match(version, /Calendar Interaction & Performance Fix/);
 });

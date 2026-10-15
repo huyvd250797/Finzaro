@@ -21,13 +21,14 @@ import { formatMinorMoney } from "@/lib/utils";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Giao dịch" };
 
-type SearchParams = Promise<{ new?: string; edit?: string; q?: string; type?: string; account?: string; category?: string; from?: string; to?: string; error?: string; message?: string }>;
+type SearchParams = Promise<{ new?: string; edit?: string; date?: string; return_to?: string; q?: string; type?: string; account?: string; category?: string; from?: string; to?: string; error?: string; message?: string }>;
 
-function EditTransactionForm({ transaction, accounts, categories, currencies }: {
+function EditTransactionForm({ transaction, accounts, categories, currencies, returnTo }: {
   transaction: TransactionView;
   accounts: Array<{ id: string; name: string; currency_code: string; institution_name: string | null; decimal_digits?: number }>;
   categories: Array<{ id: string; name: string; icon_name: string; icon_color: string | null; parent_id: string | null }>;
   currencies: LedgerCurrency[];
+  returnTo?: string;
 }) {
   if (transaction.transaction_type !== "income" && transaction.transaction_type !== "expense") return null;
   const type = transaction.transaction_type as "income" | "expense";
@@ -35,16 +36,17 @@ function EditTransactionForm({ transaction, accounts, categories, currencies }: 
   if (!entry) return null;
   const digits = currencyDigits(currencies, entry.currency_code);
   return <Card className="mt-5 border-sky-500/25 shadow-xl shadow-black/5"><CardContent className="p-5 sm:p-6">
-    <div className="flex items-start justify-between gap-4"><div><p className="text-xs font-black uppercase tracking-[0.14em] text-sky-600">Edit transaction</p><h2 className="mt-1 text-lg font-black">Sửa {type === "income" ? "khoản thu" : "khoản chi"}</h2><p className="mt-1 text-xs text-[var(--muted-foreground)]">Finzaro sẽ hoàn nguyên ledger cũ rồi áp dụng giá trị mới trong một database transaction.</p></div><Link href="/transactions" className="grid size-9 place-items-center rounded-xl border border-[var(--border)]"><X className="size-4" /></Link></div>
+    <div className="flex items-start justify-between gap-4"><div><p className="text-xs font-black uppercase tracking-[0.14em] text-sky-600">Edit transaction</p><h2 className="mt-1 text-lg font-black">Sửa {type === "income" ? "khoản thu" : "khoản chi"}</h2><p className="mt-1 text-xs text-[var(--muted-foreground)]">Finzaro sẽ hoàn nguyên ledger cũ rồi áp dụng giá trị mới trong một database transaction.</p></div><Link href={returnTo || "/transactions"} className="grid size-9 place-items-center rounded-xl border border-[var(--border)]"><X className="size-4" /></Link></div>
     <form action={updateTransactionAction} className="mt-5 grid min-w-0 gap-4 md:grid-cols-2">
       <input type="hidden" name="transaction_id" value={transaction.id} />
+      <input type="hidden" name="return_to" value={returnTo ?? ""} />
       <label className="md:col-span-2"><span className="field-label">Nội dung</span><input name="title" required maxLength={140} defaultValue={transaction.title} className="fin-input" /></label>
       <label><span className="field-label">Tài khoản</span><select name="account_id" required defaultValue={entry.account_id} className="fin-input">{accounts.map((account) => <option key={account.id} value={account.id}>{account.name} · {account.currency_code}</option>)}</select></label>
       <label><span className="field-label">Số tiền</span><MoneyCalculatorInput name="amount" defaultValue={minorToMajorInput(Math.abs(entry.amount_minor), digits)} decimalDigits={digits} currencyCode={entry.currency_code} required /></label>
       <label><span className="field-label">Danh mục</span><TransactionCategorySelect categories={categories} defaultValue={transaction.category_id} /></label>
       <label><span className="field-label">Ngày giao dịch</span><MobileDateInput name="transaction_date" defaultValue={transaction.transaction_date} ariaLabel="Ngày giao dịch" /></label>
       <label className="md:col-span-2"><span className="field-label">Ghi chú</span><textarea name="notes" rows={3} maxLength={500} defaultValue={transaction.notes ?? ""} className="fin-textarea" /></label>
-      <div className="flex justify-end gap-2 md:col-span-2"><Link href="/transactions" className="fin-secondary-btn">Hủy</Link><PendingSubmitButton idleLabel="Cập nhật giao dịch" pendingLabel="Đang cập nhật..." className="fin-primary-btn" /></div>
+      <div className="flex justify-end gap-2 md:col-span-2"><Link href={returnTo || "/transactions"} className="fin-secondary-btn">Hủy</Link><PendingSubmitButton idleLabel="Cập nhật giao dịch" pendingLabel="Đang cập nhật..." className="fin-primary-btn" /></div>
     </form>
   </CardContent></Card>;
 }
@@ -54,7 +56,7 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
   const { supabase, userId } = await requireUser();
   const [{ data: preferences }, ledger, { data: activeLoans, error: loansError }, { data: loanPayments, error: loanPaymentsError }, { data: activeCards, error: cardsError }, { data: activeGoals, error: goalsError }, { data: activeDeposits, error: depositsError }] = await Promise.all([
     supabase.from("user_preferences").select("currency_code, timezone").eq("id", userId).maybeSingle(),
-    loadLedger(supabase, userId, { limit: 500 }),
+    loadLedger(supabase, userId, params.edit && params.date ? { limit: 120, fromDate: params.date, toDate: params.date } : params.return_to?.startsWith("/reports/calendar") ? { limit: 180 } : { limit: 500 }),
     (supabase as any).from("loans").select("*").eq("user_id", userId).eq("is_archived", false).order("created_at", { ascending: false }),
     (supabase as any).from("loan_payments").select("*").eq("user_id", userId).order("payment_date", { ascending: false }).order("created_at", { ascending: false }).limit(5000),
     (supabase as any).from("credit_cards").select("id, name, bank_name, last4, currency_code, current_balance_minor").eq("user_id", userId).eq("is_archived", false).order("created_at", { ascending: false }),
@@ -80,6 +82,8 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
     const value = (kind: string) => parts.find((part) => part.type === kind)?.value ?? "";
     return `${value("year")}-${value("month")}-${value("day")}`;
   })();
+  const requestedDate = params.date && /^\d{4}-\d{2}-\d{2}$/.test(params.date) ? params.date : today;
+  const returnTo = params.return_to && params.return_to.startsWith("/") && !params.return_to.startsWith("//") ? params.return_to : "";
   const expenseSuggestions = quickTransactionSuggestions(ledger.transactions, ledger.currencies, "expense");
   const incomeSuggestions = quickTransactionSuggestions(ledger.transactions, ledger.currencies, "income");
   const transferSuggestions = quickTransactionSuggestions(ledger.transactions, ledger.currencies, "transfer");
@@ -120,9 +124,9 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
   const totals = monthTotals(ledger.transactions, defaultCurrency, currentMonthKey(timeZone));
 
   return <div className="mx-auto max-w-[1500px] min-w-0 px-4 py-6 md:px-6 lg:px-8 lg:py-8">
-    <div className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-sm font-semibold text-[var(--primary)]">Money · Ledger</p><h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">Giao dịch</h1><p className="mt-2 max-w-3xl text-sm text-[var(--muted-foreground)]">Thu tiền (kể cả giải ngân từ thẻ/khoản vay), Chi tiền trả nợ và Chuyển tiền giữa tài khoản hoặc trực tiếp vào module Tiền gửi, có thể đồng thời bổ sung Mục tiêu.</p></div><InstantTransactionLauncher initialType={newType} expense={<TransactionEntryForm type="expense" accounts={activeAccounts} categories={expenseCategories} today={today} suggestions={expenseSuggestions} creditCards={creditCardPaymentOptions} loans={loanOptions} />} income={<TransactionEntryForm type="income" accounts={activeAccounts} categories={incomeCategories} today={today} suggestions={incomeSuggestions} creditCards={creditCardFundingOptions} />} transfer={<TransactionEntryForm type="transfer" accounts={activeAccounts} categories={[]} today={today} suggestions={transferSuggestions} savingsGoals={savingsGoalOptions} deposits={depositOptions} />} /></div>
+    <div className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-sm font-semibold text-[var(--primary)]">Money · Ledger</p><h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">Giao dịch</h1><p className="mt-2 max-w-3xl text-sm text-[var(--muted-foreground)]">Thu tiền (kể cả giải ngân từ thẻ/khoản vay), Chi tiền trả nợ và Chuyển tiền giữa tài khoản hoặc trực tiếp vào module Tiền gửi, có thể đồng thời bổ sung Mục tiêu.</p></div><InstantTransactionLauncher initialType={newType} expense={<TransactionEntryForm type="expense" accounts={activeAccounts} categories={expenseCategories} today={requestedDate} returnTo={returnTo} suggestions={expenseSuggestions} creditCards={creditCardPaymentOptions} loans={loanOptions} />} income={<TransactionEntryForm type="income" accounts={activeAccounts} categories={incomeCategories} today={requestedDate} returnTo={returnTo} suggestions={incomeSuggestions} creditCards={creditCardFundingOptions} />} transfer={<TransactionEntryForm type="transfer" accounts={activeAccounts} categories={[]} today={requestedDate} returnTo={returnTo} suggestions={transferSuggestions} savingsGoals={savingsGoalOptions} deposits={depositOptions} />} /></div>
     <AuthMessage error={params.error} message={params.message} />
-    {editing && <EditTransactionForm transaction={editing} accounts={activeAccounts} categories={editing.transaction_type === "income" ? incomeCategories : expenseCategories} currencies={ledger.currencies} />}
+    {editing && <EditTransactionForm transaction={editing} accounts={activeAccounts} categories={editing.transaction_type === "income" ? incomeCategories : expenseCategories} currencies={ledger.currencies} returnTo={returnTo} />}
 
     <div className="mt-5 grid gap-3 sm:grid-cols-3"><Card className="fin-card"><CardContent className="p-4"><p className="fin-stat-label mt-0">Thu nhập tháng · {defaultCurrency}</p><p className="mt-2 text-xl font-black text-emerald-600">{formatMinorMoney(totals.income, defaultCurrency, digits)}</p></CardContent></Card><Card className="fin-card"><CardContent className="p-4"><p className="fin-stat-label mt-0">Chi tiêu tháng · {defaultCurrency}</p><p className="mt-2 text-xl font-black">{formatMinorMoney(totals.expense, defaultCurrency, digits)}</p></CardContent></Card><Card className="fin-card"><CardContent className="p-4"><p className="fin-stat-label mt-0">Dòng tiền ròng · {defaultCurrency}</p><p className={`mt-2 text-xl font-black ${totals.net >= 0 ? "text-emerald-600" : "text-rose-500"}`}>{formatMinorMoney(totals.net, defaultCurrency, digits)}</p></CardContent></Card></div>
 
