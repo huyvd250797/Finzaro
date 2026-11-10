@@ -67,9 +67,9 @@ test("strict TypeScript permits unknown timing results only after validation", (
 });
 
 test("V1.4.1 metadata is versioned without modifying underlying V1.2 RPCs", () => {
-  assert.equal(JSON.parse(read("package.json")).version, "1.4.1");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "1\.4\.1"/);
-  assert.match(read("CHANGELOG.md"), /V1\.4\.1/);
+  assert.equal(JSON.parse(read("package.json")).version, "1.7.0");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "1\.7\.0"/);
+  assert.match(read("CHANGELOG.md"), /V1\.7\.0/);
   assert.match(read("DEPLOY_V1.4.1.md"), /No new SQL/);
   for (const rpc of ["create_simple_transaction_v120", "delete_simple_transaction_v120", "update_simple_transaction_v120"]) {
     assert.ok(actions.includes(`rpc("${rpc}"`));

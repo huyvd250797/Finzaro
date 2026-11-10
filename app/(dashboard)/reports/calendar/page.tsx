@@ -75,7 +75,8 @@ export default async function ReportCalendarPage({ searchParams }: { searchParam
   const leading = firstWeekday === 0 ? 6 : firstWeekday - 1;
   const previousPeriod = shiftMonthKey(period, -1);
   const previousDays = monthBounds(previousPeriod).days;
-  const cells = Array.from({ length: 42 }, (_, index) => {
+  const cellCount = Math.ceil((leading + bounds.days) / 7) * 7;
+  const cells = Array.from({ length: cellCount }, (_, index) => {
     const dayOffset = index - leading + 1;
     if (dayOffset < 1) return { current: false, day: previousDays + dayOffset, key: `prev-${index}` };
     if (dayOffset > bounds.days) return { current: false, day: dayOffset - bounds.days, key: `next-${index}` };

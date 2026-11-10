@@ -38,4 +38,6 @@ Lưu ý: release từng được dự kiến tên `V0.0.13 – Net Worth & Finan
 
 - **`V1.4.0 — Combined Stability + Design System + Transaction UX 2.0`** includes all approved V1.2.3/V1.3.0 work. The prior source baseline was V1.2.2; V1.2.3 and V1.3.0 are implementation phases, not separate distributed ZIPs. Next changed release must be V1.4.1 or higher.
 
-- **`V1.4.1 — Transaction RPC TypeScript Deploy Fix`** corrects TS2339 for all three transaction RPC responses. The next source release must be `V1.4.2` or higher.
+- **`V1.4.1 — Transaction RPC TypeScript Deploy Fix`** corrects TS2339 for all three transaction RPC responses. The next planned combined UX source release is V1.7.0.
+
+- **`V1.7.0 — Combined Smart Calendar + Reports & Charts + Overview & Navigation UX`** includes the V1.5.0 and V1.6.0 implementation phases. Source baseline: V1.4.1. Only V1.7.0 is shipped; V1.5.0 and V1.6.0 were not separate ZIP releases. The next changed source package must be `V1.7.1` or higher.

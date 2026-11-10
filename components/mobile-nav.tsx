@@ -29,10 +29,10 @@ export function MobileNav() {
   ];
   const renderTab = (item: typeof tabs[number]) => { const Icon = item.icon; const active = pathname === item.href || pathname.startsWith(item.href + "/"); return <Link key={item.href} href={item.href} prefetch className={cn("mobile-tabbar-item", active ? "text-[var(--primary)]" : "text-[var(--muted-foreground)]")}><span className={cn("mobile-tabbar-icon", active && "bg-[var(--sidebar-accent)]")}><Icon className="size-[18px]" /></span><span className="mobile-tabbar-label">{item.label}</span></Link>; };
   return <>
-    <nav className="fin-mobile-taskbar fixed inset-x-0 bottom-0 z-[80] overflow-visible border-t border-[var(--border)] bg-[var(--card)]/96 px-2 pb-[max(env(safe-area-inset-bottom),8px)] pt-7 backdrop-blur-xl lg:hidden">
+    <nav className="fin-mobile-taskbar fixed inset-x-0 bottom-0 z-[80] overflow-visible border-t border-[var(--border)] bg-[var(--card)]/96 px-2 pb-[max(env(safe-area-inset-bottom),8px)] pt-2 backdrop-blur-xl lg:hidden">
       <div className="grid grid-cols-[1fr_1fr_72px_1fr_1fr] items-end">
         {tabs.slice(0,2).map(renderTab)}
-        <button type="button" onClick={() => setSheet("transaction")} aria-label="Thêm giao dịch" className="group relative flex min-h-14 min-w-0 flex-col items-center justify-end gap-1 text-[10px] font-semibold active:scale-[.97]"><span className="absolute -top-6 left-1/2 grid size-13 -translate-x-1/2 place-items-center rounded-full border-[5px] border-[var(--card)] bg-[var(--primary)] text-white shadow-lg"><Plus className="size-6" /></span><span className="mobile-tabbar-label">Thêm GD</span></button>
+        <button type="button" onClick={() => setSheet("transaction")} aria-label="Thêm giao dịch" className="group relative flex min-h-14 min-w-0 flex-col items-center justify-center gap-0.5 text-[10px] font-semibold active:scale-[.97]"><span className="grid size-10 place-items-center rounded-xl bg-[var(--primary)] text-white shadow-sm transition-transform group-active:scale-95"><Plus className="size-5" /></span><span className="mobile-tabbar-label">Thêm GD</span></button>
         {renderTab(tabs[2])}
         <button type="button" onClick={() => setSheet("modules")} className="mobile-tabbar-item text-[var(--muted-foreground)]"><span className="mobile-tabbar-icon"><Ellipsis className="size-[18px]" /></span><span className="mobile-tabbar-label">Thêm</span></button>
       </div>

@@ -1,3 +1,16 @@
+## V1.7.0 — Calendar, Reports & Overview UX Redesign (2026-11-10)
+
+Combined implementation of three approved phases: V1.5.0 Smart Calendar Experience, V1.6.0 Reports & Charts Redesign, and V1.7.0 Overview & Navigation Redesign. Published source version is **V1.7.0** only.
+
+- Calendar: compact readable Thu/Chi in each daily cell, flexible 4–6 week month height, immediate client-side date selection, double-tap quick-create, swipe row actions, and preservation of selected date after saving.
+- Reports: full category-colored pie with keyboard/tap selection, integrated compact legend, item amount and percent, and one-tap category drill-down. Consolidated redundant legend cards.
+- Overview: compact balance-and-3-KPI panel, responsive trends, category progress bars using configured colors, and shorter navigation to transaction/calendar screens.
+- Mobile navigation: fully visible center Add button without negative positioning, safe-area-conscious fixed taskbar and compact header.
+- Removed orphaned route/components/actions for the 13 discontinued advanced modules from the shipped app source. **Database tables, migrations and historical finance records are retained.**
+- This is a UI/source release: **no new SQL migration**. Keep V1.2.0 DB RPCs for Thu/Chi/Chuyển.
+- Security: bumped `next` and `eslint-config-next` to `16.4.6`, and React/React DOM to `19.3.1` based on November 2026 patched stable releases.
+- Deployment gate: TypeScript strict + lint + regression tests + `next build` on dependency-complete CI/Vercel; do not mark production-ready without those checks.
+
 ## V1.4.1 — Transaction RPC TypeScript Deploy Fix (2026-11-10)
 
 - Fix production type-check errors TS2339 at `features/transactions/actions.ts` on the create, delete, and update RPC calls. The generic `measureServerOperation` returns `unknown` for a callback where `.rpc` is accessed through an `any` cast; destructuring `.error` is invalid.

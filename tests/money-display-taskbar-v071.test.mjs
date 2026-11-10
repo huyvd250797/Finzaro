@@ -18,9 +18,10 @@ test("mobile taskbar reserves room for the plus button without paint clipping", 
   const css = await read("app/globals.css");
   const layout = await read("app/(dashboard)/layout.tsx");
   const pwa = await read("components/pwa-register.tsx");
-  assert.match(nav, /fin-mobile-taskbar[^\n]+overflow-visible[^\n]+pt-7/);
+  assert.match(nav, /fin-mobile-taskbar[^\n]+overflow-visible[^\n]+pt-2/);
   assert.doesNotMatch(nav, /group -mt-7/);
-  assert.match(nav, /className="absolute -top-6 left-1\/2 grid size-13/);
+  assert.match(nav, /grid size-10 place-items-center rounded-xl/);
+  assert.doesNotMatch(nav, /absolute -top-6/);
   assert.doesNotMatch(css, /contain:\s*layout paint/);
   assert.match(css, /\.fin-mobile-taskbar[\s\S]*?overflow:\s*visible/);
   assert.match(css, /\.fin-mobile-taskbar[\s\S]*?bottom:\s*0\s*!important/);

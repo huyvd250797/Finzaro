@@ -1,8 +1,8 @@
-# Finzaro V1.4.1 — Transaction RPC TypeScript Deploy Fix
+# Finzaro V1.7.0 — Calendar, Reports & Overview UX Redesign
 
-**V1.4.1 patch on the combined release:** V1.2.3 stability baseline + V1.3.0 design system + V1.4.0 transaction UX. Only the final V1.4.0 package is distributed. The product remains six modules and 3 transaction types: Thu, Chi, Chuyển.
+**V1.7.0 combines the V1.5.0, V1.6.0 and V1.7.0 UI/UX stages** on the fixed V1.4.1 baseline. A single final source package is distributed. The product remains six modules and 3 transaction types: Thu, Chi, Chuyển.
 
-Quick start and acceptance checklist: [`DEPLOY_V1.4.0.md`](DEPLOY_V1.4.0.md).
+Deployment checklist: [`DEPLOY_V1.7.0.md`](DEPLOY_V1.7.0.md). QA evidence: [`docs/V1.7.0_QA.md`](docs/V1.7.0_QA.md).
 
 ## Product overview
 
@@ -45,7 +45,7 @@ See [`DEPLOY_V1.2.2.md`](DEPLOY_V1.2.2.md) for the deploy fix and [`DEPLOY_V1.2.
 3. Run `supabase/sql-editor/V1.2.0_simple_expense_management.sql` in Supabase SQL Editor.
 4. Run `supabase/sql-editor/V1.2.0_simple_expense_management_verify.sql` to verify the marker table and RPCs.
 5. Install dependencies (`npm install`), then run `npm run check` to test/lint/typecheck/build in an environment with network access and valid `.env` settings.
-6. Deploy the V1.4.0 source ZIP root to Vercel and clear build cache once. Verify PWA badge `V1.4.0`.
+6. Deploy the V1.7.0 source ZIP root to Vercel and clear build cache once. Verify PWA badge `V1.7.0`.
 7. Smoke-test all three transaction types, deletion rollback, calendar/day edit, Reports, category icon/color, account balances and archived historical records.
 
 This ZIP does not include `node_modules`, compiled `.next` output or a database backup. Migration has **not** been run against your real Supabase instance. No customer data was deleted by preparing this release.
@@ -58,9 +58,21 @@ Copy `.env.example` to `.env.local` and fill in Supabase app keys. The `prebuild
 
 `npm run test` runs the V1.2.0/1.2.1/1.2.2 compatibility regression suites plus the V1.4.0 UX/performance regressions and still-valid PWA/auth/calculator tests. Historical advanced-module tests are preserved in `tests/legacy/` for traceability but are no longer part of the simplified product's active test contract.
 
-See [`docs/VERSIONING.md`](docs/VERSIONING.md) for patch version policy. The next changed source package must be `V1.4.2` or later; do not reuse `V1.4.0`.
+See [`docs/VERSIONING.md`](docs/VERSIONING.md) for patch version policy. The next changed source package must be `V1.7.1` or later; do not reuse `V1.4.0`.
 
 
 ## V1.4.1 TypeScript deployment patch
 
 The three RPC actions for create, update, and delete now validate the RPC envelope before reading `.error`, resolving the TypeScript TS2339 `unknown` regression while preserving the atomic V1.2.0 SQL functions and all V1.4.0 functionality. See `DEPLOY_V1.4.1.md`. No new SQL migration.
+
+
+## V1.7.0 UI/UX consolidation
+
+- **Calendar:** 7 visible date columns, compact integer Thu/Chi (`+1,25tr`, `-850k`), no zero labels; tapping dates filters the existing month locally. Double-tap (or selected-day Add action) opens a date-prefilled transaction form. Swiping day items exposes Edit/Delete; saving returns to that month and date.
+- **Reports:** category color is the source of truth for every pie segment and legend item. Select any slice or legend entry to see share and amount, then choose `Chi tiết` to drill down. No center overlay masks the pie.
+- **Overview:** merged balance and 3 KPI cards, compressed headings and controls, compact top-5 categories and recent transactions. Navigation fixed to the bottom with a fully visible Add control.
+- **Simplified scope:** exactly six active modules. Discontinued routes use safe redirects and their application code is no longer shipped. Financial history and SQL migrations are untouched.
+
+See [`DEPLOY_V1.7.0.md`](DEPLOY_V1.7.0.md). No new SQL migration for V1.7.0. Run `npm run check` on a dependency-complete system with valid environment variables before deploying.
+
+Security compatibility: Next.js / eslint-config-next `16.4.6` and React / React DOM `19.3.1` replace known-vulnerable pre-October versions in the source baseline. Keep dependency versions aligned and clear Vercel build cache when switching.

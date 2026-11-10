@@ -20,6 +20,7 @@ import {
   type ReportFlowType
 } from "@/features/reports/experience";
 import { loadReportLedger } from "@/features/reports/data";
+import { compactCalendarAmount } from "@/features/reports/compact-money";
 import { currencyDigits } from "@/features/transactions/data";
 import { requireUser } from "@/lib/auth";
 import { measureServerOperation } from "@/lib/performance";
@@ -62,8 +63,13 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
   const transactions = periodTransactions(ledger.transactions, bounds.from, bounds.to);
   const totals = periodFlowTotals(transactions, currency);
   const categories = reportCategoryBreakdown(transactions, currency, type);
-  const chartSlices = categories.map((item) => ({ ...item, color: iconColorValue(item.icon_color) }));
+  const chartSlices = categories.map((item) => ({
+    ...item,
+    color: iconColorValue(item.icon_color),
+    href: item.id.startsWith("uncategorized-") ? null : `/reports/category/${item.id}?${new URLSearchParams({ mode, type, ...(mode === "month" ? { period } : { year: String(year) }) }).toString()}`
+  }));
   const selectedTotal = type === "expense" ? totals.expense : totals.income;
+  const kpiValue = (amount: number) => compactCalendarAmount(Math.abs(amount), digits) || "0";
   const visibleTransactions = transactions.filter((item) => flowAmount(item, currency, type) > 0).slice(0, 8);
 
   const previousHref = mode === "month"
@@ -103,10 +109,15 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
         </CardContent>
       </Card>
 
-      <div className="mt-3 grid grid-cols-3 gap-2">
-        <Card className="min-w-0 border-rose-500/20 bg-rose-500/[.035]"><CardContent className="p-2.5 sm:p-3.5"><div className="flex items-center gap-1"><TrendingDown className="size-3.5 shrink-0 text-rose-500 sm:size-4" /><p className="truncate text-[9px] font-black text-[var(--muted-foreground)] sm:text-xs">Chi tiêu</p></div><p className="mt-1.5 whitespace-nowrap text-[10.5px] font-black tracking-[-.02em] tabular-nums text-rose-500 sm:text-base md:text-lg">{formatMinorMoney(totals.expense, currency, digits)}</p></CardContent></Card>
-        <Card className="min-w-0 border-emerald-500/20 bg-emerald-500/[.035]"><CardContent className="p-2.5 sm:p-3.5"><div className="flex items-center gap-1"><TrendingUp className="size-3.5 shrink-0 text-emerald-500 sm:size-4" /><p className="truncate text-[9px] font-black text-[var(--muted-foreground)] sm:text-xs">Thu nhập</p></div><p className="mt-1.5 whitespace-nowrap text-[10.5px] font-black tracking-[-.02em] tabular-nums text-emerald-500 sm:text-base md:text-lg">{formatMinorMoney(totals.income, currency, digits)}</p></CardContent></Card>
-        <Card className="min-w-0 border-sky-500/20 bg-sky-500/[.035]"><CardContent className="p-2.5 sm:p-3.5"><div className="flex items-center gap-1"><CircleDollarSign className="size-3.5 shrink-0 text-sky-500 sm:size-4" /><p className="truncate text-[9px] font-black text-[var(--muted-foreground)] sm:text-xs">Ròng</p></div><p className={cn("mt-1.5 whitespace-nowrap text-[10.5px] font-black tracking-[-.02em] tabular-nums sm:text-base md:text-lg", totals.net < 0 ? "text-rose-500" : "text-sky-500")}>{formatMinorMoney(totals.net, currency, digits)}</p></CardContent></Card>
+      <div className="mt-3 grid grid-cols-3 gap-1.5 sm:gap-2">
+        {([
+          { label: "Thu nhập", value: totals.income, icon: TrendingUp, color: "text-emerald-500", border: "border-emerald-500/20" },
+          { label: "Chi tiêu", value: totals.expense, icon: TrendingDown, color: "text-rose-500", border: "border-rose-500/20" },
+          { label: "Ròng", value: totals.net, icon: CircleDollarSign, color: totals.net < 0 ? "text-rose-500" : "text-sky-500", border: "border-sky-500/20" }
+        ]).map((item) => { const Icon = item.icon; return <Card key={item.label} className={`min-w-0 ${item.border}`} title={`${item.label}: ${formatMinorMoney(item.value, currency, digits)}`}><CardContent className="p-2 sm:p-3">
+          <div className="flex items-center gap-1"><Icon className={`size-3 shrink-0 sm:size-4 ${item.color}`} /><span className="truncate text-[10px] font-bold text-[var(--muted-foreground)] sm:text-xs">{item.label}</span></div>
+          <div className={`mt-1 whitespace-nowrap text-[clamp(11px,3vw,18px)] font-extrabold tabular-nums ${item.color}`}><span className="sm:hidden">{item.value < 0 ? "−" : ""}{kpiValue(item.value)}</span><span className="hidden sm:inline">{formatMinorMoney(item.value, currency, digits)}</span></div>
+        </CardContent></Card>; })}
       </div>
 
       <Card className="mt-3">
@@ -126,37 +137,12 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
           </div>
 
           {categories.length === 0 ? (
-            <div className="mt-4 rounded-xl border border-dashed border-[var(--border)] p-7 text-center text-sm text-[var(--muted-foreground)]">Chưa có dữ liệu trong kỳ này.</div>
+            <div className="mt-3 rounded-xl border border-dashed border-[var(--border)] p-6 text-center text-sm text-[var(--muted-foreground)]">Chưa có giao dịch trong kỳ.</div>
           ) : (
-            <div className="mt-4 grid items-start gap-4 md:grid-cols-[280px_1fr]">
+            <div className="mt-3">
               <ReportVisualBoundary>
                 <ReportDonut slices={chartSlices} total={selectedTotal} currency={currency} decimalDigits={digits} centerLabel={type === "expense" ? "Tổng chi" : "Tổng thu"} />
               </ReportVisualBoundary>
-
-              <div className="max-h-[310px] overflow-y-auto pr-1 [scrollbar-width:thin]">
-                <div className="grid grid-cols-2 gap-2">
-                  {categories.map((item) => {
-                    const color = iconColorValue(item.icon_color);
-                    const detailHref = item.id.startsWith("uncategorized-") ? null : `/reports/category/${item.id}?${new URLSearchParams({ mode, type, ...(mode === "month" ? { period } : { year: String(year) }) }).toString()}`;
-                    const content = (
-                      <>
-                        <div className="flex min-w-0 items-center gap-2">
-                          <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-[var(--muted)]" style={{ color }}><CategoryIcon name={item.icon_name} className="size-4" /></span>
-                          <span className="min-w-0 flex-1">
-                            <span className="block truncate text-[11px] font-black sm:text-xs">{item.label}</span>
-                            <span className="mt-0.5 block text-[10px] font-bold text-[var(--muted-foreground)]">{item.percent}%</span>
-                          </span>
-                        </div>
-                        <div className="mt-2 flex items-end justify-between gap-2">
-                          <span className="h-1.5 min-w-8 flex-1 overflow-hidden rounded-full bg-[var(--muted)]"><span className="block h-full rounded-full" style={{ width: `${Math.max(4, item.percent)}%`, backgroundColor: color }} /></span>
-                          <span className="shrink-0 text-[10px] font-black tabular-nums sm:text-[11px]">{formatMinorMoney(item.amount, currency, digits)}</span>
-                        </div>
-                      </>
-                    );
-                    return detailHref ? <Link key={item.id} href={detailHref} className="min-w-0 rounded-xl border border-[var(--border)] bg-[var(--background)] p-2.5 active:opacity-70">{content}</Link> : <div key={item.id} className="min-w-0 rounded-xl border border-[var(--border)] bg-[var(--background)] p-2.5">{content}</div>;
-                  })}
-                </div>
-              </div>
             </div>
           )}
         </CardContent>
