@@ -67,9 +67,13 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
   const expenseCategories = ledger.categories.filter((category) => category.category_type === "expense" && !category.is_archived);
   const filterCategories = ledger.categories.filter((category) => !category.is_archived);
   const today = (() => {
-    const parts = new Intl.DateTimeFormat("en-US", { timeZone, year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date());
-    const value = (kind: string) => parts.find((part) => part.type === kind)?.value ?? "";
-    return `${value("year")}-${value("month")}-${value("day")}`;
+    try {
+      const parts = new Intl.DateTimeFormat("en-US", { timeZone, year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date());
+      const value = (kind: string) => parts.find((part) => part.type === kind)?.value ?? "";
+      return `${value("year")}-${value("month")}-${value("day")}`;
+    } catch {
+      return new Date().toISOString().slice(0, 10);
+    }
   })();
   const requestedDate = params.date && /^\d{4}-\d{2}-\d{2}$/.test(params.date) ? params.date : today;
   const returnTo = params.return_to && params.return_to.startsWith("/") && !params.return_to.startsWith("//") ? params.return_to : "";

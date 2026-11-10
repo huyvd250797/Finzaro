@@ -165,11 +165,16 @@ export function filterTransactions(
 }
 
 function zonedYearMonth(timeZone: string) {
-  const parts = new Intl.DateTimeFormat("en-US", { timeZone, year: "numeric", month: "2-digit" }).formatToParts(new Date());
-  return {
-    year: Number(parts.find((part) => part.type === "year")?.value ?? new Date().getUTCFullYear()),
-    month: Number(parts.find((part) => part.type === "month")?.value ?? new Date().getUTCMonth() + 1)
-  };
+  const now = new Date();
+  try {
+    const parts = new Intl.DateTimeFormat("en-US", { timeZone, year: "numeric", month: "2-digit" }).formatToParts(now);
+    return {
+      year: Number(parts.find((part) => part.type === "year")?.value ?? now.getUTCFullYear()),
+      month: Number(parts.find((part) => part.type === "month")?.value ?? now.getUTCMonth() + 1)
+    };
+  } catch {
+    return { year: now.getUTCFullYear(), month: now.getUTCMonth() + 1 };
+  }
 }
 
 export function monthKey(year: number, month: number) {

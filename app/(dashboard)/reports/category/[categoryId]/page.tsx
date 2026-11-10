@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { BarChart3, ChevronLeft, ChevronRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { ReportDataStatus } from "@/components/report-data-status";
 import { ReportBarChart } from "@/components/report-bar-chart";
 import { CategoryIcon, iconColorValue } from "@/features/categories/icons";
 import { categoryScopeIds } from "@/features/reports/category-scope";
@@ -58,6 +59,9 @@ export default async function ReportCategoryPage({ params, searchParams }: { par
   const loadFrom = mode === "month" ? monthBounds(chartMonthKeys[0]).from : yearBounds(year).from;
   const loadTo = mode === "month" ? monthBounds(period).to : yearBounds(year).to;
   const ledger = await loadReportLedger(supabase, userId, { fromDate: loadFrom, toDate: loadTo, includeCategories: true });
+  if (ledger.diagnostics.strategy === "empty") {
+    return <div className="mx-auto max-w-3xl px-4 py-10"><ReportDataStatus diagnostics={ledger.diagnostics} /></div>;
+  }
   const category = ledger.categories.find((item) => item.id === categoryId);
 
   if (!category) {

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { AuthMessage } from "@/components/auth-message";
+import { ReportDataStatus } from "@/components/report-data-status";
 import { ReportCalendarInteractive } from "@/components/report-calendar-interactive";
 import { ReportNavigation } from "@/components/report-navigation";
 import { Card, CardContent } from "@/components/ui/card";
@@ -152,6 +153,7 @@ export default async function ReportCalendarPage({ searchParams }: { searchParam
       </div>
       <div className="mx-auto mt-3 max-w-3xl"><ReportNavigation active="calendar" /></div>
       <AuthMessage error={params.error} message={params.message} />
+      <ReportDataStatus diagnostics={"diagnostics" in ledger ? ledger.diagnostics : undefined} />
 
       <Card className="mx-auto mt-3 max-w-3xl">
         <CardContent className="flex items-center gap-2 p-2">

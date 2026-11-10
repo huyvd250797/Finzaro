@@ -127,9 +127,13 @@ export async function updateTransactionAction(formData: FormData) {
     const tx = txResult.data;
     if (txResult.error || !tx || !["income", "expense"].includes(tx.transaction_type) || tx.transaction_purpose !== "standard") throw new Error("Chỉ sửa được giao dịch Thu/Chi thông thường.");
     if (categoryResult.error || !categoryResult.data || categoryResult.data.is_archived || categoryResult.data.category_type !== tx.transaction_type) throw new Error("Danh mục không hợp lệ.");
-    if (accountResult.error || !accountResult.data || accountResult.data.is_archived || !["cash", "bank", "ewallet"].includes(accountResult.data.account_type)) throw new Error("Tài khoản không hợp lệ.");
-    const digits = currencyResult.data?.find(c => c.code === accountResult.data.currency_code)?.decimal_digits;
-    if (currencyResult.error || digits === undefined) throw new Error("Không tìm thấy tiền tệ.");
+    // Keep the validated account in a local binding so TypeScript retains
+    // non-null narrowing inside the currency lookup callback.
+    const account = accountResult.data;
+    if (accountResult.error || !account || account.is_archived || !["cash", "bank", "ewallet"].includes(account.account_type)) throw new Error("Tài khoản không hợp lệ.");
+    if (currencyResult.error || !currencyResult.data) throw new Error("Không tìm thấy tiền tệ.");
+    const digits = currencyResult.data.find(c => c.code === account.currency_code)?.decimal_digits;
+    if (digits === undefined) throw new Error("Không tìm thấy tiền tệ.");
     const amount = parseMajorAmountToMinor(text(formData, "amount"), digits);
     if (!amount || amount <= 0) throw new Error("Số tiền không hợp lệ.");
     const { error } = await (supabase as any).rpc("update_simple_transaction_v120", {

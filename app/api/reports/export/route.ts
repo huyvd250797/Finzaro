@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { filterReportTransactions, normalizeReportFilters, resolveReportRange } from "@/features/reports/data";
-import { loadLedger, transactionEntry } from "@/features/transactions/data";
+import { filterReportTransactions, loadReportLedger, normalizeReportFilters, resolveReportRange } from "@/features/reports/data";
+import { transactionEntry } from "@/features/transactions/data";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +22,10 @@ export async function GET(request: NextRequest) {
     const timeZone = preferences?.timezone ?? "Asia/Ho_Chi_Minh";
     const params = Object.fromEntries(request.nextUrl.searchParams.entries());
     const range = resolveReportRange(params.range, params.from, params.to, timeZone);
-    const ledger = await loadLedger(supabase, userId, { fromDate: range.from, toDate: range.to, fetchAll: true });
+    const ledger = await loadReportLedger(supabase, userId, { fromDate: range.from, toDate: range.to, includeAccounts: true, includeCategories: true });
+    if (ledger.diagnostics.strategy === "empty") {
+      return NextResponse.json({ error: "Chưa tải được dữ liệu. Không thể xuất báo cáo có thể sai lệch." }, { status: 503 });
+    }
     const currency = ledger.currencies.some((item) => item.code === params.currency) ? params.currency : defaultCurrency;
     const requestedFilters = normalizeReportFilters({ ...params, currency }, range, defaultCurrency);
     const filters = {

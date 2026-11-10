@@ -72,7 +72,9 @@ function schemaCompatibilityError(error: any) {
   return code === "42703" || code === "PGRST204" || code === "PGRST200" || message.includes("column") || message.includes("schema cache");
 }
 
-async function findWorkingTransactionProjection(
+// V1.2.1: Probe-free, bounded report pagination. The first real page is the
+// schema compatibility check, which saves one network round trip per report.
+async function loadReportTransactionsDirect(
   supabase: SupabaseClient<Database>,
   userId: string,
   fromDate: string,
@@ -80,54 +82,47 @@ async function findWorkingTransactionProjection(
 ) {
   let lastError: unknown = null;
   for (const projection of REPORT_TRANSACTION_PROJECTIONS) {
-    const { error } = await (supabase as any)
-      .from("transactions")
-      .select(projection)
-      .eq("user_id", userId)
-      .gte("transaction_date", fromDate)
-      .lte("transaction_date", toDate)
-      .limit(1);
-    if (!error) return projection;
-    lastError = error;
-    if (!schemaCompatibilityError(error)) throw error;
+    const rows: RawReportTransaction[] = [];
+    const pageSize = 750;
+    let offset = 0;
+    let incompatible = false;
+
+    while (rows.length <= 100000) {
+      const { data, error } = await (supabase as any)
+        .from("transactions")
+        .select(projection)
+        .eq("user_id", userId)
+        .gte("transaction_date", fromDate)
+        .lte("transaction_date", toDate)
+        .order("transaction_date", { ascending: false })
+        .order("created_at", { ascending: false })
+        .order("id", { ascending: false })
+        .range(offset, offset + pageSize - 1);
+      if (error) {
+        lastError = error;
+        // Only try a fallback projection if the first page showed a genuine
+        // missing-column/schema-cache issue. Never discard partially loaded pages.
+        if (offset === 0 && schemaCompatibilityError(error)) {
+          incompatible = true;
+          break;
+        }
+        throw error;
+      }
+      const page = (data ?? []) as RawReportTransaction[];
+      rows.push(...page);
+      if (page.length < pageSize) break;
+      offset += page.length;
+    }
+    if (incompatible) continue;
+    if (rows.length > 100000) throw new Error("Khoảng báo cáo vượt quá 100.000 giao dịch. Hãy thu hẹp khoảng thời gian.");
+    return rows;
   }
   throw lastError ?? new Error("Không thể đọc lịch sử giao dịch cho Báo cáo.");
 }
 
-async function loadReportTransactionsDirect(
-  supabase: SupabaseClient<Database>,
-  userId: string,
-  fromDate: string,
-  toDate: string
-) {
-  const projection = await findWorkingTransactionProjection(supabase, userId, fromDate, toDate);
-  const rows: RawReportTransaction[] = [];
-  const pageSize = 750;
-  let offset = 0;
-
-  while (rows.length <= 100000) {
-    const { data, error } = await (supabase as any)
-      .from("transactions")
-      .select(projection)
-      .eq("user_id", userId)
-      .gte("transaction_date", fromDate)
-      .lte("transaction_date", toDate)
-      .order("transaction_date", { ascending: false })
-      .order("created_at", { ascending: false })
-      .range(offset, offset + pageSize - 1);
-    if (error) throw error;
-    const page = (data ?? []) as RawReportTransaction[];
-    rows.push(...page);
-    if (page.length < pageSize) break;
-    offset += page.length;
-  }
-
-  if (rows.length > 100000) {
-    throw new Error("Khoảng báo cáo vượt quá 100.000 giao dịch. Hãy thu hẹp khoảng thời gian.");
-  }
-  return rows;
-}
-
+// The previous sequential 60-ID loop could create hundreds of serialized
+// requests on long report ranges. Keep the IN-list small, but fetch at most
+// four chunks in parallel so one slow Supabase request cannot block every page.
 async function loadReportEntriesDirect(
   supabase: SupabaseClient<Database>,
   userId: string,
@@ -135,16 +130,23 @@ async function loadReportEntriesDirect(
 ) {
   if (transactionIds.length === 0) return [] as RawReportEntry[];
   const entries: RawReportEntry[] = [];
-  const chunkSize = 60;
+  const chunkSize = 80;
+  const concurrency = 4;
+  const chunks: string[][] = [];
   for (let index = 0; index < transactionIds.length; index += chunkSize) {
-    const chunk = transactionIds.slice(index, index + chunkSize);
-    const { data, error } = await (supabase as any)
-      .from("transaction_entries")
-      .select("id, transaction_id, account_id, currency_code, amount_minor, entry_role")
-      .eq("user_id", userId)
-      .in("transaction_id", chunk);
-    if (error) throw error;
-    entries.push(...((data ?? []) as RawReportEntry[]));
+    chunks.push(transactionIds.slice(index, index + chunkSize));
+  }
+  for (let index = 0; index < chunks.length; index += concurrency) {
+    const results = await Promise.all(chunks.slice(index, index + concurrency).map(async (chunk) => {
+      const { data, error } = await (supabase as any)
+        .from("transaction_entries")
+        .select("id, transaction_id, account_id, currency_code, amount_minor, entry_role")
+        .eq("user_id", userId)
+        .in("transaction_id", chunk);
+      if (error) throw error;
+      return (data ?? []) as RawReportEntry[];
+    }));
+    for (const page of results) entries.push(...page);
   }
   return entries;
 }
@@ -170,6 +172,7 @@ async function loadReportEntriesLegacyCore(
     if (page.length < pageSize) break;
     offset += page.length;
   }
+  if (offset > 200000) throw new Error("Lịch sử entries quá lớn cho chế độ đọc dự phòng; không được trả về dữ liệu thiếu.");
   return entries;
 }
 
@@ -291,13 +294,15 @@ async function directReportLedger(
   options: { fromDate: string; toDate: string; includeAccounts?: boolean; includeCategories?: boolean }
 ): Promise<ReportLedgerResult> {
   const rawTransactions = await loadReportTransactionsDirect(supabase, userId, options.fromDate, options.toDate);
-  const entries = await loadReportEntriesDirect(supabase, userId, rawTransactions.map((transaction) => transaction.id));
-  const entryCurrencies = Array.from(new Set(entries.map((entry) => entry.currency_code).filter(Boolean)));
-  const [currencies, categories, accounts] = await Promise.all([
-    loadReportCurrenciesBestEffort(supabase, entryCurrencies),
+  // Read entries and independent metadata concurrently without leaving
+  // dangling promises when a database request fails.
+  const [entries, categories, accounts] = await Promise.all([
+    loadReportEntriesDirect(supabase, userId, rawTransactions.map((transaction) => transaction.id)),
     loadReportCategoriesBestEffort(supabase, userId),
     options.includeAccounts ? loadReportAccountsBestEffort(supabase, userId) : Promise.resolve([] as LedgerAccount[])
   ]);
+  const entryCurrencies = Array.from(new Set(entries.map((entry) => entry.currency_code).filter(Boolean)));
+  const currencies = await loadReportCurrenciesBestEffort(supabase, entryCurrencies);
   return {
     transactions: hydrateReportRows(rawTransactions, entries, categories, accounts),
     currencies,
@@ -348,6 +353,7 @@ async function legacyCoreReportLedger(
     if (page.length < pageSize) break;
     offset += page.length;
   }
+  if (rows.length > 100000) throw new Error("Khoảng báo cáo vượt quá 100.000 giao dịch.");
   const ids = new Set(rows.map((row) => row.id));
   const entries = await loadReportEntriesLegacyCore(supabase, userId, ids);
   const entryCurrencies = Array.from(new Set(entries.map((entry) => entry.currency_code).filter(Boolean)));

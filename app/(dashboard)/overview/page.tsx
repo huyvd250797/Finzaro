@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Plus, WalletCards } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { ReportDataStatus } from "@/components/report-data-status";
 import { CashflowChart } from "@/components/cashflow-chart";
 import { TransactionList } from "@/components/transaction-list";
 import { CategoryIcon, iconColorValue } from "@/features/categories/icons";
@@ -32,6 +33,7 @@ export default async function OverviewPage() {
     .slice(0, 6);
   return <div className="mx-auto max-w-[1200px] px-3 py-5 md:px-6 lg:px-8 lg:py-8">
     <div className="flex items-center justify-between gap-3"><div><p className="text-xs font-semibold text-[var(--primary)]">Finzaro · Thu chi cá nhân</p><h1 className="mt-1 text-2xl font-black">Tổng quan</h1></div><Link className="fin-primary-btn" href="/transactions?new=expense"><Plus className="size-4"/> Ghi khoản chi</Link></div>
+    <ReportDataStatus diagnostics={ledger.diagnostics} />
     <div className="mt-4 grid grid-cols-3 gap-2 sm:gap-3">
       {[{label:"Thu nhập",value:totals.income,color:"text-emerald-500"},{label:"Chi tiêu",value:totals.expense,color:"text-rose-500"},{label:"Ròng",value:totals.net,color:totals.net<0?"text-rose-500":"text-sky-500"}].map(item=><Card key={item.label}><CardContent className="p-2.5 sm:p-4"><p className="text-[10px] font-bold text-[var(--muted-foreground)] sm:text-xs">{item.label}</p><p className={`mt-1 break-words text-[11px] font-black tabular-nums sm:text-lg ${item.color}`}>{formatMinorMoney(item.value,currency,digits)}</p></CardContent></Card>)}
     </div>

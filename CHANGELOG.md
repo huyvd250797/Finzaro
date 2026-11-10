@@ -1,3 +1,21 @@
+## V1.2.2 — Transaction TypeScript Deploy Fix (2026-11-10)
+
+- Fixed `TS18047` in `features/transactions/actions.ts`: bind the validated account row to a local `account` constant before currency `.find()` callback, preserving non-null narrowing across the closure.
+- Validate the currency query result before lookup; distinguish missing account/currency without changing existing validation messages or financial behavior.
+- No SQL migration or transaction data changes. This patch is based on the complete V1.2.1 source and preserves its Reports loader/concurrency improvements.
+- Adds a regression test for the precise type-narrowing regression that blocked Vercel deployment. Production build must still be confirmed with installed dependencies.
+
+## V1.2.1 — Performance & Report Integrity (2026-11-10)
+
+- Reports loader removes the extra initial schema-probe query and retries older projections only after a missing-column/schema-cache error on the first page.
+- Ledger entry hydration now uses batches of 80 transaction IDs with a maximum of four concurrent requests, rather than one sequential request per 60 IDs; full-result safety limits remain in place.
+- Independent category/account metadata requests run alongside entry loading, reducing round trips on report/navigation screens.
+- Added a visible recovery warning when all report data sources are unavailable, instead of presenting a blank report as verified zero activity. The CSV endpoint now returns HTTP 503 rather than exporting an apparently valid empty file on total data-source failure.
+- Hardens the date helpers against invalid or obsolete timezone preferences. No change to transaction balances, formulas, report inclusion rules, or the six-module navigation.
+- Added behavioral regression tests for bounded concurrency, schema fallback, report export safety, and source-only release metadata.
+- **No SQL migration for V1.2.1.** The V1.2.0 migration remains required for first-time migrations from V1.1.x.
+- Production build must still be verified in the target Vercel environment; parser and Node regression tests do not replace semantic type-check/full Next.js build.
+
 ## V1.2.0 — Simple Expense Management (2026-11-10)
 
 **Breaking product-scope change, non-destructive database rollout.**

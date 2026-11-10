@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, CircleDollarSign, TrendingDown, TrendingUp } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { ReportDataStatus } from "@/components/report-data-status";
 import { ReportDonut } from "@/components/report-donut";
 import { ReportVisualBoundary } from "@/components/report-visual-boundary";
 import { ReportNavigation } from "@/components/report-navigation";
@@ -80,6 +81,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
       </div>
 
       <div className="mx-auto mt-3 max-w-3xl"><ReportNavigation active="overview" /></div>
+      <ReportDataStatus diagnostics={ledger.diagnostics} />
 
       <Card className="mx-auto mt-3 max-w-3xl">
         <CardContent className="p-2">

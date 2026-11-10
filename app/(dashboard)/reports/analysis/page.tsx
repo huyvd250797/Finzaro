@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Download } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { CashflowChart } from "@/components/cashflow-chart";
+import { ReportDataStatus } from "@/components/report-data-status";
 import { ReportNavigation } from "@/components/report-navigation";
 import { CategoryIcon, iconColorValue } from "@/features/categories/icons";
 import { accountSpending, categorySpending, filterReportTransactions, loadReportLedger, monthlyCashflow, normalizeReportFilters, previousComparableRange, reportTotals, resolveReportRange } from "@/features/reports/data";
@@ -39,6 +40,7 @@ export default async function ReportAnalysisPage({ searchParams }: { searchParam
  return <div className="mx-auto max-w-[1100px] px-3 py-5 sm:px-4 md:px-6 lg:px-8 lg:py-7">
   <div className="flex items-center justify-between gap-3"><div><h1 className="text-2xl font-black">Phân tích thu chi</h1><p className="mt-1 text-xs text-[var(--muted-foreground)]">Thống kê từ các khoản Thu/Chi thông thường. Chuyển tiền và giao dịch nợ cũ không tính vào tổng.</p></div><Link href={`/api/reports/export?${query.toString()}`} className="fin-secondary-btn text-xs"><Download className="size-4"/> CSV</Link></div>
   <div className="mt-4"><ReportNavigation active="analysis"/></div>
+  <ReportDataStatus diagnostics={ledger.diagnostics}/>
   <Card className="mt-3"><CardContent className="p-3 sm:p-4"><form method="get" className="grid grid-cols-2 gap-2 md:grid-cols-4">
    <label className="text-xs">Khoảng thời gian<select name="range" defaultValue={range.key} className="fin-input mt-1"><option value="this_month">Tháng này</option><option value="last_month">Tháng trước</option><option value="3m">3 tháng</option><option value="6m">6 tháng</option><option value="12m">12 tháng</option><option value="ytd">Năm nay</option><option value="custom">Tùy chọn</option></select></label>
    <label className="text-xs">Tài khoản<select name="account" defaultValue={normalized.account} className="fin-input mt-1"><option value="all">Tất cả</option>{ledger.accounts.map(a=><option key={a.id} value={a.id}>{a.name}</option>)}</select></label>

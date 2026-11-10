@@ -31,3 +31,7 @@ Lưu ý: release từng được dự kiến tên `V0.0.13 – Net Worth & Finan
 - **`V1.2.0 — Simple Expense Management`** is the new simplified product baseline, removing 13 advanced financial modules and keeping 6 basic modules.
 - Any subsequent source patch must increment the version (`V1.2.1`, `V1.2.2`...). Do not reuse `V1.2.0` for different source bundles.
 - Supabase legacy schema migration identifiers and old transaction data are deliberately preserved even though those modules are no longer presented to users.
+
+- **`V1.2.1 — Performance & Report Integrity`** is the source-only stability/performance patch on V1.2.0. Next source release must be `V1.2.2` or higher.
+
+- **`V1.2.2 — Transaction TypeScript Deploy Fix`** patches the V1.2.1 source to address `TS18047` in transaction edit. Next changed source package must be `V1.2.3` or higher.
