@@ -55,7 +55,7 @@ export function shiftMonthKey(key: string, offset: number) {
 
 export function flowAmount(transaction: TransactionView, currency: string, type: ReportFlowType) {
   if (!transaction || transaction.transaction_type !== type) return 0;
-  if (type === "income" && transaction.transaction_purpose !== "standard") return 0;
+  if (transaction.transaction_purpose !== "standard") return 0;
   if (!Array.isArray(transaction.entries)) return 0;
   const entry = transactionEntry(transaction, type);
   if (!entry || entry.currency_code !== currency) return 0;

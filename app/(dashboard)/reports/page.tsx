@@ -76,7 +76,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
     <div className="mx-auto max-w-[1180px] px-3 py-4 sm:px-4 md:px-6 lg:px-8 lg:py-7">
       <div className="mx-auto max-w-3xl text-center">
         <h1 className="text-2xl font-black tracking-tight sm:text-3xl">Báo cáo</h1>
-        <p className="mt-1 hidden text-xs text-[var(--muted-foreground)] sm:block">Tổng quan thu · chi từ Transaction Ledger; tiền vay/ứng thẻ không tính là thu nhập thực.</p>
+        <p className="mt-1 hidden text-xs text-[var(--muted-foreground)] sm:block">Thống kê Thu · Chi thông thường; các nghiệp vụ tài chính cũ không tính vào báo cáo mới.</p>
       </div>
 
       <div className="mx-auto mt-3 max-w-3xl"><ReportNavigation active="overview" /></div>

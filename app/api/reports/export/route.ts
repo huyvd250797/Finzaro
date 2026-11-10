@@ -31,7 +31,8 @@ export async function GET(request: NextRequest) {
       category: requestedFilters.category === "all" || ledger.categories.some((item) => item.id === requestedFilters.category) ? requestedFilters.category : "all",
       type: ["all", "income", "expense", "transfer"].includes(requestedFilters.type) ? requestedFilters.type : "all"
     };
-    const transactions = filterReportTransactions(ledger.transactions, filters, ledger.categories);
+    const transactions = filterReportTransactions(ledger.transactions, filters, ledger.categories)
+      .filter(tx => tx.transaction_purpose === "standard" || (tx.transaction_type === "transfer" && tx.entries.some(e => e.entry_role === "transfer_in") && tx.entries.some(e => e.entry_role === "transfer_out")));
 
     const rows: Array<Array<string | number>> = [
       ["Ngày", "Loại", "Tiêu đề", "Danh mục", "Tài khoản nguồn", "Tài khoản đích", "Tiền tệ nguồn", "Số tiền nguồn (minor)", "Tiền tệ đích", "Số tiền đích (minor)", "Ghi chú"]

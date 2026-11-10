@@ -26,6 +26,8 @@ Lưu ý: release từng được dự kiến tên `V0.0.13 – Net Worth & Finan
 
 ## Current baseline
 
-- `V1.0.0` remains the Production Release baseline. `V1.1.9` is the current Category Grid & Save Performance Fix patch on top of the V1.1.0 UI/UX release. Any subsequent source package must increment the version before distribution.
-- Production hotfixes on this UX line use `V1.1.x`; the next planned UX feature release is `V1.2.0`.
-- Do not reuse `V1.1.9` for any modified source package.
+- `V1.0.0` is the historic Production Release milestone.
+- `V1.1.9` was the last feature-heavy source release.
+- **`V1.2.0 — Simple Expense Management`** is the new simplified product baseline, removing 13 advanced financial modules and keeping 6 basic modules.
+- Any subsequent source patch must increment the version (`V1.2.1`, `V1.2.2`...). Do not reuse `V1.2.0` for different source bundles.
+- Supabase legacy schema migration identifiers and old transaction data are deliberately preserved even though those modules are no longer presented to users.

@@ -46,7 +46,7 @@ function AccountForm({ currencies, account }: { currencies: Currency[]; account?
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--primary)]">{editing ? "Edit account" : "New account"}</p>
             <h2 className="mt-1 text-lg font-black">{editing ? "Cập nhật tài khoản" : "Thêm tài khoản tài chính"}</h2>
-            <p className="mt-1 text-sm text-[var(--muted-foreground)]">V0.0.4 khóa tiền tệ và số dư khi chỉnh sửa; mọi biến động số dư đi qua Transaction Core.</p>
+            <p className="mt-1 text-sm text-[var(--muted-foreground)]">Không sửa trực tiếp số dư đã ghi nhận. Thu, Chi hoặc Chuyển tiền sẽ cập nhật số dư tự động.</p>
           </div>
           <Link href="/accounts" data-instant-close aria-label="Đóng form" className="grid size-9 place-items-center rounded-xl border border-[var(--border)] text-[var(--muted-foreground)] hover:bg-[var(--muted)]"><X className="size-4" /></Link>
         </div>
@@ -61,6 +61,7 @@ function AccountForm({ currencies, account }: { currencies: Currency[]; account?
           <label className="block">
             <span className="mb-2 block text-xs font-bold uppercase tracking-wide text-[var(--muted-foreground)]">Loại tài khoản</span>
             <select name="account_type" defaultValue={account?.account_type ?? "bank"} className="h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 text-sm">
+              {account?.account_type === "savings" && <option value="savings" disabled>Tiết kiệm (dữ liệu cũ – chỉ đọc)</option>}
               {Object.entries(ACCOUNT_TYPE_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
             </select>
           </label>
@@ -104,12 +105,12 @@ export default async function AccountsPage({ searchParams }: { searchParams: Sea
   const currencies = (currenciesData ?? []) as Currency[];
   const showArchived = params.archived === "1";
   const visibleAccounts = accounts.filter((item) => item.is_archived === showArchived);
-  const editAccount = params.edit ? accounts.find((item) => item.id === params.edit && !item.is_archived) : undefined;
+  const editAccount = params.edit ? accounts.find((item) => item.id === params.edit && !item.is_archived && ["bank","cash","ewallet"].includes(item.account_type)) : undefined;
   const defaultCurrency = preferences?.currency_code ?? "VND";
   const defaultMeta = currencyMeta(currencies, defaultCurrency);
   const activeAccounts = accounts.filter((item) => !item.is_archived);
-  const totalDefaultMinor = activeAccounts.filter((item) => item.currency_code === defaultCurrency).reduce((sum, item) => sum + item.current_balance_minor, 0);
-  const totalsByCurrency = activeAccounts.reduce<Record<string, number>>((result, item) => {
+  const totalDefaultMinor = activeAccounts.filter((item) => ["bank", "cash", "ewallet"].includes(item.account_type) && item.currency_code === defaultCurrency).reduce((sum, item) => sum + item.current_balance_minor, 0);
+  const totalsByCurrency = activeAccounts.filter(item => ["bank", "cash", "ewallet"].includes(item.account_type)).reduce<Record<string, number>>((result, item) => {
     result[item.currency_code] = (result[item.currency_code] ?? 0) + item.current_balance_minor;
     return result;
   }, {});
@@ -120,7 +121,7 @@ export default async function AccountsPage({ searchParams }: { searchParams: Sea
         <div>
           <p className="text-sm font-semibold text-[var(--primary)]">Money · Account + Ledger</p>
           <h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">Tài khoản & ví</h1>
-          <p className="mt-2 text-sm text-[var(--muted-foreground)]">Số dư hiện tại được Transaction Core duy trì từ Income, Expense và Transfer; dữ liệu vẫn tách riêng theo user bằng RLS.</p>
+          <p className="mt-2 text-sm text-[var(--muted-foreground)]">Quản lý tiền mặt, ngân hàng, ví điện tử. Dữ liệu tài khoản cũ vẫn được lưu giữ riêng để tra cứu; không tham gia tổng số dư Thu Chi mới.</p>
         </div>
         <InstantReveal label="Thêm tài khoản" initialOpen={params.new === "1"}><AccountForm currencies={currencies} /></InstantReveal>
       </div>
@@ -135,7 +136,7 @@ export default async function AccountsPage({ searchParams }: { searchParams: Sea
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-100">Tổng số dư · {defaultCurrency}</p>
               <p className="mt-3 text-3xl font-black sm:text-4xl">{formatMinorMoney(totalDefaultMinor, defaultCurrency, defaultMeta.decimal_digits)}</p>
-              <p className="mt-3 max-w-xl text-sm leading-6 text-emerald-100/85">Chỉ cộng các tài khoản cùng tiền tệ mặc định để tránh cộng sai nhiều loại tiền. Quy đổi ngoại tệ sẽ được bổ sung ở module tỷ giá sau.</p>
+              <p className="mt-3 max-w-xl text-sm leading-6 text-emerald-100/85">Chỉ cộng các tài khoản cùng tiền tệ mặc định để tránh cộng sai nhiều loại tiền. Không cộng gộp các loại tiền khác nhau.</p>
             </div>
             <div className="grid size-12 place-items-center rounded-2xl bg-white/12"><WalletCards className="size-6" /></div>
           </div>
@@ -163,17 +164,17 @@ export default async function AccountsPage({ searchParams }: { searchParams: Sea
                     <div className="grid size-11 place-items-center rounded-2xl bg-[var(--muted)] text-[var(--primary)]"><Icon className="size-5" /></div>
                     <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${account.is_archived ? "bg-[var(--muted)] text-[var(--muted-foreground)]" : "bg-emerald-500/10 text-emerald-600"}`}>{account.is_archived ? "Archived" : "Active"}</span>
                   </div>
-                  <p className="mt-5 text-xs font-semibold text-[var(--muted-foreground)]">{ACCOUNT_TYPE_LABELS[type] ?? account.account_type} · {account.currency_code}</p>
+                  <p className="mt-5 text-xs font-semibold text-[var(--muted-foreground)]">{ACCOUNT_TYPE_LABELS[type] ?? "Tài khoản phiên bản cũ"} · {account.currency_code}</p>
                   <h2 className="mt-1 truncate font-bold">{account.name}</h2>
                   <p className="mt-1 truncate text-xs text-[var(--muted-foreground)]">{account.institution_name || "Không có tổ chức"}</p>
                   <p className="mt-4 text-2xl font-black tracking-tight">{formatMinorMoney(account.current_balance_minor, account.currency_code, meta.decimal_digits)}</p>
                   <div className="mt-5 flex items-center gap-2 border-t border-[var(--border)] pt-4">
-                    {!account.is_archived && <Link href={`/accounts?edit=${account.id}`} className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[var(--border)] px-3 text-xs font-bold hover:bg-[var(--muted)]"><Pencil className="size-3.5" /> Sửa</Link>}
-                    <form action={setAccountArchivedAction} className="ml-auto">
+                    {!account.is_archived && ["bank", "cash", "ewallet"].includes(account.account_type) && <Link href={`/accounts?edit=${account.id}`} className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[var(--border)] px-3 text-xs font-bold hover:bg-[var(--muted)]"><Pencil className="size-3.5" /> Sửa</Link>}
+                    {["bank", "cash", "ewallet"].includes(account.account_type) ? <form action={setAccountArchivedAction} className="ml-auto">
                       <input type="hidden" name="account_id" value={account.id} />
                       <input type="hidden" name="archived" value={account.is_archived ? "false" : "true"} />
                       <button type="submit" className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[var(--border)] px-3 text-xs font-bold hover:bg-[var(--muted)]">{account.is_archived ? <ArchiveRestore className="size-3.5" /> : <Archive className="size-3.5" />}{account.is_archived ? "Khôi phục" : "Lưu trữ"}</button>
-                    </form>
+                    </form> : <span className="ml-auto text-[10px] font-bold text-[var(--muted-foreground)]">Lịch sử · chỉ đọc</span>}
                   </div>
                 </CardContent>
               </Card>

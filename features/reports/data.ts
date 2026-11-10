@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/database.types";
 import type { CategoryRow } from "@/features/categories/data";
-import { categoryScopeIds } from "@/features/budgets/data";
+import { categoryScopeIds } from "@/features/reports/category-scope";
 import { loadLedger, transactionEntry, type LedgerAccount, type LedgerCurrency, type LedgerEntry, type TransactionCategory, type TransactionView } from "@/features/transactions/data";
 
 export type ReportRangeKey = "this_month" | "last_month" | "3m" | "6m" | "12m" | "ytd" | "custom";
@@ -500,7 +500,7 @@ export function reportTotals(transactions: TransactionView[], currency: string) 
     if (transaction.transaction_type === "income" && transaction.transaction_purpose === "standard") {
       const entry = transactionEntry(transaction, "income");
       if (entry?.currency_code === currency) income += Math.abs(entry.amount_minor);
-    } else if (transaction.transaction_type === "expense") {
+    } else if (transaction.transaction_type === "expense" && transaction.transaction_purpose === "standard") {
       const entry = transactionEntry(transaction, "expense");
       if (entry?.currency_code === currency) expense += Math.abs(entry.amount_minor);
     } else if (transaction.transaction_type === "transfer") {
@@ -510,7 +510,7 @@ export function reportTotals(transactions: TransactionView[], currency: string) 
       if (incoming?.currency_code === currency) transferIn += Math.abs(incoming.amount_minor);
     }
   }
-  const expenseCount = transactions.filter((item) => item.transaction_type === "expense" && transactionEntry(item, "expense")?.currency_code === currency).length;
+  const expenseCount = transactions.filter((item) => item.transaction_type === "expense" && item.transaction_purpose === "standard" && transactionEntry(item, "expense")?.currency_code === currency).length;
   return { income, expense, net: income - expense, transferOut, transferIn, count: transactions.length, expenseCount, avgExpense: expenseCount > 0 ? Math.round(expense / expenseCount) : 0 };
 }
 
@@ -530,7 +530,7 @@ export function monthlyCashflow(transactions: TransactionView[], currency: strin
       if (transaction.transaction_type === "income" && transaction.transaction_purpose === "standard") {
         const entry = transactionEntry(transaction, "income");
         if (entry?.currency_code === currency) income += Math.abs(entry.amount_minor);
-      } else if (transaction.transaction_type === "expense") {
+      } else if (transaction.transaction_type === "expense" && transaction.transaction_purpose === "standard") {
         const entry = transactionEntry(transaction, "expense");
         if (entry?.currency_code === currency) expense += Math.abs(entry.amount_minor);
       }
@@ -545,7 +545,7 @@ export function monthlyCashflow(transactions: TransactionView[], currency: strin
 export function categorySpending(transactions: TransactionView[], currency: string) {
   const totals = new Map<string, { id: string; label: string; icon_name: string; icon_color: string | null; amount: number }>();
   for (const transaction of transactions) {
-    if (transaction.transaction_type !== "expense") continue;
+    if (transaction.transaction_type !== "expense" || transaction.transaction_purpose !== "standard") continue;
     const entry = transactionEntry(transaction, "expense");
     if (!entry || entry.currency_code !== currency) continue;
     const id = transaction.category_id ?? "uncategorized";
@@ -562,7 +562,7 @@ export function accountSpending(transactions: TransactionView[], currency: strin
   const names = new Map(accounts.map((account) => [account.id, account.name]));
   const totals = new Map<string, number>();
   for (const transaction of transactions) {
-    if (transaction.transaction_type !== "expense") continue;
+    if (transaction.transaction_type !== "expense" || transaction.transaction_purpose !== "standard") continue;
     const entry = transactionEntry(transaction, "expense");
     if (!entry || entry.currency_code !== currency) continue;
     totals.set(entry.account_id, (totals.get(entry.account_id) ?? 0) + Math.abs(entry.amount_minor));
@@ -572,46 +572,3 @@ export function accountSpending(transactions: TransactionView[], currency: strin
   return rows.map((row) => ({ ...row, percent: total > 0 ? Math.round((row.amount / total) * 1000) / 10 : 0 }));
 }
 
-export async function loadReportBudgets(supabase: SupabaseClient<Database>, userId: string, from: string, to: string) {
-  const firstMonth = `${from.slice(0, 7)}-01`;
-  const lastMonth = `${to.slice(0, 7)}-01`;
-  const { data, error } = await supabase.from("budgets").select("*").eq("user_id", userId).eq("is_archived", false).gte("month_start", firstMonth).lte("month_start", lastMonth).order("month_start");
-  if (error) throw error;
-  return data ?? [];
-}
-
-export function buildInsights(args: {
-  totals: ReturnType<typeof reportTotals>;
-  previous: ReturnType<typeof reportTotals>;
-  categories: CategorySpendRow[];
-  budgetAllocated: number;
-  budgetActual: number;
-  recurringExpense: number;
-  currency: string;
-}) {
-  const insights: Insight[] = [];
-  const { totals, previous, categories, budgetAllocated, budgetActual, recurringExpense } = args;
-  const expenseDelta = previous.expense > 0 ? ((totals.expense - previous.expense) / previous.expense) * 100 : null;
-  if (expenseDelta !== null && Math.abs(expenseDelta) >= 10) {
-    insights.push({
-      tone: expenseDelta > 0 ? "warning" : "positive",
-      title: expenseDelta > 0 ? `Chi tiêu tăng ${Math.round(expenseDelta)}%` : `Chi tiêu giảm ${Math.abs(Math.round(expenseDelta))}%`,
-      description: "So với khoảng thời gian liền trước có độ dài tương đương."
-    });
-  }
-  if (totals.income > 0) {
-    const rate = Math.round((totals.net / totals.income) * 1000) / 10;
-    insights.push({ tone: rate >= 20 ? "positive" : rate < 0 ? "negative" : "neutral", title: `Savings rate ${rate}%`, description: rate >= 20 ? "Dòng tiền ròng đang ở mức tích cực trong kỳ báo cáo." : "Có thể theo dõi thêm chi tiêu để cải thiện dòng tiền ròng." });
-  }
-  if (categories[0]?.percent >= 35) {
-    insights.push({ tone: "neutral", title: `${categories[0].label} chiếm ${categories[0].percent}% chi tiêu`, description: "Đây là nhóm chi tiêu lớn nhất trong kỳ đang xem." });
-  }
-  if (budgetAllocated > 0) {
-    const ratio = (budgetActual / budgetAllocated) * 100;
-    if (ratio >= 100) insights.push({ tone: "negative", title: `Ngân sách đã dùng ${Math.round(ratio)}%`, description: "Tổng chi tiêu ở các budget trong kỳ đã vượt tổng hạn mức phân bổ." });
-    else if (ratio >= 80) insights.push({ tone: "warning", title: `Ngân sách đã dùng ${Math.round(ratio)}%`, description: "Một phần lớn hạn mức đã được sử dụng; nên kiểm tra các category gần chạm ngưỡng." });
-  }
-  if (recurringExpense > 0) insights.push({ tone: "neutral", title: "Có nghĩa vụ định kỳ sắp tới", description: "Finzaro đã tổng hợp các recurring expense trong 30 ngày tới để hỗ trợ kế hoạch dòng tiền." });
-  if (insights.length === 0) insights.push({ tone: "neutral", title: "Chưa có tín hiệu nổi bật", description: "Tiếp tục ghi nhận giao dịch để Financial Insights có đủ dữ liệu so sánh." });
-  return insights.slice(0, 5);
-}

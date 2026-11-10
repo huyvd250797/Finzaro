@@ -1,98 +1,53 @@
-# Finzaro V1.1.9 — Category Grid & Save Performance Fix
+# Finzaro V1.2.0 — Simple Expense Management
 
-Finzaro is a personal-finance PWA built with Next.js, Supabase and Vercel. V1.1.9 keeps the V1.1.8 Calendar improvements and focuses on faster transaction saves plus a denser, reorderable Category experience.
+Finzaro is now a **simple personal income, expense and account-balance tracker**. This release removes 13 advanced financial modules from the running product. Source base: V1.1.9. The original financial history is **not deleted**.
 
-## V1.1.9 highlights
+## Six modules in the app
 
-- Income/Expense category selection is now a visual grid: 3 blocks per row on phones and 4 on wider transaction forms.
-- Each category block uses the exact icon and color configured in Category Management.
-- Tap selects; hold for about 360 ms and drag to reorder. The order persists through the existing `categories.sort_order` field.
-- Category Management also uses compact colored blocks with direct Edit/Archive controls and hold/drag ordering.
-- Removed the unexplained high-contrast/white Transactions shortcut from the Category page.
-- Create transaction validation now loads Category, Account, Currency, Deposit and Goal metadata in parallel instead of a sequential Supabase waterfall.
-- Edit transaction validation also batches Transaction, Category, Account and Currency reads in parallel.
-- Post-save invalidation is scoped to modules actually affected by the transaction, shortening the common standard Income/Expense save path.
-- No database migration is required for V1.1.9.
+| Module | Route | Purpose |
+| --- | --- | --- |
+| Tổng quan | `/overview` | Three KPIs (Thu / Chi / Ròng), cash balance, spending trends, recent ordinary transactions |
+| Giao dịch | `/transactions` | Ordinary Thu / Chi / Chuyển between standard accounts; edit ordinary Thu/Chi, safely delete transactions |
+| Tài khoản & Ví | `/accounts` | Cash, bank and e-wallet accounts, live balances |
+| Danh mục | `/categories` | Color/icon, category grid, drag-to-reorder |
+| Báo cáo & Lịch | `/reports`, `/reports/calendar`, `/reports/analysis` | Monthly/yearly summaries, daily calendar, category breakdown and CSV |
+| Cài đặt | `/settings` | Profile, currency and app preferences |
 
-## Database migration
+Mobile navigation: **Tổng quan · Giao dịch · + Thêm GD · Báo cáo · Thêm**. The last menu offers Accounts, Categories and Settings. The 13 removed modules are not navigable; their old URLs redirect to `/overview`.
 
-V1.1.9 adds **no new migration**. The existing V1.1.2 migration is still required for Deposit funding and Goal rollback:
+## Accounting safety and historical data
 
-`supabase/sql-editor/V1.1.2_transfer_deposit_reports_reliability.sql`
+**Do not delete tables or records from the former module set.** The V1.2.0 migration is additive: it creates a safe marker table and constrained transaction RPCs. Historical credit-card/loan/deposit/goal/investment/recurring records remain untouched and are no longer writable through the ordinary UI.
 
-Then run:
+- Standard Income/Expense: selectable only against active `cash`, `bank`, `ewallet` accounts; category must match transaction type.
+- Standard Transfer: only between those account types, never counted as Income or Expense. Same-currency transfers must balance exactly.
+- Special historical transactions: excluded from normal cashflow totals, retained in the readonly historical list (`/transactions?legacy=1`) and database.
+- Historical accounts of type `savings`: still visible for archival review, not editable/transferrable in the simplified app, and **excluded from the new regular-account balance total**. Reconciliation of any assets in those accounts requires a separate, explicitly approved migration.
+- Database writes use `create_simple_transaction_v120`, `update_simple_transaction_v120` and `delete_simple_transaction_v120`; former financial creation/edit/deletion RPCs are revoked from direct use by authenticated clients. Transaction mutations are atomic via the existing ledger DB routines.
+- The reports do not reclassify old borrowings, card advances, debt repayments or deposit funding as ordinary Income/Expense.
 
-`supabase/sql-editor/V1.1.2_transfer_deposit_reports_reliability_verify.sql`
+**Important:** This release changes what is included in the simplified visible account total. It does not rewrite saved balances. Compare opening/closing balances for each retained `cash/bank/ewallet` account before approving production rollout.
 
-The earlier V1.1.0 migration is still required if it has not already been applied:
+## Installation / migration
 
-`supabase/sql-editor/V1.1.0_ui_design_system_visual_polish.sql`
+See [`DEPLOY_V1.2.0.md`](DEPLOY_V1.2.0.md).
 
-The V1.1.2 migration does not rewrite historical financial rows. V1.1.3 no longer requires its report RPC at runtime; the V1.1.2 migration remains necessary for Deposit-funding transaction integrity.
+1. Back up the Supabase database and export a read-only transaction/account snapshot.
+2. Ensure previous schema migrations through V1.1.2 have been applied.
+3. Run `supabase/sql-editor/V1.2.0_simple_expense_management.sql` in Supabase SQL Editor.
+4. Run `supabase/sql-editor/V1.2.0_simple_expense_management_verify.sql` to verify the marker table and RPCs.
+5. Install dependencies (`npm install`), then run `npm run check` to test/lint/typecheck/build in an environment with network access and valid `.env` settings.
+6. Deploy the source ZIP root to Vercel and clear build cache once. Verify PWA badge `V1.2.0`.
+7. Smoke-test all three transaction types, deletion rollback, calendar/day edit, Reports, category icon/color, account balances and archived historical records.
+
+This ZIP does not include `node_modules`, compiled `.next` output or a database backup. Migration has **not** been run against your real Supabase instance. No customer data was deleted by preparing this release.
 
 ## Environment
 
-Copy `.env.example` when configuring local/Vercel environments. Required public variables:
+Copy `.env.example` to `.env.local` and fill in Supabase app keys. The `prebuild` validator checks required public variables. No SSI/market-data API keys are needed in V1.2.0.
 
-```env
-NEXT_PUBLIC_FINZARO_ENV=production
-NEXT_PUBLIC_SITE_URL=https://your-production-domain.example
-NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
-```
+## Testing
 
-`npm run build` runs the environment validator first and fails early when required Supabase values are missing or placeholders remain.
+`npm run test` runs the V1.2.0 regression suite plus still-valid core PWA/auth/calculator regression tests. Historical advanced-module tests are preserved in `tests/legacy/` for traceability but are no longer part of the simplified product's active test contract.
 
-### Optional SSI FastConnect
-
-Manual Investment Asset valuation works without SSI. To enable automatic Vietnam stock pricing, configure these **server-only** variables:
-
-```env
-SSI_FASTCONNECT_API_KEY=...
-SSI_FASTCONNECT_API_SECRET=...
-SSI_FASTCONNECT_CLIENT_ID=...
-```
-
-Never prefix SSI secrets with `NEXT_PUBLIC_`.
-
-## Production deploy
-
-1. Confirm all earlier migrations through V1.1.0 are applied.
-2. Run `supabase/sql-editor/V1.1.2_transfer_deposit_reports_reliability.sql`.
-3. Run `supabase/sql-editor/V1.1.2_transfer_deposit_reports_reliability_verify.sql`.
-4. Configure Vercel Production environment variables.
-5. Run `npm install` in a dependency-complete environment.
-6. Run `npm run check` (`lint → typecheck → tests → production build`).
-7. Push to GitHub and deploy/redeploy on Vercel.
-8. Smoke-test Account → Deposit transfer, optional Goal contribution, deletion rollback, Reports Overview/Calendar/Analysis, and PWA update.
-
-V1.1.9 patch notes: `docs/V1.1.9_CALENDAR_INTERACTION_PERFORMANCE_FIX.md`.
-
-V1.1.7 visual polish notes remain at `docs/V1.1.7_REPORTS_UI_CALENDAR_POLISH.md`.
-
-V1.1.6 root-cause notes remain at `docs/V1.1.6_REPORTS_RSC_BOUNDARY_ROOT_CAUSE_FIX.md`.
-
-V1.1.5 pie stability notes remain at `docs/V1.1.5_REPORTS_RENDER_PIE_STABILITY_FIX.md`.
-
-V1.1.2 Deposit transfer notes remain at `docs/V1.1.2_DEPOSIT_TRANSFER_REPORTS_RELIABILITY_FIX.md`.
-
-Full V1.1.0 UI/UX notes remain at `docs/V1.1.0_UI_DESIGN_SYSTEM_VISUAL_POLISH.md`.
-
-## Next line
-
-After V1.1.9, the planned UX sequence remains V1.2.0 Mobile UX Optimization, V1.3.0 Transaction UX Redesign and V1.4.0 Quick Actions. Any modified source package must increment the version again.
-
-## V1.0.2 Next.js security patch
-
-- Upgrades `next` from `16.0.0` to `16.4.0` to clear Vercel's vulnerable Next.js deployment block and include the security fixes shipped across the 16.x line.
-- Upgrades `eslint-config-next` to `16.4.0` so framework and lint tooling stay on the same release.
-- Keeps React / React DOM at `19.3.0`, which is the React line used by Next.js 16.4.
-- Removes `--legacy-peer-deps`; dependency conflicts are no longer intentionally masked during Vercel install.
-- No database migration or financial-data change is required.
-
-## V1.0.1 deployment fix
-
-- Aligns `react`, `react-dom`, `@types/react`, and `@types/react-dom` to 19.3.0.
-- Aligns TypeScript to 5.9.3 and pins Vercel/CI runtime to Node 22.x / npm 10.x.
-- Vercel install bypasses expensive peer-dependency backtracking with `--legacy-peer-deps`, while direct React packages remain explicitly aligned.
-- No database migration is required.
+See [`docs/VERSIONING.md`](docs/VERSIONING.md) for patch version policy. The next changed source package must be `V1.2.1` or later, never another `V1.2.0` package.

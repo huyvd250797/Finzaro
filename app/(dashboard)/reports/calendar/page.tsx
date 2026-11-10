@@ -80,7 +80,12 @@ export default async function ReportCalendarPage({ searchParams }: { searchParam
     return { current: true, day: dayOffset, date, key: date, income: values.income, expense: values.expense };
   });
 
-  const calendarTransactions = ledger.transactions.map((transaction) => {
+  const transferIds = ledger.transactions.filter(tx => tx.transaction_type === "transfer").map(tx => tx.id).slice(0, 500);
+  const { data: transferDeleteRows } = transferIds.length > 0
+    ? await (supabase as any).from("simple_transaction_ids_v120").select("transaction_id").eq("user_id", userId).in("transaction_id", transferIds)
+    : { data: [] };
+  const deletable = new Set<string>((transferDeleteRows ?? []).map((row: { transaction_id: string }) => row.transaction_id));
+  const calendarTransactions = ledger.transactions.filter(tx => tx.transaction_purpose === "standard" || (tx.transaction_type === "transfer" && tx.entries.some(e=>e.entry_role==="transfer_in") && tx.entries.some(e=>e.entry_role==="transfer_out"))).map((transaction) => {
     const income = transactionEntry(transaction, "income");
     const expense = transactionEntry(transaction, "expense");
     const transferOut = transactionEntry(transaction, "transfer_out");
@@ -98,7 +103,8 @@ export default async function ReportCalendarPage({ searchParams }: { searchParam
         iconColor: transaction.category?.icon_color ?? (standardIncome ? "#10b981" : "#0ea5e9"),
         amountLabel: standardIncome ? signedMoney(Math.abs(Number(income.amount_minor)), "+", currency, digits) : `↗ ${formatMinorMoney(Math.abs(Number(income.amount_minor)), currency, digits)}`,
         tone: standardIncome ? "income" as const : "transfer" as const,
-        editable: transaction.transaction_type === "income" && standardIncome
+        editable: transaction.transaction_type === "income" && standardIncome,
+        deletable: transaction.transaction_purpose === "standard"
       };
     }
     if (expense && expense.currency_code === currency) {
@@ -114,7 +120,8 @@ export default async function ReportCalendarPage({ searchParams }: { searchParam
         iconColor: transaction.category?.icon_color ?? "#f43f5e",
         amountLabel: signedMoney(Math.abs(Number(expense.amount_minor)), "-", currency, digits),
         tone: "expense" as const,
-        editable: transaction.transaction_type === "expense" && transaction.transaction_purpose === "standard"
+        editable: transaction.transaction_type === "expense" && transaction.transaction_purpose === "standard",
+        deletable: transaction.transaction_purpose === "standard"
       };
     }
     if (transferOut && transferOut.currency_code === currency) {
@@ -130,7 +137,8 @@ export default async function ReportCalendarPage({ searchParams }: { searchParam
         iconColor: "#0ea5e9",
         amountLabel: `↔ ${formatMinorMoney(Math.abs(Number(transferOut.amount_minor)), currency, digits)}`,
         tone: "transfer" as const,
-        editable: false
+        editable: false,
+        deletable: deletable.has(transaction.id)
       };
     }
     return null;

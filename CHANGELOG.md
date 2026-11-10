@@ -1,3 +1,16 @@
+## V1.2.0 — Simple Expense Management (2026-11-10)
+
+**Breaking product-scope change, non-destructive database rollout.**
+
+- Removed 13 non-core modules from active UI/routes: Credit Cards, Loans, Debt Strategy, Deposits, Assets, Net Worth, Financial Health, Forecast, Cash Flow Planner, Goal Planner, Goals, Budgets, Recurring.
+- Retained six areas: Overview, Transactions, Accounts & Wallets, Categories, Reports & Calendar, Settings. Mobile navigation remains compact.
+- Rebuilt income/expense/transfer form without any borrowing, debt, deposit or goal input; retained money calculator, category grid, date picker, recent suggestions and safe return-to-calendar interaction.
+- Rebuilt Overview for a three-KPI row, ordinary-account balance, monthly trends, category ranking and recent ordinary transactions; removed advanced data loaders.
+- Simplified Reports Analysis, CSV exports and historical transaction classification; special historical financial flows are not relabeled as normal income/expense.
+- Added restricted RPCs and markers (`create_simple_transaction_v120`, `update_simple_transaction_v120`, `delete_simple_transaction_v120`, `simple_transaction_ids_v120`) and revoked direct authenticated execution of older specialized transaction mutation endpoints. The SQL is additive; historic tables remain.
+- Archived superseded advanced-module regression suites under `tests/legacy/` and added a V1.2.0-specific contract/regression suite.
+- No existing transaction rows or balances are rewritten by the migration. See `DEPLOY_V1.2.0.md` for coordinated rollout, backup/reconciliation and limitations.
+
 # V1.1.9 — Category Grid & Save Performance Fix
 
 - Replaced the income/expense category dropdown with a visual 3–4 column block grid using each category's configured icon and color.

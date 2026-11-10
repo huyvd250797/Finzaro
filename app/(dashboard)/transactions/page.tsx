@@ -14,15 +14,13 @@ import { updateTransactionAction } from "@/features/transactions/actions";
 import { isTransactionType } from "@/features/transactions/constants";
 import type { CategoryType } from "@/features/categories/constants";
 import { currencyDigits, filterTransactions, loadLedger, monthTotals, currentMonthKey, quickTransactionSuggestions, transactionEntry, type LedgerCurrency, type TransactionView } from "@/features/transactions/data";
-import { loanProjections, type Loan, type LoanPayment } from "@/features/loans/data";
-import type { CreditCard } from "@/features/credit-cards/data";
 import { requireUser } from "@/lib/auth";
 import { formatMinorMoney } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Giao dịch" };
 
-type SearchParams = Promise<{ new?: string; edit?: string; date?: string; return_to?: string; q?: string; type?: string; account?: string; category?: string; from?: string; to?: string; error?: string; message?: string }>;
+type SearchParams = Promise<{ legacy?: string; new?: string; edit?: string; date?: string; return_to?: string; q?: string; type?: string; account?: string; category?: string; from?: string; to?: string; error?: string; message?: string }>;
 
 function EditTransactionForm({ transaction, accounts, categories, currencies, returnTo }: {
   transaction: TransactionView;
@@ -55,23 +53,13 @@ function EditTransactionForm({ transaction, accounts, categories, currencies, re
 export default async function TransactionsPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
   const { supabase, userId } = await requireUser();
-  const [{ data: preferences }, ledger, { data: activeLoans, error: loansError }, { data: loanPayments, error: loanPaymentsError }, { data: activeCards, error: cardsError }, { data: activeGoals, error: goalsError }, { data: activeDeposits, error: depositsError }] = await Promise.all([
+  const [{ data: preferences }, ledger] = await Promise.all([
     supabase.from("user_preferences").select("currency_code, timezone").eq("id", userId).maybeSingle(),
-    loadLedger(supabase, userId, params.edit && params.date ? { limit: 120, fromDate: params.date, toDate: params.date } : params.return_to?.startsWith("/reports/calendar") ? { limit: 180 } : { limit: 500 }),
-    (supabase as any).from("loans").select("*").eq("user_id", userId).eq("is_archived", false).order("created_at", { ascending: false }),
-    (supabase as any).from("loan_payments").select("*").eq("user_id", userId).order("payment_date", { ascending: false }).order("created_at", { ascending: false }).limit(5000),
-    (supabase as any).from("credit_cards").select("id, name, bank_name, last4, currency_code, current_balance_minor").eq("user_id", userId).eq("is_archived", false).order("created_at", { ascending: false }),
-    (supabase as any).from("savings_goals").select("id, name, currency_code, linked_account_id, target_amount_minor").eq("user_id", userId).eq("is_archived", false).order("target_date", { ascending: true, nullsFirst: false }).order("created_at", { ascending: true }),
-    (supabase as any).from("deposits").select("id, name, institution_name, currency_code, principal_minor").eq("user_id", userId).eq("is_archived", false).order("maturity_date", { ascending: true }).order("created_at", { ascending: true })
+    loadLedger(supabase, userId, params.edit && params.date ? { limit: 120, fromDate: params.date, toDate: params.date } : params.return_to?.startsWith("/reports/calendar") ? { limit: 180 } : { limit: 500 })
   ]);
-  if (loansError) throw loansError;
-  if (loanPaymentsError) throw loanPaymentsError;
-  if (cardsError) throw cardsError;
-  if (goalsError) throw goalsError;
-  if (depositsError) throw depositsError;
   const defaultCurrency = preferences?.currency_code ?? "VND";
   const timeZone = preferences?.timezone ?? "Asia/Ho_Chi_Minh";
-  const activeAccounts = ledger.accounts.filter((account) => !account.is_archived).map((account) => ({
+  const activeAccounts = ledger.accounts.filter((account) => !account.is_archived && ["bank", "cash", "ewallet"].includes(account.account_type)).map((account) => ({
     ...account,
     decimal_digits: currencyDigits(ledger.currencies, account.currency_code)
   }));
@@ -87,45 +75,24 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
   const returnTo = params.return_to && params.return_to.startsWith("/") && !params.return_to.startsWith("//") ? params.return_to : "";
   const expenseSuggestions = quickTransactionSuggestions(ledger.transactions, ledger.currencies, "expense");
   const incomeSuggestions = quickTransactionSuggestions(ledger.transactions, ledger.currencies, "income");
-  const transferSuggestions = quickTransactionSuggestions(ledger.transactions, ledger.currencies, "transfer");
-  const loanRows = loanProjections((activeLoans ?? []) as Loan[], (loanPayments ?? []) as LoanPayment[], ledger.accounts, today).filter((loan) => !loan.is_archived && loan.remaining_principal_minor > 0);
-  const allCardRows = (activeCards ?? []) as Pick<CreditCard, "id" | "name" | "bank_name" | "last4" | "currency_code" | "current_balance_minor">[];
-  const toCardOption = (card: (typeof allCardRows)[number]) => { const cardDigits = currencyDigits(ledger.currencies, card.currency_code); return { id: card.id, name: card.name, bank_name: card.bank_name, last4: card.last4, currency_code: card.currency_code, current_balance_minor: card.current_balance_minor, balance_label: formatMinorMoney(card.current_balance_minor, card.currency_code, cardDigits) }; };
-  const creditCardPaymentOptions = allCardRows.filter((card) => card.current_balance_minor > 0).map(toCardOption);
-  const creditCardFundingOptions = allCardRows.map(toCardOption);
-  const savingsGoalOptions = ((activeGoals ?? []) as Array<{ id: string; name: string; currency_code: string; linked_account_id: string | null; target_amount_minor: number }>).map((goal) => ({
-    id: goal.id,
-    name: goal.name,
-    currency_code: goal.currency_code,
-    linked_account_id: goal.linked_account_id,
-    target_label: formatMinorMoney(goal.target_amount_minor, goal.currency_code, currencyDigits(ledger.currencies, goal.currency_code))
-  }));
-  const depositOptions = ((activeDeposits ?? []) as Array<{ id: string; name: string; institution_name: string | null; currency_code: string; principal_minor: number }>).map((deposit) => ({
-    id: deposit.id,
-    name: deposit.name,
-    institution_name: deposit.institution_name,
-    currency_code: deposit.currency_code,
-    principal_minor: Number(deposit.principal_minor),
-    principal_label: formatMinorMoney(Number(deposit.principal_minor), deposit.currency_code, currencyDigits(ledger.currencies, deposit.currency_code)),
-    decimal_digits: currencyDigits(ledger.currencies, deposit.currency_code)
-  }));
-  const loanOptions = loanRows.map((loan) => {
-    const loanDigits = currencyDigits(ledger.currencies, loan.currency_code);
-    const next = loan.schedule.find((row) => row.remaining_minor < loan.remaining_principal_minor) ?? loan.schedule[0] ?? null;
-    const principal = Math.min(loan.remaining_principal_minor, next?.principal_minor ?? loan.remaining_principal_minor);
-    const interest = next?.interest_minor ?? 0;
-    const fee = 0;
-    const toMajor = (minor: number) => minorToMajorInput(minor, loanDigits);
-    return { id: loan.id, name: loan.name, lender_name: loan.lender_name, currency_code: loan.currency_code, remaining_principal_minor: loan.remaining_principal_minor, remaining_label: formatMinorMoney(loan.remaining_principal_minor, loan.currency_code, loanDigits), suggested_total: toMajor(principal + interest + fee), suggested_principal: toMajor(principal), suggested_interest: toMajor(interest), suggested_fee: toMajor(fee) };
-  });
+  const validTransferRows = ledger.transactions.filter((tx) => tx.transaction_type === "transfer" && tx.transaction_purpose === "transfer" && tx.entries.some(e => e.entry_role === "transfer_in") && tx.entries.some(e => e.entry_role === "transfer_out"));
+  const transferSuggestions = quickTransactionSuggestions(validTransferRows.filter(tx => tx.entries.every(e => ["cash", "bank", "ewallet"].includes(e.account?.account_type ?? ""))), ledger.currencies, "transfer");
   const newType = params.new && isTransactionType(params.new) ? params.new : null;
-  const editing = params.edit ? ledger.transactions.find((tx) => tx.id === params.edit && (tx.transaction_type === "income" || tx.transaction_type === "expense")) ?? null : null;
-  const filtered = filterTransactions(ledger.transactions, { q: params.q, type: params.type, account: params.account, category: params.category, from: params.from, to: params.to });
+  const editing = params.edit ? ledger.transactions.find((tx) => tx.id === params.edit && tx.transaction_purpose === "standard" && (tx.transaction_type === "income" || tx.transaction_type === "expense")) ?? null : null;
+  const visible = params.legacy === "1"
+    ? ledger.transactions.filter(tx => tx.transaction_purpose !== "standard" && tx.transaction_type !== "transfer")
+    : ledger.transactions.filter(tx => tx.transaction_purpose === "standard" || (tx.transaction_type === "transfer" && tx.entries.some(e=>e.entry_role === "transfer_in") && tx.entries.some(e=>e.entry_role === "transfer_out")));
+  const filtered = filterTransactions(visible, { q: params.q, type: params.type, account: params.account, category: params.category, from: params.from, to: params.to });
+  const transferIds = filtered.filter(tx => tx.transaction_type === "transfer").map(tx => tx.id).slice(0, 500);
+  const { data: simpleTransferRows } = transferIds.length > 0
+    ? await (supabase as any).from("simple_transaction_ids_v120").select("transaction_id").eq("user_id", userId).in("transaction_id", transferIds)
+    : { data: [] };
+  const deletableTransferIds: string[] = (simpleTransferRows ?? []).map((row: { transaction_id: string })=>row.transaction_id);
   const digits = currencyDigits(ledger.currencies, defaultCurrency);
   const totals = monthTotals(ledger.transactions, defaultCurrency, currentMonthKey(timeZone));
 
   return <div className="mx-auto max-w-[1500px] min-w-0 px-4 py-6 md:px-6 lg:px-8 lg:py-8">
-    <div className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-sm font-semibold text-[var(--primary)]">Money · Ledger</p><h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">Giao dịch</h1><p className="mt-2 max-w-3xl text-sm text-[var(--muted-foreground)]">Thu tiền (kể cả giải ngân từ thẻ/khoản vay), Chi tiền trả nợ và Chuyển tiền giữa tài khoản hoặc trực tiếp vào module Tiền gửi, có thể đồng thời bổ sung Mục tiêu.</p></div><InstantTransactionLauncher initialType={newType} expense={<TransactionEntryForm type="expense" accounts={activeAccounts} categories={expenseCategories} today={requestedDate} returnTo={returnTo} suggestions={expenseSuggestions} creditCards={creditCardPaymentOptions} loans={loanOptions} />} income={<TransactionEntryForm type="income" accounts={activeAccounts} categories={incomeCategories} today={requestedDate} returnTo={returnTo} suggestions={incomeSuggestions} creditCards={creditCardFundingOptions} />} transfer={<TransactionEntryForm type="transfer" accounts={activeAccounts} categories={[]} today={requestedDate} returnTo={returnTo} suggestions={transferSuggestions} savingsGoals={savingsGoalOptions} deposits={depositOptions} />} /></div>
+    <div className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-sm font-semibold text-[var(--primary)]">Money · Ledger</p><h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">Giao dịch</h1><p className="mt-2 max-w-3xl text-sm text-[var(--muted-foreground)]">Chỉ ghi nhận thu nhập, chi tiêu và chuyển tiền giữa tài khoản/ví. Không quản lý khoản vay, thẻ tín dụng hay tiền gửi.</p></div><InstantTransactionLauncher initialType={newType} expense={<TransactionEntryForm type="expense" accounts={activeAccounts} categories={expenseCategories} today={requestedDate} returnTo={returnTo} suggestions={expenseSuggestions} />} income={<TransactionEntryForm type="income" accounts={activeAccounts} categories={incomeCategories} today={requestedDate} returnTo={returnTo} suggestions={incomeSuggestions} />} transfer={<TransactionEntryForm type="transfer" accounts={activeAccounts} categories={[]} today={requestedDate} returnTo={returnTo} suggestions={transferSuggestions} />} /></div>
     <AuthMessage error={params.error} message={params.message} />
     {editing && <EditTransactionForm transaction={editing} accounts={activeAccounts} categories={editing.transaction_type === "income" ? incomeCategories : expenseCategories} currencies={ledger.currencies} returnTo={returnTo} />}
 
@@ -133,6 +100,6 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
 
     <form method="get" className="mt-4 grid gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 shadow-sm md:grid-cols-2 xl:grid-cols-[1.25fr_.65fr_.8fr_.8fr_.8fr_.8fr_auto]"><div className="relative"><Search className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[var(--muted-foreground)]" /><input name="q" defaultValue={params.q ?? ""} placeholder="Tìm nội dung, danh mục, tài khoản..." className="fin-input pl-10" /></div><select name="type" defaultValue={params.type ?? "all"} className="fin-input"><option value="all">Mọi loại</option><option value="income">Thu nhập</option><option value="expense">Chi tiêu</option><option value="transfer">Chuyển tiền</option></select><select name="account" defaultValue={params.account ?? "all"} className="fin-input"><option value="all">Mọi tài khoản</option>{ledger.accounts.map((account) => <option key={account.id} value={account.id}>{account.name}</option>)}</select><select name="category" defaultValue={params.category ?? "all"} className="fin-input"><option value="all">Mọi danh mục</option>{filterCategories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</select><input type="date" name="from" defaultValue={params.from ?? ""} aria-label="Từ ngày" className="fin-input" /><input type="date" name="to" defaultValue={params.to ?? ""} aria-label="Đến ngày" className="fin-input" /><div className="flex gap-2"><button type="submit" className="fin-dark-btn"><Filter className="size-3.5" /> Lọc</button><Link href="/transactions" className="grid size-10 place-items-center rounded-xl border border-[var(--border)]"><X className="size-4" /></Link></div></form>
 
-    <Card className="mt-4 fin-card"><CardContent className="p-5 sm:p-6"><div className="mb-4 flex items-center justify-between gap-3"><div><h2 className="font-bold">Lịch sử giao dịch</h2><p className="mt-0.5 text-xs text-[var(--muted-foreground)]">{filtered.length} / {ledger.transactions.length} giao dịch gần nhất</p></div><span className="fin-badge">Ledger + RLS</span></div><TransactionList transactions={filtered} currencies={ledger.currencies} showDelete showEdit /></CardContent></Card>
+    <Card className="mt-4 fin-card"><CardContent className="p-5 sm:p-6"><div className="mb-4 flex items-center justify-between gap-3"><div><h2 className="font-bold">{params.legacy === "1" ? "Giao dịch phiên bản cũ" : "Lịch sử thu chi"}</h2><p className="mt-0.5 text-xs text-[var(--muted-foreground)]">{filtered.length} giao dịch</p></div><Link className="text-xs font-bold text-[var(--primary)]" href={params.legacy === "1" ? "/transactions" : "/transactions?legacy=1"}>{params.legacy === "1" ? "Về Thu Chi" : "Lịch sử cũ"}</Link></div><TransactionList transactions={filtered} currencies={ledger.currencies} showDelete={params.legacy !== "1"} showEdit={params.legacy !== "1"} deletableTransferIds={deletableTransferIds} /></CardContent></Card>
   </div>;
 }

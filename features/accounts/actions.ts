@@ -84,6 +84,7 @@ export async function updateAccountAction(formData: FormData) {
       .update(payload)
       .eq("id", accountId)
       .eq("user_id", userId)
+      .in("account_type", ["bank", "cash", "ewallet"])
       .select("id")
       .maybeSingle();
     if (error || !data) throw new Error("Không tìm thấy tài khoản để cập nhật.");
@@ -105,7 +106,7 @@ export async function setAccountArchivedAction(formData: FormData) {
   if (!accountId) redirect(destination("error", "Thiếu mã tài khoản."));
 
   const { supabase, userId } = await requireUser();
-  const { data, error } = await supabase.from("accounts").update({ is_archived: archived }).eq("id", accountId).eq("user_id", userId).select("id").maybeSingle();
+  const { data, error } = await supabase.from("accounts").update({ is_archived: archived }).eq("id", accountId).eq("user_id", userId).in("account_type", ["bank", "cash", "ewallet"]).select("id").maybeSingle();
 
   if (error || !data) {
     const message = error?.message?.includes("Pause recurring rules")

@@ -30,6 +30,7 @@ type CalendarTransaction = {
   amountLabel: string;
   tone: "income" | "expense" | "transfer";
   editable: boolean;
+  deletable: boolean;
 };
 
 const WEEKDAYS = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
@@ -182,11 +183,11 @@ export function ReportCalendarInteractive({
                     ) : (
                       <div className="grid place-items-center bg-slate-600/70 text-white/70" title="Chuyển tiền không sửa trực tiếp để bảo vệ ledger"><span className="flex flex-col items-center gap-1 text-[9px] font-black"><Pencil className="size-4" />Khóa</span></div>
                     )}
-                    <form action={deleteTransactionAction} className="h-full" onSubmit={(event) => { if (!window.confirm("Xóa giao dịch này? Finzaro sẽ hoàn nguyên số dư liên quan.")) event.preventDefault(); }}>
+                    {transaction.deletable ? <form action={deleteTransactionAction} className="h-full" onSubmit={(event) => { if (!window.confirm("Xóa giao dịch này? Finzaro sẽ hoàn nguyên số dư liên quan.")) event.preventDefault(); }}>
                       <input type="hidden" name="transaction_id" value={transaction.id} />
                       <input type="hidden" name="return_to" value={returnTo} />
                       <button type="submit" className="grid h-full w-full place-items-center bg-rose-600 text-white" aria-label="Xóa giao dịch"><span className="flex flex-col items-center gap-1 text-[10px] font-black"><Trash2 className="size-4" />Xóa</span></button>
-                    </form>
+                    </form> : <div className="grid place-items-center bg-slate-600/60 text-[10px] text-white/60">Lưu trữ</div>}
                   </div>
                 </div>
               );

@@ -14,8 +14,12 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  async redirects() {
+    return [
+      ...["assets", "budgets", "cash-flow", "credit-cards", "debt-strategy", "deposits", "forecast", "goal-planner", "goals", "health", "loans", "net-worth", "recurring"].map((path) => ({ source: `/${path}`, destination: "/overview", permanent: false }))
+    ];
+  },
   poweredByHeader: false,
-  serverExternalPackages: ["@ssi.developer/ssi-sdk"],
   async headers() {
     return [
       {

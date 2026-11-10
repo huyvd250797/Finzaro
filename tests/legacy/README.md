@@ -1,0 +1,1 @@
+Historical tests for the advanced V0.0.x–V1.1.9 Finzaro feature set. These modules are intentionally removed in V1.2.0, so their expectations no longer describe the active product. Files are archived as an audit trail and are not run by `npm test`.

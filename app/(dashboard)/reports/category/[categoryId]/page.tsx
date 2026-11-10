@@ -3,7 +3,7 @@ import { BarChart3, ChevronLeft, ChevronRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { ReportBarChart } from "@/components/report-bar-chart";
 import { CategoryIcon, iconColorValue } from "@/features/categories/icons";
-import { categoryScopeIds } from "@/features/budgets/data";
+import { categoryScopeIds } from "@/features/reports/category-scope";
 import {
   categoryMonthlySeries,
   currentYearMonth,
