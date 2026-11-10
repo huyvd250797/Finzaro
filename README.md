@@ -1,4 +1,10 @@
-# Finzaro V1.2.2 — Transaction TypeScript Deploy Fix
+# Finzaro V1.4.0 — Stability, Modern Design System & Transaction UX 2.0
+
+**Combined release:** V1.2.3 stability baseline + V1.3.0 design system + V1.4.0 transaction UX. Only the final V1.4.0 package is distributed. The product remains six modules and 3 transaction types: Thu, Chi, Chuyển.
+
+Quick start and acceptance checklist: [`DEPLOY_V1.4.0.md`](DEPLOY_V1.4.0.md).
+
+## Product overview
 
 Finzaro is now a **simple personal income, expense and account-balance tracker**. This release removes 13 advanced financial modules from the running product. Source base: V1.1.9. The original financial history is **not deleted**.
 
@@ -17,7 +23,7 @@ Mobile navigation: **Tổng quan · Giao dịch · + Thêm GD · Báo cáo · Th
 
 ## Accounting safety and historical data
 
-**V1.2.2 is a source-only deploy fix built on V1.2.1, retaining the earlier reporting optimizations.** No new SQL migration is required once V1.2.0 has been applied.
+**V1.4.0 includes the V1.2.3 + V1.3.0 + V1.4.0 milestones in one source release.** The V1.2.0 restricted ledger RPC schema remains unchanged, so there is no new SQL migration.
 
 **Do not delete tables or records from the former module set.** The V1.2.0 migration is additive: it creates a safe marker table and constrained transaction RPCs. Historical credit-card/loan/deposit/goal/investment/recurring records remain untouched and are no longer writable through the ordinary UI.
 
@@ -39,7 +45,7 @@ See [`DEPLOY_V1.2.2.md`](DEPLOY_V1.2.2.md) for the deploy fix and [`DEPLOY_V1.2.
 3. Run `supabase/sql-editor/V1.2.0_simple_expense_management.sql` in Supabase SQL Editor.
 4. Run `supabase/sql-editor/V1.2.0_simple_expense_management_verify.sql` to verify the marker table and RPCs.
 5. Install dependencies (`npm install`), then run `npm run check` to test/lint/typecheck/build in an environment with network access and valid `.env` settings.
-6. Deploy the V1.2.2 source ZIP root to Vercel and clear build cache once. Verify PWA badge `V1.2.2`.
+6. Deploy the V1.4.0 source ZIP root to Vercel and clear build cache once. Verify PWA badge `V1.4.0`.
 7. Smoke-test all three transaction types, deletion rollback, calendar/day edit, Reports, category icon/color, account balances and archived historical records.
 
 This ZIP does not include `node_modules`, compiled `.next` output or a database backup. Migration has **not** been run against your real Supabase instance. No customer data was deleted by preparing this release.
@@ -50,6 +56,6 @@ Copy `.env.example` to `.env.local` and fill in Supabase app keys. The `prebuild
 
 ## Testing
 
-`npm run test` runs the V1.2.0 compatibility regression suite plus the V1.2.1 loader/concurrency tests and V1.2.2 type-safety regression plus still-valid core PWA/auth/calculator regression tests. Historical advanced-module tests are preserved in `tests/legacy/` for traceability but are no longer part of the simplified product's active test contract.
+`npm run test` runs the V1.2.0/1.2.1/1.2.2 compatibility regression suites plus the V1.4.0 UX/performance regressions and still-valid PWA/auth/calculator tests. Historical advanced-module tests are preserved in `tests/legacy/` for traceability but are no longer part of the simplified product's active test contract.
 
-See [`docs/VERSIONING.md`](docs/VERSIONING.md) for patch version policy. The next changed source package must be `V1.2.3` or later; do not reuse `V1.2.2`.
+See [`docs/VERSIONING.md`](docs/VERSIONING.md) for patch version policy. The next changed source package must be `V1.4.1` or later; do not reuse `V1.4.0`.

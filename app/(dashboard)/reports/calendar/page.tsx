@@ -16,6 +16,7 @@ import {
 import { loadReportLedger } from "@/features/reports/data";
 import { currencyDigits, loadLedger, transactionEntry } from "@/features/transactions/data";
 import { requireUser } from "@/lib/auth";
+import { measureServerOperation } from "@/lib/performance";
 import { formatMinorMoney } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -62,8 +63,10 @@ export default async function ReportCalendarPage({ searchParams }: { searchParam
   // Fast path: one canonical month-ledger load uses embedded entries/categories and
   // parallel metadata queries. The hardened Reports loader remains the compatibility
   // fallback for older Supabase schemas. Day changes are client-side after this.
-  const ledger = await loadLedger(supabase, userId, { fromDate: bounds.from, toDate: bounds.to, fetchAll: true })
-    .catch(() => loadReportLedger(supabase, userId, { fromDate: bounds.from, toDate: bounds.to }));
+  const ledger = await measureServerOperation("reports.calendar.load", () =>
+    loadLedger(supabase, userId, { fromDate: bounds.from, toDate: bounds.to, fetchAll: true })
+      .catch(() => loadReportLedger(supabase, userId, { fromDate: bounds.from, toDate: bounds.to }))
+  );
   const digits = currencyDigits(ledger.currencies, currency);
   const totals = periodFlowTotals(ledger.transactions, currency);
   const daily = dailyFlowTotals(ledger.transactions, currency, period);

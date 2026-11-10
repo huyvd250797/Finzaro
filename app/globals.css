@@ -257,3 +257,50 @@ button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+
+/* Finzaro V1.3.0 — Unified mobile-first design tokens (shared by six core modules). */
+:root {
+  --fin-radius-sm: .7rem;
+  --fin-radius-md: .95rem;
+  --fin-radius-lg: 1.2rem;
+  --fin-control-height: 2.85rem;
+  --fin-focus-ring: 0 0 0 3px var(--ring);
+  --fin-divider: color-mix(in srgb, var(--border) 80%, transparent);
+}
+.fin-card { border-color: var(--fin-divider); border-radius: var(--fin-radius-lg); box-shadow: 0 4px 22px -17px rgba(8, 65, 44, .20); }
+.dark .fin-card { box-shadow: 0 4px 24px -16px rgba(0, 0, 0, .55); }
+.fin-input, .fin-textarea { min-width: 0; border-radius: var(--fin-radius-md); border-color: var(--fin-divider); }
+.fin-input { min-height: var(--fin-control-height); height: var(--fin-control-height); }
+.fin-input:focus, .fin-textarea:focus { outline: none; border-color: var(--primary); box-shadow: var(--fin-focus-ring); }
+.fin-primary-btn, .fin-secondary-btn, .fin-dark-btn { min-height: 44px; height: auto; border-radius: var(--fin-radius-md); font-weight: 750; }
+.fin-primary-btn { background: var(--primary); color: #fff; }
+.dark .fin-primary-btn { color: #051910; }
+.fin-primary-btn:disabled { cursor: not-allowed; opacity: .62; transform: none; }
+.fin-icon-button { display: grid; width: 40px; height: 40px; flex: 0 0 auto; place-items: center; border: 1px solid var(--fin-divider); border-radius: var(--fin-radius-sm); color: var(--muted-foreground); background: var(--card); }
+.fin-icon-button:active { background: var(--muted); }
+.fin-inline-error { padding: .75rem 1rem; border: 1px solid color-mix(in srgb, var(--danger) 40%, transparent); border-radius: var(--fin-radius-md); background: color-mix(in srgb, var(--danger) 8%, var(--card)); color: var(--danger); font-size: .85rem; font-weight: 600; line-height: 1.5; }
+.fin-transaction-card { border-radius: 1.35rem; background: var(--card); }
+.fin-amount-field { min-width: 0; border: 1px solid color-mix(in srgb, var(--primary) 36%, var(--border)); border-radius: var(--fin-radius-lg); padding: 1rem; background: color-mix(in srgb, var(--primary) 5%, var(--card)); }
+.fin-amount-label { display: block; margin-bottom: .5rem; color: var(--muted-foreground); font-size: .75rem; font-weight: 750; }
+.fin-amount-input { width: 100%; min-width: 0; height: 3.7rem; border-radius: .85rem; background: var(--card); font-size: clamp(1.3rem, 4.4vw, 2rem) !important; font-weight: 800; font-variant-numeric: tabular-nums; }
+.fin-suggestion-chip { border: 1px solid var(--fin-divider); border-radius: var(--fin-radius-md); background: var(--card); padding: .6rem .75rem; text-align: left; }
+.fin-suggestion-chip.is-selected { border-color: var(--primary); background: var(--sidebar-accent); }
+.fin-transaction-details { border: 1px solid var(--fin-divider); border-radius: var(--fin-radius-md); padding: .75rem .9rem; background: color-mix(in srgb, var(--muted) 50%, var(--card)); }
+.fin-transaction-details[open] summary svg:last-child { transform: rotate(180deg); }
+.fin-form-footer { position: sticky; bottom: 0; z-index: 2; padding: .5rem 0 0; background: var(--card); }
+.fin-form-footer .fin-primary-btn { flex: 1; }
+.fin-filter-panel { border: 1px solid var(--fin-divider); border-radius: var(--fin-radius-lg); background: var(--card); }
+.fin-filter-panel[open] summary { border-bottom: 1px solid var(--fin-divider); }
+.fin-filter-panel summary::-webkit-details-marker, .fin-transaction-details summary::-webkit-details-marker { display: none; }
+:where(.fin-input,.fin-textarea,.fin-primary-btn,.fin-secondary-btn,.fin-dark-btn,.fin-icon-button,.fin-suggestion-chip):focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+@media (max-width: 639px) {
+  .fin-transaction-card { border-radius: 1.2rem; }
+  .fin-amount-field { padding: .8rem; }
+  .fin-amount-input { height: 3.5rem; }
+  .fin-form-footer { padding-bottom: max(.3rem, env(safe-area-inset-bottom)); }
+}
+@media (prefers-reduced-motion: reduce) { .fin-suggestion-chip, .fin-icon-button { transition: none !important; } }
+
+.fin-amount-input { height: auto; background: transparent; }
+.fin-amount-input > button.fin-input { height: 3.5rem; background: var(--card); border-color: var(--fin-divider); }
+.fin-amount-input > button.fin-input span.flex-1 { font-size: clamp(1.2rem, 4.8vw, 2rem); font-weight: 800; }

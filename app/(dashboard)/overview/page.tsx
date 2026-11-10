@@ -9,6 +9,7 @@ import { loadReportLedger } from "@/features/reports/data";
 import { monthBounds } from "@/features/reports/experience";
 import { currentMonthKey, monthTotals, sixMonthWindow, currencyDigits, expenseCategories, transactionEntry } from "@/features/transactions/data";
 import { requireUser } from "@/lib/auth";
+import { measureServerOperation } from "@/lib/performance";
 import { formatMinorMoney } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -20,7 +21,7 @@ export default async function OverviewPage() {
   const currency = pref?.currency_code ?? "VND";
   const timeZone = pref?.timezone ?? "Asia/Ho_Chi_Minh";
   const months = sixMonthWindow(timeZone);
-  const ledger = await loadReportLedger(supabase, userId, { fromDate: `${months[0].key}-01`, toDate: monthBounds(currentMonthKey(timeZone)).to, includeAccounts: true, includeCategories: true });
+  const ledger = await measureServerOperation("overview.load", () => loadReportLedger(supabase, userId, { fromDate: `${months[0].key}-01`, toDate: monthBounds(currentMonthKey(timeZone)).to, includeAccounts: true, includeCategories: true }));
   const digits = currencyDigits(ledger.currencies, currency);
   const totals = monthTotals(ledger.transactions, currency, currentMonthKey(timeZone));
   const accounts = ledger.accounts.filter(a => !a.is_archived && ["cash", "bank", "ewallet"].includes(a.account_type));

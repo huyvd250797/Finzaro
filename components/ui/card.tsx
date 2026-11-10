@@ -6,9 +6,9 @@ export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
 }
 
 export function CardHeader({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("flex items-center justify-between gap-4 p-5 pb-0", className)} {...props} />;
+  return <div className={cn("flex min-w-0 items-center justify-between gap-3 p-4 pb-0 sm:p-5 sm:pb-0", className)} {...props} />;
 }
 
 export function CardContent({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("p-5", className)} {...props} />;
+  return <div className={cn("p-4 sm:p-5", className)} {...props} />;
 }

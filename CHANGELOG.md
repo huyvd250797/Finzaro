@@ -1,3 +1,14 @@
+## V1.4.0 — Stability, Modern Design System & Transaction UX 2.0 (2026-11-10)
+
+Combined implementation of the approved V1.2.3, V1.3.0 and V1.4.0 stages:
+
+- **Stability & performance:** fast transaction-entry route loads only 24 recent ledger rows, versus the previous 500; ordinary list is bounded to 160 rows (up to 1,000 when filtering) with clearly disclosed limits. Editing locates a historic transaction's date before loading just that day. A quick-entry route avoids fetching transfer-delete metadata. Development logs report non-sensitive loader timing; opt-in `FINZARO_PERF_LOG=1` measures Overview/Reports/Calendar read and transaction RPC latency without logging amounts or IDs.
+- **Unified design system:** shared radius/surface/focus/card/button/input tokens in `app/globals.css`, accessible control targets, compact cards, responsive modal and standard error styling. Reduced motion remains respected.
+- **Transaction UX 2.0:** money first in a prominent calculator field; category visual grid with auto-suggested title; recent account defaults and suggestion chips; a compact date/notes details section; a single same-currency transfer amount and a second receive amount only for cross-currency transfers; separate form state per transaction type.
+- **Save reliability:** `useActionState` keeps entered values and displays server-side validation/RPC errors inline rather than redirecting away and discarding user input; pending save control prevents repeat submits. All inserts/updates/deletes still rely on V1.2.0 atomic RPCs with no client-side balance mutation.
+- **Data safety:** the existing 6 modules, historical transaction classifications, Reports and CSV safety behavior stay intact. No database migration and no destructive schema change.
+- **Release gate:** production lint/typecheck/build requires installing dependencies in CI/Vercel; parser/Node tests alone are not sufficient.
+
 ## V1.2.2 — Transaction TypeScript Deploy Fix (2026-11-10)
 
 - Fixed `TS18047` in `features/transactions/actions.ts`: bind the validated account row to a local `account` constant before currency `.find()` callback, preserving non-null narrowing across the closure.

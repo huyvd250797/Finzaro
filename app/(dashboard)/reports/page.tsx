@@ -22,6 +22,7 @@ import {
 import { loadReportLedger } from "@/features/reports/data";
 import { currencyDigits } from "@/features/transactions/data";
 import { requireUser } from "@/lib/auth";
+import { measureServerOperation } from "@/lib/performance";
 import { cn, formatMinorMoney } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -56,7 +57,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
   const year = validYear(params.year, now.year);
   const bounds = mode === "month" ? monthBounds(period) : yearBounds(year);
 
-  const ledger = await loadReportLedger(supabase, userId, { fromDate: bounds.from, toDate: bounds.to });
+  const ledger = await measureServerOperation("reports.overview.load", () => loadReportLedger(supabase, userId, { fromDate: bounds.from, toDate: bounds.to }));
   const digits = currencyDigits(ledger.currencies, currency);
   const transactions = periodTransactions(ledger.transactions, bounds.from, bounds.to);
   const totals = periodFlowTotals(transactions, currency);
