@@ -37,3 +37,5 @@ Lưu ý: release từng được dự kiến tên `V0.0.13 – Net Worth & Finan
 - **`V1.2.2 — Transaction TypeScript Deploy Fix`** patches the V1.2.1 source to address `TS18047` in transaction edit. Next changed source package must be `V1.2.3` or higher.
 
 - **`V1.4.0 — Combined Stability + Design System + Transaction UX 2.0`** includes all approved V1.2.3/V1.3.0 work. The prior source baseline was V1.2.2; V1.2.3 and V1.3.0 are implementation phases, not separate distributed ZIPs. Next changed release must be V1.4.1 or higher.
+
+- **`V1.4.1 — Transaction RPC TypeScript Deploy Fix`** corrects TS2339 for all three transaction RPC responses. The next source release must be `V1.4.2` or higher.

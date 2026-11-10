@@ -1,6 +1,6 @@
-# Finzaro V1.4.0 — Stability, Modern Design System & Transaction UX 2.0
+# Finzaro V1.4.1 — Transaction RPC TypeScript Deploy Fix
 
-**Combined release:** V1.2.3 stability baseline + V1.3.0 design system + V1.4.0 transaction UX. Only the final V1.4.0 package is distributed. The product remains six modules and 3 transaction types: Thu, Chi, Chuyển.
+**V1.4.1 patch on the combined release:** V1.2.3 stability baseline + V1.3.0 design system + V1.4.0 transaction UX. Only the final V1.4.0 package is distributed. The product remains six modules and 3 transaction types: Thu, Chi, Chuyển.
 
 Quick start and acceptance checklist: [`DEPLOY_V1.4.0.md`](DEPLOY_V1.4.0.md).
 
@@ -58,4 +58,9 @@ Copy `.env.example` to `.env.local` and fill in Supabase app keys. The `prebuild
 
 `npm run test` runs the V1.2.0/1.2.1/1.2.2 compatibility regression suites plus the V1.4.0 UX/performance regressions and still-valid PWA/auth/calculator tests. Historical advanced-module tests are preserved in `tests/legacy/` for traceability but are no longer part of the simplified product's active test contract.
 
-See [`docs/VERSIONING.md`](docs/VERSIONING.md) for patch version policy. The next changed source package must be `V1.4.1` or later; do not reuse `V1.4.0`.
+See [`docs/VERSIONING.md`](docs/VERSIONING.md) for patch version policy. The next changed source package must be `V1.4.2` or later; do not reuse `V1.4.0`.
+
+
+## V1.4.1 TypeScript deployment patch
+
+The three RPC actions for create, update, and delete now validate the RPC envelope before reading `.error`, resolving the TypeScript TS2339 `unknown` regression while preserving the atomic V1.2.0 SQL functions and all V1.4.0 functionality. See `DEPLOY_V1.4.1.md`. No new SQL migration.

@@ -1,3 +1,11 @@
+## V1.4.1 — Transaction RPC TypeScript Deploy Fix (2026-11-10)
+
+- Fix production type-check errors TS2339 at `features/transactions/actions.ts` on the create, delete, and update RPC calls. The generic `measureServerOperation` returns `unknown` for a callback where `.rpc` is accessed through an `any` cast; destructuring `.error` is invalid.
+- Add `transactionRpcError(response: unknown)` to validate the Supabase RPC response envelope once, then inspect `.error` safely. Invalid response shapes now fail visibly rather than being accepted as successful transactions.
+- Preserve the V1.4.0 transaction UI, 6-module scope, atomic V1.2.0 RPCs, and existing financial data. **No SQL migration**.
+- Add regression tests for the RPC response and all three call sites.
+- Production `next build` still requires dependencies and configured environment variables; not claimed as passed unless run.
+
 ## V1.4.0 — Stability, Modern Design System & Transaction UX 2.0 (2026-11-10)
 
 Combined implementation of the approved V1.2.3, V1.3.0 and V1.4.0 stages:

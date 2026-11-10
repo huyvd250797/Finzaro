@@ -6,6 +6,7 @@ import { parseMajorAmountToMinor } from "@/features/accounts/money";
 import { isTransactionType } from "@/features/transactions/constants";
 import { requireUser } from "@/lib/auth";
 import { measureServerOperation } from "@/lib/performance";
+import { transactionRpcError } from "@/features/transactions/rpc-response";
 
 function text(formData: FormData, key: string) { return String(formData.get(key) ?? "").trim(); }
 function validDate(value: string) {
@@ -76,12 +77,12 @@ async function commitSimpleTransaction(formData: FormData) {
   if (transactionType === "transfer" && !text(formData, "to_amount") && fromAccount?.currency_code === toAccount?.currency_code) toAmount = fromAmount;
   if (transactionType !== "expense" && (!toAmount || toAmount <= 0)) throw new Error("Số tiền nhận không hợp lệ.");
   if (transactionType === "transfer" && fromAccount?.currency_code === toAccount?.currency_code && fromAmount !== toAmount) throw new Error("Chuyển cùng loại tiền phải có giá trị gửi và nhận bằng nhau.");
-  const { error } = await measureServerOperation("transaction.create.rpc", () => (supabase as any).rpc("create_simple_transaction_v120", {
+  const error = transactionRpcError(await measureServerOperation("transaction.create.rpc", () => (supabase as any).rpc("create_simple_transaction_v120", {
     p_transaction_type: transactionType, p_title: title, p_category_id: categoryId,
     p_notes: notes || null, p_transaction_date: transactionDate,
     p_from_account_id: fromAccountId, p_to_account_id: toAccountId,
     p_from_amount_minor: fromAmount, p_to_amount_minor: toAmount
-  }));
+  })));
   if (error) throw new Error(dbError(error));
   invalidateSimpleLedger();
 }
@@ -119,7 +120,7 @@ export async function deleteTransactionAction(formData: FormData) {
     const id = text(formData, "transaction_id");
     if (!id) throw new Error("Thiếu mã giao dịch.");
     const { supabase } = await requireUser();
-    const { error } = await measureServerOperation("transaction.delete.rpc", () => (supabase as any).rpc("delete_simple_transaction_v120", { p_transaction_id: id }));
+    const error = transactionRpcError(await measureServerOperation("transaction.delete.rpc", () => (supabase as any).rpc("delete_simple_transaction_v120", { p_transaction_id: id })));
     if (error) throw new Error(dbError(error));
     invalidateSimpleLedger();
     redirect(feedbackDestination(returnTo, "message", "Đã xóa giao dịch và hoàn nguyên số dư."));
@@ -158,10 +159,10 @@ export async function updateTransactionAction(formData: FormData) {
     if (digits === undefined) throw new Error("Không tìm thấy tiền tệ.");
     const amount = parseMajorAmountToMinor(text(formData, "amount"), digits);
     if (!amount || amount <= 0) throw new Error("Số tiền không hợp lệ.");
-    const { error } = await measureServerOperation("transaction.update.rpc", () => (supabase as any).rpc("update_simple_transaction_v120", {
+    const error = transactionRpcError(await measureServerOperation("transaction.update.rpc", () => (supabase as any).rpc("update_simple_transaction_v120", {
       p_transaction_id: transactionId, p_title: title, p_category_id: categoryId, p_notes: notes || null,
       p_transaction_date: date, p_account_id: accountId, p_amount_minor: amount
-    }));
+    })));
     if (error) throw new Error(dbError(error));
     invalidateSimpleLedger();
     redirect(feedbackDestination(returnTo, "message", "Đã cập nhật giao dịch."));
