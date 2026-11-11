@@ -9,9 +9,9 @@ import { cn } from "@/lib/utils";
 import { APP_RELEASE_NAME, APP_VERSION_LABEL } from "@/lib/app-version";
 
 const moduleItems = [
-  { href: "/accounts", label: "Tài khoản & ví", icon: WalletCards },
-  { href: "/categories", label: "Danh mục", icon: Shapes },
-  { href: "/settings", label: "Cài đặt", icon: Settings2 }
+  { href: "/accounts", label: "Tài khoản & ví", icon: WalletCards, style: "border-[var(--border)]" },
+  { href: "/categories", label: "Danh mục", icon: Shapes, style: "border-[var(--border)]" },
+  { href: "/settings", label: "Cài đặt", icon: Settings2, style: "border-[var(--border)]" }
 ];
 const quickTransactions = [
   { href: "/transactions?new=expense", label: "Chi tiền", icon: ArrowUpRight, style: "text-rose-600 bg-rose-500/10 border-rose-500/30" },
@@ -39,7 +39,7 @@ export function MobileNav() {
     </nav>
     <BottomSheet open={Boolean(sheet)} onClose={() => setSheet(null)} label={sheet === "modules" ? "Tiện ích" : "Thêm giao dịch"} mobileOnly panelClassName="border border-[var(--border)] px-4 pb-[max(env(safe-area-inset-bottom),18px)]">
         <div className="mb-4 flex items-center justify-between"><h2 className="font-black">{sheet === "modules" ? "Tiện ích" : "Thêm giao dịch"}</h2><button type="button" onClick={() => setSheet(null)} className="grid size-9 place-items-center rounded-xl bg-[var(--muted)]" aria-label="Đóng"><X className="size-4" /></button></div>
-        <div className="grid grid-cols-3 gap-3">{(sheet === "modules" ? moduleItems : quickTransactions).map((item) => { const Icon = item.icon; return <Link key={item.href} href={item.href} prefetch onClick={() => setSheet(null)} className={cn("flex min-h-24 flex-col items-center justify-center gap-2 rounded-2xl border text-center text-xs font-bold", "style" in item ? item.style : "border-[var(--border)]")}><Icon className={cn("size-6", "style" in item ? "" : "text-[var(--primary)]")} />{item.label}</Link>; })}</div>
+        <div className="grid grid-cols-3 gap-3">{(sheet === "modules" ? moduleItems : quickTransactions).map((item) => { const Icon = item.icon; return <Link key={item.href} href={item.href} prefetch onClick={() => setSheet(null)} className={cn("flex min-h-24 flex-col items-center justify-center gap-2 rounded-2xl border text-center text-xs font-bold", item.style)}><Icon className={cn("size-6", sheet === "modules" ? "text-[var(--primary)]" : "")} />{item.label}</Link>; })}</div>
         {sheet === "modules" && <div className="mt-4 flex items-center justify-between rounded-xl bg-[var(--muted)] px-3 py-2.5 text-xs"><span className="text-[var(--muted-foreground)]">{APP_RELEASE_NAME}</span><span className="font-black tabular-nums text-[var(--primary)]">{APP_VERSION_LABEL}</span></div>}
     </BottomSheet>
   </>;

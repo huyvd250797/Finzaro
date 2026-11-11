@@ -1,3 +1,11 @@
+## V2.0.2 – Mobile Navigation TypeScript Deploy Fix
+
+- Fixed `TS2345` in `components/mobile-nav.tsx`: `item.style` inferred as `unknown` after an `in`-operator guard on a union of navigation item shapes.
+- Gave each module shortcut an explicit string `style`, shared across both module shortcuts and transaction shortcuts; retained green income, red expense, blue transfer, and unchanged module appearance.
+- Preserved V2.0.1 features (multi-day transaction copy, grouped ledger, bottom sheets, calendar, and entry speed optimizations).
+- Added a regression guard against reintroducing the unsafe mixed-shape `style` access.
+- No database migration required. Full production build remains subject to CI/Vercel dependency installation.
+
 ## V2.0.1 — Performance & Transaction Experience (2026-11-11)
 
 - Faster perceived initial loading: removed forced splash delay; streamed monthly summary, six-month trends and recent history independently; deferred profile enrichment and disabled eager main-nav prefetch.

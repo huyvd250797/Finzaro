@@ -28,8 +28,8 @@ function reportLoaders() {
 }
 
 test("V1.2.1 version and active module scope are consistent", () => {
-  assert.equal(JSON.parse(read("package.json")).version, "2.0.1");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION\s*=\s*"2\.0\.1"/);
+  assert.equal(JSON.parse(read("package.json")).version, "2.0.2");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION\s*=\s*"2\.0\.2"/);
   assert.match(read("README.md"), /V1\.7\.0/);
   assert.match(read("docs/VERSIONING.md"), /V1\.7\.0/);
 });

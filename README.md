@@ -1,4 +1,4 @@
-> **Current release: Finzaro V2.0.1 – Performance & Transaction Experience.** See [`DEPLOY_V2.0.1.md`](DEPLOY_V2.0.1.md) for deployment checks, safe multi-day copying, and PWA verification.
+> **Current release: Finzaro V2.0.2 – Mobile Navigation TypeScript Deploy Fix.** See [`DEPLOY_V2.0.2.md`](DEPLOY_V2.0.2.md) for deployment checks. The V2.0.1 features remain intact.
 
 # Finzaro V2.0.0 — Finzaro UX Release
 

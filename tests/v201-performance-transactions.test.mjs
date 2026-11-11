@@ -9,9 +9,9 @@ const read = (name) => readFileSync(join(root, name), "utf8");
 const require = createRequire(import.meta.url);
 const ts = (() => { try { return require("typescript"); } catch { return require("/opt/nvm/versions/node/v22.16.0/lib/node_modules/typescript"); } })();
 
-test("V2.0.1 synchronizes all runtime versions and retains six modules", () => {
-  assert.equal(JSON.parse(read("package.json")).version, "2.0.1");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "2\.0\.1"/);
+test("V2.0.2 synchronizes all runtime versions and retains six modules", () => {
+  assert.equal(JSON.parse(read("package.json")).version, "2.0.2");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "2\.0\.2"/);
   assert.deepEqual(readdirSync(join(root,"app/(dashboard)"),{withFileTypes:true}).filter(x=>x.isDirectory()).map(x=>x.name).sort(),["accounts","categories","overview","reports","settings","transactions"]);
 });
 
