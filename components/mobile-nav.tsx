@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { ArrowDownLeft, ArrowLeftRight, ArrowUpRight, BarChart3, Ellipsis, LayoutDashboard, Plus, ReceiptText, Settings2, Shapes, WalletCards, X } from "lucide-react";
 import { useOverlayScrollLock } from "@/components/use-overlay-scroll-lock";
 import { cn } from "@/lib/utils";
+import { APP_RELEASE_NAME, APP_VERSION_LABEL } from "@/lib/app-version";
 
 const moduleItems = [
   { href: "/accounts", label: "Tài khoản & ví", icon: WalletCards },
@@ -22,6 +23,7 @@ export function MobileNav() {
   const [sheet, setSheet] = useState<"modules" | "transaction" | null>(null);
   useOverlayScrollLock(Boolean(sheet));
   useEffect(() => setSheet(null), [pathname]);
+  useEffect(() => { if (!sheet) return; const onKey = (event: KeyboardEvent) => { if (event.key === "Escape") setSheet(null); }; window.addEventListener("keydown", onKey); return () => window.removeEventListener("keydown", onKey); }, [sheet]);
   const tabs = [
     { href: "/overview", label: "Tổng quan", icon: LayoutDashboard },
     { href: "/transactions", label: "Giao dịch", icon: ReceiptText },
@@ -37,10 +39,11 @@ export function MobileNav() {
         <button type="button" onClick={() => setSheet("modules")} className="mobile-tabbar-item text-[var(--muted-foreground)]"><span className="mobile-tabbar-icon"><Ellipsis className="size-[18px]" /></span><span className="mobile-tabbar-label">Thêm</span></button>
       </div>
     </nav>
-    {sheet && <div className="fixed inset-0 z-[100] flex items-end bg-black/50 lg:hidden" onMouseDown={(event) => { if (event.target === event.currentTarget) setSheet(null); }}>
-      <div className="w-full rounded-t-[26px] border border-[var(--border)] bg-[var(--card)] px-4 pb-[max(env(safe-area-inset-bottom),18px)] pt-4 shadow-2xl">
+    {sheet && <div role="presentation" className="fixed inset-0 z-[100] flex items-end bg-black/50 lg:hidden" onMouseDown={(event) => { if (event.target === event.currentTarget) setSheet(null); }}>
+      <div role="dialog" aria-modal="true" aria-label={sheet === "modules" ? "Tiện ích" : "Thêm giao dịch"} className="w-full rounded-t-[26px] border border-[var(--border)] bg-[var(--card)] px-4 pb-[max(env(safe-area-inset-bottom),18px)] pt-4 shadow-2xl">
         <div className="mb-4 flex items-center justify-between"><h2 className="font-black">{sheet === "modules" ? "Tiện ích" : "Thêm giao dịch"}</h2><button type="button" onClick={() => setSheet(null)} className="grid size-9 place-items-center rounded-xl bg-[var(--muted)]" aria-label="Đóng"><X className="size-4" /></button></div>
         <div className="grid grid-cols-3 gap-3">{(sheet === "modules" ? moduleItems : quickTransactions).map((item) => { const Icon = item.icon; return <Link key={item.href} href={item.href} prefetch onClick={() => setSheet(null)} className="flex min-h-24 flex-col items-center justify-center gap-2 rounded-2xl border border-[var(--border)] text-center text-xs font-bold"><Icon className="size-6 text-[var(--primary)]" />{item.label}</Link>; })}</div>
+        {sheet === "modules" && <div className="mt-4 flex items-center justify-between rounded-xl bg-[var(--muted)] px-3 py-2.5 text-xs"><span className="text-[var(--muted-foreground)]">{APP_RELEASE_NAME}</span><span className="font-black tabular-nums text-[var(--primary)]">{APP_VERSION_LABEL}</span></div>}
       </div>
     </div>}
   </>;

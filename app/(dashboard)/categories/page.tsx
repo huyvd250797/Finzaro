@@ -41,9 +41,9 @@ function CategoryForm({
       <CardContent className="p-5 sm:p-6">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--primary)]">Category Engine</p>
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--primary)]">Danh mục thu–chi</p>
             <h2 className="mt-1 text-lg font-black">{editing ? `Sửa ${editing.name}` : `Thêm danh mục ${CATEGORY_TYPE_LABELS[type].toLowerCase()}`}</h2>
-            <p className="mt-1 text-sm text-[var(--muted-foreground)]">Chọn icon riêng, màu icon và có thể đặt dưới một danh mục cha cùng loại.</p>
+            <p className="mt-1 text-sm text-[var(--muted-foreground)]">Chọn icon, màu và danh mục cha phù hợp; số tiền giao dịch không thay đổi.</p>
           </div>
           <Link href="/categories" data-instant-close aria-label="Đóng" className="grid size-9 place-items-center rounded-xl border border-[var(--border)] text-[var(--muted-foreground)]"><X className="size-4" /></Link>
         </div>
@@ -83,7 +83,7 @@ function CategoryForm({
 function CategorySection({ type, categories, showArchived, usageCounts }: { type: CategoryType; categories: CategoryRow[]; showArchived: boolean; usageCounts: Map<string, number> }) {
   const categoryById = new Map(categories.map((category) => [category.id, category]));
   const visible = categories
-    .filter((category) => category.category_type === type && (showArchived || !category.is_archived))
+    .filter((category) => category.category_type === type && (showArchived ? category.is_archived : !category.is_archived))
     .sort((a, b) => a.sort_order - b.sort_order || categoryDepth(a, categoryById) - categoryDepth(b, categoryById) || a.name.localeCompare(b.name, "vi"));
 
   const managerItems = visible.map((category) => ({
@@ -109,7 +109,7 @@ function CategorySection({ type, categories, showArchived, usageCounts }: { type
       <CardContent>
         {visible.length === 0 ? (
           <div className="rounded-xl border border-dashed border-[var(--border)] p-6 text-center text-sm text-[var(--muted-foreground)]">Chưa có danh mục.</div>
-        ) : <CategoryManagerGrid type={type} categories={managerItems} showArchived={showArchived} />}
+        ) : <CategoryManagerGrid key={`${type}:${showArchived}:${managerItems.map((item) => `${item.id}-${item.sort_order}-${item.icon_name}-${item.icon_color}-${item.is_archived}`).join("|")}`} type={type} categories={managerItems} showArchived={showArchived} />}
       </CardContent>
     </Card>
   );
@@ -130,9 +130,9 @@ export default async function CategoriesPage({ searchParams }: { searchParams: S
     <div className="mx-auto max-w-[1300px] px-4 py-6 md:px-6 lg:px-8 lg:py-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-sm font-semibold text-[var(--primary)]">Money · Classification</p>
+          <p className="text-sm font-semibold text-[var(--primary)]">Quản lý thu và chi</p>
           <h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">Danh mục</h1>
-          <p className="mt-2 max-w-3xl text-sm text-[var(--muted-foreground)]">Tổ chức thu nhập và chi tiêu bằng category có cấu trúc, subcategory và icon riêng. Khi bạn xác nhận đổi tên/icon/màu, các giao dịch đã dùng danh mục đó sẽ hiển thị metadata mới; số tiền và ledger không thay đổi.</p>
+          <p className="mt-2 max-w-3xl text-sm text-[var(--muted-foreground)]">Tìm, sắp xếp và tùy chỉnh danh mục thu–chi. Giữ và kéo hoặc dùng nút mũi tên để đổi thứ tự; màu sắc và icon được áp dụng trong Báo cáo.</p>
         </div>
         <div className="flex gap-2">
           <Link href={showArchived ? "/categories" : "/categories?show=archived"} className="inline-flex h-10 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-3.5 text-sm font-bold">{showArchived ? <Shapes className="size-4" /> : <Archive className="size-4" />} {showArchived ? "Đang hoạt động" : "Xem đã lưu trữ"}</Link>

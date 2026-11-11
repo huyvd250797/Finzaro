@@ -3,9 +3,9 @@ import type { MetadataRoute } from "next";
 export default function manifest(): MetadataRoute.Manifest {
   return {
     id: "/",
-    name: "Finzaro — Personal Finance Manager",
+    name: "Finzaro — Quản lý thu chi",
     short_name: "Finzaro",
-    description: "Quản lý dòng tiền và tài chính cá nhân theo cách rõ ràng, hiện đại và an toàn.",
+    description: "Theo dõi thu nhập, chi tiêu và số dư tài khoản cá nhân trên một ứng dụng gọn nhẹ.",
     // Always bootstrap through a public route. The installed iOS PWA has its own
     // cookie/storage context, so it must be able to show Login inside the PWA
     // instead of opening a protected dashboard route first.

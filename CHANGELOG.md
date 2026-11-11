@@ -1,3 +1,16 @@
+## V2.0.0 — Finzaro UX Release (2026-11-11)
+
+Three UI/UX phases are delivered together in **one V2.0.0 source ZIP**: V1.8.0 Accounts & Categories UX; V1.9.0 Speed, Motion & Accessibility; and V2.0.0 Finzaro UX Release. Baseline V1.7.1.
+
+- **Accounts & Wallets:** new compact responsive account cards; client-side instant search, account-type tabs and name/balance sorting; one-tap account transaction history; clear active/archived statuses. Existing balances are read from the same ledger without recalculation or data mutations.
+- **Categories:** client-side search; long-press pointer-capture drag with stable optimistic order; left/right accessible buttons; explicit saving/error feedback. Failure triggers refresh, with best-effort server compensation for a partially saved order. Archived view now only shows archived categories.
+- **Speed & motion:** filter/sort locally with deferred text input rather than round-tripping to Supabase on every key; minimize re-renders; isolate visual animations to hover-capable devices and obey reduced-motion preferences. No performance claims without production measurements.
+- **Accessibility & PWA:** modal focus entry, keyboard Tab trapping, Escape close, focus restoration; mobile More dialog labelling; native pinch zoom permitted on installed iOS PWA; service-worker install no longer fails entirely when an offline fallback or optional icon is unavailable. Authenticated navigation remains network-only.
+- **Version visible:** `V2.0.0` shown on mobile and desktop header, desktop sidebar, mobile More sheet and Settings, all from `lib/app-version.ts`. `/api/version` and SW registration refer to the same current version.
+- **Deploy hardening:** keep V1.7.1 source-sync gate before build, six-module release verification, strict TypeScript checking in CI, no `ignoreBuildErrors` escape hatch. Removed a diagnostic-only ambient shim file that could corrupt semantic type checking when real React/Next types are installed.
+- **Financial safety:** no database migration; no change to the constrained V1.2.0 RPCs or archived financial records. Legacy module source remains retired.
+- **Release verification caveat:** Node regression tests, source/import checks and TS/TSX parse/transpile are distinct from the full Next.js production build. That build must pass in CI/Vercel with all npm dependencies installed.
+
 ## V1.7.1 — GitHub Overlay Deploy Stability Fix (2026-11-11)
 
 - Root cause confirmed from Vercel build logs, and live `huyvd250797/Finzaro` main: a ZIP-overwrite push did **not delete 13 discontinued dashboard route directories** (plus retired components, feature services and old root-level tests). The `prebuild` source gate correctly failed with `Unexpected active routes`. This was not a TypeScript or Supabase environment error.

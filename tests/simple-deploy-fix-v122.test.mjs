@@ -18,9 +18,9 @@ test("V1.2.2 edit transaction does not access nullable query data inside currenc
 
 test("deploy-fix release is versioned and does not alter transaction RPCs", () => {
   const pkg = JSON.parse(readFileSync(resolve(root, "package.json"), "utf8"));
-  assert.equal(pkg.version, "1.7.1");
+  assert.equal(pkg.version, "2.0.0");
   const version = readFileSync(resolve(root, "lib/app-version.ts"), "utf8");
-  assert.match(version, /APP_VERSION\s*=\s*"1\.7\.1"/);
+  assert.match(version, /APP_VERSION\s*=\s*"2\.0\.0"/);
   assert.match(actions, /rpc\("update_simple_transaction_v120"/);
   assert.match(actions, /rpc\("create_simple_transaction_v120"/);
   assert.match(actions, /rpc\("delete_simple_transaction_v120"/);

@@ -171,7 +171,7 @@ export async function reorderCategoriesAction(categoryType: CategoryType, ordere
   const { supabase, userId } = await requireUser();
   const { data: rows, error } = await supabase
     .from("categories")
-    .select("id, category_type, is_archived")
+    .select("id, category_type, is_archived, sort_order")
     .eq("user_id", userId)
     .eq("category_type", categoryType)
     .eq("is_archived", false)
@@ -182,10 +182,18 @@ export async function reorderCategoriesAction(categoryType: CategoryType, ordere
   const ownedIds = new Set((rows ?? []).map((row) => row.id));
   if (ids.some((id) => !ownedIds.has(id))) throw new Error("Không thể sắp xếp danh mục không thuộc tài khoản.");
 
+  const oldOrder = new Map((rows ?? []).map((row) => [row.id, row.sort_order]));
   const updates = await Promise.all(ids.map((id, index) =>
     supabase.from("categories").update({ sort_order: (index + 1) * 10 }).eq("id", id).eq("user_id", userId)
   ));
-  if (updates.some((result) => result.error)) throw new Error("Không thể lưu thứ tự danh mục.");
+  if (updates.some((result) => result.error)) {
+    // Best-effort compensation: do not silently accept a partially saved order.
+    await Promise.allSettled(ids.map((id) =>
+      supabase.from("categories").update({ sort_order: oldOrder.get(id) ?? 0 }).eq("id", id).eq("user_id", userId)
+    ));
+    revalidatePath("/categories");
+    throw new Error("Không thể lưu toàn bộ thứ tự danh mục. Vui lòng tải lại trang.");
+  }
 
   revalidatePath("/categories");
   revalidatePath("/transactions");

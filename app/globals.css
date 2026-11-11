@@ -304,3 +304,15 @@ button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
 .fin-amount-input { height: auto; background: transparent; }
 .fin-amount-input > button.fin-input { height: 3.5rem; background: var(--card); border-color: var(--fin-divider); }
 .fin-amount-input > button.fin-input span.flex-1 { font-size: clamp(1.2rem, 4.8vw, 2rem); font-weight: 800; }
+
+/* Finzaro V2.0.0 — Accounts, Categories, inclusive motion & version visibility */
+.fin-account-card { transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease; }
+@media (hover: hover) and (prefers-reduced-motion: no-preference) { .fin-account-card:hover { border-color: color-mix(in srgb, var(--primary) 33%, var(--border)); box-shadow: var(--shadow-card); transform: translateY(-2px); } }
+.fin-category-tile { user-select: none; -webkit-user-select: none; transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease; }
+.fin-category-tile-dragging { z-index: 5; border-color: var(--primary); box-shadow: 0 12px 30px -12px rgba(0,0,0,.22); transform: scale(1.035); }
+.fin-category-action { display: grid; min-width: 32px; min-height: 36px; place-items: center; border: 1px solid var(--border); border-radius: 10px; background: var(--card); color: var(--muted-foreground); }
+.fin-category-action:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.fin-category-action:disabled { cursor: not-allowed; }
+.fin-version-pill { font-variant-numeric: tabular-nums; letter-spacing: .015em; }
+@media (max-width: 360px) { .fin-category-action { min-width: 30px; min-height: 34px; } .fin-category-tile { padding: .45rem; } .fin-version-pill { padding-inline: .375rem; } }
+@media (prefers-reduced-motion: reduce) { .fin-account-card, .fin-category-tile { transition: none !important; transform: none !important; } }

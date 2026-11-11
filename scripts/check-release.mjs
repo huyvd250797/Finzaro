@@ -10,6 +10,7 @@ const errors = [];
 const fail = (message) => errors.push(message);
 
 if (pkg.version !== appVersion) fail(`Version mismatch: package ${pkg.version}, app ${appVersion}`);
+if (existsSync(join(root, "_diagnostic_only_external_shims.d.ts"))) fail("Offline-only ambient TypeScript shims are not allowed in production source; run npm run source:sync.");
 if (pkg.dependencies?.next !== pkg.devDependencies?.["eslint-config-next"]) fail("Next and eslint-config-next versions differ");
 if (pkg.dependencies?.react !== pkg.dependencies?.["react-dom"]) fail("React and react-dom versions differ");
 if (Number(pkg.dependencies?.next?.split(".")[0]) < 16 || Number(pkg.dependencies?.next?.split(".")[1]) < 4 || Number(pkg.dependencies?.next?.split(".")[2]) < 5) fail("Next.js is below the security-patched 16.4.5 baseline");

@@ -5,7 +5,7 @@ import { AppSplash } from "@/components/app-splash";
 
 export const metadata: Metadata = {
   title: { default: "Finzaro", template: "%s · Finzaro" },
-  description: "Finzaro — Personal Finance Manager. Theo dõi dòng tiền, tài khoản và xây nền tảng cho quản lý tài chính cá nhân.",
+  description: "Finzaro — Quản lý thu chi, tài khoản và ngân sách thường ngày dễ dàng trên điện thoại và máy tính.",
   applicationName: "Finzaro",
   appleWebApp: { capable: true, statusBarStyle: "default", title: "Finzaro" },
   icons: {
@@ -20,8 +20,6 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
   viewportFit: "cover",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#f4f7f6" },

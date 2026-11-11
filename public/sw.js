@@ -6,10 +6,9 @@ const OPTIONAL_SHELL = ["/icons/finzaro-v0012-192.png", "/icons/finzaro-v0012-51
 self.addEventListener("install", (event) => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE_NAME);
-    // Recovery pages are required. Optional artwork must never prevent a new
-    // service worker from installing during a deploy or transient CDN miss.
-    await cache.addAll(REQUIRED_SHELL);
-    await Promise.allSettled(OPTIONAL_SHELL.map((url) => cache.add(url)));
+    // Offline shell is best effort: one unavailable route must not block a
+    // service-worker update or leave a stale app running after deployment.
+    await Promise.allSettled([...REQUIRED_SHELL, ...OPTIONAL_SHELL].map((url) => cache.add(url)));
   })());
 });
 

@@ -41,6 +41,7 @@ const RETIRED_DIRS = [
 // Previously committed legacy UI components and duplicate root-level tests.
 // Historical tests have already been archived under tests/legacy/from-v141.
 const RETIRED_FILES = [
+  "_diagnostic_only_external_shims.d.ts",
   "components/cash-flow-planner.tsx",
   "components/debt-strategy-planner.tsx",
   "components/deposit-term-comparison.tsx",

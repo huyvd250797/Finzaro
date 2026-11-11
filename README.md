@@ -1,8 +1,8 @@
-# Finzaro V1.7.1 — Calendar, Reports & Overview UX + Deploy Stability Fix
+# Finzaro V2.0.0 — Finzaro UX Release
 
-**V1.7.0 combines the V1.5.0, V1.6.0 and V1.7.0 UI/UX stages** on the fixed V1.4.1 baseline. A single final source package is distributed. The product remains six modules and 3 transaction types: Thu, Chi, Chuyển.
+**V2.0.0 combines V1.8.0 Accounts & Categories, V1.9.0 Speed/Motion/Accessibility and V2.0.0 UX Release** on the V1.7.1 baseline. One final source package is distributed. The product remains six modules and 3 transaction types: Thu, Chi, Chuyển.
 
-Deploy fix instructions: [`DEPLOY_V1.7.1.md`](DEPLOY_V1.7.1.md). Previous UI checklist: [`DEPLOY_V1.7.0.md`](DEPLOY_V1.7.0.md). QA evidence: [`docs/V1.7.0_QA.md`](docs/V1.7.0_QA.md).
+Current deployment: [`DEPLOY_V2.0.0.md`](DEPLOY_V2.0.0.md). Prior deploy fix: [`DEPLOY_V1.7.1.md`](DEPLOY_V1.7.1.md). Previous UI checklist: [`DEPLOY_V1.7.0.md`](DEPLOY_V1.7.0.md). QA evidence: [`docs/V1.7.0_QA.md`](docs/V1.7.0_QA.md).
 
 ## Product overview
 
@@ -45,7 +45,7 @@ See [`DEPLOY_V1.2.2.md`](DEPLOY_V1.2.2.md) for the deploy fix and [`DEPLOY_V1.2.
 3. Run `supabase/sql-editor/V1.2.0_simple_expense_management.sql` in Supabase SQL Editor.
 4. Run `supabase/sql-editor/V1.2.0_simple_expense_management_verify.sql` to verify the marker table and RPCs.
 5. Install dependencies (`npm install`), then run `npm run check` to test/lint/typecheck/build in an environment with network access and valid `.env` settings.
-6. Deploy the V1.7.1 source ZIP root to Vercel and clear build cache once. Verify PWA badge `V1.7.1`. Source sync removes GitHub-overlaid old application code during `prebuild`.
+6. Deploy the V2.0.0 source ZIP root to Vercel and clear build cache once. Verify visible `V2.0.0` badge. Source sync removes GitHub-overlaid old application code during `prebuild`.
 7. Smoke-test all three transaction types, deletion rollback, calendar/day edit, Reports, category icon/color, account balances and archived historical records.
 
 This ZIP does not include `node_modules`, compiled `.next` output or a database backup. Migration has **not** been run against your real Supabase instance. No customer data was deleted by preparing this release.
@@ -58,7 +58,7 @@ Copy `.env.example` to `.env.local` and fill in Supabase app keys. The `prebuild
 
 `npm run test` runs the V1.2.0/1.2.1/1.2.2 compatibility regression suites plus the V1.4.0 UX/performance regressions and still-valid PWA/auth/calculator tests. Historical advanced-module tests are preserved in `tests/legacy/` for traceability but are no longer part of the simplified product's active test contract.
 
-See [`docs/VERSIONING.md`](docs/VERSIONING.md) for patch version policy. The next changed source package must be `V1.7.2` or later; do not reuse a published version.
+See [`docs/VERSIONING.md`](docs/VERSIONING.md) for patch version policy. The next changed source package must be `V2.0.1` or later; do not reuse a published version.
 
 
 ## V1.4.1 TypeScript deployment patch
@@ -80,3 +80,7 @@ Security compatibility: Next.js / eslint-config-next `16.4.6` and React / React 
 ## V1.7.1 GitHub overlay deploy fix
 
 `npm run source:sync` removes only known retired application source files that old GitHub ZIP-overwrite uploads may have left behind. `prebuild` runs it automatically, then enforces the six-module release gate. It does **not** modify database data/migrations or automatically delete tracked files on GitHub. To permanently clean remote source, follow `DEPLOY_V1.7.1.md`.
+
+## V2.0.0 UX consolidation
+
+Accounts search/filter and quick history, category drag-and-drop plus keyboard move, mobile-visible version, modal focus handling and resilient PWA updates. The application still has exactly six modules. See `DEPLOY_V2.0.0.md` and `docs/V2.0.0_UX_QA.md`. No new SQL migration is required.

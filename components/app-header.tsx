@@ -3,7 +3,7 @@ import Link from "next/link";
 import { logoutAction } from "@/app/auth/actions";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { BrandLogo } from "@/components/brand-logo";
-import { APP_VERSION_LABEL } from "@/lib/app-version";
+import { APP_RELEASE_NAME, APP_VERSION_LABEL } from "@/lib/app-version";
 
 function initial(displayName?: string, email?: string) {
   return (displayName?.trim()[0] ?? email?.trim()[0] ?? "F").toUpperCase();
@@ -13,7 +13,7 @@ export function AppHeader({ displayName, email }: { displayName?: string; email?
   return (
     <header className="sticky top-0 z-20 flex h-14 items-center gap-2 sm:h-16 sm:gap-3 border-b border-[var(--border)] bg-[color:var(--background)]/92 shadow-[0_8px_28px_-28px_rgba(0,0,0,.45)] px-3 backdrop-blur-xl sm:px-4 md:px-6 lg:ml-64 lg:px-8">
       <BrandLogo compact className="lg:hidden" />
-      <span className="hidden sm:inline-flex rounded-full bg-[var(--muted)] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.12em] text-[var(--muted-foreground)]">{APP_VERSION_LABEL}</span>
+      <Link href="/settings" aria-label={`Phiên bản ứng dụng ${APP_VERSION_LABEL}. Xem thông tin trong Cài đặt.`} title={APP_RELEASE_NAME} className="fin-version-pill inline-flex shrink-0 rounded-full border border-[var(--border)] bg-[var(--card)] px-2 py-1 text-[10px] font-black text-[var(--primary)] sm:px-2.5">{APP_VERSION_LABEL}</Link>
       <div className="hidden min-w-0 flex-1 md:block">
         <Link href="/transactions" className="flex h-10 max-w-md items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 text-sm text-[var(--muted-foreground)]"><Search className="size-4" /> Tìm giao dịch</Link>
       </div>

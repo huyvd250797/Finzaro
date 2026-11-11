@@ -43,3 +43,6 @@ Lưu ý: release từng được dự kiến tên `V0.0.13 – Net Worth & Finan
 - **`V1.4.1 — Transaction RPC TypeScript Deploy Fix`** corrects TS2339 for all three transaction RPC responses. The next planned combined UX source release is V1.7.0.
 
 - **`V1.7.0 — Combined Smart Calendar + Reports & Charts + Overview & Navigation UX`** includes the V1.5.0 and V1.6.0 implementation phases. Source baseline: V1.4.1. Only V1.7.0 is shipped; V1.5.0 and V1.6.0 were not separate ZIP releases. The next changed source package must be `V1.7.1` or higher.
+
+- **`V1.7.1 — GitHub Overlay Deploy Stability Fix`** guarantees source reconciliation before prebuild.
+- **`V2.0.0 — Finzaro UX Release`** combines V1.8.0, V1.9.0, V2.0.0 phases in a single release on V1.7.1. Next modified source must be V2.0.1 or higher.
