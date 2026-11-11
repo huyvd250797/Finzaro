@@ -1,3 +1,12 @@
+## V1.7.1 — GitHub Overlay Deploy Stability Fix (2026-11-11)
+
+- Root cause confirmed from Vercel build logs, and live `huyvd250797/Finzaro` main: a ZIP-overwrite push did **not delete 13 discontinued dashboard route directories** (plus retired components, feature services and old root-level tests). The `prebuild` source gate correctly failed with `Unexpected active routes`. This was not a TypeScript or Supabase environment error.
+- Added `scripts/sync-retired-source.mjs` and `npm run source:sync`. It deterministically removes only obsolete application source paths: retired route directories, specialized feature folders, the SSI refresh endpoint/service, replaced UI components and redundant root tests. All surviving six modules, financial SQL migrations and original database data remain untouched. It is idempotent and safe on a clean V1.7.1 checkout.
+- `prebuild`, `release:check`, `prelint`, `pretypecheck` and `pretest` now reconcile those retired paths **before** source/type checks. `check-release` remains strict about the six-route invariant and supplies remediation when it fails.
+- Added an automated overlay regression test that simulates the same stale GitHub file layout and verifies preservation of active routes and migration files.
+- No new SQL migration, no financial accounting logic change and no UI redesign beyond the V1.7.0 scope. Retains Next 16.4.6 / React 19.3.1.
+- Caveat: cleaning in Vercel's temporary build checkout is not a GitHub commit. For a permanently clean repository, remove the same retired paths in Git (see `DEPLOY_V1.7.1.md`) or upload with a mirror/sync tool that records deletes.
+
 ## V1.7.0 — Calendar, Reports & Overview UX Redesign (2026-11-10)
 
 Combined implementation of three approved phases: V1.5.0 Smart Calendar Experience, V1.6.0 Reports & Charts Redesign, and V1.7.0 Overview & Navigation Redesign. Published source version is **V1.7.0** only.

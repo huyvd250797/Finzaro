@@ -1,3 +1,5 @@
+**Latest patch:** V1.7.1 – GitHub Overlay Deploy Stability Fix. Source sync clears stale discontinued module code before the strict six-module prebuild gate.
+
 # Finzaro Versioning Policy
 
 Từ release Net Worth & Financial Position, Finzaro dùng phiên bản `X.Y.Z` theo quy ước dự án:

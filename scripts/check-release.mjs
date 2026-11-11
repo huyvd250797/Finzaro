@@ -17,7 +17,7 @@ if (/ignoreBuildErrors|ignoreDuringBuilds/.test(read("next.config.ts"))) fail("P
 
 const expected = ["overview", "transactions", "accounts", "categories", "reports", "settings"].sort();
 const found = readdirSync(join(root, "app/(dashboard)"), { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort();
-if (expected.join("|") !== found.join("|")) fail(`Unexpected active routes: ${found.join(", ")}`);
+if (expected.join("|") !== found.join("|")) fail(`Unexpected active routes: ${found.join(", ")}. Run npm run source:sync before committing; GitHub ZIP-overwrite uploads do not delete tracked legacy folders.`);
 for (const rpc of ["create_simple_transaction_v120", "update_simple_transaction_v120", "delete_simple_transaction_v120"]) {
   if (!read("features/transactions/actions.ts").includes(rpc)) fail(`Transaction RPC missing: ${rpc}`);
 }

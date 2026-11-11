@@ -1,6 +1,6 @@
 {
   "name": "finzaro",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "private": true,
   "engines": {
     "node": "22.x",
@@ -25,8 +25,12 @@
     "db:pull": "supabase db pull --linked",
     "db:types:local": "supabase gen types typescript --local --schema public > lib/supabase/database.types.ts",
     "db:types:linked": "supabase gen types typescript --linked --schema public > lib/supabase/database.types.ts",
-    "prebuild": "node scripts/check-env.mjs && node scripts/check-release.mjs",
-    "release:check": "node scripts/check-release.mjs"
+    "prebuild": "npm run source:sync && node scripts/check-env.mjs && node scripts/check-release.mjs",
+    "release:check": "npm run source:sync && node scripts/check-release.mjs",
+    "source:sync": "node scripts/sync-retired-source.mjs",
+    "prelint": "node scripts/sync-retired-source.mjs",
+    "pretypecheck": "node scripts/sync-retired-source.mjs",
+    "pretest": "node scripts/sync-retired-source.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.7",
