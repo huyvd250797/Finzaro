@@ -175,9 +175,7 @@ export async function updateTransactionAction(formData: FormData) {
 
 export type CopyTransactionState = { error: string; copiedDates: string[] };
 
-/** Batch-copy is deliberately limited and idempotent across retries within one form action state.
- * Each target date uses the existing atomic simple-transaction RPC. Original ledger is untouched.
- */
+/** Atomic V3.2.0 batch copy: database receipts enforce idempotency across sessions/retries. */
 export async function copyTransactionDatesAction(previous: CopyTransactionState, formData: FormData): Promise<CopyTransactionState> {
   const copiedDates = Array.isArray(previous.copiedDates) ? previous.copiedDates.filter(validDate) : [];
   let requested: string[];
@@ -192,47 +190,33 @@ export async function copyTransactionDatesAction(previous: CopyTransactionState,
   if (!/^[0-9a-f-]{36}$/i.test(sourceId)) return { error: "Mã giao dịch gốc không hợp lệ.", copiedDates };
 
   try {
-    const { supabase, userId } = await requireUser();
-    const { data, error } = await supabase.from("transactions")
-      .select("id, transaction_type, transaction_purpose, title, category_id, notes, transaction_date, transaction_entries(account_id, entry_role, currency_code, amount_minor)")
-      .eq("user_id", userId).eq("id", sourceId).maybeSingle();
-    if (error || !data) throw new Error("Không tìm thấy giao dịch gốc hoặc không có quyền sao chép.");
-    if (!["expense", "income", "transfer"].includes(data.transaction_type)) throw new Error("Không hỗ trợ sao chép giao dịch loại này.");
-    const type = data.transaction_type;
-    if (data.transaction_purpose !== (type === "transfer" ? "transfer" : "standard")) throw new Error("Giao dịch từ module tài chính cũ chỉ được lưu trữ, không được sao chép.");
-    if (type === "transfer") {
-      const { data: marked, error: markerError } = await (supabase as any).from("simple_transaction_ids_v120").select("transaction_id").eq("user_id", userId).eq("transaction_id", sourceId).maybeSingle();
-      if (markerError || !marked) throw new Error("Chỉ cho sao chép chuyển tiền được tạo bằng Finzaro Thu/Chi đơn giản.");
+    // One RPC call for up to 20 days. PostgreSQL serializes concurrent requests
+    // and returns receipts for prior successes rather than creating duplicates.
+    const { supabase } = await requireUser();
+    const result = await measureServerOperation("transaction.copy.batch.rpc", () =>
+      (supabase as any).rpc("copy_simple_transaction_batch_v320", {
+        p_source_id: sourceId,
+        p_destination_dates: remaining
+      })
+    );
+    const error = transactionRpcError(result) as { code?: string; message?: string } | null;
+    if (error) {
+      if (error.code === "PGRST202" || error.message?.includes("copy_simple_transaction_batch_v320")) {
+        throw new Error("Chưa cập nhật database V3.2.0. Hãy chạy migration 20261111180000_instant_copy_batch_v320.sql.");
+      }
+      throw new Error(dbError(error));
     }
-    const entries = (data.transaction_entries ?? []) as Array<{ account_id: string; entry_role: string; currency_code: string; amount_minor: number }>;
-    const from = entries.find((item) => item.entry_role === (type === "expense" ? "expense" : "transfer_out"));
-    const to = entries.find((item) => item.entry_role === (type === "income" ? "income" : "transfer_in"));
-    if ((type !== "income" && !from) || (type !== "expense" && !to)) throw new Error("Giao dịch gốc thiếu dữ liệu ledger.");
-    const ids = [...new Set(entries.filter((item) => item === from || item === to).map((item) => item.account_id))];
-    const [accountResult, categoryResult] = await Promise.all([
-      supabase.from("accounts").select("id, currency_code, account_type, is_archived").eq("user_id", userId).in("id", ids),
-      type !== "transfer" && data.category_id
-        ? supabase.from("categories").select("id, category_type, is_archived").eq("user_id", userId).eq("id", data.category_id).maybeSingle()
-        : Promise.resolve({ data: null, error: null })
-    ]);
-    if (accountResult.error || (accountResult.data ?? []).length !== ids.length || (accountResult.data ?? []).some((account) => account.is_archived || !["cash", "bank", "ewallet"].includes(account.account_type))) throw new Error("Tài khoản trong giao dịch gốc đã bị khóa hoặc ngừng sử dụng.");
-    if (type !== "transfer" && (!data.category_id || categoryResult.error || !categoryResult.data || categoryResult.data.is_archived || categoryResult.data.category_type !== type)) throw new Error("Danh mục gốc không còn hợp lệ để tạo giao dịch mới.");
-    if (!data.title || data.title.length > 140 || (data.notes ?? "").length > 500) throw new Error("Nội dung giao dịch gốc không hợp lệ.");
-    for (const date of remaining) {
-      const rpcError = transactionRpcError(await measureServerOperation("transaction.copy.rpc", () => (supabase as any).rpc("create_simple_transaction_v120", {
-        p_transaction_type: type, p_title: data.title, p_category_id: type === "transfer" ? null : data.category_id,
-        p_notes: data.notes || null, p_transaction_date: date,
-        p_from_account_id: from?.account_id ?? null, p_to_account_id: to?.account_id ?? null,
-        p_from_amount_minor: from ? Math.abs(from.amount_minor) : null,
-        p_to_amount_minor: to ? Math.abs(to.amount_minor) : null
-      })));
-      if (rpcError) throw new Error(dbError(rpcError));
-      copiedDates.push(date);
+    const receipts = result.data as Array<{ date: string; transaction_id: string; reused: boolean }> | null;
+    if (!Array.isArray(receipts) || receipts.some((row) => !row || !validDate(row.date) || !remaining.includes(row.date) || typeof row.transaction_id !== "string" || typeof row.reused !== "boolean")) {
+      throw new Error("Phản hồi sao chép từ database không hợp lệ. Kiểm tra lại trước khi thử tiếp.");
     }
-    invalidateSimpleLedger();
-    return { error: "", copiedDates };
+    // A partial response is never silently treated as a success.
+    if (receipts.length !== remaining.length) throw new Error("Database chưa xác nhận đầy đủ ngày đã chọn.");
+    const successful = [...new Set([...copiedDates, ...receipts.map((row) => row.date)])].sort();
+    if (receipts.some((row) => !row.reused)) invalidateSimpleLedger();
+    return { error: "", copiedDates: successful };
   } catch (error) {
-    if (copiedDates.length) invalidateSimpleLedger();
-    return { error: `${error instanceof Error ? error.message : "Không thể sao chép giao dịch."}${copiedDates.length ? ` Đã thành công ${copiedDates.length} ngày; chỉ ngày chưa sao chép sẽ được thử lại.` : ""}`, copiedDates };
+    // The database function is atomic: failure rolls back the entire batch.
+    return { error: error instanceof Error ? error.message : "Không thể sao chép giao dịch.", copiedDates };
   }
 }

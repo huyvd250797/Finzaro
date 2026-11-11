@@ -9,6 +9,7 @@ import { TransactionEntryForm } from "@/components/transaction-entry-form";
 import { TransactionCategorySelect } from "@/components/transaction-category-select";
 import { TransactionList } from "@/components/transaction-list";
 import { TransactionCopyPanel } from "@/components/transaction-copy-panel";
+import { InstantCopyOverlay } from "@/components/instant-copy-overlay";
 import { Card, CardContent } from "@/components/ui/card";
 import { minorToMajorInput } from "@/features/accounts/money";
 import { updateTransactionAction } from "@/features/transactions/actions";
@@ -62,10 +63,26 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
   // eagerly hydrating and rendering hundreds of transaction cards.
   const lookupLimit = hasComplexFilter ? 1000 : Math.min(1000, Math.max(160, displayLimit + 1));
   const { supabase, userId } = await requireUser();
+  // Deep-link/no-JavaScript fallback: retrieve only one source record, never the full ledger.
+  // Normal Copy clicks are intercepted by InstantCopyOverlay and require zero navigation.
+  if (params.copy) {
+    const sourceId = params.copy;
+    const source = /^[0-9a-f-]{36}$/i.test(sourceId)
+      ? (await supabase.from("transactions")
+        .select("id, title, transaction_date, transaction_type, transaction_purpose")
+        .eq("user_id", userId).eq("id", sourceId).maybeSingle()).data
+      : null;
+    const eligible = source && ["income", "expense", "transfer"].includes(source.transaction_type)
+      && source.transaction_purpose === (source.transaction_type === "transfer" ? "transfer" : "standard");
+    return <div className="fin-page-shell mx-auto max-w-3xl px-4 py-6">
+      <Link href="/transactions" className="text-sm font-semibold text-[var(--primary)]">← Lịch sử giao dịch</Link>
+      {eligible ? <TransactionCopyPanel sourceId={source.id} sourceTitle={source.title} sourceDate={source.transaction_date} type={source.transaction_type} /> : <p role="alert" className="fin-inline-error mt-4">Không tìm thấy giao dịch hợp lệ để sao chép.</p>}
+    </div>;
+  }
   const newType = params.new && isTransactionType(params.new) ? params.new : null;
   const quickFormOnly = Boolean(newType && !params.edit && !params.copy);
   // Editing a historic record must not depend on it being in the latest 500 rows.
-  const selectedId = params.copy || params.edit;
+  const selectedId = params.edit;
   const editDate = selectedId
     ? (await supabase.from("transactions").select("transaction_date").eq("id", selectedId).eq("user_id", userId).maybeSingle()).data?.transaction_date
     : null;
@@ -100,7 +117,6 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
   const incomeSuggestions = quickTransactionSuggestions(ledger.transactions, ledger.currencies, "income");
   const validTransferRows = ledger.transactions.filter((tx) => tx.transaction_type === "transfer" && tx.transaction_purpose === "transfer" && tx.entries.some(e => e.entry_role === "transfer_in") && tx.entries.some(e => e.entry_role === "transfer_out"));
   const transferSuggestions = quickTransactionSuggestions(validTransferRows.filter(tx => tx.entries.every(e => ["cash", "bank", "ewallet"].includes(e.account?.account_type ?? ""))), ledger.currencies, "transfer");
-  const copying = params.copy ? ledger.transactions.find((tx) => tx.id === params.copy && (tx.transaction_purpose === "standard" || tx.transaction_purpose === "transfer") && ["income", "expense", "transfer"].includes(tx.transaction_type)) ?? null : null;
   const editing = params.edit ? ledger.transactions.find((tx) => tx.id === params.edit && tx.transaction_purpose === "standard" && (tx.transaction_type === "income" || tx.transaction_type === "expense")) ?? null : null;
   const launcher = <InstantTransactionLauncher
     initialType={newType}
@@ -108,10 +124,6 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
     income={<TransactionEntryForm type="income" accounts={activeAccounts} categories={incomeCategories} today={requestedDate} returnTo={returnTo} suggestions={incomeSuggestions} />}
     transfer={<TransactionEntryForm type="transfer" accounts={activeAccounts} categories={[]} today={requestedDate} returnTo={returnTo} suggestions={transferSuggestions} />}
   />;
-  if (params.copy) return <div className="fin-page-shell mx-auto max-w-3xl px-4 py-6">
-    <Link href="/transactions" className="text-sm font-semibold text-[var(--primary)]">← Lịch sử giao dịch</Link>
-    {copying ? <TransactionCopyPanel sourceId={copying.id} sourceTitle={copying.title} sourceDate={copying.transaction_date} type={copying.transaction_type} /> : <p role="alert" className="fin-inline-error mt-4">Không tìm thấy giao dịch hợp lệ để sao chép.</p>}
-  </div>;
   if (quickFormOnly) return <div className="fin-page-shell mx-auto max-w-3xl px-4 py-6">
     <Link href={returnTo || "/transactions"} className="text-sm font-semibold text-[var(--primary)]">← Lịch sử giao dịch</Link>
     <h1 className="mt-3 text-xl font-extrabold">Ghi nhận thu – chi</h1>
@@ -141,6 +153,7 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
 
   return <div className="fin-page-shell mx-auto max-w-[1500px] min-w-0 px-4 py-6 md:px-6 lg:px-8 lg:py-8">
     <div className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-xs font-semibold text-[var(--primary)]">Finzaro · Thu chi</p><h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">Giao dịch</h1><p className="mt-1 text-sm text-[var(--muted-foreground)]">Thu, Chi, Chuyển tiền · thao tác nhanh, số dư tự cập nhật.</p></div>{launcher}</div>
+    <InstantCopyOverlay />
     <AuthMessage error={params.error} message={params.message} />
     {editing && <EditTransactionForm transaction={editing} accounts={activeAccounts} categories={editing.transaction_type === "income" ? incomeCategories : expenseCategories} currencies={ledger.currencies} returnTo={returnTo} />}
 

@@ -1,3 +1,17 @@
+## [3.2.0] — 2026-11-11 · Instant Reports, Fast Copy & Splash
+
+### V3.1.0 — Instant Reports & Navigation
+- Báo cáo tính đồng thời hai snapshot Thu/Chi từ đúng một lần tải ledger trong kỳ, đổi tab client-side không fetch lại server.
+- Đồng bộ URL, browser Back/Forward và các nút kỳ trước/kỳ sau/Tháng/Năm với loại báo cáo hiện tại; prefetch theo ý định sử dụng thay vì hàng loạt.
+- Giữ KPI và thông tin tổng hợp chính xác; tiếp tục không cộng chuyển tiền và giao dịch chuyên biệt vào Thu/Chi.
+
+### V3.2.0 — Instant Copy & Batch Engine
+- Copy từ Lịch và Lịch sử mở bottom sheet tại chỗ, không reload danh sách; deep-link Copy chỉ truy vấn bản ghi nguồn.
+- Một RPC PostgreSQL nguyên tử cho tối đa 20 ngày. Ràng buộc idempotency qua receipt, transaction advisory lock để chống gửi đồng thời/lặp lại, không tự copy giao dịch legacy.
+- Cải thiện splash khởi động dựa trên readiness của nội dung thực (Overview đợi KPI cốt lõi), không áp đặt thời gian chờ cố định; fail-open 4 giây.
+- Migration mới **bắt buộc** trước deploy: `20261111180000_instant_copy_batch_v320.sql`.
+- Kiểm tra cú pháp TypeScript/TSX và suite hồi quy; chưa chạy production build hoặc Supabase live DB ở môi trường này.
+
 ## [3.0.0] — 2026-11-11 · Professional Release (combined V2.6 + V3.0)
 
 ### V2.6.0 — Scale, Motion & Accessibility

@@ -19,8 +19,8 @@ function compile(path) {
   return exports;
 }
 test("V3.0.0 version is consistent and app retains six modules", () => {
-  assert.equal(JSON.parse(read("package.json")).version, "3.0.0");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "3\.0\.0"/);
+  assert.equal(JSON.parse(read("package.json")).version, "3.2.0");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "3\.2\.0"/);
   assert.deepEqual(readdirSync(join(root,"app/(dashboard)"),{withFileTypes:true}).filter(entry=>entry.isDirectory()).map(x=>x.name).sort(),["accounts","categories","overview","reports","settings","transactions"]);
 });
 test("Scale: chart visual buckets preserve all financial totals and bound DOM bars", () => {

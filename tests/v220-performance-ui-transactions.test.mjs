@@ -9,7 +9,7 @@ const read = (file) => readFileSync(join(root, file), "utf8");
 test("V2.2.0 includes three combined milestones as one production release", () => {
   assert.ok((Number(JSON.parse(read("package.json")).version.split(".")[0]) > 2 || Number(JSON.parse(read("package.json")).version.split(".")[1]) >= 2), "release should retain V2.2 baseline");
   assert.match(read("lib/app-version.ts"), /APP_VERSION = "(?:2\.[2-9]\.\d+|3\.\d+\.\d+)"/);
-  assert.match(read("lib/app-version.ts"), /Financial Dashboard & Advanced Reports|Premium Fintech & Fluid Transaction UX|Professional Release/);
+  assert.match(read("lib/app-version.ts"), /Financial Dashboard & Advanced Reports|Premium Fintech & Fluid Transaction UX|Professional Release|Instant Reports/);
   const modules = readdirSync(join(root, "app/(dashboard)"), { withFileTypes: true })
     .filter((dir) => dir.isDirectory()).map((dir) => dir.name).sort();
   assert.deepEqual(modules, ["accounts", "categories", "overview", "reports", "settings", "transactions"]);

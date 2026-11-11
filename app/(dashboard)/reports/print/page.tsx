@@ -11,7 +11,7 @@ export default async function PrintReportPage({ searchParams }: { searchParams: 
   const raw = await searchParams;
   const params = Object.fromEntries(Object.entries(raw).map(([k,v]) => [k,Array.isArray(v)?v[0]:v])) as Record<string,string|undefined>;
   const r = await loadFinancialReport(params);
-  if (r.ledger.diagnostics.strategy === "empty") return <div className="p-8 text-rose-500">Không đủ dữ liệu để in báo cáo chính xác.</div>;
+  if (r.ledger.diagnostics.strategy === "empty") return <div className="fin-page-shell p-8 text-rose-500">Không đủ dữ liệu để in báo cáo chính xác.</div>;
   const money = (value: number) => formatMinorMoney(value,r.currency,r.digits);
   const allRows = r.current.filter(tx => flowValue(tx,r.currency,"income") > 0 || flowValue(tx,r.currency,"expense") > 0);
   const rows = allRows.slice(0, 500);

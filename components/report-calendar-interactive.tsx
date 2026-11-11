@@ -9,6 +9,7 @@ import { CategoryIcon, iconColorValue } from "@/features/categories/icons";
 import { cn } from "@/lib/utils";
 import { compactCalendarAmount } from "@/features/reports/compact-money";
 import { BottomSheet } from "@/components/bottom-sheet";
+import { InstantCopyOverlay } from "@/components/instant-copy-overlay";
 
 type CalendarCell = {
   key: string;
@@ -109,6 +110,7 @@ export function ReportCalendarInteractive({
 
   return (
     <>
+      <InstantCopyOverlay />
       <div className="-mx-2.5 mt-3 overflow-hidden border-y border-[var(--border)] bg-[var(--card)] sm:mx-0 sm:rounded-2xl sm:border">
         <div className="grid grid-cols-7 border-b border-[var(--border)] bg-[var(--muted)]/35">
           {WEEKDAYS.map((day) => <div key={day} className="py-2 text-center text-[10px] font-black text-[var(--muted-foreground)] sm:text-xs">{day}</div>)}
@@ -178,7 +180,7 @@ export function ReportCalendarInteractive({
                       <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-[var(--muted)]" style={{ color: iconColorValue(transaction.iconColor) }}><CategoryIcon name={transaction.iconName} className="size-4" /></span>
                       <span className="min-w-0 flex-1"><span className="block truncate text-sm font-black">{transaction.categoryName}</span><span className="mt-0.5 block truncate text-[11px] text-[var(--muted-foreground)]">{transaction.title}{transaction.notes ? ` · ${transaction.notes}` : ""}</span></span>
                       <span className={cn("shrink-0 text-xs font-black", transaction.tone === "income" ? "text-emerald-500" : transaction.tone === "expense" ? "text-rose-500" : "text-sky-500")}>{transaction.amountLabel}</span>
-                      {(transaction.editable || transaction.deletable) && <Link href={`/transactions?copy=${encodeURIComponent(transaction.id)}`} onClick={(event) => event.stopPropagation()} title="Sao chép giao dịch" aria-label="Sao chép giao dịch sang ngày khác" className="grid size-8 shrink-0 place-items-center rounded-lg border border-sky-500/20 bg-sky-500/10 text-sky-600"><Copy className="size-4" /></Link>}
+                      {(transaction.editable || transaction.deletable) && <Link href={`/transactions?copy=${encodeURIComponent(transaction.id)}`} data-fin-copy-id={transaction.id} data-fin-copy-title={transaction.title} data-fin-copy-date={transaction.date} data-fin-copy-type={transaction.transactionType} onClick={(event) => event.stopPropagation()} title="Sao chép giao dịch" aria-label="Sao chép giao dịch sang ngày khác" className="grid size-8 shrink-0 place-items-center rounded-lg border border-sky-500/20 bg-sky-500/10 text-sky-600"><Copy className="size-4" /></Link>}
                       <ChevronRight className="size-4 shrink-0 text-[var(--muted-foreground)]" />
                     </div>
                     {transaction.editable ? (

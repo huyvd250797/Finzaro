@@ -1,3 +1,3 @@
-export const APP_VERSION = "3.0.0";
+export const APP_VERSION = "3.2.0";
 export const APP_VERSION_LABEL = `V${APP_VERSION}`;
-export const APP_RELEASE_NAME = "Professional Release · Scale, Motion & Accessibility";
+export const APP_RELEASE_NAME = "Instant Reports, Fast Copy & Splash";

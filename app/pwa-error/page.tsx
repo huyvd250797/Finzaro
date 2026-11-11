@@ -6,7 +6,7 @@ import { APP_VERSION_LABEL } from "@/lib/app-version";
 
 export default function PwaErrorPage() {
   return (
-    <main className="grid min-h-screen place-items-center bg-[var(--background)] px-6">
+    <main data-fin-app-ready className="grid min-h-screen place-items-center bg-[var(--background)] px-6">
       <div className="w-full max-w-md text-center">
         <BrandLogo className="justify-center" />
         <div className="mx-auto mt-8 grid size-16 place-items-center rounded-2xl bg-amber-500/10 text-amber-500"><ShieldAlert className="size-7" /></div>

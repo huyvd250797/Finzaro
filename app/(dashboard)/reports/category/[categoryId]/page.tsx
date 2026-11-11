@@ -60,12 +60,12 @@ export default async function ReportCategoryPage({ params, searchParams }: { par
   const loadTo = mode === "month" ? monthBounds(period).to : yearBounds(year).to;
   const ledger = await loadReportLedger(supabase, userId, { fromDate: loadFrom, toDate: loadTo, includeCategories: true });
   if (ledger.diagnostics.strategy === "empty") {
-    return <div className="mx-auto max-w-3xl px-4 py-10"><ReportDataStatus diagnostics={ledger.diagnostics} /></div>;
+    return <div className="fin-page-shell mx-auto max-w-3xl px-4 py-10"><ReportDataStatus diagnostics={ledger.diagnostics} /></div>;
   }
   const category = ledger.categories.find((item) => item.id === categoryId);
 
   if (!category) {
-    return <div className="mx-auto max-w-3xl px-4 py-10"><Card><CardContent><h1 className="text-xl font-black">Không tìm thấy danh mục</h1><p className="mt-2 text-sm text-[var(--muted-foreground)]">Danh mục có thể đã bị xóa hoặc không thuộc tài khoản của bạn.</p><Link href="/reports" className="mt-5 inline-flex text-sm font-black text-[var(--primary)]">← Quay lại Báo cáo</Link></CardContent></Card></div>;
+    return <div className="fin-page-shell mx-auto max-w-3xl px-4 py-10"><Card><CardContent><h1 className="text-xl font-black">Không tìm thấy danh mục</h1><p className="mt-2 text-sm text-[var(--muted-foreground)]">Danh mục có thể đã bị xóa hoặc không thuộc tài khoản của bạn.</p><Link href="/reports" className="mt-5 inline-flex text-sm font-black text-[var(--primary)]">← Quay lại Báo cáo</Link></CardContent></Card></div>;
   }
 
   const digits = currencyDigits(ledger.currencies, currency);

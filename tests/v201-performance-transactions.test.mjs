@@ -51,10 +51,11 @@ test("Date cloning uses authenticated original, hard limit and protected histori
   const action = read("features/transactions/actions.ts");
   assert.match(action,/copyTransactionDatesAction/);
   assert.match(action,/raw\.length > 20/);
-  assert.match(action,/\.eq\("user_id", userId\)\.eq\("id", sourceId\)/);
-  assert.match(action,/simple_transaction_ids_v120/);
-  assert.match(action,/categoryResult\.data\.is_archived/);
-  assert.match(action,/copiedDates\.push\(date\)/);
+  const sql = read("supabase/migrations/20261111180000_instant_copy_batch_v320.sql");
+  assert.match(sql,/where id = p_source_id and user_id = v_uid/);
+  assert.match(sql,/simple_transaction_ids_v120/);
+  assert.match(sql,/public.create_simple_transaction_v120/);
+  assert.match(sql,/simple_transaction_copy_receipts_v320/);
   assert.match(action,/requested\.filter\(\(date\) => !copiedDates\.includes\(date\)\)/);
   assert.match(action,/create_simple_transaction_v120/);
   assert.doesNotMatch(action,/delete.*sourceId|\.delete\(\).*sourceId/);

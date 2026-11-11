@@ -19,7 +19,9 @@ test("V1.4.1 fixes unknown RPC response TS2339 at create/delete/update and dupli
   for (const action of ["create", "delete", "update"]) {
     assert.match(actions, new RegExp(`const error = transactionRpcError\\(await measureServerOperation\\("transaction\\.${action}\\.rpc"`));
   }
-  assert.equal((actions.match(/transactionRpcError\(await measureServerOperation/g) || []).length, 4);
+  assert.equal((actions.match(/transactionRpcError\(await measureServerOperation/g) || []).length, 3);
+  assert.match(actions, /transactionRpcError\(result\)/);
+  assert.match(actions, /copy_simple_transaction_batch_v320/);
   assert.doesNotMatch(actions, /const\s*\{\s*error\s*\}\s*=\s*await\s*measureServerOperation/);
   assert.match(actions, /import \{ transactionRpcError \} from "@\/features\/transactions\/rpc-response";/);
   assert.match(actions, /if \(error\) throw new Error\(dbError\(error\)\)/);

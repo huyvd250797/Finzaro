@@ -2,17 +2,51 @@
 
 import { useEffect, useState } from "react";
 
+/** Cold-start splash only. Wait for the first real page content, never for a fixed animation timer.
+ * Navigation inside the app uses the existing small progress indicator instead.
+ */
 export function AppSplash() {
   const [visible, setVisible] = useState(true);
   useEffect(() => {
-    // Release after hydration paints; the splash must never impose a fixed 650ms delay.
-    let secondFrame = 0;
-    const firstFrame = window.requestAnimationFrame(() => {
-      secondFrame = window.requestAnimationFrame(() => setVisible(false));
-    });
+    let stopped = false;
+    let painting = false;
+    let frame = 0;
+    let settleFrame = 0;
+    const ready = () => {
+      // Overview renders a streaming skeleton before its essential balances arrive.
+      // Keep the branded splash until those critical numbers are ready.
+      if (window.location.pathname === "/overview") return Boolean(document.querySelector("[data-fin-startup-ready]"));
+      return Boolean(document.querySelector(
+        ".fin-page-shell, main.finzaro-grid, .fin-print-document, [data-fin-app-ready]"
+      ));
+    };
+    const observer = new MutationObserver(() => check());
+    function finish() {
+      if (stopped) return;
+      stopped = true;
+      observer.disconnect();
+      window.clearTimeout(fallback);
+      setVisible(false);
+      if (process.env.NODE_ENV === "development") performance.mark("finzaro.splash.ready");
+    }
+    function check() {
+      if (stopped || painting || !ready()) return;
+      painting = true;
+      // Let the real page paint first; do not flash a blank dashboard.
+      frame = window.requestAnimationFrame(() => {
+        settleFrame = window.requestAnimationFrame(finish);
+      });
+    }
+    // Fail open when the route is an error/unknown page (never trap users behind a splash).
+    const fallback = window.setTimeout(finish, 4000);
+    observer.observe(document.body, { childList: true, subtree: true });
+    check();
     return () => {
-      window.cancelAnimationFrame(firstFrame);
-      window.cancelAnimationFrame(secondFrame);
+      stopped = true;
+      observer.disconnect();
+      window.clearTimeout(fallback);
+      window.cancelAnimationFrame(frame);
+      window.cancelAnimationFrame(settleFrame);
     };
   }, []);
   if (!visible) return null;

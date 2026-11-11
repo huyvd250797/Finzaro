@@ -68,7 +68,8 @@ test("date selection is local; quick-create, swipe, back-navigation and safe ove
 
 test("Reports pie keeps actual configured category colors and interactive selection", () => {
   assert.match(reports, /color: iconColorValue\(item\.icon_color\)/);
-  assert.match(reports, /ReportDonut slices=\{chartSlices\}/);
+  assert.match(read("components/instant-report-breakdown.tsx"), /ReportDonut key=/);
+  assert.match(reports, /InstantReportBreakdown/);
   assert.match(donut, /conic-gradient/);
   assert.match(donut, /slice\.color/);
   assert.match(donut, /slice\.href/);
@@ -111,7 +112,7 @@ test("only six dashboard modules are buildable; old URLs are redirected", () => 
 
 test("route server component does not invoke helper exported by client ReportDonut", () => {
   assert.match(donut, /^"use client";/);
-  assert.match(reports, /import \{ ReportDonut \} from "@\/components\/report-donut"/);
+  assert.match(read("components/instant-report-breakdown.tsx"), /import \{ ReportDonut, type DonutSlice \} from "@\/components\/report-donut"/);
   assert.doesNotMatch(reports, /import \{[^}]+reportSliceColor[^}]+\} from "@\/components\/report-donut"/);
 });
 

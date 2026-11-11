@@ -4,7 +4,7 @@ import { AlertTriangle, RefreshCw } from "lucide-react";
 
 export default function ErrorPage({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
   return (
-    <main className="grid min-h-[70vh] place-items-center px-5 py-12">
+    <main data-fin-app-ready className="grid min-h-[70vh] place-items-center px-5 py-12">
       <section className="w-full max-w-md rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 text-center shadow-sm">
         <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-rose-500/10 text-rose-500"><AlertTriangle className="size-6" /></div>
         <h1 className="mt-5 text-xl font-black">Không thể tải màn hình</h1>

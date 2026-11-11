@@ -4,7 +4,7 @@ export default function GlobalError({ reset }: { error: Error & { digest?: strin
   return (
     <html lang="vi">
       <body style={{ margin: 0, background: "#0c1211", color: "#f4f7f6", fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
-        <main style={{ minHeight: "100vh", display: "grid", placeItems: "center", padding: 24 }}>
+        <main data-fin-app-ready style={{ minHeight: "100vh", display: "grid", placeItems: "center", padding: 24 }}>
           <section style={{ width: "100%", maxWidth: 420, border: "1px solid #26312f", borderRadius: 24, padding: 24, textAlign: "center", background: "#111817" }}>
             <div style={{ fontSize: 42 }}>⚠</div>
             <h1 style={{ margin: "16px 0 0", fontSize: 22 }}>Finzaro cần tải lại</h1>

@@ -1,18 +1,18 @@
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, CircleDollarSign, TrendingDown, TrendingUp } from "lucide-react";
+import { CircleDollarSign, TrendingDown, TrendingUp } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { ReportDataStatus } from "@/components/report-data-status";
-import { ReportDonut } from "@/components/report-donut";
-import { ReportVisualBoundary } from "@/components/report-visual-boundary";
 import { ReportNavigation } from "@/components/report-navigation";
-import { CategoryIcon, iconColorValue } from "@/features/categories/icons";
+import { ReportPeriodControls } from "@/components/report-period-controls";
+import { iconColorValue } from "@/features/categories/icons";
+import { InstantReportBreakdown, type ReportFlowSnapshot } from "@/components/instant-report-breakdown";
 import {
   currentYearMonth,
-  flowAmount,
   monthBounds,
   periodFlowTotals,
   periodTransactions,
   reportCategoryBreakdown,
+  flowAmount,
   shiftMonthKey,
   validMonthKey,
   validYear,
@@ -62,22 +62,29 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
   const digits = currencyDigits(ledger.currencies, currency);
   const transactions = periodTransactions(ledger.transactions, bounds.from, bounds.to);
   const totals = periodFlowTotals(transactions, currency);
-  const categories = reportCategoryBreakdown(transactions, currency, type);
-  const chartSlices = categories.map((item) => ({
-    ...item,
-    color: iconColorValue(item.icon_color),
-    href: item.id.startsWith("uncategorized-") ? null : `/reports/category/${item.id}?${new URLSearchParams({ mode, type, ...(mode === "month" ? { period } : { year: String(year) }) }).toString()}`
-  }));
-  const selectedTotal = type === "expense" ? totals.expense : totals.income;
+  // Both tabs are built in one server request: changing Thu/Chi never fetches new RSC data.
+  const flows = Object.fromEntries((["income", "expense"] as const).map((flowType) => {
+    const categories = reportCategoryBreakdown(transactions, currency, flowType);
+    const slices = categories.map((item) => ({
+      ...item,
+      color: iconColorValue(item.icon_color),
+      href: item.id.startsWith("uncategorized-") ? null : `/reports/category/${item.id}?${new URLSearchParams({ mode, type: flowType, ...(mode === "month" ? { period } : { year: String(year) }) }).toString()}`
+    }));
+    const previews = transactions.filter((item) => flowAmount(item, currency, flowType) > 0).slice(0, 8).map((item) => ({
+      id: item.id, title: item.title, transactionDate: item.transaction_date,
+      categoryName: item.category?.name ?? item.category_label ?? item.title,
+      iconName: item.category?.icon_name ?? null, iconColor: item.category?.icon_color ?? null,
+      amount: flowAmount(item, currency, flowType)
+    }));
+    return [flowType, { amount: flowType === "income" ? totals.income : totals.expense, slices, transactions: previews }];
+  })) as Record<ReportFlowType, ReportFlowSnapshot>;
   const kpiValue = (amount: number) => compactCalendarAmount(Math.abs(amount), digits) || "0";
-  const visibleTransactions = transactions.filter((item) => flowAmount(item, currency, type) > 0).slice(0, 8);
-
-  const previousHref = mode === "month"
-    ? reportUrl({ mode, period: shiftMonthKey(period, -1), type })
-    : reportUrl({ mode, year: year - 1, type });
-  const nextHref = mode === "month"
-    ? reportUrl({ mode, period: shiftMonthKey(period, 1), type })
-    : reportUrl({ mode, year: year + 1, type });
+  const periodLinks = Object.fromEntries((["income", "expense"] as const).map((flowType) => [flowType, {
+    month: reportUrl({ mode: "month", period, type: flowType }),
+    year: reportUrl({ mode: "year", year, type: flowType }),
+    previous: mode === "month" ? reportUrl({ mode, period: shiftMonthKey(period, -1), type: flowType }) : reportUrl({ mode, year: year - 1, type: flowType }),
+    next: mode === "month" ? reportUrl({ mode, period: shiftMonthKey(period, 1), type: flowType }) : reportUrl({ mode, year: year + 1, type: flowType })
+  }])) as Record<ReportFlowType, { month: string; year: string; previous: string; next: string }>;
   const periodLabel = mode === "month" ? `Tháng ${Number(period.slice(5, 7))}/${period.slice(0, 4)}` : `Năm ${year}`;
 
   return (
@@ -92,20 +99,8 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
 
       <Card className="mx-auto mt-3 max-w-3xl">
         <CardContent className="p-2">
-          <div className="grid grid-cols-[112px_1fr] items-center gap-2 sm:grid-cols-[150px_1fr]">
-            <div className="grid grid-cols-2 rounded-lg bg-[var(--muted)]/70 p-0.5">
-              <Link href={reportUrl({ mode: "month", period, type })} className={cn("grid min-h-8 place-items-center rounded-md text-[10px] font-black sm:text-xs", mode === "month" ? "bg-[var(--card)] shadow-sm" : "text-[var(--muted-foreground)]")}>Tháng</Link>
-              <Link href={reportUrl({ mode: "year", year, type })} className={cn("grid min-h-8 place-items-center rounded-md text-[10px] font-black sm:text-xs", mode === "year" ? "bg-[var(--card)] shadow-sm" : "text-[var(--muted-foreground)]")}>Năm</Link>
-            </div>
-            <div className="flex min-w-0 items-center gap-1">
-              <Link href={previousHref} aria-label="Kỳ trước" className="grid size-8 shrink-0 place-items-center rounded-lg hover:bg-[var(--muted)]"><ChevronLeft className="size-4" /></Link>
-              <div className="min-w-0 flex-1 text-center">
-                <p className="truncate text-sm font-black sm:text-base">{periodLabel}</p>
-                <p className="hidden text-[9px] font-bold text-[var(--muted-foreground)] sm:block">{bounds.from} → {bounds.to}</p>
-              </div>
-              <Link href={nextHref} aria-label="Kỳ sau" className="grid size-8 shrink-0 place-items-center rounded-lg hover:bg-[var(--muted)]"><ChevronRight className="size-4" /></Link>
-            </div>
-          </div>
+          <ReportPeriodControls mode={mode} initialType={type} periodLabel={periodLabel}
+            from={bounds.from} to={bounds.to} periodKey={`${mode}-${mode === "month" ? period : year}`} links={periodLinks} />
         </CardContent>
       </Card>
 
@@ -125,43 +120,11 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
         <div className="text-right"><p className="text-[11px] text-[var(--muted-foreground)]">{transactions.length} giao dịch trong kỳ</p><Link className="mt-2 inline-flex min-h-9 items-center rounded-xl bg-[var(--sidebar-accent)] px-3 text-xs font-black text-[var(--primary)]" href={`/reports/analysis?range=custom&from=${bounds.from}&to=${bounds.to}`}>Phân tích & so sánh kỳ →</Link></div>
       </CardContent></Card>
 
-      <Card className="mt-3">
-        <CardContent className="p-3 sm:p-4">
-          <div className="flex flex-wrap items-start justify-between gap-2">
-            <div>
-              <h2 className="font-black">{type === "expense" ? "Chi tiêu" : "Thu nhập"} theo danh mục</h2>
-              <p className="mt-0.5 text-[11px] text-[var(--muted-foreground)]">{periodLabel} · {currency}</p>
-            </div>
-            <div className="text-right">
-              <p className="text-sm font-black">{formatMinorMoney(selectedTotal, currency, digits)}</p>
-              <div className="mt-1.5 grid grid-cols-2 rounded-lg bg-[var(--muted)]/70 p-0.5">
-                <Link href={reportUrl({ mode, period, year, type: "expense" })} className={cn("rounded-md px-2.5 py-1 text-[10px] font-black", type === "expense" ? "bg-[var(--card)] text-rose-500 shadow-sm" : "text-[var(--muted-foreground)]")}>Chi</Link>
-                <Link href={reportUrl({ mode, period, year, type: "income" })} className={cn("rounded-md px-2.5 py-1 text-[10px] font-black", type === "income" ? "bg-[var(--card)] text-emerald-500 shadow-sm" : "text-[var(--muted-foreground)]")}>Thu</Link>
-              </div>
-            </div>
-          </div>
-
-          {categories.length === 0 ? (
-            <div className="mt-3 rounded-xl border border-dashed border-[var(--border)] p-6 text-center text-sm text-[var(--muted-foreground)]">Chưa có giao dịch trong kỳ.</div>
-          ) : (
-            <div className="mt-3">
-              <ReportVisualBoundary>
-                <ReportDonut slices={chartSlices} total={selectedTotal} currency={currency} decimalDigits={digits} centerLabel={type === "expense" ? "Tổng chi" : "Tổng thu"} />
-              </ReportVisualBoundary>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card className="mt-3">
-        <CardContent className="p-0">
-          <div className="flex items-center justify-between gap-3 border-b border-[var(--border)] p-3.5 sm:p-4"><div><h2 className="font-black">Chi tiết giao dịch</h2><p className="mt-0.5 text-[11px] text-[var(--muted-foreground)]">{type === "expense" ? "Chi tiêu" : "Thu nhập"} gần nhất trong kỳ</p></div><Link href={`/transactions?type=${type}&from=${bounds.from}&to=${bounds.to}`} className="text-xs font-black text-[var(--primary)]">Xem tất cả</Link></div>
-          {visibleTransactions.length === 0 ? <p className="p-6 text-sm text-[var(--muted-foreground)]">Chưa có giao dịch phù hợp.</p> : <div className="divide-y divide-[var(--border)]">{visibleTransactions.map((transaction) => {
-            const amount = flowAmount(transaction, currency, type);
-            return <Link key={transaction.id} href={`/transactions?q=${encodeURIComponent(transaction.title)}`} className="flex min-w-0 items-center gap-3 p-3.5 active:bg-[var(--muted)]"><span className="grid size-9 shrink-0 place-items-center rounded-xl bg-[var(--muted)]" style={{ color: iconColorValue(transaction.category?.icon_color) }}><CategoryIcon name={transaction.category?.icon_name} className="size-4" /></span><span className="min-w-0 flex-1"><span className="block truncate text-sm font-black">{transaction.category?.name ?? transaction.category_label ?? transaction.title}</span><span className="mt-0.5 block truncate text-[11px] text-[var(--muted-foreground)]">{transaction.title} · {transaction.transaction_date}</span></span><span className={cn("shrink-0 text-xs font-black", type === "income" ? "text-emerald-500" : "text-rose-500")}>{type === "income" ? "+" : "-"}{formatMinorMoney(amount, currency, digits).replace(/^[-+]/, "")}</span><ChevronRight className="size-4 shrink-0 text-[var(--muted-foreground)]" /></Link>;
-          })}</div>}
-        </CardContent>
-      </Card>
+      <InstantReportBreakdown
+        initialType={type} periodLabel={periodLabel}
+        periodKey={`${mode}-${mode === "month" ? period : year}`}
+        from={bounds.from} to={bounds.to} currency={currency} digits={digits} flows={flows}
+      />
     </div>
   );
 }

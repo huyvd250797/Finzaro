@@ -35,6 +35,7 @@ async function OverviewEssentials() {
     { label: "Ròng", amount: totals.net, color: totals.net < 0 ? "text-rose-500" : "text-sky-500" }
   ];
   return <>
+    <span hidden data-fin-startup-ready />
     <ReportDataStatus diagnostics={ledger.diagnostics} />
     <Card><CardContent className="p-3.5 sm:p-5">
       <div className="flex items-center justify-between gap-3"><div className="min-w-0"><p className="text-[11px] font-semibold text-[var(--muted-foreground)]">Tổng số dư · {currency}</p><p className="mt-1 break-words text-[clamp(1.5rem,5.5vw,2.2rem)] font-extrabold leading-tight tabular-nums">{formatMinorMoney(balance, currency, digits)}</p><p className="mt-1 text-[10px] text-[var(--muted-foreground)]">{accounts.length} tài khoản khả dụng</p></div><Link href="/accounts" className="grid size-10 shrink-0 place-items-center rounded-xl bg-[var(--sidebar-accent)] text-[var(--primary)]" aria-label="Xem các tài khoản"><WalletCards className="size-5" /></Link></div>
