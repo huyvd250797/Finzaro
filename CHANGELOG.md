@@ -1,3 +1,13 @@
+# V2.2.0 — Performance, Premium Fintech Design & Fluid Transactions (2026-11-11)
+
+- Gộp V2.0.4 + V2.1.0 + V2.2.0 trong một bản phát hành, nâng cấp từ V2.0.3.
+- Đo chỉ số trình duyệt có kiểm soát (opt-in, không log nội dung giao dịch), loại splash chờ cố định; tăng ổn định navigation progress.
+- Gộp dòng tiền 6 tháng trong một lượt, thêm filter loại và danh mục ở query thay vì sau khi tải (với màn hình danh sách).
+- Semantic UI tokens Light/Dark; chuẩn hóa card/inputs/buttons/filter/sidebar/mobile/sheets xuyên suốt 6 module.
+- Form nhập Thu/Chi/Chuyển giữ dữ liệu từng tab khi chuyển qua lại; lazy mount các tab chưa mở, hỗ trợ bàn phím.
+- Search mở bộ lọc; category picker hỗ trợ keyboard; body touch-action auto giúp gesture lịch ngang + cuộn dọc.
+- Bổ sung regression tests, benchmark synthetic ledger, DEPLOY_V2.2.0.md. Không SQL migration và không sửa RPC hạch toán.
+
 ## V2.0.3 — Splash & Calendar Interaction Fixes (2026-11-11)
 
 - **Splash restored:** mount existing Finzaro branded splash at the root, visible immediately on a fresh browser/PWA load; close after hydration with a bounded 650 ms reveal. Route-to-route navigation retains lightweight loading and avoids replaying splash on every tap.

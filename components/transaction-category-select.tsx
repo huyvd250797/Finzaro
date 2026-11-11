@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useTransition, type PointerEvent as ReactPointerEvent } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent } from "react";
 import { GripVertical } from "lucide-react";
 import { reorderCategoriesAction } from "@/features/categories/actions";
 import type { CategoryType } from "@/features/categories/constants";
@@ -68,6 +68,19 @@ export function TransactionCategorySelect({
   function setValue(next: string) {
     if (!controlled) setInternalValue(next);
     onValueChange?.(next);
+  }
+
+  function onCategoryKeyDown(event: ReactKeyboardEvent<HTMLButtonElement>, id: string) {
+    if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(event.key) || dragId) return;
+    event.preventDefault();
+    const index = orderedCategories.findIndex((category) => category.id === id);
+    const columns = window.matchMedia('(min-width: 640px)').matches ? 4 : 3;
+    const step = event.key === 'ArrowLeft' ? -1 : event.key === 'ArrowRight' ? 1 : event.key === 'ArrowUp' ? -columns : columns;
+    const nextIndex = event.key === 'Home' ? 0 : event.key === 'End' ? orderedCategories.length - 1 : Math.max(0, Math.min(index + step, orderedCategories.length - 1));
+    const next = orderedCategories[nextIndex];
+    if (!next) return;
+    setValue(next.id);
+    event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>('[data-category-grid-id]')[nextIndex]?.focus();
   }
 
   function clearPress() {
@@ -156,6 +169,8 @@ export function TransactionCategorySelect({
               type="button"
               role="radio"
               aria-checked={active}
+              tabIndex={active ? 0 : -1}
+              onKeyDown={(event) => onCategoryKeyDown(event, category.id)}
               data-category-grid-id={category.id}
               onPointerDown={(event) => beginPress(event, category.id)}
               onPointerMove={movePress}

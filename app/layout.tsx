@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { PwaRegister } from "@/components/pwa-register";
 import { AppSplash } from "@/components/app-splash";
+import { PerformanceVitals } from "@/components/performance-vitals";
 
 export const metadata: Metadata = {
   title: { default: "Finzaro", template: "%s · Finzaro" },
@@ -40,6 +41,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body>
         <AppSplash />
         <PwaRegister />
+        <PerformanceVitals />
         {children}
       </body>
     </html>

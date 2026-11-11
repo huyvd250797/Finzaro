@@ -1,6 +1,6 @@
 {
   "name": "finzaro",
-  "version": "2.0.3",
+  "version": "2.2.0",
   "private": true,
   "engines": {
     "node": "22.x",
@@ -30,7 +30,8 @@
     "source:sync": "node scripts/sync-retired-source.mjs",
     "prelint": "node scripts/sync-retired-source.mjs",
     "pretypecheck": "node scripts/sync-retired-source.mjs",
-    "pretest": "node scripts/sync-retired-source.mjs"
+    "pretest": "node scripts/sync-retired-source.mjs",
+    "benchmark:ledger": "node scripts/benchmark-ledger.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.7",

@@ -150,7 +150,7 @@ export default async function ReportCalendarPage({ searchParams }: { searchParam
   }).filter((item): item is NonNullable<typeof item> => Boolean(item));
 
   return (
-    <div className="mx-auto max-w-[1180px] px-2.5 py-4 sm:px-4 md:px-6 lg:px-8 lg:py-7">
+    <div className="fin-page-shell mx-auto max-w-[1180px] px-2.5 py-4 sm:px-4 md:px-6 lg:px-8 lg:py-7">
       <div className="mx-auto max-w-3xl text-center">
         <h1 className="text-2xl font-black tracking-tight sm:text-3xl">Báo cáo</h1>
         <p className="mt-1 hidden text-xs text-[var(--muted-foreground)] sm:block">Chạm ngày để xem ngay · chạm 2 lần để thêm giao dịch.</p>

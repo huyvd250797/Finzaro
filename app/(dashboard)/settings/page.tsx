@@ -24,8 +24,8 @@ export default async function SettingsPage({ searchParams }: { searchParams: Sea
   ]);
 
   return (
-    <div className="mx-auto max-w-[900px] px-4 py-6 md:px-6 lg:px-8 lg:py-8">
-      <div><p className="text-sm font-semibold text-[var(--primary)]">Account & System</p><h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">Cài đặt</h1><p className="mt-2 text-sm text-[var(--muted-foreground)]">Thu, chi, chuyển tiền, danh mục, tài khoản và tùy chọn của Finzaro {APP_VERSION_LABEL}.</p></div>
+    <div className="fin-page-shell mx-auto max-w-[900px] px-4 py-6 md:px-6 lg:px-8 lg:py-8">
+      <div><p className="text-sm font-semibold text-[var(--primary)]">Tài khoản & hệ thống</p><h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">Cài đặt</h1><p className="mt-2 text-sm text-[var(--muted-foreground)]">Thu, chi, chuyển tiền, danh mục, tài khoản và tùy chọn của Finzaro {APP_VERSION_LABEL}.</p></div>
       <AuthMessage error={params.error} message={params.message} />
 
       <div className="mt-6 grid gap-4 md:grid-cols-2">

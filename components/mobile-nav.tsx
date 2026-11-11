@@ -27,14 +27,14 @@ export function MobileNav() {
     { href: "/transactions", label: "Giao dịch", icon: ReceiptText },
     { href: "/reports", label: "Báo cáo", icon: BarChart3 }
   ];
-  const renderTab = (item: typeof tabs[number]) => { const Icon = item.icon; const active = pathname === item.href || pathname.startsWith(item.href + "/"); return <Link key={item.href} href={item.href} prefetch={false} className={cn("mobile-tabbar-item", active ? "text-[var(--primary)]" : "text-[var(--muted-foreground)]")}><span className={cn("mobile-tabbar-icon", active && "bg-[var(--sidebar-accent)]")}><Icon className="size-[18px]" /></span><span className="mobile-tabbar-label">{item.label}</span></Link>; };
+  const renderTab = (item: typeof tabs[number]) => { const Icon = item.icon; const active = pathname === item.href || pathname.startsWith(item.href + "/"); return <Link key={item.href} href={item.href} prefetch aria-current={active ? "page" : undefined} className={cn("mobile-tabbar-item", active ? "is-active text-[var(--primary)]" : "text-[var(--muted-foreground)]")}><span className={cn("mobile-tabbar-icon", active && "bg-[var(--sidebar-accent)]")}><Icon className="size-[18px]" /></span><span className="mobile-tabbar-label">{item.label}</span></Link>; };
   return <>
     <nav className="fin-mobile-taskbar fixed inset-x-0 bottom-0 z-[80] overflow-visible border-t border-[var(--border)] bg-[var(--card)]/96 px-2 pb-[max(env(safe-area-inset-bottom),8px)] pt-2 backdrop-blur-xl lg:hidden">
       <div className="grid grid-cols-[1fr_1fr_72px_1fr_1fr] items-end">
         {tabs.slice(0,2).map(renderTab)}
-        <button type="button" onClick={() => setSheet("transaction")} aria-label="Thêm giao dịch" className="group relative flex min-h-14 min-w-0 flex-col items-center justify-center gap-0.5 text-[10px] font-semibold active:scale-[.97]"><span className="grid size-10 place-items-center rounded-xl bg-[var(--primary)] text-white shadow-sm transition-transform group-active:scale-95"><Plus className="size-5" /></span><span className="mobile-tabbar-label">Thêm GD</span></button>
+        <button type="button" onClick={() => setSheet("transaction")} aria-label="Thêm giao dịch" aria-expanded={sheet === "transaction"} className="group relative flex min-h-14 min-w-0 flex-col items-center justify-center gap-0.5 text-[10px] font-semibold active:scale-[.97]"><span className="grid size-10 place-items-center rounded-xl bg-[var(--primary)] text-white shadow-sm transition-transform group-active:scale-95"><Plus className="size-5" /></span><span className="mobile-tabbar-label">Thêm GD</span></button>
         {renderTab(tabs[2])}
-        <button type="button" onClick={() => setSheet("modules")} className="mobile-tabbar-item text-[var(--muted-foreground)]"><span className="mobile-tabbar-icon"><Ellipsis className="size-[18px]" /></span><span className="mobile-tabbar-label">Thêm</span></button>
+        <button type="button" onClick={() => setSheet("modules")} aria-expanded={sheet === "modules"} className="mobile-tabbar-item text-[var(--muted-foreground)]"><span className="mobile-tabbar-icon"><Ellipsis className="size-[18px]" /></span><span className="mobile-tabbar-label">Thêm</span></button>
       </div>
     </nav>
     <BottomSheet open={Boolean(sheet)} onClose={() => setSheet(null)} label={sheet === "modules" ? "Tiện ích" : "Thêm giao dịch"} mobileOnly panelClassName="border border-[var(--border)] px-4 pb-[max(env(safe-area-inset-bottom),18px)]">

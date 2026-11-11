@@ -1,4 +1,8 @@
-> **Current release: Finzaro V2.0.3 – Splash & Calendar Interaction Fixes.** See [`DEPLOY_V2.0.3.md`](DEPLOY_V2.0.3.md) for deployment and smoke-test instructions. All V2.0.2 features remain intact.
+ > **Current release: Finzaro V2.2.0 — Performance, Premium Fintech Design & Fluid Transactions.** This single release combines V2.0.4 + V2.1.0 + V2.2.0 on top of V2.0.3. See [`DEPLOY_V2.2.0.md`](DEPLOY_V2.2.0.md). No SQL migration.
+
+**V2.2.0 highlights:** opt-in browser performance diagnostics; faster 6-month aggregation; semantic Light/Dark UI; warmed navigation; preserving Thu/Chi/Chuyển drafts when switching tabs; keyboard-accessible category selection and smoother calendar gestures.
+
+Quick quality checks: `npm run release:check`, `npm run test`, `npm run benchmark:ledger` (TypeScript dependency required), then `npm run check` with dependencies and environment variables installed. Production deployment must pass full lint/typecheck/build; source-only tests are not a replacement. QA record: [`docs/V2.2.0_QA.md`](docs/V2.2.0_QA.md).
 
 # Finzaro V2.0.0 — Finzaro UX Release
 
@@ -60,7 +64,7 @@ Copy `.env.example` to `.env.local` and fill in Supabase app keys. The `prebuild
 
 `npm run test` runs the V1.2.0/1.2.1/1.2.2 compatibility regression suites plus the V1.4.0 UX/performance regressions and still-valid PWA/auth/calculator tests. Historical advanced-module tests are preserved in `tests/legacy/` for traceability but are no longer part of the simplified product's active test contract.
 
-See [`docs/VERSIONING.md`](docs/VERSIONING.md) for patch version policy. The next changed source package must be `V2.0.1` or later; do not reuse a published version.
+See [`docs/VERSIONING.md`](docs/VERSIONING.md) for patch version policy. The next changed source package must be `V2.0.1` or later; do not reuse a published version. See latest DEPLOY_V2.2.0.md for the current combined release.
 
 
 ## V1.4.1 TypeScript deployment patch

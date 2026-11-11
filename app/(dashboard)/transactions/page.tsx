@@ -21,7 +21,7 @@ import { requireUser } from "@/lib/auth";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Giao dịch" };
 
-type SearchParams = Promise<{ legacy?: string; new?: string; edit?: string; copy?: string; date?: string; return_to?: string; q?: string; type?: string; account?: string; category?: string; from?: string; to?: string; error?: string; message?: string }>;
+type SearchParams = Promise<{ search?: string; legacy?: string; new?: string; edit?: string; copy?: string; date?: string; return_to?: string; q?: string; type?: string; account?: string; category?: string; from?: string; to?: string; error?: string; message?: string }>;
 
 function EditTransactionForm({ transaction, accounts, categories, currencies, returnTo }: {
   transaction: TransactionView;
@@ -36,7 +36,7 @@ function EditTransactionForm({ transaction, accounts, categories, currencies, re
   if (!entry) return null;
   const digits = currencyDigits(currencies, entry.currency_code);
   return <Card className="mt-5 border-sky-500/25 shadow-xl shadow-black/5"><CardContent className="p-5 sm:p-6">
-    <div className="flex items-start justify-between gap-4"><div><p className="text-xs font-black uppercase tracking-[0.14em] text-sky-600">Edit transaction</p><h2 className="mt-1 text-lg font-black">Sửa {type === "income" ? "khoản thu" : "khoản chi"}</h2><p className="mt-1 text-xs text-[var(--muted-foreground)]">Finzaro sẽ hoàn nguyên ledger cũ rồi áp dụng giá trị mới trong một database transaction.</p></div><Link href={returnTo || "/transactions"} className="grid size-9 place-items-center rounded-xl border border-[var(--border)]"><X className="size-4" /></Link></div>
+    <div className="flex items-start justify-between gap-4"><div><p className="text-xs font-black uppercase tracking-[0.14em] text-sky-600">Chỉnh sửa giao dịch</p><h2 className="mt-1 text-lg font-black">Sửa {type === "income" ? "khoản thu" : "khoản chi"}</h2><p className="mt-1 text-xs text-[var(--muted-foreground)]">Finzaro sẽ hoàn nguyên ledger cũ rồi áp dụng giá trị mới trong một database transaction.</p></div><Link href={returnTo || "/transactions"} className="grid size-9 place-items-center rounded-xl border border-[var(--border)]"><X className="size-4" /></Link></div>
     <form action={updateTransactionAction} className="mt-5 grid min-w-0 gap-4 md:grid-cols-2">
       <input type="hidden" name="transaction_id" value={transaction.id} />
       <input type="hidden" name="return_to" value={returnTo ?? ""} />
@@ -64,7 +64,7 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
     : null;
   const ledgerOptions = quickFormOnly ? { limit: 24 }
     : editDate ? { fromDate: editDate, toDate: editDate, limit: 1000 }
-    : { limit: params.q || params.type || params.account || params.category || params.legacy || params.from || params.to ? 1000 : 160, ...(params.from ? { fromDate: params.from } : {}), ...(params.to ? { toDate: params.to } : {}) };
+    : { limit: params.q || params.type || params.account || params.category || params.legacy || params.from || params.to ? 1000 : 160, ...(params.from ? { fromDate: params.from } : {}), ...(params.to ? { toDate: params.to } : {}), ...(params.legacy === "1" ? {} : { type: params.type, categoryId: params.category }) };
   const [{ data: preferences }, ledger] = await Promise.all([
     supabase.from("user_preferences").select("currency_code, timezone").eq("id", userId).maybeSingle(),
     loadLedger(supabase, userId, ledgerOptions)
@@ -101,11 +101,11 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
     income={<TransactionEntryForm type="income" accounts={activeAccounts} categories={incomeCategories} today={requestedDate} returnTo={returnTo} suggestions={incomeSuggestions} />}
     transfer={<TransactionEntryForm type="transfer" accounts={activeAccounts} categories={[]} today={requestedDate} returnTo={returnTo} suggestions={transferSuggestions} />}
   />;
-  if (params.copy) return <div className="mx-auto max-w-3xl px-4 py-6">
+  if (params.copy) return <div className="fin-page-shell mx-auto max-w-3xl px-4 py-6">
     <Link href="/transactions" className="text-sm font-semibold text-[var(--primary)]">← Lịch sử giao dịch</Link>
     {copying ? <TransactionCopyPanel sourceId={copying.id} sourceTitle={copying.title} sourceDate={copying.transaction_date} type={copying.transaction_type} /> : <p role="alert" className="fin-inline-error mt-4">Không tìm thấy giao dịch hợp lệ để sao chép.</p>}
   </div>;
-  if (quickFormOnly) return <div className="mx-auto max-w-3xl px-4 py-6">
+  if (quickFormOnly) return <div className="fin-page-shell mx-auto max-w-3xl px-4 py-6">
     <Link href={returnTo || "/transactions"} className="text-sm font-semibold text-[var(--primary)]">← Lịch sử giao dịch</Link>
     <h1 className="mt-3 text-xl font-extrabold">Ghi nhận thu – chi</h1>
     <p className="mt-1 text-sm text-[var(--muted-foreground)]">Thu tiền, chi tiền hoặc chuyển giữa các tài khoản.</p>
@@ -124,13 +124,13 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
 
 
 
-  return <div className="mx-auto max-w-[1500px] min-w-0 px-4 py-6 md:px-6 lg:px-8 lg:py-8">
+  return <div className="fin-page-shell mx-auto max-w-[1500px] min-w-0 px-4 py-6 md:px-6 lg:px-8 lg:py-8">
     <div className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-xs font-semibold text-[var(--primary)]">Finzaro · Thu chi</p><h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">Giao dịch</h1><p className="mt-1 text-sm text-[var(--muted-foreground)]">Thu, Chi, Chuyển tiền · thao tác nhanh, số dư tự cập nhật.</p></div>{launcher}</div>
     <AuthMessage error={params.error} message={params.message} />
     {editing && <EditTransactionForm transaction={editing} accounts={activeAccounts} categories={editing.transaction_type === "income" ? incomeCategories : expenseCategories} currencies={ledger.currencies} returnTo={returnTo} />}
 
 
-    <details className="fin-filter-panel mt-4"><summary className="flex min-h-11 cursor-pointer items-center gap-2 px-3 font-semibold text-sm"><Filter className="size-4 text-[var(--primary)]"/> Bộ lọc lịch sử <span className="ml-auto text-xs text-[var(--muted-foreground)]">Mở bộ lọc</span></summary><form method="get" className="grid gap-3 p-3 md:grid-cols-2 xl:grid-cols-[1.25fr_.65fr_.8fr_.8fr_.8fr_.8fr_auto]"><div className="relative"><Search className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[var(--muted-foreground)]" /><input name="q" defaultValue={params.q ?? ""} placeholder="Tìm nội dung, danh mục, tài khoản..." className="fin-input pl-10" /></div><select name="type" defaultValue={params.type ?? "all"} className="fin-input"><option value="all">Mọi loại</option><option value="income">Thu nhập</option><option value="expense">Chi tiêu</option><option value="transfer">Chuyển tiền</option></select><select name="account" defaultValue={params.account ?? "all"} className="fin-input"><option value="all">Mọi tài khoản</option>{ledger.accounts.map((account) => <option key={account.id} value={account.id}>{account.name}</option>)}</select><select name="category" defaultValue={params.category ?? "all"} className="fin-input"><option value="all">Mọi danh mục</option>{filterCategories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</select><input type="date" name="from" defaultValue={params.from ?? ""} aria-label="Từ ngày" className="fin-input" /><input type="date" name="to" defaultValue={params.to ?? ""} aria-label="Đến ngày" className="fin-input" /><div className="flex gap-2"><button type="submit" className="fin-dark-btn"><Filter className="size-3.5" /> Lọc</button><Link href="/transactions" className="grid size-10 place-items-center rounded-xl border border-[var(--border)]"><X className="size-4" /></Link></div></form></details>
+    <details open={params.search === "1" || Boolean(params.q || params.type || params.account || params.category || params.from || params.to)} className="fin-filter-panel mt-4"><summary className="flex min-h-11 cursor-pointer items-center gap-2 px-3 font-semibold text-sm"><Filter className="size-4 text-[var(--primary)]"/> Bộ lọc lịch sử <span className="ml-auto text-xs text-[var(--muted-foreground)]">Mở bộ lọc</span></summary><form method="get" className="grid gap-3 p-3 md:grid-cols-2 xl:grid-cols-[1.25fr_.65fr_.8fr_.8fr_.8fr_.8fr_auto]"><div className="relative"><Search className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[var(--muted-foreground)]" /><input name="q" defaultValue={params.q ?? ""} placeholder="Tìm nội dung, danh mục, tài khoản..." className="fin-input pl-10" /></div><select name="type" defaultValue={params.type ?? "all"} className="fin-input"><option value="all">Mọi loại</option><option value="income">Thu nhập</option><option value="expense">Chi tiêu</option><option value="transfer">Chuyển tiền</option></select><select name="account" defaultValue={params.account ?? "all"} className="fin-input"><option value="all">Mọi tài khoản</option>{ledger.accounts.map((account) => <option key={account.id} value={account.id}>{account.name}</option>)}</select><select name="category" defaultValue={params.category ?? "all"} className="fin-input"><option value="all">Mọi danh mục</option>{filterCategories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</select><input type="date" name="from" defaultValue={params.from ?? ""} aria-label="Từ ngày" className="fin-input" /><input type="date" name="to" defaultValue={params.to ?? ""} aria-label="Đến ngày" className="fin-input" /><div className="flex gap-2"><button type="submit" className="fin-dark-btn"><Filter className="size-3.5" /> Lọc</button><Link href="/transactions" className="grid size-10 place-items-center rounded-xl border border-[var(--border)]"><X className="size-4" /></Link></div></form></details>
 
     <Card className="mt-4 fin-card"><CardContent className="p-5 sm:p-6"><div className="mb-4 flex items-center justify-between gap-3"><div><h2 className="font-bold">{params.legacy === "1" ? "Giao dịch phiên bản cũ" : "Lịch sử thu chi · theo ngày"}</h2><p className="mt-0.5 text-xs text-[var(--muted-foreground)]">{filtered.length} giao dịch trong {ledger.transactions.length} giao dịch gần nhất</p></div><Link className="text-xs font-bold text-[var(--primary)]" href={params.legacy === "1" ? "/transactions" : "/transactions?legacy=1"}>{params.legacy === "1" ? "Về Thu Chi" : "Lịch sử cũ"}</Link></div><TransactionList transactions={filtered} currencies={ledger.currencies} showDelete={params.legacy !== "1"} showEdit={params.legacy !== "1"} showCopy={params.legacy !== "1"} groupByDate deletableTransferIds={deletableTransferIds} /></CardContent></Card>
   </div>;

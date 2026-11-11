@@ -21,3 +21,12 @@ These are implementation milestones, not three separate published ZIPs; the publ
 3. V2.0.0 — Finzaro UX Release: end-to-end consistency, production smoke tests, regressions and UX acceptance.
 
 **Scope guardrail:** keep only six modules (Overview, Transactions, Accounts, Categories, Reports & Calendar, Settings); never re-add removed loans, credit cards, deposits, goals, investments or budgets without a separate explicit user decision. Increment the version for every published source ZIP. Do not delete historical data implicitly.
+
+## Shipped V2.2.0 — combined 2026 roadmap milestones
+
+From V2.0.3, the following were delivered **in one source ZIP**:
+- V2.0.4 Performance & Stability Foundation: startup/no-fixed-delay splash, opt-in local timing, single-pass 6-month cashflow aggregation, server-side type/category filtering, navigation progress fallback and synthetic benchmark.
+- V2.1.0 Premium Fintech Design System: semantic light/dark surface/text/tone tokens, unified layout/card/form/button/filter/sheet/navigation styles across six modules.
+- V2.2.0 Fluid Navigation & Transaction UX: prefetch main routes, preserve transaction form state between transaction types, accessible keyboard tabs/category selection, open search filter and natural touch scrolling.
+
+Remaining roadmap begins with **V2.3.0 Financial Dashboard & Reports 2.0**. V2.4 Advanced Analytics, V2.5 Professional Statements/Export, V2.6 Scale/Motion/Accessibility, V3.0 Release remain proposals, not implemented in V2.2.0. See DEPLOY_V2.2.0.md for acceptance and limitations.

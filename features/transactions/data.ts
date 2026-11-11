@@ -45,7 +45,7 @@ export type TransactionView = {
 export async function loadLedger(
   supabase: SupabaseClient<Database>,
   userId: string,
-  options: { fromDate?: string; toDate?: string; limit?: number; fetchAll?: boolean } = {}
+  options: { fromDate?: string; toDate?: string; limit?: number; fetchAll?: boolean; type?: string; categoryId?: string } = {}
 ) {
   // Interactive ledger screens stay bounded, while reports/exports can request the
   // complete date range. Production reports must never silently truncate totals.
@@ -68,6 +68,9 @@ export async function loadLedger(
 
       if (options.fromDate) query = query.gte("transaction_date", options.fromDate);
       if (options.toDate) query = query.lte("transaction_date", options.toDate);
+      if (["income", "expense", "transfer"].includes(options.type ?? "")) query = query.eq("transaction_type", options.type!);
+      // An invalid external query-string category must not cause a PostgreSQL UUID error.
+      if (options.categoryId && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(options.categoryId)) query = query.eq("category_id", options.categoryId);
       const { data, error } = await query;
       if (error) throw error;
       const page = data ?? [];
@@ -214,9 +217,28 @@ export function monthTotals(transactions: TransactionView[], defaultCurrency: st
   return { income, expense, net: income - expense };
 }
 
+/** Single-pass monthly aggregation for overview and trends: O(N + M), preserving currency and purpose. */
+export function monthlyCashflowTotals(transactions: TransactionView[], currency: string, months: string[]) {
+  const totals = new Map(months.map((month) => [month, { income: 0, expense: 0, net: 0 }]));
+  for (const tx of transactions) {
+    if (tx.transaction_purpose !== "standard") continue;
+    if (tx.transaction_type !== "income" && tx.transaction_type !== "expense") continue;
+    const bucket = totals.get(tx.transaction_date.slice(0, 7));
+    if (!bucket) continue;
+    const entry = transactionEntry(tx, tx.transaction_type);
+    if (!entry || entry.currency_code !== currency) continue;
+    if (tx.transaction_type === "income") bucket.income += entry.amount_minor;
+    else bucket.expense += Math.abs(entry.amount_minor);
+    bucket.net = bucket.income - bucket.expense;
+  }
+  return totals;
+}
+
 export function cashflowSeries(transactions: TransactionView[], defaultCurrency: string, timeZone: string) {
-  return sixMonthWindow(timeZone).map((month) => {
-    const totals = monthTotals(transactions, defaultCurrency, month.key);
+  const months = sixMonthWindow(timeZone);
+  const grouped = monthlyCashflowTotals(transactions, defaultCurrency, months.map((month) => month.key));
+  return months.map((month) => {
+    const totals = grouped.get(month.key) ?? { income: 0, expense: 0 };
     return { month: month.label, income: totals.income, expense: totals.expense };
   });
 }

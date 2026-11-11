@@ -37,7 +37,7 @@ export default async function ReportAnalysisPage({ searchParams }: { searchParam
  const accounts=accountSpending(transactions,currency,ledger.accounts);
  const query = new URLSearchParams(); for(const [key,value] of Object.entries(params)) if(value) query.set(key,value);
  query.set("range",range.key);query.set("currency",currency);if(range.key==="custom"){query.set("from",range.from);query.set("to",range.to);}
- return <div className="mx-auto max-w-[1100px] px-3 py-5 sm:px-4 md:px-6 lg:px-8 lg:py-7">
+ return <div className="fin-page-shell mx-auto max-w-[1100px] px-3 py-5 sm:px-4 md:px-6 lg:px-8 lg:py-7">
   <div className="flex items-center justify-between gap-3"><div><h1 className="text-2xl font-black">Phân tích thu chi</h1><p className="mt-1 text-xs text-[var(--muted-foreground)]">Thống kê từ các khoản Thu/Chi thông thường. Chuyển tiền và giao dịch nợ cũ không tính vào tổng.</p></div><Link href={`/api/reports/export?${query.toString()}`} className="fin-secondary-btn text-xs"><Download className="size-4"/> CSV</Link></div>
   <div className="mt-4"><ReportNavigation active="analysis"/></div>
   <ReportDataStatus diagnostics={ledger.diagnostics}/>

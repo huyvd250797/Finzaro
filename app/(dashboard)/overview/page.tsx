@@ -9,7 +9,7 @@ import { CategoryIcon, iconColorValue } from "@/features/categories/icons";
 import { loadReportLedger } from "@/features/reports/data";
 import { monthBounds } from "@/features/reports/experience";
 import { compactCalendarAmount } from "@/features/reports/compact-money";
-import { currentMonthKey, monthTotals, sixMonthWindow, currencyDigits, expenseCategories } from "@/features/transactions/data";
+import { currentMonthKey, monthTotals, sixMonthWindow, monthlyCashflowTotals, currencyDigits, expenseCategories } from "@/features/transactions/data";
 import { requireUser } from "@/lib/auth";
 import { measureServerOperation } from "@/lib/performance";
 import { formatMinorMoney } from "@/lib/utils";
@@ -51,7 +51,8 @@ async function OverviewTrends() {
   const months = sixMonthWindow(pref?.timezone ?? "Asia/Ho_Chi_Minh");
   const ledger = await measureServerOperation("overview.trends", () => loadReportLedger(supabase, userId, { fromDate: `${months[0].key}-01`, toDate: monthBounds(months[5].key).to }));
   const digits = currencyDigits(ledger.currencies, currency);
-  const series = months.map((month) => ({ month: month.label, ...monthTotals(ledger.transactions, currency, month.key) }));
+  const grouped = monthlyCashflowTotals(ledger.transactions, currency, months.map((month) => month.key));
+  const series = months.map((month) => ({ month: month.label, ...(grouped.get(month.key) ?? { income: 0, expense: 0, net: 0 }) }));
   return <Card><CardContent className="p-3.5 sm:p-4"><div className="mb-2 flex items-center justify-between"><h2 className="text-sm font-bold">Dòng tiền 6 tháng</h2><Link href="/reports/analysis" className="text-[11px] font-semibold text-[var(--primary)]">Phân tích</Link></div><CashflowChart data={series} decimalDigits={digits} /></CardContent></Card>;
 }
 
@@ -65,7 +66,7 @@ async function OverviewRecent() {
 
 function OverviewLoading({ height = "h-36" }: { height?: string }) { return <div aria-label="Đang tải số liệu" className={`${height} animate-pulse rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4`}><div className="h-3 w-28 rounded bg-[var(--muted)]" /><div className="mt-5 h-6 w-40 rounded bg-[var(--muted)]" /><div className="mt-5 h-3 w-4/5 rounded bg-[var(--muted)]" /></div>; }
 export default function OverviewPage() {
-  return <div className="mx-auto max-w-[1160px] space-y-3 px-3 py-4 sm:px-5 lg:px-8 lg:py-6">
+  return <div className="fin-page-shell mx-auto max-w-[1160px] space-y-3 px-3 py-4 sm:px-5 lg:px-8 lg:py-6">
     <div className="flex items-center justify-between gap-2"><div><p className="text-[11px] font-semibold text-[var(--muted-foreground)]">Tài chính cá nhân</p><h1 className="text-xl font-extrabold tracking-tight sm:text-2xl">Tổng quan</h1></div><Link className="fin-primary-btn !min-h-9 !px-3 !text-xs" href="/transactions?new=expense"><Plus className="size-4" /> Ghi khoản chi</Link></div>
     <Suspense fallback={<><OverviewLoading /><OverviewLoading height="h-32" /></>}><OverviewEssentials /></Suspense>
     <Suspense fallback={<OverviewLoading height="h-44" />}><OverviewTrends /></Suspense>

@@ -12,6 +12,13 @@ export function NavigationProgress() {
     setActive(false);
   }, [pathname, searchParams]);
 
+  // A same-page or cancelled navigation must not leave the progress bar stuck.
+  useEffect(() => {
+    if (!active) return;
+    const timeout = window.setTimeout(() => setActive(false), 12000);
+    return () => window.clearTimeout(timeout);
+  }, [active]);
+
   useEffect(() => {
     const onClick = (event: MouseEvent) => {
       if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
@@ -21,7 +28,7 @@ export function NavigationProgress() {
       try {
         const next = new URL(anchor.href, window.location.href);
         if (next.origin !== window.location.origin) return;
-        if (next.pathname === window.location.pathname && next.search === window.location.search && next.hash) return;
+        if (next.pathname === window.location.pathname && next.search === window.location.search) return;
         setActive(true);
       } catch {
         // Ignore malformed links.

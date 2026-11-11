@@ -5,8 +5,15 @@ import { useEffect, useState } from "react";
 export function AppSplash() {
   const [visible, setVisible] = useState(true);
   useEffect(() => {
-    const timer = window.setTimeout(() => setVisible(false), 650);
-    return () => window.clearTimeout(timer);
+    // Release after hydration paints; the splash must never impose a fixed 650ms delay.
+    let secondFrame = 0;
+    const firstFrame = window.requestAnimationFrame(() => {
+      secondFrame = window.requestAnimationFrame(() => setVisible(false));
+    });
+    return () => {
+      window.cancelAnimationFrame(firstFrame);
+      window.cancelAnimationFrame(secondFrame);
+    };
   }, []);
   if (!visible) return null;
   return (

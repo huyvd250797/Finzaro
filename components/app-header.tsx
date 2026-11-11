@@ -15,7 +15,7 @@ export function AppHeader({ displayName, email }: { displayName?: string; email?
       <BrandLogo header className="lg:hidden" />
       <Link href="/settings" aria-label={`Phiên bản ứng dụng ${APP_VERSION_LABEL}. Xem thông tin trong Cài đặt.`} title={APP_RELEASE_NAME} className="fin-version-pill inline-flex shrink-0 rounded-full border border-[var(--border)] bg-[var(--card)] px-2 py-1 text-[10px] font-black text-[var(--primary)] sm:px-2.5">{APP_VERSION_LABEL}</Link>
       <div className="hidden min-w-0 flex-1 md:block">
-        <Link href="/transactions" className="flex h-10 max-w-md items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 text-sm text-[var(--muted-foreground)]"><Search className="size-4" /> Tìm giao dịch</Link>
+        <Link href="/transactions?search=1" className="flex h-10 max-w-md items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 text-sm text-[var(--muted-foreground)]"><Search className="size-4" /> Tìm giao dịch</Link>
       </div>
       <div className="ml-auto flex items-center gap-2">
         <ThemeToggle />

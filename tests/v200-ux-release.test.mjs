@@ -11,9 +11,9 @@ const version = read("lib/app-version.ts");
 const expectedRoutes = ["accounts", "categories", "overview", "reports", "settings", "transactions"];
 
 test("V2.0.0 single release synchronizes version, API, PWA and visible mobile + desktop UI", () => {
-  assert.equal(JSON.parse(read("package.json")).version, "2.0.3");
-  assert.match(version, /APP_VERSION = "2\.0\.3"/);
-  assert.match(version, /APP_RELEASE_NAME = "Splash & Calendar Interaction Fixes"/);
+  assert.equal(JSON.parse(read("package.json")).version, "2.2.0");
+  assert.match(version, /APP_VERSION = "2\.2\.0"/);
+  assert.match(version, /APP_RELEASE_NAME = "Premium Fintech & Fluid Transaction UX"/);
   for (const file of ["components/app-header.tsx", "components/app-sidebar.tsx", "components/mobile-nav.tsx", "app/(dashboard)/settings/page.tsx", "app/api/version/route.ts", "components/pwa-register.tsx"]) assert.match(read(file), /APP_VERSION/);
   assert.match(read("components/app-header.tsx"), /fin-version-pill inline-flex/);
   assert.doesNotMatch(read("components/app-header.tsx"), /hidden sm:inline-flex/);

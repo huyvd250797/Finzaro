@@ -10,11 +10,11 @@ const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
 const syncScript = readFileSync(join(root, "scripts/sync-retired-source.mjs"), "utf8");
 
 test("V1.7.1 syncs retired modules before Vercel prebuild release gate", () => {
-  assert.equal(pkg.version, "2.0.3");
+  assert.equal(pkg.version, "2.2.0");
   assert.match(pkg.scripts.prebuild, /source:sync.*check-env\.mjs.*check-release\.mjs/);
   assert.match(pkg.scripts["release:check"], /source:sync.*check-release\.mjs/);
   assert.match(pkg.scripts["source:sync"], /sync-retired-source\.mjs/);
-  assert.match(readFileSync(join(root, "lib/app-version.ts"), "utf8"), /APP_VERSION = "2\.0\.3"/);
+  assert.match(readFileSync(join(root, "lib/app-version.ts"), "utf8"), /APP_VERSION = "2\.2\.0"/);
 });
 
 test("legacy route names are all explicitly retired; financial SQL is untouched", () => {

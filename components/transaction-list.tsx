@@ -6,10 +6,11 @@ import { currencyDigits, transactionEntry, type LedgerCurrency, type Transaction
 import { formatMinorMoney } from "@/lib/utils";
 
 function dateLabel(value: string) { const [year, month, day] = value.split("-"); return `${day}/${month}/${year}`; }
+const dayFormatter = new Intl.DateTimeFormat("vi-VN", { weekday: "long", day: "2-digit", month: "2-digit", year: "numeric", timeZone: "UTC" });
 function dayHeading(value: string) {
   const parsed = new Date(`${value}T00:00:00Z`);
   if (Number.isNaN(parsed.getTime())) return dateLabel(value);
-  return new Intl.DateTimeFormat("vi-VN", { weekday: "long", day: "2-digit", month: "2-digit", year: "numeric", timeZone: "UTC" }).format(parsed);
+  return dayFormatter.format(parsed);
 }
 
 type Props = { transactions: TransactionView[]; currencies: LedgerCurrency[]; limit?: number; showDelete?: boolean; showEdit?: boolean; showCopy?: boolean; groupByDate?: boolean; deletableTransferIds?: string[] };

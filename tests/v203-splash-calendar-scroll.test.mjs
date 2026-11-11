@@ -6,10 +6,10 @@ import { join, resolve } from "node:path";
 const root = resolve(import.meta.dirname, "..");
 const read = (path) => readFileSync(join(root, path), "utf8");
 
-test("V2.0.3 release metadata remains consistent across package and visible app version", () => {
-  assert.equal(JSON.parse(read("package.json")).version, "2.0.3");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "2\.0\.3"/);
-  assert.match(read("lib/app-version.ts"), /Splash & Calendar Interaction Fixes/);
+test("Current release metadata remains consistent across package and visible app version", () => {
+  assert.equal(JSON.parse(read("package.json")).version, "2.2.0");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "2\.2\.0"/);
+  assert.match(read("lib/app-version.ts"), /Premium Fintech & Fluid Transaction UX/);
 });
 
 test("The branded splash is mounted once in root layout, before initial PWA app content", () => {

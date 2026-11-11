@@ -110,7 +110,7 @@ export default async function AccountsPage({ searchParams }: { searchParams: Sea
   }, {});
 
   return (
-    <div className="mx-auto max-w-[1300px] px-4 py-6 md:px-6 lg:px-8 lg:py-8">
+    <div className="fin-page-shell mx-auto max-w-[1300px] px-4 py-6 md:px-6 lg:px-8 lg:py-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-sm font-semibold text-[var(--primary)]">Quản lý tiền của bạn</p>

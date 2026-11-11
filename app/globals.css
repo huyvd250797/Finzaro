@@ -345,3 +345,125 @@ button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
 .fin-category-scroll:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 /* Allow two-finger/vertical movement to reach the page while calendar rows swipe horizontally. */
 #calendar-day-detail [class*="overflow-x-auto"] { touch-action: auto; }
+
+/* V2.1.0 — Premium Fintech Design System: semantic, low-paint-cost surfaces. */
+:root {
+  --fin-canvas: #f3f7f5;
+  --fin-surface: #ffffff;
+  --fin-surface-elevated: #ffffff;
+  --fin-surface-subtle: #f7faf8;
+  --fin-text-primary: #11231e;
+  --fin-text-secondary: #61746d;
+  --fin-income: #087d59;
+  --fin-expense: #dc3659;
+  --fin-transfer: #246fbe;
+  --fin-edge: #dbe8e1;
+  --fin-surface-shadow: 0 12px 35px -28px rgba(16,55,38,.40),0 2px 6px -4px rgba(16,55,38,.13);
+  --fin-shadow-overlay: 0 24px 75px -35px rgba(7,29,20,.45);
+  --fin-ease: cubic-bezier(.18,.8,.2,1);
+  --fin-page-width: 1300px;
+}
+.dark {
+  --fin-canvas: #091410;
+  --fin-surface: #111d18;
+  --fin-surface-elevated: #182821;
+  --fin-surface-subtle: #122019;
+  --fin-text-primary: #ecf8f1;
+  --fin-text-secondary: #9caf9f;
+  --fin-income: #53d5a5;
+  --fin-expense: #ff7890;
+  --fin-transfer: #79b6f7;
+  --fin-edge: #283b32;
+  --fin-surface-shadow: 0 16px 42px -29px rgba(0,0,0,.87),0 2px 8px -5px rgba(0,0,0,.65);
+  --fin-shadow-overlay: 0 30px 90px -30px rgba(0,0,0,.83);
+}
+body {
+  background: var(--fin-canvas);
+  color: var(--fin-text-primary);
+  font-feature-settings: "tnum" 1;
+}
+.fin-page-shell { width: 100%; }
+.fin-page-shell h1 { font-weight: 825; letter-spacing: -.035em; text-wrap: balance; }
+.fin-page-shell h2 { letter-spacing: -.02em; }
+.fin-page-shell p { overflow-wrap: break-word; }
+.fin-page-shell > div:first-child > div > p:first-child { letter-spacing: .012em; }
+.fin-card {
+  border: 1px solid var(--fin-edge);
+  background: var(--fin-surface);
+  border-radius: 1.25rem;
+  box-shadow: var(--fin-surface-shadow);
+}
+.dark .fin-card { box-shadow: var(--fin-surface-shadow); }
+.fin-card h2, .fin-card h3 { font-weight: 775; }
+.fin-input, .fin-textarea {
+  background: var(--fin-surface-subtle);
+  border-color: var(--fin-edge);
+  color: var(--fin-text-primary);
+  border-radius: .9rem;
+}
+.fin-input:hover, .fin-textarea:hover { border-color: color-mix(in srgb, var(--primary) 42%, var(--fin-edge)); }
+.fin-input::placeholder, .fin-textarea::placeholder { color: var(--fin-text-secondary); opacity: .78; }
+.fin-primary-btn, .fin-secondary-btn, .fin-dark-btn {
+  min-height: 44px;
+  transition: background-color .16s ease, border-color .16s ease, box-shadow .16s ease, transform .16s var(--fin-ease);
+}
+.fin-primary-btn { box-shadow: 0 9px 21px -15px color-mix(in srgb, var(--primary) 75%, transparent); }
+.fin-primary-btn:hover:not(:disabled) { background: var(--primary-strong); box-shadow: 0 12px 26px -16px color-mix(in srgb, var(--primary) 95%, transparent); }
+.fin-secondary-btn { background: var(--fin-surface-elevated); border-color: var(--fin-edge); }
+.fin-secondary-btn:hover { border-color: color-mix(in srgb, var(--primary) 50%, var(--fin-edge)); background: var(--fin-surface-subtle); }
+.fin-icon-button { border-color: var(--fin-edge); }
+.fin-icon-button:hover { background: var(--muted); color: var(--fin-text-primary); }
+.fin-nav-link { position: relative; transition: background-color .16s ease, color .16s ease; }
+.fin-nav-link.is-active::before {
+  content: ""; position: absolute; left: -5px; top: 21%; bottom: 21%; width: 3px;
+  border-radius: 6px; background: var(--primary);
+}
+.fin-mobile-taskbar { border-color: var(--fin-edge); box-shadow: 0 -8px 30px -22px rgba(15,55,38,.22); }
+.mobile-tabbar-item.is-active .mobile-tabbar-icon { color: var(--primary); }
+.fin-sheet-panel { box-shadow: var(--fin-shadow-overlay); }
+.fin-transaction-tabs { border: 1px solid var(--fin-edge); }
+.fin-transaction-tab { border-color: transparent; background: transparent; transition: background-color .15s ease, box-shadow .15s ease; }
+.fin-transaction-tab.is-selected { background: var(--fin-surface); border-color: var(--fin-edge); box-shadow: 0 2px 9px -6px rgba(0,0,0,.25); }
+.fin-transaction-panel[hidden] { display: none !important; }
+.fin-quick-action { transition: transform .14s ease, background-color .14s ease, border-color .14s ease; }
+.fin-quick-action:hover { border-color: currentColor; }
+.fin-filter-panel { border: 1px solid var(--fin-edge); border-radius: 1.15rem; background: var(--fin-surface); box-shadow: var(--fin-surface-shadow); }
+.fin-filter-panel > summary { list-style: none; user-select: none; }
+.fin-filter-panel > summary::-webkit-details-marker { display: none; }
+.fin-filter-panel[open] > summary { border-bottom: 1px solid var(--fin-edge); }
+.fin-inline-error { border-color: color-mix(in srgb, var(--fin-expense) 35%, transparent); color: var(--fin-expense); }
+.fin-suggestion-chip { transition: background-color .14s ease, border-color .14s ease; }
+.fin-amount-field { background: color-mix(in srgb, var(--primary) 6%, var(--fin-surface)); }
+.fin-page-shell :where(button, a, input, textarea, select):focus-visible,
+.fin-mobile-taskbar :where(button, a):focus-visible {
+  outline: 2px solid var(--primary); outline-offset: 3px;
+}
+.fin-page-shell :where(.tabular-nums), .fin-stat-value { font-variant-numeric: tabular-nums; }
+
+/* V2.2.0 — Fluid navigation & transaction UX. */
+@media (min-width: 1024px) {
+  .fin-page-shell { padding-top: 1.7rem; padding-bottom: 3rem; }
+  .fin-page-shell > div:first-child h1 { font-size: clamp(1.55rem, 2.1vw, 2rem); }
+}
+@media (max-width: 767px) {
+  .fin-page-shell { padding-bottom: calc(1.2rem + env(safe-area-inset-bottom)); }
+  .fin-page-shell > div:first-child h1 { font-size: 1.5rem; }
+  .fin-transaction-tabs { position: sticky; top: 22px; z-index: 20; }
+  .fin-transaction-tab { font-size: 12px; }
+  .fin-mobile-taskbar .mobile-tabbar-item { min-height: 3.65rem; }
+  .fin-mobile-taskbar .mobile-tabbar-icon { height: 2rem; width: 2.25rem; }
+  .fin-sheet-panel:has(.fin-transaction-tabs) { scroll-padding-top: 5rem; }
+  .fin-transaction-card { overflow: clip; }
+  .fin-transaction-card .fin-form-footer {
+    position: sticky; bottom: -1px; z-index: 10; margin-inline: -.15rem;
+    padding: .6rem .15rem .15rem;
+    background: var(--fin-surface);
+  }
+  .fin-category-scroll { scroll-padding-block: 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fin-quick-action, .fin-transaction-tab, .fin-nav-link { transition: none !important; transform: none !important; }
+}
+
+/* Swipe-capable inner tracks must not inherit a root pan-y restriction. */
+body { touch-action: auto; }

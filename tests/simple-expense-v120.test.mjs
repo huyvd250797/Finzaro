@@ -18,8 +18,8 @@ const reportData = read("features/reports/experience.ts");
 const page = read("app/(dashboard)/transactions/page.tsx");
 
 test("version correctly bumped in package and UI", () => {
- assert.equal(JSON.parse(read("package.json")).version, "2.0.3");
- assert.match(read("lib/app-version.ts"), /APP_VERSION\s*=\s*["']2\.0\.3["']/);
+ assert.equal(JSON.parse(read("package.json")).version, "2.2.0");
+ assert.match(read("lib/app-version.ts"), /APP_VERSION\s*=\s*["']2\.2\.0["']/);
 });
 test("exactly six user-facing dashboard areas remain", () => {
  const dirs = readdirSync(join(root, "app/(dashboard)"), {withFileTypes:true}).filter(x=>x.isDirectory()).map(x=>x.name).sort();
