@@ -1,3 +1,9 @@
+> **Current release: Finzaro V3.0.0 — Professional Release (V2.6.0 + V3.0.0 combined).** Source upgraded from the user-provided V2.5.0 ZIP. See [`DEPLOY_V3.0.0.md`](DEPLOY_V3.0.0.md) and [`docs/V3.0.0_QA.md`](docs/V3.0.0_QA.md). No SQL migration or new dependencies.
+
+**V3.0.0 highlights:** staged history with 80 records per view; scalable reports with grouped (but total-preserving) trend chart bars and correct date drill-down; faster category subtree traversal; tactile money keypad that grows during press and returns on release, with desktop numeric keyboard support; improved bottom sheet focus trapping, reduced motion and contrast. Exactly six base modules remain intact. **QA: 109/109 source tests passed**; dependency installation/Next production build requires network-enabled CI and a valid `.env` config.
+
+---
+
 > **Current release: Finzaro V2.5.0 — Financial Dashboard, Advanced Analytics & Professional Statements.** This single source package combines V2.3.0 + V2.4.0 + V2.5.0 on top of V2.2.0. See [`DEPLOY_V2.5.0.md`](DEPLOY_V2.5.0.md). No SQL migration.
 
 **V2.5.0 highlights:** financial KPIs (Thu/Chi/Ròng/tỷ lệ giữ lại), interactive monthly drill-down to transaction history, comparable-period insights, category and account breakdowns, professional financial-statement tables, native ZIP-based XLSX and CSV downloads, plus browser Print / Save as PDF with Vietnamese labels. Same filters and currency govern all exports. Transfers and legacy finance transactions are excluded from ordinary income/expense aggregates.
@@ -72,7 +78,7 @@ Copy `.env.example` to `.env.local` and fill in Supabase app keys. The `prebuild
 
 `npm run test` runs the V1.2.0/1.2.1/1.2.2 compatibility regression suites plus the V1.4.0 UX/performance regressions and still-valid PWA/auth/calculator tests. Historical advanced-module tests are preserved in `tests/legacy/` for traceability but are no longer part of the simplified product's active test contract.
 
-See [`docs/VERSIONING.md`](docs/VERSIONING.md) for patch version policy. The next changed source package must be `V2.0.1` or later; do not reuse a published version. See latest DEPLOY_V2.5.0.md for the current combined release.
+See [`docs/VERSIONING.md`](docs/VERSIONING.md) for patch version policy. The next changed source package must be `V2.0.1` or later; do not reuse a published version. See latest DEPLOY_V3.0.0.md for the current combined release.
 
 
 ## V1.4.1 TypeScript deployment patch

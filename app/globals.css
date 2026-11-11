@@ -490,3 +490,43 @@ body { touch-action: auto; }
   .fin-print-table { font-size: 9px; }
   .fin-print-table th, .fin-print-table td { padding: 5px; }
 }
+
+/* V3.0.0 — tactile money keypad, reduced motion, higher contrast and stable scrolling. */
+.fin-money-key {
+  position: relative;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transform: scale(1);
+  transform-origin: center;
+  transition: transform 145ms cubic-bezier(.22,.85,.28,1.15), box-shadow 145ms ease, background-color 145ms ease;
+  box-shadow: 0 1px 2px rgba(10, 28, 20, .04);
+}
+.fin-money-key:is(:active, [data-pressed="true"]) {
+  transform: scale(1.075);
+  box-shadow: 0 7px 17px -8px rgba(8, 92, 66, .35);
+  z-index: 1;
+}
+.fin-money-key:focus-visible { outline: 3px solid var(--primary); outline-offset: 3px; z-index: 2; }
+.fin-money-key:disabled { opacity: .4; cursor: not-allowed; }
+.fin-money-key:disabled:active { transform: none; }
+.fin-page-shell a, .fin-page-shell button { -webkit-tap-highlight-color: transparent; }
+.fin-page-shell :where(.fin-primary-btn, .fin-secondary-btn, .fin-dark-btn):not(:disabled):active { transform: scale(.975); }
+.fin-page-shell :where(.fin-primary-btn, .fin-secondary-btn, .fin-dark-btn):disabled { cursor: not-allowed; opacity: .6; }
+.fin-page-shell :where(input, textarea, select)[aria-invalid="true"] { border-color: var(--fin-expense); }
+@media (prefers-contrast: more) {
+  .fin-money-key, .fin-card, .fin-input, .fin-textarea, .fin-filter-panel { border-width: 2px; }
+  .fin-money-key:focus-visible, .fin-page-shell :where(button, a, input, select, textarea):focus-visible { outline-width: 3px; outline-offset: 3px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fin-money-key, .fin-money-key:is(:active, [data-pressed="true"]) { transform: none !important; transition: none !important; }
+  .fin-page-shell :where(.fin-primary-btn, .fin-secondary-btn, .fin-dark-btn):active { transform: none !important; }
+}
+
+/* V3.0.0 — focused micro-interactions without costly page-wide animations. */
+@media (prefers-reduced-motion: no-preference) {
+  .mobile-tabbar-item:active .mobile-tabbar-icon { transform: scale(1.08); }
+  .fin-quick-action:active { transform: scale(.96); }
+  .fin-nav-link:active { transform: scale(.985); }
+}

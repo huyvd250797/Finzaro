@@ -1,7 +1,7 @@
 "use client";
 
 import { Calculator, X } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { BottomSheet } from "@/components/bottom-sheet";
 import { cn } from "@/lib/utils";
@@ -60,6 +60,30 @@ function calculate(left: number, operator: Operator, right: number) {
 
 const operatorLabel: Record<Operator, string> = { "+": "+", "-": "−", "*": "×", "/": "÷" };
 
+/** Pointer/keyboard press state stays on the DOM button: no keypad-wide state update. */
+function MoneyKeyButton({ children, onClick, className, ariaLabel }: {
+  children: ReactNode;
+  onClick: () => void;
+  className?: string;
+  ariaLabel: string;
+}) {
+  const release = (element: HTMLButtonElement) => { element.dataset.pressed = "false"; };
+  return <button
+    type="button"
+    onClick={onClick}
+    aria-label={ariaLabel}
+    className={cn("fin-money-key", className)}
+    onPointerDown={(event) => { if (event.pointerType !== "mouse" || event.button === 0) event.currentTarget.dataset.pressed = "true"; }}
+    onPointerUp={(event) => release(event.currentTarget)}
+    onPointerCancel={(event) => release(event.currentTarget)}
+    onPointerLeave={(event) => release(event.currentTarget)}
+    onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") event.currentTarget.dataset.pressed = "true"; }}
+    onKeyUp={(event) => release(event.currentTarget)}
+    onBlur={(event) => release(event.currentTarget)}
+  >{children}</button>;
+}
+
+
 export function MoneyCalculatorInput({
   name,
   value,
@@ -95,22 +119,33 @@ export function MoneyCalculatorInput({
   const [operator, setOperator] = useState<Operator | null>(null);
   const [expression, setExpression] = useState("");
   const currentValue = controlled ? normalizeCanonical(value ?? "", decimalDigits, allowNegative) : internalValue;
+  const valueRef = useRef(currentValue);
+  useEffect(() => { valueRef.current = currentValue; }, [currentValue]);
+  const keyboardActionRef = useRef<(key: string) => void>(() => {});
 
   useEffect(() => setMounted(true), []);
   useEffect(() => {
-    if (!controlled) return;
-    const normalized = normalizeCanonical(value ?? "", decimalDigits, allowNegative);
-    setEntry(normalized);
-  }, [controlled, value, decimalDigits, allowNegative]);
+    // Do not overwrite a pending calculator operand during a controlled parent update.
+    if (!controlled || open) return;
+    setEntry(normalizeCanonical(value ?? "", decimalDigits, allowNegative));
+  }, [controlled, open, value, decimalDigits, allowNegative]);
   useEffect(() => {
     if (!open) return;
-    setEntry(currentValue);
+    setEntry(valueRef.current);
+    setAccumulator(null);
+    setOperator(null);
+    setExpression("");
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
+      if (event.altKey || event.ctrlKey || event.metaKey) return;
+      if (event.target instanceof HTMLElement && event.target.closest('input, textarea, select, [contenteditable="true"]')) return;
+      if (/^[0-9]$/.test(event.key) || ["Backspace", "Delete", ".", ",", "+", "-", "*", "/"].includes(event.key)) {
+        event.preventDefault();
+        keyboardActionRef.current(event.key);
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [open, currentValue]);
+  }, [open]);
 
   const displayValue = useMemo(() => currentValue ? formatMoney(currentValue, decimalDigits) : "", [currentValue, decimalDigits]);
   const displayPlaceholder = useMemo(() => formatPlaceholder(placeholder, decimalDigits), [placeholder, decimalDigits]);
@@ -197,7 +232,17 @@ export function MoneyCalculatorInput({
     emit(canonical);
   }
 
-  const keys: Array<{ label: string; onClick: () => void; tone?: string }> = [
+  useEffect(() => {
+    keyboardActionRef.current = (key: string) => {
+      if (/^[0-9]$/.test(key)) digit(key);
+      else if (key === "Backspace") backspace();
+      else if (key === "Delete") clear();
+      else if (key === "." || key === ",") decimal();
+      else if (["+", "-", "*", "/"].includes(key)) chooseOperator(key as Operator);
+    };
+  });
+
+  const keys: Array<{ label: string; onClick: () => void; tone?: string; ariaLabel?: string }> = [
     { label: "7", onClick: () => digit("7") }, { label: "8", onClick: () => digit("8") }, { label: "9", onClick: () => digit("9") }, { label: "÷", onClick: () => chooseOperator("/"), tone: "operator" },
     { label: "4", onClick: () => digit("4") }, { label: "5", onClick: () => digit("5") }, { label: "6", onClick: () => digit("6") }, { label: "×", onClick: () => chooseOperator("*"), tone: "operator" },
     { label: "1", onClick: () => digit("1") }, { label: "2", onClick: () => digit("2") }, { label: "3", onClick: () => digit("3") }, { label: "−", onClick: () => chooseOperator("-"), tone: "operator" },
@@ -212,14 +257,14 @@ export function MoneyCalculatorInput({
         </div>
         <div className="mt-3 rounded-2xl bg-[var(--muted)] px-3 py-3 text-right">
           <p className="min-h-4 truncate text-[10px] font-bold text-[var(--muted-foreground)]">{expression || "Máy tính số tiền"}</p>
-          <p className="mt-1 truncate text-2xl font-black tabular-nums">{entry ? formatMoney(entry, decimalDigits) : "0"}{currencyCode ? ` ${currencyCode}` : ""}</p>
+          <p aria-live="off" aria-label="Số tiền đang nhập" className="mt-1 truncate text-2xl font-black tabular-nums">{entry ? formatMoney(entry, decimalDigits) : "0"}{currencyCode ? ` ${currencyCode}` : ""}</p>
         </div>
-        <div className="mt-3 grid grid-cols-4 gap-2">
-          {keys.map((key, index) => <button key={`${key.label}-${index}`} type="button" onClick={key.onClick} className={cn("h-12 rounded-xl border border-[var(--border)] bg-[var(--background)] text-base font-black transition active:scale-[.97]", key.tone === "operator" && "bg-[var(--sidebar-accent)] text-[var(--primary)]")}>{key.label}</button>)}
-          <button type="button" onClick={clear} className="h-12 rounded-xl border border-rose-500/20 bg-rose-500/[.07] text-xs font-black text-rose-500">C</button>
-          <button type="button" onClick={backspace} aria-label="Xóa một chữ số" className="grid h-12 place-items-center rounded-xl border border-[var(--border)] bg-[var(--background)]"><svg viewBox="0 0 24 24" aria-hidden="true" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 6H9l-6 6 6 6h12a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2Z"/><path d="m18 9-6 6"/><path d="m12 9 6 6"/></svg></button>
-          <button type="button" onClick={equals} className="h-12 rounded-xl bg-[var(--primary)] text-lg font-black text-white">=</button>
-          <button type="button" onClick={() => setOpen(false)} className="h-12 rounded-xl bg-[var(--foreground)] text-sm font-black text-[var(--background)]">Xong</button>
+        <div data-money-keypad="true" className="mt-3 grid grid-cols-4 gap-2" aria-label="Bàn phím nhập tiền">
+          {keys.map((key, index) => <MoneyKeyButton key={`${key.label}-${index}`} onClick={key.onClick} ariaLabel={key.ariaLabel ?? (/^\d+$/.test(key.label) ? `Nhập ${key.label}` : `Phép tính ${key.label}`)} className={cn("h-12 rounded-xl border border-[var(--border)] bg-[var(--background)] text-base font-black", key.tone === "operator" && "bg-[var(--sidebar-accent)] text-[var(--primary)]")}>{key.label}</MoneyKeyButton>)}
+          <MoneyKeyButton onClick={clear} ariaLabel="Xóa toàn bộ số tiền" className="h-12 rounded-xl border border-rose-500/20 bg-rose-500/[.07] text-xs font-black text-rose-500">C</MoneyKeyButton>
+          <MoneyKeyButton onClick={backspace} ariaLabel="Xóa một chữ số" className="grid h-12 place-items-center rounded-xl border border-[var(--border)] bg-[var(--background)]"><svg viewBox="0 0 24 24" aria-hidden="true" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 6H9l-6 6 6 6h12a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2Z"/><path d="m18 9-6 6"/><path d="m12 9 6 6"/></svg></MoneyKeyButton>
+          <MoneyKeyButton onClick={equals} ariaLabel="Tính kết quả" className="h-12 rounded-xl bg-[var(--primary)] text-lg font-black text-white">=</MoneyKeyButton>
+          <MoneyKeyButton onClick={() => setOpen(false)} ariaLabel="Hoàn tất nhập số tiền" className="h-12 rounded-xl bg-[var(--foreground)] text-sm font-black text-[var(--background)]">Xong</MoneyKeyButton>
         </div>
     </BottomSheet>, document.body) : null;
 

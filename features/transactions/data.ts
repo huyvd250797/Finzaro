@@ -64,6 +64,7 @@ export async function loadLedger(
         .eq("user_id", userId)
         .order("transaction_date", { ascending: false })
         .order("created_at", { ascending: false })
+        .order("id", { ascending: false })
         .range(offset, offset + pageSize - 1);
 
       if (options.fromDate) query = query.gte("transaction_date", options.fromDate);

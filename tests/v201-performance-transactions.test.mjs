@@ -10,8 +10,8 @@ const require = createRequire(import.meta.url);
 const ts = (() => { try { return require("typescript"); } catch { return require("/opt/nvm/versions/node/v22.16.0/lib/node_modules/typescript"); } })();
 
 test("V2.0.3 synchronizes all runtime versions and retains six modules", () => {
-  assert.ok(Number(JSON.parse(read("package.json")).version.split(".")[1]) >= 2, "release should retain V2.2 baseline");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "2\.[2-9]\.\d+"/);
+  assert.ok((Number(JSON.parse(read("package.json")).version.split(".")[0]) > 2 || Number(JSON.parse(read("package.json")).version.split(".")[1]) >= 2), "release should retain V2.2 baseline");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "(?:2\.[2-9]\.\d+|3\.\d+\.\d+)"/);
   assert.deepEqual(readdirSync(join(root,"app/(dashboard)"),{withFileTypes:true}).filter(x=>x.isDirectory()).map(x=>x.name).sort(),["accounts","categories","overview","reports","settings","transactions"]);
 });
 

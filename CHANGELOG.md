@@ -1,3 +1,18 @@
+## [3.0.0] — 2026-11-11 · Professional Release (combined V2.6 + V3.0)
+
+### V2.6.0 — Scale, Motion & Accessibility
+- Progressive interactive transaction history (80 rows at first render, subsequent batches) and stable `id` ordering; list caps remain clear to users and filters provide date scoping.
+- Trend-chart visual aggregation for long reporting ranges; retain full underlying data for financial totals and exports. Limit initial rendered bar count, keep accurate drill-down dates.
+- O(N+E) category subtree expansion with a parent adjacency index and cycle protection.
+- Tactile calculator keys: 7.5% scale-up while pressed, spring-out on release, pointer/keyboard support, `prefers-reduced-motion` compliance.
+- Modal focus trapping, Escape handling, focus restoration, improved focus visibility and high-contrast support.
+
+### V3.0.0 — Final UX/Stability consolidation
+- Short GPU-friendly navigation press micro-interactions; no page-wide motion overhead.
+- Central application version 3.0.0, six-module release gate, separate V3.0 smoke tests and QA/deploy documentation.
+- No database migration or changes to Supabase transaction RPCs; ordinary income/expense accounting logic retained.
+- Verification: 109/109 source tests, 114 source syntax checks, synthetic cashflow aggregation validated at 1k/5k/10k rows; full production build not confirmed in this environment.
+
 ## V2.5.0 — Financial Dashboard, Advanced Analytics & Professional Statements (2026-11-11)
 
 Combined production source release integrating three roadmap milestones on Finzaro V2.2.0:

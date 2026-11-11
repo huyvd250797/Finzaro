@@ -7,9 +7,9 @@ const root = resolve(import.meta.dirname, "..");
 const read = (path) => readFileSync(join(root, path), "utf8");
 
 test("Current release metadata remains consistent across package and visible app version", () => {
-  assert.ok(Number(JSON.parse(read("package.json")).version.split(".")[1]) >= 2, "release should retain V2.2 baseline");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "2\.[2-9]\.\d+"/);
-  assert.match(read("lib/app-version.ts"), /Financial Dashboard & Advanced Reports|Premium Fintech & Fluid Transaction UX/);
+  assert.ok((Number(JSON.parse(read("package.json")).version.split(".")[0]) > 2 || Number(JSON.parse(read("package.json")).version.split(".")[1]) >= 2), "release should retain V2.2 baseline");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "(?:2\.[2-9]\.\d+|3\.\d+\.\d+)"/);
+  assert.match(read("lib/app-version.ts"), /Financial Dashboard & Advanced Reports|Premium Fintech & Fluid Transaction UX|Professional Release/);
 });
 
 test("The branded splash is mounted once in root layout, before initial PWA app content", () => {

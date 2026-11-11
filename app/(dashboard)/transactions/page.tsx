@@ -21,7 +21,7 @@ import { requireUser } from "@/lib/auth";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Giao dịch" };
 
-type SearchParams = Promise<{ search?: string; legacy?: string; new?: string; edit?: string; copy?: string; date?: string; return_to?: string; q?: string; type?: string; account?: string; category?: string; from?: string; to?: string; error?: string; message?: string }>;
+type SearchParams = Promise<{ page?: string; search?: string; legacy?: string; new?: string; edit?: string; copy?: string; date?: string; return_to?: string; q?: string; type?: string; account?: string; category?: string; from?: string; to?: string; error?: string; message?: string }>;
 
 function EditTransactionForm({ transaction, accounts, categories, currencies, returnTo }: {
   transaction: TransactionView;
@@ -54,6 +54,13 @@ function EditTransactionForm({ transaction, accounts, categories, currencies, re
 export default async function TransactionsPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
   const startedAt = performance.now();
+  const pageSize = 80;
+  const historyPage = Math.min(13, Math.max(1, Number.parseInt(params.page ?? "1", 10) || 1));
+  const displayLimit = historyPage * pageSize;
+  const hasComplexFilter = Boolean(params.q || params.account || params.legacy === "1" || params.category === "uncategorized");
+  // One extra record lets us determine whether a next page exists without
+  // eagerly hydrating and rendering hundreds of transaction cards.
+  const lookupLimit = hasComplexFilter ? 1000 : Math.min(1000, Math.max(160, displayLimit + 1));
   const { supabase, userId } = await requireUser();
   const newType = params.new && isTransactionType(params.new) ? params.new : null;
   const quickFormOnly = Boolean(newType && !params.edit && !params.copy);
@@ -64,7 +71,7 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
     : null;
   const ledgerOptions = quickFormOnly ? { limit: 24 }
     : editDate ? { fromDate: editDate, toDate: editDate, limit: 1000 }
-    : { limit: params.q || params.type || params.account || params.category || params.legacy || params.from || params.to ? 1000 : 160, ...(params.from ? { fromDate: params.from } : {}), ...(params.to ? { toDate: params.to } : {}), ...(params.legacy === "1" ? {} : { type: params.type, categoryId: params.category }) };
+    : { limit: lookupLimit, ...(params.from ? { fromDate: params.from } : {}), ...(params.to ? { toDate: params.to } : {}), ...(params.legacy === "1" ? {} : { type: params.type, categoryId: params.category }) };
   const [{ data: preferences }, ledger] = await Promise.all([
     supabase.from("user_preferences").select("currency_code, timezone").eq("id", userId).maybeSingle(),
     loadLedger(supabase, userId, ledgerOptions)
@@ -116,7 +123,15 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
     ? ledger.transactions.filter(tx => tx.transaction_purpose !== "standard" && tx.transaction_type !== "transfer")
     : ledger.transactions.filter(tx => tx.transaction_purpose === "standard" || (tx.transaction_type === "transfer" && tx.entries.some(e=>e.entry_role === "transfer_in") && tx.entries.some(e=>e.entry_role === "transfer_out")));
   const filtered = filterTransactions(visible, { q: params.q, type: params.type, account: params.account, category: params.category, from: params.from, to: params.to });
-  const transferIds = filtered.filter(tx => tx.transaction_type === "transfer").map(tx => tx.id).slice(0, 500);
+  const shownTransactions = filtered.slice(0, displayLimit);
+  const isAtSearchCap = ledger.transactions.length >= 1000;
+  const hasMoreHistory = historyPage < 13 && (filtered.length > displayLimit || (ledger.transactions.length >= lookupLimit && lookupLimit < 1000));
+  const nextPageQuery = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (key !== "page" && typeof value === "string" && value) nextPageQuery.set(key, value);
+  }
+  nextPageQuery.set("page", String(historyPage + 1));
+  const transferIds = shownTransactions.filter(tx => tx.transaction_type === "transfer").map(tx => tx.id).slice(0, 500);
   const { data: simpleTransferRows } = transferIds.length > 0
     ? await (supabase as any).from("simple_transaction_ids_v120").select("transaction_id").eq("user_id", userId).in("transaction_id", transferIds)
     : { data: [] };
@@ -132,6 +147,9 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
 
     <details open={params.search === "1" || Boolean(params.q || params.type || params.account || params.category || params.from || params.to)} className="fin-filter-panel mt-4"><summary className="flex min-h-11 cursor-pointer items-center gap-2 px-3 font-semibold text-sm"><Filter className="size-4 text-[var(--primary)]"/> Bộ lọc lịch sử <span className="ml-auto text-xs text-[var(--muted-foreground)]">Mở bộ lọc</span></summary><form method="get" className="grid gap-3 p-3 md:grid-cols-2 xl:grid-cols-[1.25fr_.65fr_.8fr_.8fr_.8fr_.8fr_auto]"><div className="relative"><Search className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[var(--muted-foreground)]" /><input name="q" defaultValue={params.q ?? ""} placeholder="Tìm nội dung, danh mục, tài khoản..." className="fin-input pl-10" /></div><select name="type" defaultValue={params.type ?? "all"} className="fin-input"><option value="all">Mọi loại</option><option value="income">Thu nhập</option><option value="expense">Chi tiêu</option><option value="transfer">Chuyển tiền</option></select><select name="account" defaultValue={params.account ?? "all"} className="fin-input"><option value="all">Mọi tài khoản</option>{ledger.accounts.map((account) => <option key={account.id} value={account.id}>{account.name}</option>)}</select><select name="category" defaultValue={params.category ?? "all"} className="fin-input"><option value="all">Mọi danh mục</option><option value="uncategorized">Chưa phân loại</option>{filterCategories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</select><input type="date" name="from" defaultValue={params.from ?? ""} aria-label="Từ ngày" className="fin-input" /><input type="date" name="to" defaultValue={params.to ?? ""} aria-label="Đến ngày" className="fin-input" /><div className="flex gap-2"><button type="submit" className="fin-dark-btn"><Filter className="size-3.5" /> Lọc</button><Link href="/transactions" className="grid size-10 place-items-center rounded-xl border border-[var(--border)]"><X className="size-4" /></Link></div></form></details>
 
-    <Card className="mt-4 fin-card"><CardContent className="p-5 sm:p-6"><div className="mb-4 flex items-center justify-between gap-3"><div><h2 className="font-bold">{params.legacy === "1" ? "Giao dịch phiên bản cũ" : "Lịch sử thu chi · theo ngày"}</h2><p className="mt-0.5 text-xs text-[var(--muted-foreground)]">{filtered.length} giao dịch trong {ledger.transactions.length} giao dịch gần nhất</p></div><Link className="text-xs font-bold text-[var(--primary)]" href={params.legacy === "1" ? "/transactions" : "/transactions?legacy=1"}>{params.legacy === "1" ? "Về Thu Chi" : "Lịch sử cũ"}</Link></div><TransactionList transactions={filtered} currencies={ledger.currencies} showDelete={params.legacy !== "1"} showEdit={params.legacy !== "1"} showCopy={params.legacy !== "1"} groupByDate deletableTransferIds={deletableTransferIds} /></CardContent></Card>
+    <Card id="transaction-history" className="mt-4 fin-card"><CardContent className="p-5 sm:p-6"><div className="mb-4 flex items-center justify-between gap-3"><div><h2 className="font-bold">{params.legacy === "1" ? "Giao dịch phiên bản cũ" : "Lịch sử thu chi · theo ngày"}</h2><p className="mt-0.5 text-xs text-[var(--muted-foreground)]">{shownTransactions.length} giao dịch đang hiển thị trong {ledger.transactions.length} giao dịch đã tải</p></div><Link className="text-xs font-bold text-[var(--primary)]" href={params.legacy === "1" ? "/transactions" : "/transactions?legacy=1"}>{params.legacy === "1" ? "Về Thu Chi" : "Lịch sử cũ"}</Link></div><TransactionList transactions={shownTransactions} currencies={ledger.currencies} showDelete={params.legacy !== "1"} showEdit={params.legacy !== "1"} showCopy={params.legacy !== "1"} groupByDate deletableTransferIds={deletableTransferIds} />
+      {hasMoreHistory && <div className="mt-5 flex justify-center border-t border-[var(--border)] pt-4"><Link href={`/transactions?${nextPageQuery.toString()}#transaction-history`} scroll={false} className="fin-secondary-btn" aria-label={`Xem thêm giao dịch, hiện có ${shownTransactions.length} giao dịch`}>Xem thêm giao dịch</Link></div>}
+      {isAtSearchCap && <p className="mt-3 text-center text-xs text-[var(--muted-foreground)]">Danh sách chỉ tra cứu tối đa 1.000 giao dịch gần nhất. Dùng bộ lọc ngày hoặc xuất báo cáo để xem toàn bộ lịch sử trong kỳ.</p>}
+    </CardContent></Card>
   </div>;
 }
