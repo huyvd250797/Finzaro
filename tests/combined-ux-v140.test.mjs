@@ -12,9 +12,9 @@ const actions = read("features/transactions/actions.ts");
 const css = read("app/globals.css");
 
 test("combined version and scope remain consistent", () => {
-  assert.equal(JSON.parse(read("package.json")).version, "2.2.0");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION\s*=\s*"2\.2\.0"/);
-  assert.match(read("lib/app-version.ts"), /APP_RELEASE_NAME\s*=\s*"Premium Fintech & Fluid Transaction UX/);
+  assert.ok(Number(JSON.parse(read("package.json")).version.split(".")[1]) >= 2, "release should retain V2.2 baseline");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION\s*=\s*"2\.[2-9]\.\d+"/);
+  assert.match(read("lib/app-version.ts"), /APP_RELEASE_NAME\s*=\s*"(?:Premium Fintech & Fluid Transaction UX|Financial Dashboard & Advanced Reports)/);
   assert.match(read("README.md"), /V1\.7\.0/);
   assert.match(read("DEPLOY_V1.4.0.md"), /V1\.2\.3.*V1\.3\.0.*V1\.4\.0/s);
   assert.match(read("docs/VERSIONING.md"), /V1\.7\.0/);

@@ -467,3 +467,26 @@ body {
 
 /* Swipe-capable inner tracks must not inherit a root pan-y restriction. */
 body { touch-action: auto; }
+
+
+/* V2.5.0 — Financial statements, responsive tables and browser-PDF printing. */
+.fin-report-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; min-width: 560px; }
+.fin-report-table th { text-align: left; white-space: nowrap; background: var(--muted); color: var(--muted-foreground); font-weight: 800; padding: 0.85rem 0.9rem; }
+.fin-report-table td { border-top: 1px solid var(--border); padding: 0.75rem 0.9rem; vertical-align: top; }
+.fin-report-table tr:hover td { background: var(--muted); }
+.fin-print-table { border-collapse: collapse; font-size: 11px; }
+.fin-print-table th { background: #e6f3ee; color: #155e48; text-align: left; padding: 7px; border: 1px solid #bfcfc8; }
+.fin-print-table td { padding: 6px; border: 1px solid #d9e2dd; vertical-align: top; overflow-wrap: anywhere; }
+.fin-print-table tr { break-inside: avoid; }
+@media print {
+  @page { size: A4; margin: 14mm; }
+  :root { color-scheme: light; }
+  html, body { background: white !important; color: #111827 !important; overflow: visible !important; }
+  body:has(.fin-print-document) > * { background: white !important; }
+  body:has(.fin-print-document) aside, body:has(.fin-print-document) nav, body:has(.fin-print-document) footer,
+  body:has(.fin-print-document) [data-mobile-nav], body:has(.fin-print-document) [data-app-header] { display: none !important; }
+  .fin-print-document { color: #111827 !important; background: white !important; max-width: none !important; width: 100% !important; padding: 0 !important; margin: 0 !important; }
+  .fin-print-document .print\:hidden { display: none !important; }
+  .fin-print-table { font-size: 9px; }
+  .fin-print-table th, .fin-print-table td { padding: 5px; }
+}

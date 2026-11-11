@@ -1,13 +1,19 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { filterReportTransactions, loadReportLedger, normalizeReportFilters, resolveReportRange } from "@/features/reports/data";
-import { transactionEntry } from "@/features/transactions/data";
+import { accountSpending, categorySpending, filterReportTransactions, loadReportLedger, monthlyCashflow, normalizeReportFilters, previousComparableRange, resolveReportRange } from "@/features/reports/data";
+import { compareFinancialPeriods, maskIncompleteCashflowRatio } from "@/features/reports/advanced";
+import { statementSheets } from "@/features/reports/statement";
+import { makeReportXlsx } from "@/features/reports/report-workbook";
+import { currencyDigits } from "@/features/transactions/data";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
-function csv(value: unknown) {
+function csvCell(value: unknown) {
   const text = String(value ?? "");
-  return /[",\n\r]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+  // UTF-8 BOM below improves Excel Vietnamese support; neutralize formula injection.
+  const literal = /^[\s\u0000-\u001f]*[=+@-]/.test(text) ? `'${text}` : text;
+  return /[",\n\r]/.test(literal) ? `"${literal.replace(/"/g, '""')}"` : literal;
 }
 
 export async function GET(request: NextRequest) {
@@ -15,64 +21,47 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient();
     const { data, error } = await supabase.auth.getClaims();
     const userId = !error && typeof data?.claims?.sub === "string" ? data.claims.sub : null;
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
+    if (!userId) return NextResponse.json({ error: "Chưa đăng nhập." }, { status: 401 });
+    const format = request.nextUrl.searchParams.get("format") ?? "csv";
+    if (!["csv", "xlsx"].includes(format)) return NextResponse.json({ error: "Định dạng không được hỗ trợ." }, { status: 400 });
     const { data: preferences } = await supabase.from("user_preferences").select("currency_code, timezone").eq("id", userId).maybeSingle();
-    const defaultCurrency = (preferences?.currency_code ?? "VND").toUpperCase();
-    const timeZone = preferences?.timezone ?? "Asia/Ho_Chi_Minh";
+    const fallbackCurrency = (preferences?.currency_code ?? "VND").toUpperCase();
     const params = Object.fromEntries(request.nextUrl.searchParams.entries());
-    const range = resolveReportRange(params.range, params.from, params.to, timeZone);
-    const ledger = await loadReportLedger(supabase, userId, { fromDate: range.from, toDate: range.to, includeAccounts: true, includeCategories: true });
-    if (ledger.diagnostics.strategy === "empty") {
-      return NextResponse.json({ error: "Chưa tải được dữ liệu. Không thể xuất báo cáo có thể sai lệch." }, { status: 503 });
-    }
-    const currency = ledger.currencies.some((item) => item.code === params.currency) ? params.currency : defaultCurrency;
-    const requestedFilters = normalizeReportFilters({ ...params, currency }, range, defaultCurrency);
+    const range = resolveReportRange(params.range, params.from, params.to, preferences?.timezone ?? "Asia/Ho_Chi_Minh");
+    const previousRange = previousComparableRange(range);
+    const ledger = await loadReportLedger(supabase, userId, { fromDate: previousRange.from, toDate: range.to, includeAccounts: true, includeCategories: true });
+    if (ledger.diagnostics.strategy === "empty") return NextResponse.json({ error: "Không thể đọc dữ liệu, tạm ngưng xuất để tránh sai lệch." }, { status: 503 });
+    const currency = ledger.currencies.some((c) => c.code === params.currency?.toUpperCase()) ? params.currency.toUpperCase() : fallbackCurrency;
+    const digits = currencyDigits(ledger.currencies, currency);
+    const requested = normalizeReportFilters({ ...params, currency }, range, fallbackCurrency);
     const filters = {
-      ...requestedFilters,
-      account: requestedFilters.account === "all" || ledger.accounts.some((item) => item.id === requestedFilters.account && item.currency_code === currency) ? requestedFilters.account : "all",
-      category: requestedFilters.category === "all" || ledger.categories.some((item) => item.id === requestedFilters.category) ? requestedFilters.category : "all",
-      type: ["all", "income", "expense", "transfer"].includes(requestedFilters.type) ? requestedFilters.type : "all"
+      ...requested,
+      account: requested.account === "all" || ledger.accounts.some((a) => a.id === requested.account && a.currency_code === currency) ? requested.account : "all",
+      category: requested.category === "all" || ledger.categories.some((c) => c.id === requested.category) ? requested.category : "all",
+      type: ["all", "income", "expense"].includes(requested.type) ? requested.type : "all"
     };
-    const transactions = filterReportTransactions(ledger.transactions, filters, ledger.categories)
-      .filter(tx => tx.transaction_purpose === "standard" || (tx.transaction_type === "transfer" && tx.entries.some(e => e.entry_role === "transfer_in") && tx.entries.some(e => e.entry_role === "transfer_out")));
-
-    const rows: Array<Array<string | number>> = [
-      ["Ngày", "Loại", "Tiêu đề", "Danh mục", "Tài khoản nguồn", "Tài khoản đích", "Tiền tệ nguồn", "Số tiền nguồn (minor)", "Tiền tệ đích", "Số tiền đích (minor)", "Ghi chú"]
-    ];
-
-    for (const transaction of transactions) {
-      const income = transactionEntry(transaction, "income");
-      const expense = transactionEntry(transaction, "expense");
-      const transferOut = transactionEntry(transaction, "transfer_out");
-      const transferIn = transactionEntry(transaction, "transfer_in");
-      const source = expense ?? transferOut;
-      const destination = income ?? transferIn;
-      rows.push([
-        transaction.transaction_date,
-        transaction.transaction_type,
-        transaction.title,
-        transaction.category?.name ?? transaction.category_label ?? "",
-        source?.account?.name ?? "",
-        destination?.account?.name ?? "",
-        source?.currency_code ?? "",
-        source ? Math.abs(source.amount_minor) : "",
-        destination?.currency_code ?? "",
-        destination ? Math.abs(destination.amount_minor) : "",
-        transaction.notes ?? ""
-      ]);
-    }
-
-    const body = "\uFEFF" + rows.map((row) => row.map(csv).join(",")).join("\r\n");
-    const filename = `finzaro-report-${range.from}-${range.to}-${currency}.csv`;
-    return new NextResponse(body, {
-      headers: {
-        "Content-Type": "text/csv; charset=utf-8",
-        "Content-Disposition": `attachment; filename="${filename}"`,
-        "Cache-Control": "no-store"
-      }
+    // Keep only ordinary income/expense entries, never count transfers as flow.
+    const current = filterReportTransactions(ledger.transactions, filters, ledger.categories).filter((tx) => tx.transaction_purpose === "standard" && (tx.transaction_type === "income" || tx.transaction_type === "expense"));
+    const previous = filterReportTransactions(ledger.transactions, { ...filters, from: previousRange.from, to: previousRange.to }, ledger.categories).filter((tx) => tx.transaction_purpose === "standard" && (tx.transaction_type === "income" || tx.transaction_type === "expense"));
+    const sheets = statementSheets({
+      from: range.from, to: range.to, currency, digits,
+      comparison: maskIncompleteCashflowRatio(compareFinancialPeriods(current, previous, currency), filters.type),
+      monthly: monthlyCashflow(current, currency, range.from, range.to),
+      categories: categorySpending(current, currency),
+      accounts: accountSpending(current, currency, ledger.accounts),
+      transactions: current
     });
-  } catch {
-    return NextResponse.json({ error: "Không thể xuất báo cáo." }, { status: 500 });
+    const filename = `Finzaro-${range.from}-${range.to}-${currency}`;
+    const headers = { "Content-Disposition": `attachment; filename="${filename}.${format}"`, "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff" };
+    if (format === "xlsx") {
+      const content = makeReportXlsx(sheets);
+      return new NextResponse(new Uint8Array(content), { headers: { ...headers, "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" } });
+    }
+    const transactionsSheet = sheets.find((sheet) => sheet.name === "Giao dich")!;
+    const body = "\uFEFF" + transactionsSheet.rows.map((row) => row.map(csvCell).join(",")).join("\r\n");
+    return new NextResponse(body, { headers: { ...headers, "Content-Type": "text/csv; charset=utf-8" } });
+  } catch (error) {
+    console.error("[Finzaro report export]", error);
+    return NextResponse.json({ error: "Không thể xuất báo cáo. Hãy kiểm tra dữ liệu và thử lại." }, { status: 500 });
   }
 }

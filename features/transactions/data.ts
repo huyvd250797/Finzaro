@@ -150,7 +150,8 @@ export function filterTransactions(
   return transactions.filter((transaction) => {
     if (filters.type && filters.type !== "all" && transaction.transaction_type !== filters.type) return false;
     if (filters.account && filters.account !== "all" && !transaction.entries.some((entry) => entry.account_id === filters.account)) return false;
-    if (filters.category && filters.category !== "all" && transaction.category_id !== filters.category) return false;
+    if (filters.category === "uncategorized" && transaction.category_id !== null) return false;
+    if (filters.category && filters.category !== "all" && filters.category !== "uncategorized" && transaction.category_id !== filters.category) return false;
     if (filters.from && transaction.transaction_date < filters.from) return false;
     if (filters.to && transaction.transaction_date > filters.to) return false;
     if (q) {

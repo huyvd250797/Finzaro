@@ -1,3 +1,13 @@
+## V2.5.0 — Financial Dashboard, Advanced Analytics & Professional Statements (2026-11-11)
+
+Combined production source release integrating three roadmap milestones on Finzaro V2.2.0:
+
+- **V2.3.0 — Financial Dashboard & Reports 2.0:** summary retention rate on main Reports dashboard, detailed KPI cards, interactive monthly chart with accessible month selection and transaction drill-down, integrated report navigation.
+- **V2.4.0 — Advanced Financial Analytics:** same-length adjacent-period comparisons, income/expense/net delta, retention percentage-point movement, category movement, account spending, contextual insights, calendar-month aggregation in one pass and correct multi-month totals without a silent 24-month truncation; custom date changes switch to Custom range.
+- **V2.5.0 — Professional Financial Statements & Export:** consolidated financial statement page, monthly income/expense/net table, category/account breakdown, transaction listing, filtered Excel (.xlsx) workbook with five sheets, UTF-8 CSV, browser print / Save as PDF, Vietnamese print layout and clear accounting scope warnings.
+- Preserved all six core Finzaro modules and the existing authenticated Supabase transaction model, RPCs, light/dark theme and PWA. No database migration or new npm dependencies.
+- QA: source release gate passed; 103/103 source/runtime tests passed, including XLSX payload check and accounting exclusions. Full lint/typecheck/build pending an environment with installable dependencies.
+
 # V2.2.0 — Performance, Premium Fintech Design & Fluid Transactions (2026-11-11)
 
 - Gộp V2.0.4 + V2.1.0 + V2.2.0 trong một bản phát hành, nâng cấp từ V2.0.3.

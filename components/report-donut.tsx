@@ -36,7 +36,7 @@ function normalizeSlices(slices: DonutSlice[]): SafeSlice[] {
     amount: safeNumber(slice.amount),
     percent: total > 0 ? (safeNumber(slice.amount) / total) * 100 : 0,
     color: typeof slice.color === "string" && /^#[\da-fA-F]{6}$/.test(slice.color) ? slice.color : FALLBACK_COLOR,
-    href: typeof slice.href === "string" && slice.href.startsWith("/reports/category/") ? slice.href : null
+    href: typeof slice.href === "string" && (slice.href.startsWith("/reports/category/") || slice.href.startsWith("/transactions?")) ? slice.href : null
   }));
 }
 

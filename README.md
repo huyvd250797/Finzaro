@@ -1,4 +1,12 @@
- > **Current release: Finzaro V2.2.0 — Performance, Premium Fintech Design & Fluid Transactions.** This single release combines V2.0.4 + V2.1.0 + V2.2.0 on top of V2.0.3. See [`DEPLOY_V2.2.0.md`](DEPLOY_V2.2.0.md). No SQL migration.
+> **Current release: Finzaro V2.5.0 — Financial Dashboard, Advanced Analytics & Professional Statements.** This single source package combines V2.3.0 + V2.4.0 + V2.5.0 on top of V2.2.0. See [`DEPLOY_V2.5.0.md`](DEPLOY_V2.5.0.md). No SQL migration.
+
+**V2.5.0 highlights:** financial KPIs (Thu/Chi/Ròng/tỷ lệ giữ lại), interactive monthly drill-down to transaction history, comparable-period insights, category and account breakdowns, professional financial-statement tables, native ZIP-based XLSX and CSV downloads, plus browser Print / Save as PDF with Vietnamese labels. Same filters and currency govern all exports. Transfers and legacy finance transactions are excluded from ordinary income/expense aggregates.
+
+**QA:** `npm run release:check`; `npm test` (103/103); and TypeScript/TSX isolated syntax transpilation. Full `npm run check` (ESLint, TypeScript typecheck, Next.js production build) is **not yet verified** because this environment cannot install dependencies from npm registry. Before deploying, install dependencies in a network-enabled environment and run `npm run check`. See [`docs/V2.5.0_QA.md`](docs/V2.5.0_QA.md).
+
+---
+
+> **Previous release: Finzaro V2.2.0 — Performance, Premium Fintech Design & Fluid Transactions.** This single release combines V2.0.4 + V2.1.0 + V2.2.0 on top of V2.0.3. See [`DEPLOY_V2.2.0.md`](DEPLOY_V2.2.0.md). No SQL migration.
 
 **V2.2.0 highlights:** opt-in browser performance diagnostics; faster 6-month aggregation; semantic Light/Dark UI; warmed navigation; preserving Thu/Chi/Chuyển drafts when switching tabs; keyboard-accessible category selection and smoother calendar gestures.
 
@@ -64,7 +72,7 @@ Copy `.env.example` to `.env.local` and fill in Supabase app keys. The `prebuild
 
 `npm run test` runs the V1.2.0/1.2.1/1.2.2 compatibility regression suites plus the V1.4.0 UX/performance regressions and still-valid PWA/auth/calculator tests. Historical advanced-module tests are preserved in `tests/legacy/` for traceability but are no longer part of the simplified product's active test contract.
 
-See [`docs/VERSIONING.md`](docs/VERSIONING.md) for patch version policy. The next changed source package must be `V2.0.1` or later; do not reuse a published version. See latest DEPLOY_V2.2.0.md for the current combined release.
+See [`docs/VERSIONING.md`](docs/VERSIONING.md) for patch version policy. The next changed source package must be `V2.0.1` or later; do not reuse a published version. See latest DEPLOY_V2.5.0.md for the current combined release.
 
 
 ## V1.4.1 TypeScript deployment patch

@@ -120,6 +120,11 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
         </CardContent></Card>; })}
       </div>
 
+      <Card className="mt-3"><CardContent className="flex flex-wrap items-center justify-between gap-3 p-3.5 sm:p-4">
+        <div><p className="text-[11px] font-bold text-[var(--muted-foreground)]">Tỷ lệ giữ lại trong kỳ</p><p className="mt-1 text-xl font-black text-[var(--primary)]">{totals.income > 0 ? `${((totals.net / totals.income) * 100).toFixed(1).replace(".", ",")}%` : "Chưa xác định"}</p><p className="text-[11px] text-[var(--muted-foreground)]">{totals.income > 0 ? "Dòng tiền ròng / Tổng thu thông thường" : "Chưa có thu nhập để xác định tỷ lệ"}</p></div>
+        <div className="text-right"><p className="text-[11px] text-[var(--muted-foreground)]">{transactions.length} giao dịch trong kỳ</p><Link className="mt-2 inline-flex min-h-9 items-center rounded-xl bg-[var(--sidebar-accent)] px-3 text-xs font-black text-[var(--primary)]" href={`/reports/analysis?range=custom&from=${bounds.from}&to=${bounds.to}`}>Phân tích & so sánh kỳ →</Link></div>
+      </CardContent></Card>
+
       <Card className="mt-3">
         <CardContent className="p-3 sm:p-4">
           <div className="flex flex-wrap items-start justify-between gap-2">

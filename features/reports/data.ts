@@ -523,27 +523,35 @@ export function reportTotals(transactions: TransactionView[], currency: string) 
 export function monthlyCashflow(transactions: TransactionView[], currency: string, from: string, to: string) {
   const start = parseIsoDate(from)!;
   const end = parseIsoDate(to)!;
-  const rows: MonthlyCashflowRow[] = [];
-  let cursor = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), 1));
-  let guard = 0;
-  while (cursor <= end && guard < 24) {
-    const key = `${cursor.getUTCFullYear()}-${String(cursor.getUTCMonth() + 1).padStart(2, "0")}`;
-    const label = new Intl.DateTimeFormat("vi-VN", { month: "short", year: "2-digit", timeZone: "UTC" }).format(cursor);
-    let income = 0;
-    let expense = 0;
-    for (const transaction of transactions) {
-      if (!transaction.transaction_date.startsWith(key)) continue;
-      if (transaction.transaction_type === "income" && transaction.transaction_purpose === "standard") {
-        const entry = transactionEntry(transaction, "income");
-        if (entry?.currency_code === currency) income += Math.abs(entry.amount_minor);
-      } else if (transaction.transaction_type === "expense" && transaction.transaction_purpose === "standard") {
-        const entry = transactionEntry(transaction, "expense");
-        if (entry?.currency_code === currency) expense += Math.abs(entry.amount_minor);
-      }
+  const startMonth = start.getUTCFullYear() * 12 + start.getUTCMonth();
+  const endMonth = end.getUTCFullYear() * 12 + end.getUTCMonth();
+  const monthCount = endMonth - startMonth + 1;
+  if (monthCount < 1 || monthCount > 240) {
+    throw new RangeError("Khoảng báo cáo phải nằm trong tối đa 240 tháng (20 năm).");
+  }
+  // One pass through the ledger, then one pass through the requested months.
+  // Unlike the old 24-month guard this never silently drops months.
+  const byMonth = new Map<string, { income: number; expense: number }>();
+  for (const transaction of transactions) {
+    if (transaction.transaction_date < from || transaction.transaction_date > to || transaction.transaction_purpose !== "standard") continue;
+    const key = transaction.transaction_date.slice(0, 7);
+    const row = byMonth.get(key) ?? { income: 0, expense: 0 };
+    if (transaction.transaction_type === "income") {
+      const entry = transactionEntry(transaction, "income");
+      if (entry?.currency_code === currency) row.income += Math.abs(entry.amount_minor);
+    } else if (transaction.transaction_type === "expense") {
+      const entry = transactionEntry(transaction, "expense");
+      if (entry?.currency_code === currency) row.expense += Math.abs(entry.amount_minor);
     }
-    rows.push({ key, month: label, income, expense, net: income - expense });
-    cursor = new Date(Date.UTC(cursor.getUTCFullYear(), cursor.getUTCMonth() + 1, 1));
-    guard += 1;
+    byMonth.set(key, row);
+  }
+  const rows: MonthlyCashflowRow[] = [];
+  for (let offset = 0; offset < monthCount; offset++) {
+    const cursor = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth() + offset, 1));
+    const key = `${cursor.getUTCFullYear()}-${String(cursor.getUTCMonth() + 1).padStart(2, "0")}`;
+    const month = new Intl.DateTimeFormat("vi-VN", { month: "short", year: "2-digit", timeZone: "UTC" }).format(cursor);
+    const { income, expense } = byMonth.get(key) ?? { income: 0, expense: 0 };
+    rows.push({ key, month, income, expense, net: income - expense });
   }
   return rows;
 }

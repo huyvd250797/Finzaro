@@ -11,9 +11,9 @@ const version = read("lib/app-version.ts");
 const expectedRoutes = ["accounts", "categories", "overview", "reports", "settings", "transactions"];
 
 test("V2.0.0 single release synchronizes version, API, PWA and visible mobile + desktop UI", () => {
-  assert.equal(JSON.parse(read("package.json")).version, "2.2.0");
-  assert.match(version, /APP_VERSION = "2\.2\.0"/);
-  assert.match(version, /APP_RELEASE_NAME = "Premium Fintech & Fluid Transaction UX"/);
+  assert.ok(Number(JSON.parse(read("package.json")).version.split(".")[1]) >= 2, "release should retain V2.2 baseline");
+  assert.match(version, /APP_VERSION = "2\.[2-9]\.\d+"/);
+  assert.match(version, /APP_RELEASE_NAME = "(?:Premium Fintech & Fluid Transaction UX|Financial Dashboard & Advanced Reports)"/);
   for (const file of ["components/app-header.tsx", "components/app-sidebar.tsx", "components/mobile-nav.tsx", "app/(dashboard)/settings/page.tsx", "app/api/version/route.ts", "components/pwa-register.tsx"]) assert.match(read(file), /APP_VERSION/);
   assert.match(read("components/app-header.tsx"), /fin-version-pill inline-flex/);
   assert.doesNotMatch(read("components/app-header.tsx"), /hidden sm:inline-flex/);

@@ -1,18 +1,19 @@
 import Link from "next/link";
-import { BarChart3, CalendarDays, LayoutDashboard, type LucideIcon } from "lucide-react";
+import { BarChart3, CalendarDays, LayoutDashboard, FileText, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export type ReportSection = "overview" | "calendar" | "analysis";
+export type ReportSection = "overview" | "calendar" | "analysis" | "statements";
 
 const items: Array<{ key: ReportSection; href: string; label: string; icon: LucideIcon }> = [
   { key: "overview", href: "/reports", label: "Tổng quan", icon: LayoutDashboard },
   { key: "calendar", href: "/reports/calendar", label: "Lịch", icon: CalendarDays },
-  { key: "analysis", href: "/reports/analysis", label: "Phân tích", icon: BarChart3 }
+  { key: "analysis", href: "/reports/analysis", label: "Phân tích", icon: BarChart3 },
+  { key: "statements", href: "/reports/statements", label: "Sổ báo cáo", icon: FileText }
 ];
 
 export function ReportNavigation({ active }: { active: ReportSection }) {
   return (
-    <div className="grid grid-cols-3 rounded-xl border border-[var(--border)] bg-[var(--card)] p-1">
+    <div className="grid grid-cols-4 rounded-xl border border-[var(--border)] bg-[var(--card)] p-1">
       {items.map((item) => {
         const Icon = item.icon;
         const selected = item.key === active;

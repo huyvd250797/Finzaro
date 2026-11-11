@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { ArrowRight, CalendarDays, Plus, WalletCards } from "lucide-react";
+import { ArrowRight, CalendarDays, Plus, WalletCards, BarChart3 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { ReportDataStatus } from "@/components/report-data-status";
 import { CashflowChart } from "@/components/cashflow-chart";
@@ -67,7 +67,7 @@ async function OverviewRecent() {
 function OverviewLoading({ height = "h-36" }: { height?: string }) { return <div aria-label="Đang tải số liệu" className={`${height} animate-pulse rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4`}><div className="h-3 w-28 rounded bg-[var(--muted)]" /><div className="mt-5 h-6 w-40 rounded bg-[var(--muted)]" /><div className="mt-5 h-3 w-4/5 rounded bg-[var(--muted)]" /></div>; }
 export default function OverviewPage() {
   return <div className="fin-page-shell mx-auto max-w-[1160px] space-y-3 px-3 py-4 sm:px-5 lg:px-8 lg:py-6">
-    <div className="flex items-center justify-between gap-2"><div><p className="text-[11px] font-semibold text-[var(--muted-foreground)]">Tài chính cá nhân</p><h1 className="text-xl font-extrabold tracking-tight sm:text-2xl">Tổng quan</h1></div><Link className="fin-primary-btn !min-h-9 !px-3 !text-xs" href="/transactions?new=expense"><Plus className="size-4" /> Ghi khoản chi</Link></div>
+    <div className="flex items-center justify-between gap-2"><div><p className="text-[11px] font-semibold text-[var(--muted-foreground)]">Tài chính cá nhân</p><h1 className="text-xl font-extrabold tracking-tight sm:text-2xl">Tổng quan</h1></div><div className="flex items-center gap-2"><Link href="/reports/analysis" className="fin-secondary-btn !min-h-9 !px-2 !text-xs sm:!px-3"><BarChart3 className="size-4" /><span className="hidden sm:inline">Báo cáo tài chính</span></Link><Link className="fin-primary-btn !min-h-9 !px-3 !text-xs" href="/transactions?new=expense"><Plus className="size-4" /> Ghi khoản chi</Link></div></div>
     <Suspense fallback={<><OverviewLoading /><OverviewLoading height="h-32" /></>}><OverviewEssentials /></Suspense>
     <Suspense fallback={<OverviewLoading height="h-44" />}><OverviewTrends /></Suspense>
     <Suspense fallback={<OverviewLoading height="h-24" />}><OverviewRecent /></Suspense>
