@@ -316,3 +316,16 @@ button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
 .fin-version-pill { font-variant-numeric: tabular-nums; letter-spacing: .015em; }
 @media (max-width: 360px) { .fin-category-action { min-width: 30px; min-height: 34px; } .fin-category-tile { padding: .45rem; } .fin-version-pill { padding-inline: .375rem; } }
 @media (prefers-reduced-motion: reduce) { .fin-account-card, .fin-category-tile { transition: none !important; transform: none !important; } }
+
+/* V2.0.1 — shared upward sheet entry, downward exit and drag-to-dismiss. */
+.fin-sheet-backdrop { animation: fin-sheet-backdrop-in .2s ease-out both; }
+.fin-sheet-panel { animation: fin-sheet-panel-in .24s cubic-bezier(.2,.85,.2,1) both; will-change: transform; }
+.fin-sheet-backdrop[data-closing="true"] { animation: fin-sheet-backdrop-out .22s ease-in both; pointer-events: none; }
+.fin-sheet-backdrop[data-closing="true"] .fin-sheet-panel { animation: fin-sheet-panel-out .22s cubic-bezier(.4,0,1,1) both; }
+@keyframes fin-sheet-panel-in { from { transform: translateY(100%); } to { transform: translateY(0); } }
+@keyframes fin-sheet-panel-out { from { transform: translateY(0); } to { transform: translateY(100%); } }
+@keyframes fin-sheet-backdrop-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fin-sheet-backdrop-out { from { opacity: 1; } to { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .fin-sheet-panel, .fin-sheet-backdrop, .fin-sheet-backdrop[data-closing="true"], .fin-sheet-backdrop[data-closing="true"] .fin-sheet-panel { animation-duration: .01ms !important; }
+}

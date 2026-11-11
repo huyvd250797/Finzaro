@@ -15,11 +15,11 @@ catch { ts = req(join(dirname(process.execPath), "../lib/node_modules/typescript
 const actions = read("features/transactions/actions.ts");
 const responseSource = read("features/transactions/rpc-response.ts");
 
-test("V1.4.1 fixes unknown RPC response TS2339 at create/delete/update", () => {
+test("V1.4.1 fixes unknown RPC response TS2339 at create/delete/update and duplicate", () => {
   for (const action of ["create", "delete", "update"]) {
     assert.match(actions, new RegExp(`const error = transactionRpcError\\(await measureServerOperation\\("transaction\\.${action}\\.rpc"`));
   }
-  assert.equal((actions.match(/transactionRpcError\(await measureServerOperation/g) || []).length, 3);
+  assert.equal((actions.match(/transactionRpcError\(await measureServerOperation/g) || []).length, 4);
   assert.doesNotMatch(actions, /const\s*\{\s*error\s*\}\s*=\s*await\s*measureServerOperation/);
   assert.match(actions, /import \{ transactionRpcError \} from "@\/features\/transactions\/rpc-response";/);
   assert.match(actions, /if \(error\) throw new Error\(dbError\(error\)\)/);
@@ -67,8 +67,8 @@ test("strict TypeScript permits unknown timing results only after validation", (
 });
 
 test("V1.4.1 metadata is versioned without modifying underlying V1.2 RPCs", () => {
-  assert.equal(JSON.parse(read("package.json")).version, "2.0.0");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "2\.0\.0"/);
+  assert.equal(JSON.parse(read("package.json")).version, "2.0.1");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "2\.0\.1"/);
   assert.match(read("CHANGELOG.md"), /V1\.7\.0/);
   assert.match(read("DEPLOY_V1.4.1.md"), /No new SQL/);
   for (const rpc of ["create_simple_transaction_v120", "delete_simple_transaction_v120", "update_simple_transaction_v120"]) {

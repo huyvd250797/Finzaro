@@ -1,3 +1,5 @@
+> **Current release: Finzaro V2.0.1 – Performance & Transaction Experience.** See [`DEPLOY_V2.0.1.md`](DEPLOY_V2.0.1.md) for deployment checks, safe multi-day copying, and PWA verification.
+
 # Finzaro V2.0.0 — Finzaro UX Release
 
 **V2.0.0 combines V1.8.0 Accounts & Categories, V1.9.0 Speed/Motion/Accessibility and V2.0.0 UX Release** on the V1.7.1 baseline. One final source package is distributed. The product remains six modules and 3 transaction types: Thu, Chi, Chuyển.

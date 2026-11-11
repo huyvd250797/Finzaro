@@ -11,13 +11,13 @@ const version = read("lib/app-version.ts");
 const expectedRoutes = ["accounts", "categories", "overview", "reports", "settings", "transactions"];
 
 test("V2.0.0 single release synchronizes version, API, PWA and visible mobile + desktop UI", () => {
-  assert.equal(JSON.parse(read("package.json")).version, "2.0.0");
-  assert.match(version, /APP_VERSION = "2\.0\.0"/);
-  assert.match(version, /APP_RELEASE_NAME = "Finzaro UX Release"/);
+  assert.equal(JSON.parse(read("package.json")).version, "2.0.1");
+  assert.match(version, /APP_VERSION = "2\.0\.1"/);
+  assert.match(version, /APP_RELEASE_NAME = "Performance & Transaction Experience"/);
   for (const file of ["components/app-header.tsx", "components/app-sidebar.tsx", "components/mobile-nav.tsx", "app/(dashboard)/settings/page.tsx", "app/api/version/route.ts", "components/pwa-register.tsx"]) assert.match(read(file), /APP_VERSION/);
   assert.match(read("components/app-header.tsx"), /fin-version-pill inline-flex/);
   assert.doesNotMatch(read("components/app-header.tsx"), /hidden sm:inline-flex/);
-  assert.match(read("components/mobile-nav.tsx"), /sheet === "modules" && <div/);
+  assert.match(read("components/mobile-nav.tsx"), /<BottomSheet open=\{Boolean\(sheet\)\}/);
 });
 
 test("Exactly six dashboard modules, with no retired routes or diagnostic-only type shims", () => {
@@ -69,7 +69,8 @@ test("UX release preserves zoom, keyboard focus, reduced motion and PWA update r
   const app = read("app/layout.tsx");
   assert.doesNotMatch(app, /userScalable:\s*false|maximumScale:\s*1/);
   const instant = read("components/instant-reveal.tsx");
-  for (const pattern of [/aria-modal="true"/, /role="dialog"/, /event\.key !== "Tab"/, /event\.key === "Escape"/, /triggerRef\.current\?\.focus\(\)/]) assert.match(instant, pattern);
+  for (const pattern of [/<BottomSheet/, /event\.key !== "Tab"/, /event\.key === "Escape"/, /triggerRef\.current\?\.focus\(\)/]) assert.match(instant, pattern);
+  assert.match(read("components/bottom-sheet.tsx"), /aria-modal="true"/);
   const css = read("app/globals.css");
   assert.match(css, /prefers-reduced-motion: reduce/);
   assert.match(css, /fin-account-card/);

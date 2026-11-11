@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowDownLeft, ArrowLeftRight, ArrowUpRight, ChevronRight, CircleDollarSign, Pencil, Trash2, TrendingDown, TrendingUp, X } from "lucide-react";
+import { ArrowDownLeft, ArrowLeftRight, ArrowUpRight, ChevronRight, CircleDollarSign, Copy, Pencil, Trash2, TrendingDown, TrendingUp, X } from "lucide-react";
 import { deleteTransactionAction } from "@/features/transactions/actions";
 import { CategoryIcon, iconColorValue } from "@/features/categories/icons";
 import { cn } from "@/lib/utils";
 import { compactCalendarAmount } from "@/features/reports/compact-money";
-import { useOverlayScrollLock } from "@/components/use-overlay-scroll-lock";
+import { BottomSheet } from "@/components/bottom-sheet";
 
 type CalendarCell = {
   key: string;
@@ -71,7 +71,6 @@ export function ReportCalendarInteractive({
   const [selectedDay, setSelectedDay] = useState(initialSelectedDay);
   const [quickDay, setQuickDay] = useState<string | null>(null);
   const lastTap = useRef<{ date: string; at: number }>({ date: "", at: 0 });
-  useOverlayScrollLock(Boolean(quickDay));
 
   useEffect(() => {
     router.prefetch("/transactions?new=expense");
@@ -117,7 +116,7 @@ export function ReportCalendarInteractive({
         <div className="grid grid-cols-7 gap-px bg-[var(--border)]" aria-label="Lịch thu chi theo ngày">
           {cells.map((cell) => {
             if (!cell.current || !cell.date) {
-              return <div key={cell.key} className="min-h-[108px] min-w-0 bg-[var(--background)] px-0.5 py-2 opacity-30 sm:min-h-[120px]"><p className="text-center text-[10px] font-bold text-[var(--muted-foreground)] sm:text-xs">{cell.day}</p></div>;
+              return <div key={cell.key} className="min-h-[76px] min-w-0 bg-[var(--background)] px-0.5 py-1.5 opacity-30 sm:min-h-[90px]"><p className="text-center text-[10px] font-bold text-[var(--muted-foreground)] sm:text-xs">{cell.day}</p></div>;
             }
             const selected = cell.date === selectedDay;
             return (
@@ -126,13 +125,13 @@ export function ReportCalendarInteractive({
                 type="button"
                 onClick={() => selectDay(cell.date!)}
                 className={cn(
-                  "min-h-[108px] min-w-0 touch-manipulation bg-[var(--card)] px-0.5 py-2 text-center transition-colors active:bg-[var(--muted)]/70 sm:min-h-[120px] sm:px-1.5",
+                  "min-h-[76px] min-w-0 touch-manipulation bg-[var(--card)] px-0.5 py-1.5 text-center transition-colors active:bg-[var(--muted)]/70 sm:min-h-[90px] sm:px-1.5",
                   selected && "bg-sky-500/12 ring-2 ring-inset ring-sky-500"
                 )}
                 aria-label={`Ngày ${cell.day}. Thu ${cell.income ?? 0}, chi ${cell.expense ?? 0} (đơn vị tiền nhỏ nhất). Chạm để xem, chạm hai lần để thêm.`}
               >
                 <p className={cn("text-center text-[11px] font-black sm:text-xs", selected ? "text-sky-500" : "text-[var(--foreground)]")}>{cell.day}</p>
-                <div className="mt-3 flex min-w-0 flex-col items-center gap-1 tabular-nums sm:mt-4">
+                <div className="mt-1.5 flex min-w-0 flex-col items-center gap-0.5 tabular-nums sm:mt-2">
                   {(cell.income ?? 0) > 0 && <span className="max-w-full whitespace-nowrap text-[9.5px] font-bold leading-3 tracking-[-.045em] text-emerald-500 sm:text-[11px]">+{compactCalendarAmount(cell.income!, digits)}</span>}
                   {(cell.expense ?? 0) > 0 && <span className="max-w-full whitespace-nowrap text-[9.5px] font-bold leading-3 tracking-[-.045em] text-rose-500 sm:text-[11px]">-{compactCalendarAmount(cell.expense!, digits)}</span>}
                 </div>
@@ -179,6 +178,7 @@ export function ReportCalendarInteractive({
                       <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-[var(--muted)]" style={{ color: iconColorValue(transaction.iconColor) }}><CategoryIcon name={transaction.iconName} className="size-4" /></span>
                       <span className="min-w-0 flex-1"><span className="block truncate text-sm font-black">{transaction.categoryName}</span><span className="mt-0.5 block truncate text-[11px] text-[var(--muted-foreground)]">{transaction.title}{transaction.notes ? ` · ${transaction.notes}` : ""}</span></span>
                       <span className={cn("shrink-0 text-xs font-black", transaction.tone === "income" ? "text-emerald-500" : transaction.tone === "expense" ? "text-rose-500" : "text-sky-500")}>{transaction.amountLabel}</span>
+                      {(transaction.editable || transaction.deletable) && <Link href={`/transactions?copy=${encodeURIComponent(transaction.id)}`} onClick={(event) => event.stopPropagation()} title="Sao chép giao dịch" aria-label="Sao chép giao dịch sang ngày khác" className="grid size-8 shrink-0 place-items-center rounded-lg border border-sky-500/20 bg-sky-500/10 text-sky-600"><Copy className="size-4" /></Link>}
                       <ChevronRight className="size-4 shrink-0 text-[var(--muted-foreground)]" />
                     </div>
                     {transaction.editable ? (
@@ -199,19 +199,14 @@ export function ReportCalendarInteractive({
         )}
       </section>
 
-      {quickDay && (
-        <div className="fixed inset-0 z-[110] flex items-end bg-black/45 backdrop-blur-[2px]" onMouseDown={(event) => { if (event.target === event.currentTarget) setQuickDay(null); }}>
-          <div className="w-full rounded-t-[28px] border border-[var(--border)] bg-[var(--card)] p-4 pb-[max(env(safe-area-inset-bottom),16px)] shadow-2xl">
-            <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-[var(--border)]" />
-            <div className="flex items-start justify-between gap-3"><div><p className="text-xs font-black uppercase tracking-wide text-[var(--primary)]">Thêm giao dịch nhanh</p><h3 className="mt-1 text-lg font-black">{quickDay.split("-").reverse().join("/")}</h3></div><button type="button" onClick={() => setQuickDay(null)} className="grid size-9 place-items-center rounded-xl border border-[var(--border)]"><X className="size-4" /></button></div>
+      <BottomSheet open={Boolean(quickDay)} onClose={() => setQuickDay(null)} label="Thêm giao dịch vào ngày" zIndex="z-[110]" panelClassName="border border-[var(--border)] p-4 pb-[max(env(safe-area-inset-bottom),16px)]">
+            <div className="flex items-start justify-between gap-3"><div><p className="text-xs font-black uppercase tracking-wide text-[var(--primary)]">Thêm giao dịch nhanh</p><h3 className="mt-1 text-lg font-black">{(quickDay ?? selectedDay).split("-").reverse().join("/")}</h3></div><button type="button" onClick={() => setQuickDay(null)} className="grid size-9 place-items-center rounded-xl border border-[var(--border)]"><X className="size-4" /></button></div>
             <div className="mt-4 grid grid-cols-3 gap-2">
-              <Link href={transactionHref("expense", quickDay, period)} className="flex min-h-20 flex-col items-center justify-center gap-2 rounded-2xl border border-rose-500/20 bg-rose-500/[.06] text-xs font-black text-rose-500"><ArrowUpRight className="size-5" />Chi tiền</Link>
-              <Link href={transactionHref("income", quickDay, period)} className="flex min-h-20 flex-col items-center justify-center gap-2 rounded-2xl border border-emerald-500/20 bg-emerald-500/[.06] text-xs font-black text-emerald-500"><ArrowDownLeft className="size-5" />Thu tiền</Link>
-              <Link href={transactionHref("transfer", quickDay, period)} className="flex min-h-20 flex-col items-center justify-center gap-2 rounded-2xl border border-sky-500/20 bg-sky-500/[.06] text-xs font-black text-sky-500"><ArrowLeftRight className="size-5" />Chuyển</Link>
+              <Link href={transactionHref("expense", quickDay ?? selectedDay, period)} className="flex min-h-20 flex-col items-center justify-center gap-2 rounded-2xl border border-rose-500/20 bg-rose-500/[.06] text-xs font-black text-rose-500"><ArrowUpRight className="size-5" />Chi tiền</Link>
+              <Link href={transactionHref("income", quickDay ?? selectedDay, period)} className="flex min-h-20 flex-col items-center justify-center gap-2 rounded-2xl border border-emerald-500/20 bg-emerald-500/[.06] text-xs font-black text-emerald-500"><ArrowDownLeft className="size-5" />Thu tiền</Link>
+              <Link href={transactionHref("transfer", quickDay ?? selectedDay, period)} className="flex min-h-20 flex-col items-center justify-center gap-2 rounded-2xl border border-sky-500/20 bg-sky-500/[.06] text-xs font-black text-sky-500"><ArrowLeftRight className="size-5" />Chuyển</Link>
             </div>
-          </div>
-        </div>
-      )}
+        </BottomSheet>
     </>
   );
 }

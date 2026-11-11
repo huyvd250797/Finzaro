@@ -3,7 +3,7 @@
 import { Calculator, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { useOverlayScrollLock } from "@/components/use-overlay-scroll-lock";
+import { BottomSheet } from "@/components/bottom-sheet";
 import { cn } from "@/lib/utils";
 
 type Operator = "+" | "-" | "*" | "/";
@@ -95,7 +95,6 @@ export function MoneyCalculatorInput({
   const [operator, setOperator] = useState<Operator | null>(null);
   const [expression, setExpression] = useState("");
   const currentValue = controlled ? normalizeCanonical(value ?? "", decimalDigits, allowNegative) : internalValue;
-  useOverlayScrollLock(open);
 
   useEffect(() => setMounted(true), []);
   useEffect(() => {
@@ -205,11 +204,8 @@ export function MoneyCalculatorInput({
     { label: allowNegative ? "±" : "000", onClick: allowNegative ? toggleSign : () => zeros(3) }, { label: "0", onClick: () => digit("0") }, { label: decimalDigits > 0 ? "." : "00", onClick: decimalDigits > 0 ? decimal : () => zeros(2) }, { label: "+", onClick: () => chooseOperator("+"), tone: "operator" }
   ];
 
-  const sheet = open && mounted ? createPortal(
-    <div className="fixed inset-0 z-[140] overflow-hidden" role="dialog" aria-modal="true" aria-label={`Máy tính ${currencyCode ?? "số tiền"}`}>
-      <button type="button" aria-label="Đóng máy tính" onClick={() => setOpen(false)} className="absolute inset-0 bg-black/45 backdrop-blur-[2px]" />
-      <section className="absolute inset-x-0 bottom-0 max-h-[min(78dvh,620px)] overflow-y-auto overscroll-contain rounded-t-[28px] border-t border-[var(--border)] bg-[var(--card)] px-4 pb-[max(env(safe-area-inset-bottom),16px)] pt-3 shadow-2xl animate-[sheet-up_.2s_cubic-bezier(.2,.8,.2,1)] sm:left-1/2 sm:max-w-md sm:-translate-x-1/2 sm:rounded-[28px] sm:border sm:bottom-4">
-        <div className="mx-auto h-1.5 w-11 rounded-full bg-[var(--border)]" />
+  const sheet = mounted ? createPortal(
+    <BottomSheet open={open} onClose={() => setOpen(false)} label={`Máy tính ${currencyCode ?? "số tiền"}`} zIndex="z-[140]" panelClassName="max-h-[min(78dvh,620px)] max-w-md border-t border-[var(--border)] px-4 pb-[max(env(safe-area-inset-bottom),16px)] sm:mb-4 sm:rounded-[28px] sm:border">
         <div className="mt-3 flex items-center justify-between gap-3">
           <div className="min-w-0"><p className="truncate text-sm font-black">Nhập số tiền{currencyCode ? ` · ${currencyCode}` : ""}</p><p className="mt-0.5 text-[11px] text-[var(--muted-foreground)]">Tự động nhóm hàng nghìn bằng dấu . · phím . nhập phần thập phân.</p></div>
           <button type="button" onClick={() => setOpen(false)} className="grid size-9 shrink-0 place-items-center rounded-xl border border-[var(--border)]" aria-label="Đóng"><X className="size-4" /></button>
@@ -225,8 +221,7 @@ export function MoneyCalculatorInput({
           <button type="button" onClick={equals} className="h-12 rounded-xl bg-[var(--primary)] text-lg font-black text-white">=</button>
           <button type="button" onClick={() => setOpen(false)} className="h-12 rounded-xl bg-[var(--foreground)] text-sm font-black text-[var(--background)]">Xong</button>
         </div>
-      </section>
-    </div>, document.body) : null;
+    </BottomSheet>, document.body) : null;
 
   return <div className={cn("min-w-0 max-w-full", className)}>
     {name && <input type="hidden" name={name} value={currentValue} required={required} />}

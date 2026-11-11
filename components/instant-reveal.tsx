@@ -3,14 +3,13 @@
 import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
 import { Plus } from "lucide-react";
-import { useOverlayScrollLock } from "@/components/use-overlay-scroll-lock";
+import { BottomSheet } from "@/components/bottom-sheet";
 import { cn } from "@/lib/utils";
 
 export function InstantReveal({ children, label, initialOpen = false, icon = true, className }: { children: ReactNode; label: string; initialOpen?: boolean; className?: string; icon?: boolean }) {
   const [open, setOpen] = useState(initialOpen);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const dialogRef = useRef<HTMLDivElement | null>(null);
-  useOverlayScrollLock(open);
 
   useEffect(() => {
     if (!open) return;
@@ -33,8 +32,8 @@ export function InstantReveal({ children, label, initialOpen = false, icon = tru
 
   return <>
     <button ref={triggerRef} type="button" onClick={() => setOpen(true)} className={cn("inline-flex h-10 items-center gap-2 rounded-xl bg-[var(--primary)] px-4 text-sm font-bold text-white transition active:scale-[0.98]", className)}>{icon && <Plus className="size-4" />}{label}</button>
-    {open && <div className="fixed inset-0 z-[90] flex items-end justify-center overflow-hidden bg-black/40 p-0 backdrop-blur-[2px] sm:items-center sm:p-6" onMouseDown={(event) => { if (event.target === event.currentTarget) setOpen(false); }} onClickCapture={(event) => { const target = event.target as Element; if (target.closest("[data-instant-close]")) { event.preventDefault(); setOpen(false); } }}>
-      <div ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-label={label} className="modal-scroll-area mx-auto max-h-[88dvh] w-full max-w-4xl overflow-x-hidden overflow-y-auto overscroll-contain rounded-t-[28px] pb-[max(env(safe-area-inset-bottom),8px)] [touch-action:pan-y] sm:max-h-[calc(100dvh-48px)] sm:rounded-[24px] sm:pb-0">{children}</div>
-    </div>}
+    <BottomSheet open={open} onClose={() => setOpen(false)} label={label} zIndex="z-[90]" overlayClassName="sm:items-center sm:p-6" panelClassName="modal-scroll-area mx-auto max-w-4xl sm:max-h-[calc(100dvh-48px)] sm:rounded-[24px]">
+      <div ref={dialogRef} tabIndex={-1} onClickCapture={(event) => { const target = event.target as Element; if (target.closest("[data-instant-close]")) { event.preventDefault(); setOpen(false); } }}>{children}</div>
+    </BottomSheet>
   </>;
 }

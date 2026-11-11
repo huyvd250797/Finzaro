@@ -1,3 +1,14 @@
+## V2.0.1 — Performance & Transaction Experience (2026-11-11)
+
+- Faster perceived initial loading: removed forced splash delay; streamed monthly summary, six-month trends and recent history independently; deferred profile enrichment and disabled eager main-nav prefetch.
+- Calendar cells made smaller without removing the two colored daily totals.
+- Transaction launchers use consistent red/green/blue for Expense/Income/Transfer.
+- Transaction history explicitly grouped by the transaction's effective date.
+- Multi-date transaction duplication via existing simple-transaction RPC with owner validation and partial-success retry safety; calendar and history include duplicate entrypoints.
+- Reusable slide-up/slide-down bottom sheets with drag-to-close handle; applied to main mobile overlays and calculator.
+- Brand header and sidebar show Finzaro name and V2.0.1 next to logo.
+- No SQL migration or legacy-finance module reactivation.
+
 ## V2.0.0 — Finzaro UX Release (2026-11-11)
 
 Three UI/UX phases are delivered together in **one V2.0.0 source ZIP**: V1.8.0 Accounts & Categories UX; V1.9.0 Speed, Motion & Accessibility; and V2.0.0 Finzaro UX Release. Baseline V1.7.1.

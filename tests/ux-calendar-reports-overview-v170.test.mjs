@@ -25,8 +25,8 @@ function compilePure(source, name) {
 }
 
 test("V1.7.0 is consistent across app, packaging and deploy documentation", () => {
-  assert.equal(JSON.parse(read("package.json")).version, "2.0.0");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "2\.0\.0"/);
+  assert.equal(JSON.parse(read("package.json")).version, "2.0.1");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "2\.0\.1"/);
   assert.match(read("README.md"), /V1\.7\.0/);
   assert.match(read("CHANGELOG.md"), /V1\.7\.0.*Calendar/);
   assert.match(read("DEPLOY_V1.7.0.md"), /No V1\.7\.0 SQL migration/);
@@ -47,7 +47,7 @@ test("calendar renders compact money from minor units and hides zero", () => {
 test("calendar uses responsive seven-column two-line cells and no redundant week", () => {
   assert.match(calendarPage, /cellCount = Math\.ceil\(\(leading \+ bounds\.days\) \/ 7\) \* 7/);
   assert.match(calendar, /grid grid-cols-7/);
-  assert.match(calendar, /min-h-\[108px\]/);
+  assert.match(calendar, /min-h-\[76px\]/);
   assert.match(calendar, /compactCalendarAmount\(cell\.income!/);
   assert.match(calendar, /compactCalendarAmount\(cell\.expense!/);
   assert.match(calendar, /\(cell\.income \?\? 0\) > 0/);
@@ -58,7 +58,7 @@ test("calendar uses responsive seven-column two-line cells and no redundant week
 test("date selection is local; quick-create, swipe, back-navigation and safe overlays remain", () => {
   assert.match(calendar, /window\.history\.replaceState/);
   assert.match(calendar, /now - previous\.at <= 360/);
-  assert.match(calendar, /useOverlayScrollLock\(Boolean\(quickDay\)\)/);
+  assert.match(calendar, /<BottomSheet open=\{Boolean\(quickDay\)\}/);
   assert.match(calendar, /name="return_to"/);
   assert.match(calendar, /deleteTransactionAction/);
   assert.match(calendar, /editHref\(transaction\.id/);

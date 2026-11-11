@@ -12,9 +12,9 @@ const actions = read("features/transactions/actions.ts");
 const css = read("app/globals.css");
 
 test("combined version and scope remain consistent", () => {
-  assert.equal(JSON.parse(read("package.json")).version, "2.0.0");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION\s*=\s*"2\.0\.0"/);
-  assert.match(read("lib/app-version.ts"), /APP_RELEASE_NAME\s*=\s*"Finzaro UX Release/);
+  assert.equal(JSON.parse(read("package.json")).version, "2.0.1");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION\s*=\s*"2\.0\.1"/);
+  assert.match(read("lib/app-version.ts"), /APP_RELEASE_NAME\s*=\s*"Performance & Transaction Experience/);
   assert.match(read("README.md"), /V1\.7\.0/);
   assert.match(read("DEPLOY_V1.4.0.md"), /V1\.2\.3.*V1\.3\.0.*V1\.4\.0/s);
   assert.match(read("docs/VERSIONING.md"), /V1\.7\.0/);
@@ -24,7 +24,7 @@ test("quick entry does not load a full transaction history or transfer metadata"
   assert.match(transactions, /quickFormOnly \? \{ limit: 24 \}/);
   assert.match(transactions, /if \(quickFormOnly\) return/);
   assert.ok(transactions.indexOf("if (quickFormOnly) return") < transactions.indexOf("const transferIds ="));
-  assert.match(transactions, /transaction_date"\)\.eq\("id", params\.edit\)/);
+  assert.match(transactions, /transaction_date"\)\.eq\("id", selectedId\)/);
 });
 
 test("three transaction types share a form with money first and context-safe defaults", () => {
@@ -35,7 +35,7 @@ test("three transaction types share a form with money first and context-safe def
   assert.match(form, /autoTitle/);
   assert.match(form, /differentCurrency &&/);
   assert.match(form, /isTransfer && !differentCurrency && <input name="to_amount" type="hidden" value=""/);
-  assert.match(read("components/instant-transaction-launcher.tsx"), /<div key=\{type\}>\{panels\[type\]\}<\/div>/);
+  assert.match(read("components/instant-transaction-launcher.tsx"), /<div onClickCapture=/);
 });
 
 test("failed saves retain values; success commits through unchanged atomic V1.2 RPC", () => {
@@ -53,7 +53,7 @@ test("semantic design tokens and opt-in non-sensitive performance timings exist"
   const perf = read("lib/performance.ts");
   assert.match(perf, /FINZARO_PERF_LOG/);
   assert.match(perf, /console\.info\(`\[Finzaro performance\] \${label}: \${Math\.round/);
-  for (const name of ["transaction.create.rpc", "transaction.update.rpc", "reports.overview.load", "reports.calendar.load", "overview.load"]) {
+  for (const name of ["transaction.create.rpc", "transaction.update.rpc", "reports.overview.load", "reports.calendar.load", "overview.essentials"]) {
     assert.ok(read("features/transactions/actions.ts") .includes(name) || ["app/(dashboard)/reports/page.tsx", "app/(dashboard)/reports/calendar/page.tsx", "app/(dashboard)/overview/page.tsx"].some((path) => read(path).includes(name)), name);
   }
 });

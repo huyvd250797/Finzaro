@@ -26,6 +26,7 @@ export function TransactionEntryForm({ type, accounts, categories, today, sugges
   returnTo?: string;
 }) {
   const isTransfer = type === "transfer";
+  const typeTone = type === "expense" ? "text-rose-500" : type === "income" ? "text-emerald-500" : "text-sky-500";
   // Use the latest actual choice as a default; do not auto-create or modify a transaction.
   const lastUsed = useMemo(() => suggestions.find((item) => item.kind === "recent") ?? suggestions[0], [suggestions]);
   const activeIds = useMemo(() => new Set(accounts.map((account) => account.id)), [accounts]);
@@ -69,7 +70,7 @@ export function TransactionEntryForm({ type, accounts, categories, today, sugges
 
   return <Card className="fin-transaction-card overflow-hidden shadow-2xl"><CardContent className="p-4 sm:p-6">
     <div className="flex items-center justify-between gap-3">
-      <div className="min-w-0"><p className="text-[11px] font-semibold text-[var(--primary)]">Giao dịch mới</p><h2 className="mt-0.5 text-xl font-extrabold tracking-tight">{type === "expense" ? "Chi tiền" : type === "income" ? "Thu tiền" : "Chuyển tiền"}</h2></div>
+      <div className="min-w-0"><p className={`text-[11px] font-semibold ${typeTone}`}>Giao dịch mới</p><h2 className={`mt-0.5 text-xl font-extrabold tracking-tight ${typeTone}`}>{type === "expense" ? "Chi tiền" : type === "income" ? "Thu tiền" : "Chuyển tiền"}</h2></div>
       <button type="button" data-instant-close aria-label="Đóng" className="fin-icon-button"><X className="size-4" /></button>
     </div>
     {accounts.length < (isTransfer ? 2 : 1) ? <div className="mt-5 rounded-xl border border-dashed border-[var(--border)] p-5 text-sm">{isTransfer ? "Cần ít nhất hai tài khoản hoạt động để chuyển tiền." : "Cần ít nhất một tài khoản hoạt động."} <Link href="/accounts?new=1" className="font-bold text-[var(--primary)]">Thêm tài khoản</Link></div> : <>
@@ -78,7 +79,7 @@ export function TransactionEntryForm({ type, accounts, categories, today, sugges
         <input name="transaction_type" type="hidden" value={type} /><input name="transaction_purpose" type="hidden" value={isTransfer ? "transfer" : "standard"} /><input name="return_to" type="hidden" value={returnTo} />
         {state.error && <p role="alert" className="fin-inline-error sm:col-span-2">{state.error}</p>}
         <div className="fin-amount-field sm:col-span-2">
-          <span className="fin-amount-label">{isTransfer ? "Số tiền chuyển" : type === "income" ? "Số tiền thu" : "Số tiền chi"}</span>
+          <span className={`fin-amount-label ${typeTone}`}>{isTransfer ? "Số tiền chuyển" : type === "income" ? "Số tiền thu" : "Số tiền chi"}</span>
           <MoneyCalculatorInput name={type === "income" ? "to_amount" : "from_amount"} value={type === "income" ? toAmount : fromAmount} onValueChange={type === "income" ? setToAmount : setFromAmount} decimalDigits={primaryAccount?.decimal_digits ?? 0} currencyCode={primaryAccount?.currency_code} required placeholder="0" className="fin-amount-input" />
           <p className="mt-1.5 text-[11px] text-[var(--muted-foreground)]">Chạm vào số tiền để mở máy tính</p>
         </div>
