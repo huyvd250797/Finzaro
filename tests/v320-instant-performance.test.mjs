@@ -13,8 +13,8 @@ const actions = read("features/transactions/actions.ts");
 const sql = read("supabase/migrations/20261111180000_instant_copy_batch_v320.sql");
 
 test("V3.2.0 full source version and six-module contract", () => {
-  assert.equal(JSON.parse(read("package.json")).version, "3.2.0");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "3\.2\.0"/);
+  assert.equal(JSON.parse(read("package.json")).version, "3.2.1");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "3\.2\.1"/);
   assert.deepEqual(readdirSync(join(root, "app/(dashboard)"), { withFileTypes: true })
     .filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort(),
     ["accounts", "categories", "overview", "reports", "settings", "transactions"]);
@@ -22,7 +22,9 @@ test("V3.2.0 full source version and six-module contract", () => {
 
 test("Instant Reports: both flow datasets are computed once from one ledger", () => {
   assert.equal((reportPage.match(/loadReportLedger\(/g) ?? []).length, 1);
-  assert.match(reportPage, /\(\["income", "expense"\] as const\)\.map/);
+  assert.match(reportPage, /const flows: Record<ReportFlowType, ReportFlowSnapshot>/);
+  assert.match(reportPage, /income: buildFlowSnapshot\("income"\)/);
+  assert.match(reportPage, /expense: buildFlowSnapshot\("expense"\)/);
   assert.match(reportPage, /reportCategoryBreakdown\(transactions, currency, flowType\)/);
   assert.match(reportPage, /flowAmount\(item, currency, flowType\)/);
   assert.match(reportPage, /<InstantReportBreakdown/);
@@ -62,7 +64,7 @@ test("Batch SQL: authenticated source, protected legacy data, valid counts and e
   assert.match(sql, /is distinct from \(case when v_source\.transaction_type/);
   assert.match(sql, /simple_transaction_ids_v120/);
   assert.match(sql, /public\.create_simple_transaction_v120\(/);
-  assert.match(sql, /for v_date in select distinct/);
+  assert.match(sql, /for v_date in\s+select distinct/);
   assert.match(sql, /security definer set search_path = ''/);
   assert.match(sql, /revoke execute on function public\.copy_simple_transaction_batch_v320.*from public, anon/);
   assert.match(sql, /grant execute on function public\.copy_simple_transaction_batch_v320.*to authenticated/);

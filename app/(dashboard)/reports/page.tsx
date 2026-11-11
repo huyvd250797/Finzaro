@@ -63,7 +63,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
   const transactions = periodTransactions(ledger.transactions, bounds.from, bounds.to);
   const totals = periodFlowTotals(transactions, currency);
   // Both tabs are built in one server request: changing Thu/Chi never fetches new RSC data.
-  const flows = Object.fromEntries((["income", "expense"] as const).map((flowType) => {
+  const buildFlowSnapshot = (flowType: ReportFlowType): ReportFlowSnapshot => {
     const categories = reportCategoryBreakdown(transactions, currency, flowType);
     const slices = categories.map((item) => ({
       ...item,
@@ -76,15 +76,25 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
       iconName: item.category?.icon_name ?? null, iconColor: item.category?.icon_color ?? null,
       amount: flowAmount(item, currency, flowType)
     }));
-    return [flowType, { amount: flowType === "income" ? totals.income : totals.expense, slices, transactions: previews }];
-  })) as Record<ReportFlowType, ReportFlowSnapshot>;
+    return { amount: flowType === "income" ? totals.income : totals.expense, slices, transactions: previews };
+  };
+  // Explicit keys prove to TypeScript that both report types are always present.
+  const flows: Record<ReportFlowType, ReportFlowSnapshot> = {
+    income: buildFlowSnapshot("income"),
+    expense: buildFlowSnapshot("expense")
+  };
   const kpiValue = (amount: number) => compactCalendarAmount(Math.abs(amount), digits) || "0";
-  const periodLinks = Object.fromEntries((["income", "expense"] as const).map((flowType) => [flowType, {
+  type PeriodLinks = { month: string; year: string; previous: string; next: string };
+  const buildPeriodLinks = (flowType: ReportFlowType): PeriodLinks => ({
     month: reportUrl({ mode: "month", period, type: flowType }),
     year: reportUrl({ mode: "year", year, type: flowType }),
     previous: mode === "month" ? reportUrl({ mode, period: shiftMonthKey(period, -1), type: flowType }) : reportUrl({ mode, year: year - 1, type: flowType }),
     next: mode === "month" ? reportUrl({ mode, period: shiftMonthKey(period, 1), type: flowType }) : reportUrl({ mode, year: year + 1, type: flowType })
-  }])) as Record<ReportFlowType, { month: string; year: string; previous: string; next: string }>;
+  });
+  const periodLinks: Record<ReportFlowType, PeriodLinks> = {
+    income: buildPeriodLinks("income"),
+    expense: buildPeriodLinks("expense")
+  };
   const periodLabel = mode === "month" ? `Tháng ${Number(period.slice(5, 7))}/${period.slice(0, 4)}` : `Năm ${year}`;
 
   return (

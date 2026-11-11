@@ -1,3 +1,5 @@
+> **Bản deploy hotfix hiện tại: V3.2.1.** Xem `DEPLOY_V3.2.1.md` để khắc phục lỗi TypeScript trên Vercel.
+
 # Finzaro V3.2.0 — Instant Reports & Fast Copy
 
 **Bản phát hành hiện tại**, nâng cấp từ source V3.0.0 do người dùng cung cấp, kết hợp hai giai đoạn V3.1.0 + V3.2.0. Giữ nguyên 6 module: Tổng quan, Giao dịch, Tài khoản & Ví, Danh mục, Báo cáo & Lịch, Cài đặt.

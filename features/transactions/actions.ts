@@ -173,6 +173,20 @@ export async function updateTransactionAction(formData: FormData) {
 }
 
 
+type CopyTransactionReceipt = { date: string; transaction_id: string; reused: boolean };
+
+/** Type guard for Supabase RPC results, including responses wrapped by telemetry. */
+function isCopyTransactionReceipt(value: unknown): value is CopyTransactionReceipt {
+  if (value === null || typeof value !== "object") return false;
+  if (!("date" in value) || !("transaction_id" in value) || !("reused" in value)) return false;
+  return typeof value.date === "string" && validDate(value.date)
+    && typeof value.transaction_id === "string"
+    && typeof value.reused === "boolean";
+}
+function isCopyTransactionReceipts(value: unknown): value is CopyTransactionReceipt[] {
+  return Array.isArray(value) && value.every(isCopyTransactionReceipt);
+}
+
 export type CopyTransactionState = { error: string; copiedDates: string[] };
 
 /** Atomic V3.2.0 batch copy: database receipts enforce idempotency across sessions/retries. */
@@ -206,12 +220,16 @@ export async function copyTransactionDatesAction(previous: CopyTransactionState,
       }
       throw new Error(dbError(error));
     }
-    const receipts = result.data as Array<{ date: string; transaction_id: string; reused: boolean }> | null;
-    if (!Array.isArray(receipts) || receipts.some((row) => !row || !validDate(row.date) || !remaining.includes(row.date) || typeof row.transaction_id !== "string" || typeof row.reused !== "boolean")) {
+    // The measured RPC result is unknown until its response shape is checked.
+    if (result === null || typeof result !== "object" || !("data" in result)) {
+      throw new Error("Phản hồi sao chép từ database không hợp lệ. Kiểm tra lại trước khi thử tiếp.");
+    }
+    const receipts: unknown = result.data;
+    if (!isCopyTransactionReceipts(receipts) || receipts.some((row) => !remaining.includes(row.date))) {
       throw new Error("Phản hồi sao chép từ database không hợp lệ. Kiểm tra lại trước khi thử tiếp.");
     }
     // A partial response is never silently treated as a success.
-    if (receipts.length !== remaining.length) throw new Error("Database chưa xác nhận đầy đủ ngày đã chọn.");
+    if (receipts.length !== remaining.length || new Set(receipts.map((row) => row.date)).size !== remaining.length) throw new Error("Database chưa xác nhận đầy đủ ngày đã chọn.");
     const successful = [...new Set([...copiedDates, ...receipts.map((row) => row.date)])].sort();
     if (receipts.some((row) => !row.reused)) invalidateSimpleLedger();
     return { error: "", copiedDates: successful };

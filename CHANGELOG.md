@@ -1,3 +1,10 @@
+## V3.2.1 — TypeScript Deploy Hotfix (2026-11-11)
+
+- Sửa lỗi TS2352 ở Report snapshot và period links bằng đối tượng `income`/`expense` được kiểm tra kiểu tường minh.
+- Sửa lỗi TS18046 ở Batch Copy bằng runtime guard cho phản hồi RPC `unknown`, đồng thời từ chối kết quả receipt trả về bị trùng ngày.
+- Không thay đổi SQL migration, Supabase schema, nghiệp vụ và UI; giữ nguyên 6 module của V3.2.0.
+- Chi tiết: `DEPLOY_V3.2.1.md`.
+
 ## [3.2.0] — 2026-11-11 · Instant Reports, Fast Copy & Splash
 
 ### V3.1.0 — Instant Reports & Navigation
