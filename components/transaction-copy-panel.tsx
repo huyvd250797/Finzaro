@@ -10,8 +10,7 @@ function monthKey(y: number, m: number) { return `${y}-${String(m).padStart(2, "
 function displayDay(date: string) { const [y, m, d] = date.split("-"); return `${d}/${m}/${y}`; }
 
 export function TransactionCopyPanel({ sourceId, sourceTitle, sourceDate, type }: { sourceId: string; sourceTitle: string; sourceDate: string; type: string }) {
-  const now = new Date();
-  const [month, setMonth] = useState(monthKey(now.getFullYear(), now.getMonth() + 1));
+  const [month, setMonth] = useState(sourceDate.slice(0, 7));
   const [dates, setDates] = useState<string[]>([]);
   const [manual, setManual] = useState("");
   const [state, action, pending] = useActionState(copyTransactionDatesAction, EMPTY);
@@ -54,9 +53,31 @@ export function TransactionCopyPanel({ sourceId, sourceTitle, sourceDate, type }
       <p className="font-black">Tháng {Number(month.slice(5))}/{month.slice(0, 4)}</p>
       <button type="button" onClick={() => shift(1)} aria-label="Tháng sau" className="grid size-9 place-items-center rounded-lg"><ChevronRight className="size-4" /></button>
     </div>
+    <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-semibold" aria-label="Chú giải màu ngày sao chép">
+      <span className="inline-flex items-center gap-1.5"><span className="size-3 rounded bg-violet-500" /> Ngày gốc</span>
+      <span className="inline-flex items-center gap-1.5"><span className="size-3 rounded bg-sky-600" /> Ngày đích đã chọn</span>
+      <span className="inline-flex items-center gap-1.5"><span className="size-3 rounded bg-emerald-500" /> Đã sao chép</span>
+    </div>
     <div className="mt-2 grid grid-cols-7 gap-1 text-center text-[11px] font-bold text-[var(--muted-foreground)]">{["T2", "T3", "T4", "T5", "T6", "T7", "CN"].map((day) => <div key={day} className="py-1">{day}</div>)}</div>
-    <div className="grid grid-cols-7 gap-1">{cells.map((date, index) => date ? <button key={date} type="button" disabled={pending || copied.has(date)} onClick={() => toggle(date)} aria-label={`Chọn ngày ${displayDay(date)}`} aria-pressed={dates.includes(date)} className={`relative grid min-h-10 place-items-center rounded-xl text-sm font-bold transition ${copied.has(date) ? "bg-emerald-500/15 text-emerald-600" : dates.includes(date) ? "bg-sky-600 text-white" : "bg-[var(--muted)]/55 active:bg-sky-500/20"}`}>{Number(date.slice(8))}{copied.has(date) && <Check className="absolute right-0 top-0 size-3" />}</button> : <span key={`empty-${index}`} />)}</div>
+    <div className="grid grid-cols-7 gap-1">{cells.map((date, index) => {
+      if (!date) return <span key={`empty-${index}`} />;
+      const isSource = date === sourceDate;
+      const isCopied = copied.has(date);
+      const isSelected = dates.includes(date);
+      return <button
+        key={date}
+        type="button"
+        disabled={pending || isCopied}
+        onClick={() => toggle(date)}
+        aria-label={isSource ? `Ngày gốc ${displayDay(date)}${isSelected ? ", đã chọn làm ngày đích" : ", có thể chọn làm ngày đích"}` : `Chọn ngày đích ${displayDay(date)}${isCopied ? ", đã sao chép" : ""}`}
+        aria-pressed={isSelected}
+        aria-current={isSource ? "date" : undefined}
+        title={isSource ? `Ngày giao dịch gốc: ${displayDay(date)}` : undefined}
+        className={`relative grid min-h-10 place-items-center rounded-xl border text-sm font-bold transition ${isSource && isSelected ? "border-violet-600 bg-sky-600 text-white ring-2 ring-violet-500" : isSource ? "border-violet-600 bg-violet-500/20 text-violet-700 ring-1 ring-violet-500/40 dark:text-violet-300" : isCopied ? "border-emerald-500/50 bg-emerald-500/15 text-emerald-600" : isSelected ? "border-sky-600 bg-sky-600 text-white" : "border-transparent bg-[var(--muted)]/55 active:bg-sky-500/20"}`}
+      >{Number(date.slice(8))}{isSource && <span className="absolute bottom-0.5 text-[7px] leading-none font-black">Gốc</span>}{isCopied && <Check className="absolute right-0.5 top-0.5 size-3" />}</button>;
+    })}</div>
     <div className="mt-3 flex flex-wrap items-end gap-2"><label className="flex-1"><span className="field-label">Chọn thêm ngày bất kỳ</span><input type="date" value={manual} onChange={(event) => setManual(event.target.value)} className="fin-input" /></label><button type="button" onClick={addManual} disabled={!manual || pending} className="fin-secondary-btn"><CalendarPlus className="size-4" />Thêm ngày</button></div>
+    <p className="mt-1 text-[11px] text-[var(--muted-foreground)]">Viền tím biểu thị ngày gốc; có thể chuyển tháng bằng mũi tên để chọn ngày đích khác.</p>
     <div className="mt-3 flex flex-wrap gap-1.5" aria-live="polite">{dates.length === 0 ? <p className="text-xs text-[var(--muted-foreground)]">Chưa chọn ngày đích (tối đa 20 ngày).</p> : dates.map((date) => <button type="button" key={date} disabled={pending || copied.has(date)} onClick={() => toggle(date)} className={`inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-bold ${copied.has(date) ? "bg-emerald-500/15 text-emerald-600" : "bg-sky-500/10 text-sky-600"}`}>{displayDay(date)}{copied.has(date) ? <Check className="size-3" /> : <X className="size-3" />}</button>)}</div>
     {state.error && <p role="alert" className="fin-inline-error mt-3">{state.error}</p>}
     {copied.size > 0 && <p role="status" className="mt-3 text-sm font-semibold text-emerald-600">Đã sao chép thành công {copied.size} ngày. Những ngày này sẽ không được tạo lại khi thử lại.</p>}

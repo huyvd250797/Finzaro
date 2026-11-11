@@ -85,7 +85,8 @@ img, svg, canvas, video { max-width: 100%; }
 
 @media (display-mode: standalone) {
   html, body {
-    overscroll-behavior: none;
+    overscroll-behavior-x: none;
+    overscroll-behavior-y: auto;
   }
   .pwa-only-safe { padding-top: env(safe-area-inset-top); }
 }
@@ -329,3 +330,18 @@ button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
 @media (prefers-reduced-motion: reduce) {
   .fin-sheet-panel, .fin-sheet-backdrop, .fin-sheet-backdrop[data-closing="true"], .fin-sheet-backdrop[data-closing="true"] .fin-sheet-panel { animation-duration: .01ms !important; }
 }
+
+/* V2.0.3 — four-row picker and scroll-chain correction. */
+.fin-category-scroll {
+  max-height: 336px; /* 4 × 78px cells + 3 × 8px gaps */
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+  scroll-padding-block: 8px;
+}
+.fin-category-scroll:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+/* Allow two-finger/vertical movement to reach the page while calendar rows swipe horizontally. */
+#calendar-day-detail [class*="overflow-x-auto"] { touch-action: auto; }

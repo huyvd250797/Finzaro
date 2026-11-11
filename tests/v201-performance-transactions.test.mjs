@@ -9,14 +9,14 @@ const read = (name) => readFileSync(join(root, name), "utf8");
 const require = createRequire(import.meta.url);
 const ts = (() => { try { return require("typescript"); } catch { return require("/opt/nvm/versions/node/v22.16.0/lib/node_modules/typescript"); } })();
 
-test("V2.0.2 synchronizes all runtime versions and retains six modules", () => {
-  assert.equal(JSON.parse(read("package.json")).version, "2.0.2");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "2\.0\.2"/);
+test("V2.0.3 synchronizes all runtime versions and retains six modules", () => {
+  assert.equal(JSON.parse(read("package.json")).version, "2.0.3");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "2\.0\.3"/);
   assert.deepEqual(readdirSync(join(root,"app/(dashboard)"),{withFileTypes:true}).filter(x=>x.isDirectory()).map(x=>x.name).sort(),["accounts","categories","overview","reports","settings","transactions"]);
 });
 
-test("App first load skips artificial splash and streams summary independently from six-month chart", () => {
-  assert.doesNotMatch(read("app/layout.tsx"), /<AppSplash/);
+test("App first load restores splash and still streams overview sections independently", () => {
+  assert.match(read("app/layout.tsx"), /<AppSplash/);
   const overview = read("app/(dashboard)/overview/page.tsx");
   assert.match(overview, /<Suspense fallback=/);
   assert.match(overview, /function OverviewEssentials/);
@@ -59,7 +59,8 @@ test("Date cloning uses authenticated original, hard limit and protected histori
   assert.match(action,/create_simple_transaction_v120/);
   assert.doesNotMatch(action,/delete.*sourceId|\.delete\(\).*sourceId/);
   const picker = read("components/transaction-copy-panel.tsx");
-  assert.match(picker,/aria-pressed=\{dates\.includes\(date\)\}/);
+  assert.match(picker,/aria-pressed=\{isSelected\}/);
+  assert.match(picker,/const isSelected = dates\.includes\(date\)/);
   assert.match(picker,/useActionState\(copyTransactionDatesAction/);
   assert.match(picker,/max.*20|20 ngày/);
 });

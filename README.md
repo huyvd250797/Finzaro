@@ -1,4 +1,4 @@
-> **Current release: Finzaro V2.0.2 – Mobile Navigation TypeScript Deploy Fix.** See [`DEPLOY_V2.0.2.md`](DEPLOY_V2.0.2.md) for deployment checks. The V2.0.1 features remain intact.
+> **Current release: Finzaro V2.0.3 – Splash & Calendar Interaction Fixes.** See [`DEPLOY_V2.0.3.md`](DEPLOY_V2.0.3.md) for deployment and smoke-test instructions. All V2.0.2 features remain intact.
 
 # Finzaro V2.0.0 — Finzaro UX Release
 

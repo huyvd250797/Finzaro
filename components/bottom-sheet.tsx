@@ -71,7 +71,7 @@ export function BottomSheet({ open, onClose, children, label, panelClassName, ov
   if (!present && !open) return null;
   return <div className={cn("fin-sheet-backdrop fixed inset-0 flex items-end justify-center overflow-hidden", zIndex, mobileOnly && "lg:hidden", overlayClassName)} data-closing={closing || !open ? "true" : "false"}>
     <button type="button" tabIndex={-1} aria-label="Đóng bảng" onClick={onClose} className={cn("absolute inset-0 w-full bg-black/45 backdrop-blur-[2px]", backdropClassName)} />
-    <div ref={panelRef} role="dialog" aria-modal="true" aria-label={label} className={cn("fin-sheet-panel relative w-full max-h-[94dvh] overflow-x-hidden overflow-y-auto overscroll-contain rounded-t-[26px] bg-[var(--card)] shadow-2xl pb-[max(env(safe-area-inset-bottom),12px)]", panelClassName)}>
+    <div ref={panelRef} role="dialog" aria-modal="true" aria-label={label} className={cn("fin-sheet-panel relative w-full max-h-[94dvh] overflow-x-hidden overflow-y-auto overscroll-x-contain overscroll-y-contain touch-pan-y [-webkit-overflow-scrolling:touch] rounded-t-[26px] bg-[var(--card)] shadow-2xl pb-[max(env(safe-area-inset-bottom),12px)]", panelClassName)}>
       <button type="button" aria-label="Kéo xuống để đóng" title="Kéo xuống để đóng" className="fin-sheet-handle sticky top-0 z-20 flex h-6 w-full cursor-grab touch-none items-start justify-center bg-[var(--card)] pt-2 active:cursor-grabbing" onPointerDown={onDragStart} onPointerMove={onDragMove} onPointerUp={onDragEnd} onPointerCancel={onDragEnd}>
         <span className="h-1.5 w-12 rounded-full bg-[var(--border)]" />
       </button>

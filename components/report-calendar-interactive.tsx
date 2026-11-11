@@ -172,7 +172,7 @@ export function ReportCalendarInteractive({
             {selectedTransactions.map((transaction) => {
               const returnTo = calendarReturnTo(period, selectedDay);
               return (
-                <div key={transaction.id} className="overflow-x-auto overscroll-x-contain touch-pan-x snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                <div key={transaction.id} className="overflow-x-auto overscroll-x-contain overscroll-y-auto touch-auto snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                   <div className="grid w-[calc(100%+136px)] snap-start" style={{ gridTemplateColumns: "calc(100% - 136px) 68px 68px" }}>
                     <div className="flex min-w-0 items-center gap-3 p-3.5">
                       <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-[var(--muted)]" style={{ color: iconColorValue(transaction.iconColor) }}><CategoryIcon name={transaction.iconName} className="size-4" /></span>

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeftRight, Copy, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeftRight, ChevronDown, Copy, Pencil, Trash2 } from "lucide-react";
 import { CategoryIcon, iconColorValue } from "@/features/categories/icons";
 import { deleteTransactionAction } from "@/features/transactions/actions";
 import { currencyDigits, transactionEntry, type LedgerCurrency, type TransactionView } from "@/features/transactions/data";
@@ -52,8 +52,12 @@ export function TransactionList({ transactions, currencies, limit, showDelete = 
     if (bucket) bucket.push(tx);
     else groups.set(tx.transaction_date, [tx]);
   }
-  return <div className="space-y-4">{Array.from(groups.entries()).map(([date, rows]) => <section key={date} aria-label={`Giao dịch ngày ${date}`}>
-    <div className="sticky top-14 z-10 flex items-center justify-between gap-2 rounded-xl border border-[var(--border)] bg-[var(--muted)] px-3 py-2 sm:top-16"><h3 className="text-xs font-black capitalize">{dayHeading(date)}</h3><span className="text-[11px] text-[var(--muted-foreground)]">{rows.length} giao dịch</span></div>
+  return <div className="space-y-4">{Array.from(groups.entries()).map(([date, rows]) => <details key={date} open className="group/day" aria-label={`Giao dịch ngày ${date}`}>
+    <summary className="sticky top-14 z-10 flex cursor-pointer list-none items-center justify-between gap-2 rounded-xl border border-[var(--border)] bg-[var(--muted)] px-3 py-2.5 marker:hidden sm:top-16 [&::-webkit-details-marker]:hidden" title="Chạm để thu gọn hoặc mở giao dịch ngày này">
+      <h3 className="min-w-0 flex-1 text-xs font-black capitalize">{dayHeading(date)}</h3>
+      <span className="shrink-0 text-[11px] text-[var(--muted-foreground)]">{rows.length} giao dịch</span>
+      <ChevronDown className="size-4 shrink-0 text-[var(--muted-foreground)] transition-transform group-open/day:rotate-180" aria-hidden="true" />
+    </summary>
     <div className="divide-y divide-[var(--border)] px-1 sm:px-2">{rows.map((tx) => <TransactionRow key={tx.id} tx={tx} currencies={currencies} showDelete={showDelete} showEdit={showEdit} showCopy={showCopy} simpleTransfer={permitted.has(tx.id)} />)}</div>
-  </section>)}</div>;
+  </details>)}</div>;
 }

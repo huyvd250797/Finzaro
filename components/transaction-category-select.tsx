@@ -145,7 +145,7 @@ export function TransactionCategorySelect({
         <span>Chạm để chọn</span>
         <span className="inline-flex items-center gap-1"><GripVertical className="size-3" /> Giữ để sắp xếp</span>
       </div>
-      <div className="grid grid-cols-3 gap-2 sm:grid-cols-4" role="radiogroup" aria-label="Danh mục giao dịch" style={{ touchAction: dragId ? "none" : "pan-y" }}>
+      <div className="fin-category-scroll grid grid-cols-3 auto-rows-[78px] gap-2 sm:grid-cols-4" role="radiogroup" aria-label="Danh mục giao dịch, cuộn để xem thêm" tabIndex={orderedCategories.length > 12 ? 0 : undefined} style={{ touchAction: dragId ? "none" : "pan-y" }}>
         {orderedCategories.map((category) => {
           const active = category.id === currentValue;
           const dragging = category.id === dragId;
@@ -166,7 +166,7 @@ export function TransactionCategorySelect({
                 setValue(category.id);
               }}
               className={cn(
-                "relative flex min-h-[78px] min-w-0 flex-col items-center justify-center gap-1.5 overflow-hidden rounded-2xl border bg-[var(--card)] px-2 py-2.5 text-center transition",
+                "relative flex h-[78px] min-w-0 flex-col items-center justify-center gap-1.5 overflow-hidden rounded-2xl border bg-[var(--card)] px-2 py-2.5 text-center transition",
                 active ? "border-[var(--primary)] ring-2 ring-[var(--ring)]" : "border-[var(--border)] active:scale-[.98]",
                 dragging && "z-10 scale-[1.04] opacity-90 shadow-xl"
               )}

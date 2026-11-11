@@ -1,3 +1,12 @@
+## V2.0.3 — Splash & Calendar Interaction Fixes (2026-11-11)
+
+- **Splash restored:** mount existing Finzaro branded splash at the root, visible immediately on a fresh browser/PWA load; close after hydration with a bounded 650 ms reveal. Route-to-route navigation retains lightweight loading and avoids replaying splash on every tap.
+- **Copy-date clarity:** start on the original transaction's month; mark original date violet (purple border retained if also selected), prospective destinations sky, and completed copies green, with text legend and accessible date labels. Retain 20-day limit and idempotent RPC/state.
+- **Category input:** show at most four category rows (4 × 78px + three 8px gaps); scroll the category grid internally on desktop/touch. Maintain single selection and long-press reorder.
+- **Transaction history:** independent native day accordions, all expanded initially, with the existing day headers, counts and transaction actions preserved.
+- **Scroll UX:** calendar swipe-action rows accept vertical page scrolling as well as horizontal swipe; sheet/category scroll containers have explicit touch and overscroll behavior; installed PWA allows vertical chaining.
+- **Scope:** no database changes, no new services, no retired finance modules; source remains compatible with existing Supabase RPCs.
+
 ## V2.0.2 – Mobile Navigation TypeScript Deploy Fix
 
 - Fixed `TS2345` in `components/mobile-nav.tsx`: `item.style` inferred as `unknown` after an `in`-operator guard on a union of navigation item shapes.

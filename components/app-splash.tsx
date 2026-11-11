@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 export function AppSplash() {
   const [visible, setVisible] = useState(true);
   useEffect(() => {
-    const timer = window.setTimeout(() => setVisible(false), 700);
+    const timer = window.setTimeout(() => setVisible(false), 650);
     return () => window.clearTimeout(timer);
   }, []);
   if (!visible) return null;
