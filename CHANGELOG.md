@@ -1,3 +1,13 @@
+## [3.5.0] — 2026-11-12 · Premium Overview & Reports
+
+- **Tổng quan:** hero số dư/Thu/Chi/Ròng mới, phân cấp số liệu, card danh mục và hoạt động gần đây, bố cục responsive có đủ vùng an toàn mobile.
+- **Biểu đồ dòng tiền:** chọn tháng bằng cảm ứng/bàn phím, xem giá trị Thu/Chi ngay, SVG animation nhẹ và Reduced Motion.
+- **Báo cáo:** KPI dùng chung theo tone, dòng tiền và tỷ lệ giữ lại, thiết kế lại thanh chọn kỳ, giữ chuyển Thu/Chi nội bộ không phát sinh request RSC cùng kỳ.
+- **Biểu đồ danh mục:** donut có trung tâm hiển thị danh mục/tỷ lệ đang chọn, legend và chi tiết giao dịch hoạt động như cũ. Biểu đồ cột có thể chọn kỳ.
+- **Lịch:** hiển thị ngày hôm nay/ngày chọn/ngày có số liệu phân biệt rõ, ô hai dòng Thu/Chi, danh sách giao dịch với cuộn dọc và thao tác vuốt ngang Sửa/Xóa; bỏ prefetch ba form trên mỗi lần mở lịch.
+- **Loading:** skeleton riêng Tổng quan/Báo cáo/Lịch/Phân tích, tôn trọng reduced motion; Light/Dark palette báo cáo thống nhất.
+- **Giới hạn:** chỉ UI/UX, không thay đổi nghiệp vụ giao dịch, không đổi SQL migration, không thêm dependency. Cần kiểm tra build Next.js, typecheck, mobile thực tế trên staging trước deploy production.
+
 ## [3.4.0] — 2026-11-12 · Mobile-First Transaction UX
 
 - **Fix lỗi iPhone không cuộn đến Lưu:** BottomSheet dùng portal ra `document.body` để tránh lớp điều hướng mobile che form; tách vùng cuộn trong sheet, đưa footer Hủy/Lưu thành sticky và bổ sung safe-area.

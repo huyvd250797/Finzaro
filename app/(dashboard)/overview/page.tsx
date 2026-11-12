@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { ArrowRight, CalendarDays, Plus, WalletCards, BarChart3 } from "lucide-react";
+import { ArrowDownLeft, ArrowRight, ArrowUpRight, BarChart3, CalendarDays, ChevronRight, CircleDollarSign, Plus, Sparkles, WalletCards } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { ReportDataStatus } from "@/components/report-data-status";
 import { CashflowChart } from "@/components/cashflow-chart";
@@ -26,22 +26,38 @@ async function OverviewEssentials() {
   const digits = currencyDigits(ledger.currencies, currency);
   const totals = monthTotals(ledger.transactions, currency, month);
   const accounts = ledger.accounts.filter((account) => !account.is_archived && ["cash", "bank", "ewallet"].includes(account.account_type));
-  const balance = accounts.filter((account) => account.currency_code === currency).reduce((sum, account) => sum + account.current_balance_minor, 0);
+  const matchingAccounts = accounts.filter((account) => account.currency_code === currency);
+  const balance = matchingAccounts.reduce((sum, account) => sum + account.current_balance_minor, 0);
   const categories = expenseCategories(ledger.transactions, currency, month).slice(0, 5);
   const categoryTotal = categories.reduce((sum, row) => sum + row.value, 0);
   const metrics = [
-    { label: "Thu nhập", amount: totals.income, color: "text-emerald-500" },
-    { label: "Chi tiêu", amount: totals.expense, color: "text-rose-500" },
-    { label: "Ròng", amount: totals.net, color: totals.net < 0 ? "text-rose-500" : "text-sky-500" }
+    { label: "Thu nhập", amount: totals.income, tone: "income", icon: ArrowDownLeft, prefix: "+" },
+    { label: "Chi tiêu", amount: totals.expense, tone: "expense", icon: ArrowUpRight, prefix: "−" },
+    { label: "Dòng tiền ròng", amount: totals.net, tone: "net", icon: CircleDollarSign, prefix: "" }
   ];
   return <>
     <span hidden data-fin-startup-ready />
     <ReportDataStatus diagnostics={ledger.diagnostics} />
-    <Card className="fin-hero-card"><CardContent className="p-4 sm:p-6">
-      <div className="flex items-center justify-between gap-3"><div className="min-w-0"><p className="text-[11px] font-semibold text-[var(--muted-foreground)]">Tổng số dư · {currency}</p><p className="mt-1 break-words text-[clamp(1.5rem,5.5vw,2.2rem)] font-extrabold leading-tight tabular-nums">{formatMinorMoney(balance, currency, digits)}</p><p className="mt-1 text-[10px] text-[var(--muted-foreground)]">{accounts.length} tài khoản khả dụng</p></div><Link href="/accounts" className="grid size-10 shrink-0 place-items-center rounded-xl bg-[var(--sidebar-accent)] text-[var(--primary)]" aria-label="Xem các tài khoản"><WalletCards className="size-5" /></Link></div>
-      <div className="fin-hero-metrics mt-4 grid grid-cols-3 gap-2 border-t border-[var(--border)] pt-4 sm:gap-3">{metrics.map((item) => <div key={item.label} className="min-w-0 rounded-lg bg-[var(--muted)]/35 px-2 py-2 sm:px-3" title={`${item.label}: ${formatMinorMoney(item.amount, currency, digits)}`}><p className="text-[10px] font-semibold text-[var(--muted-foreground)]">{item.label}</p><p className={`mt-1 whitespace-nowrap text-[clamp(11px,3vw,17px)] font-extrabold tabular-nums ${item.color}`}><span className="sm:hidden">{item.amount < 0 ? "−" : ""}{compactCalendarAmount(Math.abs(item.amount), digits) || "0"}</span><span className="hidden sm:inline">{formatMinorMoney(item.amount, currency, digits)}</span></p></div>)}</div>
+    <Card className="fin-hero-card fin-dashboard-hero overflow-hidden"><CardContent className="relative p-4 sm:p-6 lg:p-7">
+      <div className="fin-hero-glow pointer-events-none absolute -right-20 -top-24 size-64 rounded-full" aria-hidden="true" />
+      <div className="relative flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0 flex-1"><p className="flex items-center gap-1.5 text-xs font-semibold text-[var(--fin-hero-muted)]"><WalletCards className="size-4" />Số dư khả dụng · {currency}</p><p className="fin-hero-balance mt-2 break-words text-[clamp(1.65rem,6vw,2.75rem)] font-extrabold leading-tight tracking-[-.045em] tabular-nums">{formatMinorMoney(balance, currency, digits)}</p><p className="mt-2 text-xs text-[var(--fin-hero-muted)]">Tổng hợp {matchingAccounts.length} tài khoản {currency} đang hoạt động</p></div>
+        <Link href="/accounts" className="fin-hero-accounts inline-flex min-h-10 items-center gap-1.5 rounded-xl px-3 text-xs font-bold" aria-label="Xem tài khoản và số dư">Tài khoản <ChevronRight className="size-4"/></Link>
+      </div>
+      <div className="fin-hero-metrics relative mt-5 grid grid-cols-3 gap-2 border-t pt-4 sm:mt-6 sm:gap-3">
+        {metrics.map((item) => { const Icon = item.icon; return <div key={item.label} className="fin-hero-metric min-w-0 rounded-xl px-2.5 py-3 sm:px-4" data-tone={item.tone} title={`${item.label}: ${formatMinorMoney(item.amount, currency, digits)}`}>
+          <div className="flex items-center gap-1.5"><Icon className="size-3.5 shrink-0" aria-hidden="true"/><span className="truncate text-[10px] font-semibold sm:text-xs">{item.label}</span></div>
+          <p className="mt-2 whitespace-nowrap text-[clamp(.75rem,2.9vw,1.25rem)] font-extrabold tracking-[-.025em] tabular-nums"><span className="sm:hidden">{item.amount < 0 ? "−" : item.prefix}{compactCalendarAmount(Math.abs(item.amount), digits) || "0"}</span><span className="hidden sm:inline">{formatMinorMoney(item.amount, currency, digits)}</span></p>
+        </div>; })}
+      </div>
     </CardContent></Card>
-    <Card className="fin-overview-spend"><CardContent className="p-4 sm:p-5"><div className="mb-3 flex items-center justify-between"><h2 className="text-sm font-bold">Chi tiêu tháng này</h2><Link href="/reports" className="text-[11px] font-semibold text-[var(--primary)]">Báo cáo</Link></div>{categories.length ? <div className="space-y-3">{categories.map((item) => <div key={item.label} className="flex min-w-0 items-center gap-2.5"><span className="grid size-8 shrink-0 place-items-center rounded-lg bg-[var(--muted)]" style={{ color: iconColorValue(item.icon_color) }}><CategoryIcon name={item.icon_name} className="size-4" /></span><div className="min-w-0 flex-1"><div className="flex items-baseline justify-between gap-2"><span className="truncate text-xs font-semibold">{item.label}</span><span className="shrink-0 text-[11px] font-bold tabular-nums">{formatMinorMoney(item.value, currency, digits)}</span></div><div className="mt-1 h-1.5 overflow-hidden rounded-full bg-[var(--muted)]"><div className="h-full rounded-full" style={{ width: `${categoryTotal ? item.value / categoryTotal * 100 : 0}%`, backgroundColor: iconColorValue(item.icon_color) }} /></div></div></div>)}</div> : <p className="py-4 text-sm text-[var(--muted-foreground)]">Chưa có khoản chi tháng này.</p>}</CardContent></Card>
+    <Card className="fin-overview-spend fin-dashboard-card"><CardContent className="p-4 sm:p-5">
+      <div className="mb-4 flex items-center justify-between gap-2"><div><p className="fin-section-eyebrow">PHÂN BỔ NGÂN SÁCH</p><h2 className="mt-1 text-base font-extrabold">Chi tiêu tháng này</h2></div><Link href="/reports?type=expense" className="fin-text-action">Xem báo cáo <ArrowRight className="size-3.5"/></Link></div>
+      {categories.length ? <div className="space-y-4">{categories.map((item) => <div key={item.label} className="flex min-w-0 items-center gap-3">
+        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-[var(--muted)]" style={{ color: iconColorValue(item.icon_color) }}><CategoryIcon name={item.icon_name} className="size-5" /></span>
+        <div className="min-w-0 flex-1"><div className="flex items-center justify-between gap-2"><span className="truncate text-xs font-bold">{item.label}</span><span className="shrink-0 text-xs font-extrabold tabular-nums">{formatMinorMoney(item.value, currency, digits)}</span></div><div className="mt-2 h-2 overflow-hidden rounded-full bg-[var(--muted)]"><div className="fin-bar-progress h-full rounded-full" style={{ width: `${categoryTotal ? item.value / categoryTotal * 100 : 0}%`, backgroundColor: iconColorValue(item.icon_color) }} /></div></div>
+      </div>)}</div> : <div className="fin-empty-card"><Sparkles className="mb-2 size-5 text-[var(--primary)]"/><p className="text-sm font-semibold">Chưa có khoản chi tháng này</p><p className="mt-1 text-xs text-[var(--muted-foreground)]">Các danh mục sẽ xuất hiện khi có giao dịch.</p></div>}
+    </CardContent></Card>
   </>;
 }
 
@@ -54,7 +70,10 @@ async function OverviewTrends() {
   const digits = currencyDigits(ledger.currencies, currency);
   const grouped = monthlyCashflowTotals(ledger.transactions, currency, months.map((month) => month.key));
   const series = months.map((month) => ({ month: month.label, ...(grouped.get(month.key) ?? { income: 0, expense: 0, net: 0 }) }));
-  return <Card className="fin-overview-chart"><CardContent className="p-4 sm:p-5"><div className="mb-2 flex items-center justify-between"><h2 className="text-sm font-bold">Dòng tiền 6 tháng</h2><Link href="/reports/analysis" className="text-[11px] font-semibold text-[var(--primary)]">Phân tích</Link></div><CashflowChart data={series} decimalDigits={digits} /></CardContent></Card>;
+  return <Card className="fin-overview-chart fin-dashboard-card"><CardContent className="p-4 sm:p-5">
+    <div className="mb-4 flex items-start justify-between gap-2"><div><p className="fin-section-eyebrow">XU HƯỚNG TÀI CHÍNH</p><h2 className="mt-1 text-base font-extrabold">Dòng tiền 6 tháng</h2></div><Link href="/reports/analysis" className="fin-text-action">Phân tích <ArrowRight className="size-3.5"/></Link></div>
+    <CashflowChart data={series} decimalDigits={digits} currency={currency}/>
+  </CardContent></Card>;
 }
 
 async function OverviewRecent() {
@@ -62,15 +81,20 @@ async function OverviewRecent() {
   const { loadLedger } = await import("@/features/transactions/data");
   const ledger = await measureServerOperation("overview.recent", () => loadLedger(supabase, userId, { limit: 8 }));
   const recent = ledger.transactions.filter((tx) => tx.transaction_purpose === "standard" || (tx.transaction_type === "transfer" && tx.entries.some((entry) => entry.entry_role === "transfer_out") && tx.entries.some((entry) => entry.entry_role === "transfer_in"))).slice(0, 5);
-  return <Card className="fin-overview-recent"><CardContent className="p-0"><div className="flex items-center justify-between gap-2 border-b border-[var(--border)] px-4 py-3"><h2 className="text-sm font-bold">Giao dịch gần đây</h2><div className="flex gap-3"><Link href="/reports/calendar" className="inline-flex items-center gap-1 text-[11px] font-semibold text-[var(--primary)]"><CalendarDays className="size-3.5" /> Lịch</Link><Link href="/transactions" className="inline-flex items-center gap-1 text-[11px] font-semibold text-[var(--primary)]">Tất cả<ArrowRight className="size-3.5" /></Link></div></div><div className="p-2 sm:p-3"><TransactionList transactions={recent} currencies={ledger.currencies} /></div></CardContent></Card>;
+  return <Card className="fin-overview-recent fin-dashboard-card"><CardContent className="p-0">
+    <div className="flex items-center justify-between gap-2 border-b border-[var(--border)] px-4 py-4 sm:px-5"><div><p className="fin-section-eyebrow">HOẠT ĐỘNG GẦN ĐÂY</p><h2 className="mt-1 text-base font-extrabold">Giao dịch mới nhất</h2></div><Link href="/transactions" className="fin-text-action">Tất cả <ArrowRight className="size-3.5"/></Link></div>
+    {recent.length ? <div className="px-2 py-2 sm:p-3"><TransactionList transactions={recent} currencies={ledger.currencies} /></div> : <div className="fin-empty-card mx-4 my-4"><p className="text-sm font-semibold">Chưa có giao dịch</p><p className="mt-1 text-xs text-[var(--muted-foreground)]">Bắt đầu ghi nhận Thu/Chi để theo dõi tài chính.</p></div>}
+  </CardContent></Card>;
 }
 
-function OverviewLoading({ height = "h-36" }: { height?: string }) { return <div aria-label="Đang tải số liệu" className={`${height} animate-pulse rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4`}><div className="h-3 w-28 rounded bg-[var(--muted)]" /><div className="mt-5 h-6 w-40 rounded bg-[var(--muted)]" /><div className="mt-5 h-3 w-4/5 rounded bg-[var(--muted)]" /></div>; }
+function OverviewLoading({ height = "h-36" }: { height?: string }) { return <div aria-label="Đang tải số liệu" className={`fin-skeleton-card ${height} rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4`}><div className="fin-skeleton h-3 w-28 rounded" /><div className="fin-skeleton mt-5 h-6 w-40 rounded" /><div className="fin-skeleton mt-5 h-3 w-4/5 rounded" /></div>; }
+
 export default function OverviewPage() {
-  return <div className="fin-page-shell mx-auto max-w-[1160px] space-y-3 px-3 py-4 sm:px-5 lg:px-8 lg:py-6">
-    <div className="flex items-center justify-between gap-2"><div><p className="text-[11px] font-semibold text-[var(--muted-foreground)]">Tài chính cá nhân</p><h1 className="text-xl font-extrabold tracking-tight sm:text-2xl">Tổng quan</h1></div><div className="flex items-center gap-2"><Link href="/reports/analysis" className="fin-secondary-btn !min-h-9 !px-2 !text-xs sm:!px-3"><BarChart3 className="size-4" /><span className="hidden sm:inline">Báo cáo tài chính</span></Link><Link className="fin-primary-btn !min-h-9 !px-3 !text-xs" href="/transactions?new=expense"><Plus className="size-4" /> Ghi khoản chi</Link></div></div>
-    <Suspense fallback={<><OverviewLoading /><OverviewLoading height="h-32" /></>}><OverviewEssentials /></Suspense>
-    <Suspense fallback={<OverviewLoading height="h-44" />}><OverviewTrends /></Suspense>
-    <Suspense fallback={<OverviewLoading height="h-24" />}><OverviewRecent /></Suspense>
+  return <div className="fin-page-shell fin-dashboard-page mx-auto max-w-[1160px] space-y-4 px-3 py-4 sm:px-5 lg:px-8 lg:py-6">
+    <header className="flex flex-wrap items-center justify-between gap-3"><div><p className="fin-section-eyebrow">FINZARO / PERSONAL FINANCE</p><h1 className="mt-1 text-2xl font-extrabold tracking-tight sm:text-3xl">Tổng quan tài chính</h1><p className="mt-1 text-xs text-[var(--muted-foreground)]">Theo dõi số dư, thu chi và hoạt động gần nhất.</p></div><div className="flex items-center gap-2"><Link href="/reports/analysis" className="fin-secondary-btn !min-h-10 !px-3 !text-xs"><BarChart3 className="size-4"/><span className="hidden sm:inline">Phân tích</span></Link><Link className="fin-primary-btn !min-h-10 !px-3 !text-xs" href="/transactions?new=expense"><Plus className="size-4"/> Thêm giao dịch</Link></div></header>
+    <Suspense fallback={<><OverviewLoading height="h-48" /><OverviewLoading height="h-52" /></>}><OverviewEssentials /></Suspense>
+    <Suspense fallback={<OverviewLoading height="h-64" />}><OverviewTrends /></Suspense>
+    <Suspense fallback={<OverviewLoading height="h-48" />}><OverviewRecent /></Suspense>
+    <nav className="flex items-center justify-center gap-4 pb-2 text-xs font-semibold text-[var(--muted-foreground)]" aria-label="Lối tắt tài chính"><Link href="/reports/calendar" className="inline-flex min-h-10 items-center gap-1.5 hover:text-[var(--primary)]"><CalendarDays className="size-4"/> Xem lịch tài chính</Link><Link href="/accounts" className="inline-flex min-h-10 items-center gap-1.5 hover:text-[var(--primary)]"><WalletCards className="size-4"/> Tài khoản và ví</Link></nav>
   </div>;
 }

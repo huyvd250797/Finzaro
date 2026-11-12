@@ -104,7 +104,7 @@ export function ReportDonut({ slices, total, currency, decimalDigits = 0, center
     <div className="report-breakdown grid min-w-0 gap-3 md:grid-cols-[210px_minmax(0,1fr)] md:items-start lg:grid-cols-[240px_minmax(0,1fr)]">
       <div className="flex flex-col items-center gap-2">
         <div
-          className="relative aspect-square w-[min(56vw,214px)] cursor-pointer rounded-full border border-[var(--border)] shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] md:w-[210px] lg:w-[230px]"
+          className="fin-donut-wheel relative aspect-square w-[min(58vw,230px)] cursor-pointer rounded-full border border-[var(--border)] shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] md:w-[210px] lg:w-[230px]"
           style={{ background }}
           role="group"
           tabIndex={values.length ? 0 : -1}
@@ -112,13 +112,12 @@ export function ReportDonut({ slices, total, currency, decimalDigits = 0, center
           onClick={selectFromPoint}
           onKeyDown={onPieKey}
         >
-          {values.map((slice, index) => slice.percent >= 23 ? (
-            <div key={`${slice.id ?? slice.label}-${index}`} className="pointer-events-none absolute max-w-[44%] -translate-x-1/2 -translate-y-1/2 text-center text-[10px] font-extrabold leading-tight text-white [text-shadow:0_1px_5px_rgba(0,0,0,.9)]" style={arcPosition(values, index)}>
-              <span className="block truncate">{slice.label}</span><span>{Math.round(slice.percent)}%</span>
-            </div>
-          ) : null)}
+          <div className="fin-donut-center pointer-events-none absolute inset-[23%] flex flex-col items-center justify-center rounded-full bg-[var(--card)] px-1 text-center shadow-[0_2px_12px_rgba(0,0,0,.08)]" aria-hidden="true">
+            <span className="max-w-full truncate text-[10px] font-semibold text-[var(--muted-foreground)]">{selected?.label ?? centerLabel}</span>
+            <span className="mt-1 max-w-full break-words text-[clamp(.72rem,2.8vw,1.15rem)] font-extrabold leading-tight tracking-tight tabular-nums">{selected ? `${selected.percent.toFixed(1).replace(".", ",")}%` : "0%"}</span>
+          </div>
         </div>
-        <p className="text-[11px] font-medium text-[var(--muted-foreground)]">Chạm một màu để xem chi tiết</p>
+        <p className="text-[11px] font-medium text-[var(--muted-foreground)]">Chạm vòng tròn hoặc chọn danh mục</p>
       </div>
       <div className="min-w-0">
         {selected && (
@@ -137,7 +136,7 @@ export function ReportDonut({ slices, total, currency, decimalDigits = 0, center
               type="button"
               onClick={() => setSelectedIndex(index)}
               aria-pressed={currentIndex === index}
-              className={`min-w-0 rounded-xl border px-2 py-2 text-left transition-colors ${currentIndex === index ? "border-[var(--primary)] bg-[var(--sidebar-accent)]" : "border-[var(--border)] bg-[var(--card)] hover:bg-[var(--muted)]"}`}
+              className={`fin-donut-legend min-w-0 rounded-xl border px-2 py-2 text-left transition-colors ${currentIndex === index ? "border-[var(--primary)] bg-[var(--sidebar-accent)]" : "border-[var(--border)] bg-[var(--card)] hover:bg-[var(--muted)]"}`}
             >
               <span className="flex items-center gap-1.5"><span className="size-2.5 shrink-0 rounded-sm" style={{ backgroundColor: slice.color }} /><span className="min-w-0 truncate text-[11px] font-bold">{slice.label}</span></span>
               <span className="mt-1 block text-[11px] font-black tabular-nums">{slice.percent.toFixed(1).replace(".", ",")}%</span>

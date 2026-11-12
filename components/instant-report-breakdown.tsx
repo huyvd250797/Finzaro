@@ -75,21 +75,21 @@ export function InstantReportBreakdown({
   }
 
   return <>
-    <Card className="mt-3">
-      <CardContent className="p-3 sm:p-4">
+    <Card className="fin-report-breakdown-card mt-3">
+      <CardContent className="p-4 sm:p-5">
         <div className="flex flex-wrap items-start justify-between gap-2">
           <div><h2 className="font-black">{type === "expense" ? "Chi tiêu" : "Thu nhập"} theo danh mục</h2><p className="mt-0.5 text-[11px] text-[var(--muted-foreground)]">{periodLabel} · {currency}</p></div>
           <div className="text-right">
             <p className="text-sm font-black">{money(total)}</p>
-            <div className="mt-1.5 grid grid-cols-2 rounded-lg bg-[var(--muted)]/70 p-0.5" role="group" aria-label="Loại báo cáo">
-              {(["expense", "income"] as const).map((next) => <button key={next} type="button" onClick={() => changeType(next)} aria-pressed={type === next} className={cn("min-h-8 rounded-md px-3 text-[11px] font-black transition-colors", type === next ? `bg-[var(--card)] shadow-sm ${next === "expense" ? "text-rose-500" : "text-emerald-500"}` : "text-[var(--muted-foreground)]")}>{next === "expense" ? "Chi" : "Thu"}</button>)}
+            <div className="fin-flow-switch mt-1.5 grid grid-cols-2 rounded-xl bg-[var(--muted)]/70 p-1" role="group" aria-label="Loại báo cáo">
+              {(["expense", "income"] as const).map((next) => <button key={next} type="button" onClick={() => changeType(next)} aria-pressed={type === next} className={cn("min-h-10 rounded-lg px-3 text-xs font-bold transition-colors", type === next ? `bg-[var(--card)] shadow-sm ${next === "expense" ? "text-rose-500" : "text-emerald-500"}` : "text-[var(--muted-foreground)]")}>{next === "expense" ? "Chi" : "Thu"}</button>)}
             </div>
           </div>
         </div>
         {selected.slices.length === 0 ? <div className="mt-3 rounded-xl border border-dashed border-[var(--border)] p-6 text-center text-sm text-[var(--muted-foreground)]">Chưa có giao dịch trong kỳ.</div> : <div className="mt-3"><ReportVisualBoundary><ReportDonut key={`${periodKey}-${type}`} slices={selected.slices} total={total} currency={currency} decimalDigits={digits} centerLabel={type === "expense" ? "Tổng chi" : "Tổng thu"}/></ReportVisualBoundary></div>}
       </CardContent>
     </Card>
-    <Card className="mt-3"><CardContent className="p-0">
+    <Card className="fin-report-transactions-card mt-3"><CardContent className="p-0">
       <div className="flex items-center justify-between gap-3 border-b border-[var(--border)] p-3.5 sm:p-4"><div><h2 className="font-black">Chi tiết giao dịch</h2><p className="mt-0.5 text-[11px] text-[var(--muted-foreground)]">{type === "expense" ? "Chi tiêu" : "Thu nhập"} gần nhất trong kỳ</p></div><Link href={`/transactions?${new URLSearchParams({ type, from, to })}`} className="text-xs font-black text-[var(--primary)]">Xem tất cả</Link></div>
       {selected.transactions.length === 0 ? <p className="p-6 text-sm text-[var(--muted-foreground)]">Chưa có giao dịch phù hợp.</p> : <div className="divide-y divide-[var(--border)]">{selected.transactions.map((transaction) => <Link key={transaction.id} href={`/transactions?q=${encodeURIComponent(transaction.title)}`} className="flex min-w-0 items-center gap-3 p-3.5 active:bg-[var(--muted)]">
         <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-[var(--muted)]" style={{ color: iconColorValue(transaction.iconColor) }}><CategoryIcon name={transaction.iconName} className="size-4" /></span>

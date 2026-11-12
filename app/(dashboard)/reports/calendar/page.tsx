@@ -159,11 +159,11 @@ export default async function ReportCalendarPage({ searchParams }: { searchParam
       <AuthMessage error={params.error} message={params.message} />
       <ReportDataStatus diagnostics={"diagnostics" in ledger ? ledger.diagnostics : undefined} />
 
-      <Card className="mx-auto mt-3 max-w-3xl">
+      <Card className="fin-calendar-month-controls mx-auto mt-3 max-w-3xl">
         <CardContent className="flex items-center gap-2 p-2">
-          <Link prefetch href={`/reports/calendar?period=${previousPeriod}`} aria-label="Tháng trước" className="grid size-8 shrink-0 place-items-center rounded-lg hover:bg-[var(--muted)]"><ChevronLeft className="size-4" /></Link>
+          <Link prefetch={false} href={`/reports/calendar?period=${previousPeriod}`} aria-label="Tháng trước" className="fin-calendar-month-arrow grid size-11 shrink-0 place-items-center rounded-xl hover:bg-[var(--muted)]"><ChevronLeft className="size-4" /></Link>
           <div className="min-w-0 flex-1 text-center"><p className="text-sm font-black sm:text-base">Tháng {bounds.month}/{bounds.year}</p></div>
-          <Link prefetch href={`/reports/calendar?period=${shiftMonthKey(period, 1)}`} aria-label="Tháng sau" className="grid size-8 shrink-0 place-items-center rounded-lg hover:bg-[var(--muted)]"><ChevronRight className="size-4" /></Link>
+          <Link prefetch={false} href={`/reports/calendar?period=${shiftMonthKey(period, 1)}`} aria-label="Tháng sau" className="fin-calendar-month-arrow grid size-11 shrink-0 place-items-center rounded-xl hover:bg-[var(--muted)]"><ChevronRight className="size-4" /></Link>
         </CardContent>
       </Card>
 
@@ -173,6 +173,7 @@ export default async function ReportCalendarPage({ searchParams }: { searchParam
         cells={cells}
         transactions={calendarTransactions}
         digits={digits}
+        todayDate={`${currentMonth}-${String(now.day).padStart(2, "0")}`}
         summary={{
           income: formatMinorMoney(totals.income, currency, digits),
           expense: formatMinorMoney(totals.expense, currency, digits),

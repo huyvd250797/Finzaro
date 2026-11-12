@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { ArrowDownLeft, ArrowLeftRight, ArrowUpRight, ChevronRight, CircleDollarSign, Copy, Pencil, Trash2, TrendingDown, TrendingUp, X } from "lucide-react";
 import { deleteTransactionAction } from "@/features/transactions/actions";
 import { CategoryIcon, iconColorValue } from "@/features/categories/icons";
@@ -59,7 +58,8 @@ export function ReportCalendarInteractive({
   cells,
   transactions,
   digits,
-  summary
+  summary,
+  todayDate
 }: {
   period: string;
   initialSelectedDay: string;
@@ -67,17 +67,11 @@ export function ReportCalendarInteractive({
   transactions: CalendarTransaction[];
   digits: number;
   summary: { income: string; expense: string; net: string; netNegative: boolean };
+  todayDate?: string;
 }) {
-  const router = useRouter();
   const [selectedDay, setSelectedDay] = useState(initialSelectedDay);
   const [quickDay, setQuickDay] = useState<string | null>(null);
   const lastTap = useRef<{ date: string; at: number }>({ date: "", at: 0 });
-
-  useEffect(() => {
-    router.prefetch("/transactions?new=expense");
-    router.prefetch("/transactions?new=income");
-    router.prefetch("/transactions?new=transfer");
-  }, [router]);
 
   useEffect(() => {
     if (window.location.hash === "#calendar-day-detail") {
@@ -111,28 +105,34 @@ export function ReportCalendarInteractive({
   return (
     <>
       <InstantCopyOverlay />
-      <div className="-mx-2.5 mt-3 overflow-hidden border-y border-[var(--border)] bg-[var(--card)] sm:mx-0 sm:rounded-2xl sm:border">
+      <div className="fin-calendar-card -mx-2.5 mt-3 overflow-hidden border-y border-[var(--border)] bg-[var(--card)] sm:mx-0 sm:rounded-2xl sm:border">
         <div className="grid grid-cols-7 border-b border-[var(--border)] bg-[var(--muted)]/35">
           {WEEKDAYS.map((day) => <div key={day} className="py-2 text-center text-[10px] font-black text-[var(--muted-foreground)] sm:text-xs">{day}</div>)}
         </div>
-        <div className="grid grid-cols-7 gap-px bg-[var(--border)]" aria-label="Lịch thu chi theo ngày">
+        <div className="fin-calendar-grid grid grid-cols-7 gap-px bg-[var(--border)]" aria-label="Lịch thu chi theo ngày">
           {cells.map((cell) => {
             if (!cell.current || !cell.date) {
               return <div key={cell.key} className="min-h-[76px] min-w-0 bg-[var(--background)] px-0.5 py-1.5 opacity-30 sm:min-h-[90px]"><p className="text-center text-[10px] font-bold text-[var(--muted-foreground)] sm:text-xs">{cell.day}</p></div>;
             }
             const selected = cell.date === selectedDay;
+            const isToday = cell.date === todayDate;
+            const hasFlow = (cell.income ?? 0) > 0 || (cell.expense ?? 0) > 0;
             return (
               <button
                 key={cell.key}
                 type="button"
                 onClick={() => selectDay(cell.date!)}
                 className={cn(
-                  "min-h-[76px] min-w-0 touch-manipulation bg-[var(--card)] px-0.5 py-1.5 text-center transition-colors active:bg-[var(--muted)]/70 sm:min-h-[90px] sm:px-1.5",
-                  selected && "bg-sky-500/12 ring-2 ring-inset ring-sky-500"
+                  "fin-calendar-day min-h-[76px] min-w-0 touch-manipulation bg-[var(--card)] px-0.5 py-1.5 text-center transition-colors active:bg-[var(--muted)]/70 sm:min-h-[90px] sm:px-1.5",
+                  hasFlow && "has-flow",
+                  isToday && "is-today",
+                  selected && "is-selected"
                 )}
                 aria-label={`Ngày ${cell.day}. Thu ${cell.income ?? 0}, chi ${cell.expense ?? 0} (đơn vị tiền nhỏ nhất). Chạm để xem, chạm hai lần để thêm.`}
+                aria-pressed={selected}
+                aria-current={isToday ? "date" : undefined}
               >
-                <p className={cn("text-center text-[11px] font-black sm:text-xs", selected ? "text-sky-500" : "text-[var(--foreground)]")}>{cell.day}</p>
+                <p className="fin-calendar-day-number mx-auto grid size-6 place-items-center rounded-full text-center text-[11px] font-black sm:size-7 sm:text-xs">{cell.day}</p>
                 <div className="mt-1.5 flex min-w-0 flex-col items-center gap-0.5 tabular-nums sm:mt-2">
                   {(cell.income ?? 0) > 0 && <span className="max-w-full whitespace-nowrap text-[9.5px] font-bold leading-3 tracking-[-.045em] text-emerald-500 sm:text-[11px]">+{compactCalendarAmount(cell.income!, digits)}</span>}
                   {(cell.expense ?? 0) > 0 && <span className="max-w-full whitespace-nowrap text-[9.5px] font-bold leading-3 tracking-[-.045em] text-rose-500 sm:text-[11px]">-{compactCalendarAmount(cell.expense!, digits)}</span>}
@@ -148,13 +148,13 @@ export function ReportCalendarInteractive({
         </div>
       </div>
 
-      <div className="mt-3 grid grid-cols-3 gap-1.5 sm:gap-2">
+      <div className="fin-calendar-summary mt-3 grid grid-cols-3 gap-1.5 sm:gap-2">
         <div className="min-w-0 rounded-2xl border border-emerald-500/20 bg-emerald-500/[.035] p-2 sm:p-3"><div className="flex items-center gap-1"><TrendingUp className="size-3 shrink-0 text-emerald-500 sm:size-4" /><p className="truncate text-[8.5px] font-black text-[var(--muted-foreground)] sm:text-xs">Thu nhập</p></div><p className="mt-1.5 truncate text-[9.5px] font-black tracking-[-.035em] tabular-nums text-emerald-500 sm:text-base">{summary.income}</p></div>
         <div className="min-w-0 rounded-2xl border border-rose-500/20 bg-rose-500/[.035] p-2 sm:p-3"><div className="flex items-center gap-1"><TrendingDown className="size-3 shrink-0 text-rose-500 sm:size-4" /><p className="truncate text-[8.5px] font-black text-[var(--muted-foreground)] sm:text-xs">Chi tiêu</p></div><p className="mt-1.5 truncate text-[9.5px] font-black tracking-[-.035em] tabular-nums text-rose-500 sm:text-base">{summary.expense}</p></div>
         <div className="min-w-0 rounded-2xl border border-sky-500/20 bg-sky-500/[.035] p-2 sm:p-3"><div className="flex items-center gap-1"><CircleDollarSign className="size-3 shrink-0 text-sky-500 sm:size-4" /><p className="truncate text-[8.5px] font-black text-[var(--muted-foreground)] sm:text-xs">Ròng</p></div><p className={cn("mt-1.5 truncate text-[9.5px] font-black tracking-[-.035em] tabular-nums sm:text-base", summary.netNegative ? "text-rose-500" : "text-sky-500")}>{summary.net}</p></div>
       </div>
 
-      <section id="calendar-day-detail" className="scroll-mt-24 mt-3 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)]">
+      <section id="calendar-day-detail" className="fin-calendar-day-detail scroll-mt-24 mt-3 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)]">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border)] p-3.5 sm:p-4">
           <div><h2 className="text-base font-black sm:text-lg">{selectedDay.split("-").reverse().join("/")}</h2>
             <p className="mt-0.5 text-[11px] text-[var(--muted-foreground)]">{selectedTransactions.length} giao dịch · vuốt trái để Sửa/Xóa</p>
@@ -170,11 +170,11 @@ export function ReportCalendarInteractive({
             Ngày này chưa có giao dịch. <button type="button" onClick={() => setQuickDay(selectedDay)} className="font-black text-[var(--primary)]">Thêm giao dịch</button>
           </div>
         ) : (
-          <div className="divide-y divide-[var(--border)]">
+          <div className="fin-calendar-day-list divide-y divide-[var(--border)]">
             {selectedTransactions.map((transaction) => {
               const returnTo = calendarReturnTo(period, selectedDay);
               return (
-                <div key={transaction.id} className="overflow-x-auto overscroll-x-contain overscroll-y-auto touch-auto snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                <div key={transaction.id} className="fin-calendar-swipe overflow-x-auto overscroll-x-contain overscroll-y-auto touch-auto snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                   <div className="grid w-[calc(100%+136px)] snap-start" style={{ gridTemplateColumns: "calc(100% - 136px) 68px 68px" }}>
                     <div className="flex min-w-0 items-center gap-3 p-3.5">
                       <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-[var(--muted)]" style={{ color: iconColorValue(transaction.iconColor) }}><CategoryIcon name={transaction.iconName} className="size-4" /></span>

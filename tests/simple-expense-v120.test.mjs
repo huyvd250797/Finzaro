@@ -107,7 +107,7 @@ test("calendar keeps two financial lines, hide zeros, quick actions", () => {
  assert.match(calendar,/income/);
  assert.match(calendar,/expense/);
  assert.match(calendar,/double|Double|touch|Touch/);
- assert.match(calendar,/new=expense/);
+ assert.match(calendar,/new: type/);
  assert.match(calendar,/return_to/);
 });
 test("category grid, colors and drag-to-reorder remain", () => {

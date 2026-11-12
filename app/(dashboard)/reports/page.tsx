@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { CircleDollarSign, TrendingDown, TrendingUp } from "lucide-react";
+import { ArrowRight, CircleDollarSign, TrendingDown, TrendingUp } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { FinanceMetricCard } from "@/components/finance-metric-card";
 import { ReportDataStatus } from "@/components/report-data-status";
 import { ReportNavigation } from "@/components/report-navigation";
 import { ReportPeriodControls } from "@/components/report-period-controls";
@@ -20,7 +21,6 @@ import {
   type ReportFlowType
 } from "@/features/reports/experience";
 import { loadReportLedger } from "@/features/reports/data";
-import { compactCalendarAmount } from "@/features/reports/compact-money";
 import { currencyDigits } from "@/features/transactions/data";
 import { requireUser } from "@/lib/auth";
 import { measureServerOperation } from "@/lib/performance";
@@ -83,7 +83,6 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
     income: buildFlowSnapshot("income"),
     expense: buildFlowSnapshot("expense")
   };
-  const kpiValue = (amount: number) => compactCalendarAmount(Math.abs(amount), digits) || "0";
   type PeriodLinks = { month: string; year: string; previous: string; next: string };
   const buildPeriodLinks = (flowType: ReportFlowType): PeriodLinks => ({
     month: reportUrl({ mode: "month", period, type: flowType }),
@@ -99,35 +98,26 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
 
   return (
     <div className="fin-page-shell mx-auto max-w-[1180px] px-3 py-4 sm:px-4 md:px-6 lg:px-8 lg:py-7">
-      <div className="mx-auto max-w-3xl text-center">
-        <h1 className="text-2xl font-black tracking-tight sm:text-3xl">Báo cáo</h1>
-        <p className="mt-1 hidden text-xs text-[var(--muted-foreground)] sm:block">Thống kê Thu · Chi thông thường; các nghiệp vụ tài chính cũ không tính vào báo cáo mới.</p>
-      </div>
-
-      <div className="mx-auto mt-3 max-w-3xl"><ReportNavigation active="overview" /></div>
+      <header className="fin-report-header flex flex-wrap items-center justify-between gap-3">
+        <div><p className="fin-section-eyebrow">FINZARO / FINANCIAL REPORT</p><h1 className="mt-1 text-2xl font-extrabold tracking-tight sm:text-3xl">Báo cáo tài chính</h1><p className="mt-1 text-xs text-[var(--muted-foreground)]">Tổng quan Thu / Chi và cơ cấu danh mục trong kỳ.</p></div>
+        <Link href="/reports/analysis" className="fin-secondary-btn !min-h-10 !px-3 !text-xs">Phân tích nâng cao <ArrowRight className="size-4"/></Link>
+      </header>
+      <div className="mt-3"><ReportNavigation active="overview" /></div>
       <ReportDataStatus diagnostics={ledger.diagnostics} />
 
-      <Card className="mx-auto mt-3 max-w-3xl">
-        <CardContent className="p-2">
-          <ReportPeriodControls mode={mode} initialType={type} periodLabel={periodLabel}
-            from={bounds.from} to={bounds.to} periodKey={`${mode}-${mode === "month" ? period : year}`} links={periodLinks} />
-        </CardContent>
-      </Card>
-
-      <div className="mt-3 grid grid-cols-3 gap-1.5 sm:gap-2">
-        {([
-          { label: "Thu nhập", value: totals.income, icon: TrendingUp, color: "text-emerald-500", border: "border-emerald-500/20" },
-          { label: "Chi tiêu", value: totals.expense, icon: TrendingDown, color: "text-rose-500", border: "border-rose-500/20" },
-          { label: "Ròng", value: totals.net, icon: CircleDollarSign, color: totals.net < 0 ? "text-rose-500" : "text-sky-500", border: "border-sky-500/20" }
-        ]).map((item) => { const Icon = item.icon; return <Card key={item.label} className={`fin-report-kpi min-w-0 ${item.border}`} title={`${item.label}: ${formatMinorMoney(item.value, currency, digits)}`}><CardContent className="p-2 sm:p-3">
-          <div className="flex items-center gap-1"><Icon className={`size-3 shrink-0 sm:size-4 ${item.color}`} /><span className="truncate text-[10px] font-bold text-[var(--muted-foreground)] sm:text-xs">{item.label}</span></div>
-          <div className={`mt-1 whitespace-nowrap text-[clamp(11px,3vw,18px)] font-extrabold tabular-nums ${item.color}`}><span className="sm:hidden">{item.value < 0 ? "−" : ""}{kpiValue(item.value)}</span><span className="hidden sm:inline">{formatMinorMoney(item.value, currency, digits)}</span></div>
-        </CardContent></Card>; })}
+      <Card className="fin-report-period-card mt-3"><CardContent className="p-2.5 sm:p-3.5">
+        <ReportPeriodControls mode={mode} initialType={type} periodLabel={periodLabel}
+          from={bounds.from} to={bounds.to} periodKey={`${mode}-${mode === "month" ? period : year}`} links={periodLinks} />
+      </CardContent></Card>
+      <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3">
+        <FinanceMetricCard className="fin-report-kpi" label="Tổng thu" tone="income" value={formatMinorMoney(totals.income, currency, digits)} icon={TrendingUp} detail={`Trong ${periodLabel.toLowerCase()}`} />
+        <FinanceMetricCard className="fin-report-kpi" label="Tổng chi" tone="expense" value={formatMinorMoney(totals.expense, currency, digits)} icon={TrendingDown} detail={`Trong ${periodLabel.toLowerCase()}`} />
+        <FinanceMetricCard className="fin-report-kpi col-span-2 sm:col-span-1" label="Dòng tiền ròng" tone="net" value={formatMinorMoney(totals.net, currency, digits)} icon={CircleDollarSign} detail="Thu nhập trừ chi tiêu" />
       </div>
-
-      <Card className="mt-3"><CardContent className="flex flex-wrap items-center justify-between gap-3 p-3.5 sm:p-4">
-        <div><p className="text-[11px] font-bold text-[var(--muted-foreground)]">Tỷ lệ giữ lại trong kỳ</p><p className="mt-1 text-xl font-black text-[var(--primary)]">{totals.income > 0 ? `${((totals.net / totals.income) * 100).toFixed(1).replace(".", ",")}%` : "Chưa xác định"}</p><p className="text-[11px] text-[var(--muted-foreground)]">{totals.income > 0 ? "Dòng tiền ròng / Tổng thu thông thường" : "Chưa có thu nhập để xác định tỷ lệ"}</p></div>
-        <div className="text-right"><p className="text-[11px] text-[var(--muted-foreground)]">{transactions.length} giao dịch trong kỳ</p><Link className="mt-2 inline-flex min-h-9 items-center rounded-xl bg-[var(--sidebar-accent)] px-3 text-xs font-black text-[var(--primary)]" href={`/reports/analysis?range=custom&from=${bounds.from}&to=${bounds.to}`}>Phân tích & so sánh kỳ →</Link></div>
+      <Card className="fin-retention-card mt-3"><CardContent className="flex flex-wrap items-center justify-between gap-3 p-4 sm:p-5">
+        <div><p className="fin-section-eyebrow">HIỆU QUẢ DÒNG TIỀN</p><h2 className="mt-1 text-sm font-extrabold">Tỷ lệ giữ lại trong kỳ</h2><p className="mt-1 text-xs text-[var(--muted-foreground)]">Dòng tiền ròng / Tổng thu thông thường</p></div>
+        <div className="min-w-0 text-left sm:text-right"><p className="text-2xl font-black tracking-tight text-[var(--primary)] tabular-nums">{totals.income > 0 ? `${((totals.net / totals.income) * 100).toFixed(1).replace(".", ",")}%` : "—"}</p><p className="mt-1 text-xs text-[var(--muted-foreground)]">{totals.income > 0 ? `${transactions.length} giao dịch trong kỳ` : "Chưa có thu nhập để xác định tỷ lệ"}</p></div>
+        <Link className="fin-text-action w-full justify-center border-t border-[var(--border)] pt-3 sm:w-auto sm:border-0 sm:pt-0" href={`/reports/analysis?range=custom&from=${bounds.from}&to=${bounds.to}`}>Phân tích & so sánh kỳ <ArrowRight className="size-4"/></Link>
       </CardContent></Card>
 
       <InstantReportBreakdown

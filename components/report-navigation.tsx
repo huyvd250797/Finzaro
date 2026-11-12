@@ -13,7 +13,7 @@ const items: Array<{ key: ReportSection; href: string; label: string; icon: Luci
 
 export function ReportNavigation({ active }: { active: ReportSection }) {
   return (
-    <div className="grid grid-cols-4 rounded-xl border border-[var(--border)] bg-[var(--card)] p-1">
+    <nav aria-label="Khu vực báo cáo" className="fin-report-navigation grid grid-cols-4 rounded-xl border border-[var(--border)] bg-[var(--card)] p-1">
       {items.map((item) => {
         const Icon = item.icon;
         const selected = item.key === active;
@@ -21,10 +21,10 @@ export function ReportNavigation({ active }: { active: ReportSection }) {
           <Link
             key={item.key}
             href={item.href}
-            prefetch
+            prefetch={false}
             aria-current={selected ? "page" : undefined}
             className={cn(
-              "flex min-h-9 min-w-0 items-center justify-center gap-1 rounded-lg px-1.5 text-[11px] font-black transition sm:min-h-10 sm:gap-1.5 sm:px-2 sm:text-sm",
+              "fin-report-nav-link flex min-h-11 min-w-0 items-center justify-center gap-1 rounded-lg px-1 text-[10px] font-bold transition-colors sm:gap-1.5 sm:px-2 sm:text-sm",
               selected ? "bg-[var(--muted)] text-[var(--foreground)] shadow-sm" : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
             )}
           >
@@ -33,6 +33,6 @@ export function ReportNavigation({ active }: { active: ReportSection }) {
           </Link>
         );
       })}
-    </div>
+    </nav>
   );
 }
