@@ -8,8 +8,8 @@ const source = (name) => readFileSync(join(root, name), "utf8");
 const css = source("app/globals.css");
 
 test("V4.0.1 hotfix preserves modules and does not alter accounting actions", () => {
-  assert.equal(JSON.parse(source("package.json")).version, "4.0.1");
-  assert.match(source("lib/app-version.ts"), /APP_VERSION = "4\.0\.1"/);
+  assert.equal(JSON.parse(source("package.json")).version, "4.0.2");
+  assert.match(source("lib/app-version.ts"), /APP_VERSION = "4\.0\.2"/);
   assert.deepEqual(readdirSync(join(root, "app/(dashboard)"), { withFileTypes: true }).filter((item) => item.isDirectory()).map((item) => item.name).sort(), ["accounts", "categories", "overview", "reports", "settings", "transactions"]);
   for (const action of ["create_simple_transaction_v120", "update_simple_transaction_v120", "copy_simple_transaction_batch_v320"]) {
     assert.ok(source("features/transactions/actions.ts").includes(action));
@@ -19,7 +19,8 @@ test("V4.0.1 hotfix preserves modules and does not alter accounting actions", ()
 test("mobile navigation is portaled to body, pinned to visual viewport and hidden beneath open dialogs", () => {
   const nav = source("components/mobile-nav.tsx");
   assert.match(nav, /createPortal\(taskbar, document\.body\)/);
-  assert.match(nav, /--fin-mobile-nav-bottom/);
+  assert.doesNotMatch(nav, /--fin-mobile-nav-bottom/);
+  assert.match(nav, /The taskbar is fixed at CSS bottom: 0/);
   assert.match(nav, /window\.visualViewport/);
   assert.match(css, /\.fin-mobile-taskbar\s*\{[^}]*position: fixed !important;/s);
   assert.match(css, /body:has\(\.fin-sheet-backdrop\[data-fin-dialog="true"\]\) \.fin-mobile-taskbar/);
@@ -68,6 +69,6 @@ test("only sheet content scrolls; keyboard focus can reach footer buttons", () =
   assert.match(css, /\.fin-sheet-scroll\s*\{[^}]*overflow-y:\s*auto/s);
   assert.match(css, /\.fin-sheet-action-slot:empty\s*\{\s*display:\s*none;/);
   assert.match(source("components/instant-reveal.tsx"), /closest<HTMLElement>\("\.fin-sheet-panel"\)/);
-  assert.match(source("components/transaction-form-visibility.ts"), /rootRect\.bottom - 18/);
+  assert.match(source("components/transaction-form-visibility.ts"), /rootRect\.bottom - 28/);
   assert.match(css, /max\(12px, env\(safe-area-inset-bottom\)\)/);
 });

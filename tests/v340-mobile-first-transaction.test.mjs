@@ -12,7 +12,7 @@ const tabs = read("components/instant-transaction-launcher.tsx");
 
 test("V3.4.0 release keeps six modules and transaction services intact",()=>{
   assert.ok(Number(pkg.version.split(".")[0]) > 3 || (Number(pkg.version.split(".")[0]) === 3 && Number(pkg.version.split(".")[1]) >= 4));
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "(?:3\.[4-9]\.0|4\.0\.[01])"/);
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "(?:3\.[4-9]\.0|4\.0\.[012])"/);
   assert.deepEqual(readdirSync(join(root,"app/(dashboard)"),{withFileTypes:true}).filter(x=>x.isDirectory()).map(x=>x.name).sort(),["accounts","categories","overview","reports","settings","transactions"]);
   for (const rpc of ["create_simple_transaction_v120","copy_simple_transaction_batch_v320"]) assert.ok(read("features/transactions/actions.ts").includes(rpc));
 });

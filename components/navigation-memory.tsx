@@ -54,42 +54,44 @@ export function NavigationMemory() {
 
   useEffect(() => {
     if (!pathname || window.location.hash) return;
+    const main = document.getElementById("fin-main-content");
+    const useMainScroller = Boolean(main && window.matchMedia("(max-width: 1023px)").matches);
+    const scrollRoot: HTMLElement | Window = useMainScroller && main ? main : window;
     const saved = scrollOffsets.get(key) ?? 0;
     let frame = 0;
     let throttle = 0;
     let restoring = saved > 0;
-    const store = () => {
-      if (!restoring) scrollOffsets.set(key, window.scrollY);
-    };
+    const position = () => scrollRoot === window ? window.scrollY : (scrollRoot as HTMLElement).scrollTop;
+    const store = () => { if (!restoring) scrollOffsets.set(key, position()); };
     const onScroll = () => {
       if (throttle) return;
       throttle = window.requestAnimationFrame(() => { throttle = 0; store(); });
     };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    // Restore after layout commits and again if streamed content changes height.
+    scrollRoot.addEventListener("scroll", onScroll, { passive: true });
     const restore = () => {
       if (!restoring) return;
-      window.scrollTo({ top: saved, behavior: "auto" });
+      scrollRoot.scrollTo({ top: saved, behavior: "auto" });
     };
+    // Reset the previous page's scroll when opening a new section, rather
+    // than letting a long scrolled report appear halfway down a new page.
+    if (!saved) scrollRoot.scrollTo({ top: 0, behavior: "auto" });
     frame = window.requestAnimationFrame(() => window.requestAnimationFrame(restore));
-    const main = document.getElementById("fin-main-content");
-    const observer = typeof ResizeObserver !== "undefined" && main && saved > 0
+    const content = main?.firstElementChild;
+    const observer = typeof ResizeObserver !== "undefined" && content && saved > 0
       ? new ResizeObserver(restore) : null;
-    if (observer && main) observer.observe(main);
-    // Never fight a user's wheel/touch input while the route is streaming.
+    if (observer && content) observer.observe(content);
     const stopRestoring = () => { restoring = false; observer?.disconnect(); };
-    window.addEventListener("wheel", stopRestoring, { passive: true });
-    window.addEventListener("touchstart", stopRestoring, { passive: true });
+    scrollRoot.addEventListener("wheel", stopRestoring, { passive: true });
+    scrollRoot.addEventListener("touchstart", stopRestoring, { passive: true });
     const finish = window.setTimeout(stopRestoring, saved > 0 ? 1100 : 0);
     return () => {
       window.clearTimeout(finish);
       observer?.disconnect();
-      window.removeEventListener("wheel", stopRestoring);
-      window.removeEventListener("touchstart", stopRestoring);
+      scrollRoot.removeEventListener("wheel", stopRestoring);
+      scrollRoot.removeEventListener("touchstart", stopRestoring);
       window.cancelAnimationFrame(frame);
       if (throttle) window.cancelAnimationFrame(throttle);
-      window.removeEventListener("scroll", onScroll);
-      // Do not overwrite stored scroll with an intermediate skeleton position.
+      scrollRoot.removeEventListener("scroll", onScroll);
       if (!restoring) store();
       if (scrollOffsets.size > 32) scrollOffsets.delete(scrollOffsets.keys().next().value!);
     };

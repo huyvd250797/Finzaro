@@ -191,7 +191,7 @@ input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; }
 .fin-mobile-taskbar {
   position: fixed !important;
   inset-inline: 0;
-  bottom: var(--fin-mobile-nav-bottom, 0px) !important;
+  bottom: 0 !important;
   transform: none;
   -webkit-transform: none;
   overflow: visible;
@@ -1046,7 +1046,7 @@ body {
   position: fixed !important;
   left: 0;
   right: 0;
-  bottom: var(--fin-mobile-nav-bottom, 0px) !important;
+  bottom: 0 !important;
   transform: none !important;
   -webkit-transform: none !important;
   margin: 0 !important;
@@ -1108,3 +1108,56 @@ body:has(.fin-sheet-backdrop[data-fin-dialog="true"]) .fin-mobile-taskbar,
 .fin-sheet-action-slot .fin-sheet-form-actions :is(button,a) { min-height: 44px; }
 .fin-sheet-action-slot .fin-calculator-finish { width: 100%; }
 .fin-sheet-action-slot .fin-calculator-finish > button { width: 100%; min-height: 48px; }
+
+
+/* V4.0.2 — iOS viewport chrome hard lock. The app scrolls within main,
+   never the document containing the portaled taskbar. This prevents elastic
+   overscroll, post-save refreshes, and window scroll restoration from moving
+   bottom navigation off the physical bottom edge. */
+@media (max-width: 1023px) {
+  html:has(.fin-app-shell), body:has(.fin-app-shell) {
+    height: 100%;
+    min-height: 0;
+    overflow: hidden !important;
+    overscroll-behavior: none !important;
+  }
+  .fin-app-shell {
+    height: 100dvh;
+    min-height: 0 !important;
+    max-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+  .fin-app-shell > .fin-app-header {
+    position: relative;
+    top: 0;
+    flex: 0 0 auto;
+  }
+  .fin-main-region {
+    min-height: 0;
+    flex: 1 1 auto;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-x: none;
+    overscroll-behavior-y: none;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+    scroll-padding-bottom: calc(7rem + env(safe-area-inset-bottom));
+  }
+  .fin-mobile-taskbar {
+    position: fixed !important;
+    inset-inline: 0 !important;
+    inset-block-end: 0 !important;
+    bottom: 0 !important;
+    top: auto !important;
+    transform: none !important;
+    -webkit-transform: none !important;
+    margin: 0 !important;
+    /* Keep a stable height even after deleting/saving data. */
+    contain: layout style;
+  }
+  .fin-sheet-scroll { overscroll-behavior-y: none !important; }
+  .fin-sheet-action-slot:not(:empty) { flex-shrink: 0 !important; }
+}

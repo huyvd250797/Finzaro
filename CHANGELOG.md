@@ -1,3 +1,12 @@
+## [4.0.2] — 2026-11-12 · Viewport-Locked Mobile Chrome & Keyboard Focus
+
+- **Root cause of bouncing taskbar:** remove VisualViewport-scroll-derived `--fin-mobile-nav-bottom`; taskbar is fixed at CSS bottom 0, independent of focus, route refresh and overscroll.
+- **Isolated mobile scrolling:** lock document scroll and bound dashboard to `100dvh`; `fin-main-region` becomes the only page scrollport, with disabled scroll chaining at boundaries. NavigationMemory stores/restores the main scroll offset on mobile.
+- **Stable modal Save/Cancel:** retain the non-scrolling footer action slot; suppress overscroll chaining within the BottomSheet scroller; do not move the overlay on VisualViewport scroll unless there is an actual focused keyboard.
+- **Keyboard visibility:** after focus and viewport changes, auto-reveal transaction title/notes fields inside the sheet, above its fixed action footer; preserve typing cursor and data.
+- **Safety:** no changes to 6 modules, business RPCs, SQL migrations, dependencies or stored financial data.
+- **QA:** 166/166 source tests; Chromium viewport fixture 390×844/320×568/390×420 for overscroll, DOM mutation and keyboard-like shrinking. Production build and Safari iPhone remain required staging checks. See `DEPLOY_V4.0.2.md`.
+
 ## [4.0.1] — 2026-11-12 · Fixed Mobile Chrome & Sheet Actions
 
 - **Fix gap and moving action buttons on mobile:** replaced sticky Hủy/Lưu inside the transaction form scroller with a dedicated action slot at the bottom of the BottomSheet; only contents scroll. Native external form submit and pending state preserved.

@@ -4,6 +4,7 @@ import type { MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent, 
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useOverlayScrollLock } from "@/components/use-overlay-scroll-lock";
+import { revealTransactionFormTarget } from "@/components/transaction-form-visibility";
 import { cn } from "@/lib/utils";
 
 type BottomSheetProps = {
@@ -45,27 +46,74 @@ export function BottomSheet({ open, onClose, children, label, panelClassName, ov
   // creates its own stacking context (transform, isolation, animation, etc.).
   useEffect(() => { setPortalReady(true); }, []);
 
-  // iOS Safari/PWA has a visual viewport smaller than the layout viewport
-  // when its software keyboard is visible. Size the overlay to the visible
-  // area so form fields and the Save action remain reachable.
+  // Keep the dialog in CSS's fixed 100dvh viewport during normal scrolling.
+  // VisualViewport.scroll may also fire on an elastic overscroll; moving the
+  // overlay on those events made the Save bar jump upwards. Only apply viewport
+  // positioning when a *real focused keyboard* has reduced the visible area.
+  // The scrollport, never the document or action footer, follows text focus.
   useEffect(() => {
     if (!open || !portalReady) return;
     const overlay = overlayRef.current;
     if (!overlay) return;
     const viewport = window.visualViewport;
+    let frame = 0;
+    let secondFrame = 0;
+    let afterKeyboard = 0;
+    let keyboardWasVisible = false;
+    const isEditable = (node: Element | null): node is HTMLElement => Boolean(node && (
+      node.matches('input:not([type="hidden"]):not([readonly]), textarea:not([readonly]), [contenteditable="true"]')
+    ));
     const syncViewport = () => {
-      overlay.style.top = `${Math.max(0, viewport?.offsetTop ?? 0)}px`;
-      overlay.style.height = `${Math.max(1, viewport?.height ?? window.innerHeight)}px`;
-      overlay.style.setProperty("--fin-visual-height", `${Math.max(1, viewport?.height ?? window.innerHeight)}px`);
+      const focused = document.activeElement;
+      const focusInside = focused instanceof HTMLElement && overlay.contains(focused) && isEditable(focused);
+      const viewportHeight = viewport?.height ?? window.innerHeight;
+      const keyboardShrink = window.innerHeight - viewportHeight > 160;
+      const keyboardVisible = keyboardShrink && (focusInside || keyboardWasVisible);
+      keyboardWasVisible = keyboardVisible;
+      if (keyboardVisible && viewport) {
+        const y = Math.max(0, Math.min(viewport.offsetTop, window.innerHeight - viewportHeight));
+        overlay.style.top = `${Math.round(y)}px`;
+        overlay.style.height = `${Math.round(viewportHeight)}px`;
+        overlay.style.setProperty("--fin-visual-height", `${Math.round(viewportHeight)}px`);
+      } else {
+        // Do NOT reposition on rubber-band scroll or after save/delete.
+        overlay.style.removeProperty("top");
+        overlay.style.removeProperty("height");
+        overlay.style.removeProperty("--fin-visual-height");
+      }
+      if (focusInside) {
+        window.cancelAnimationFrame(frame);
+        frame = window.requestAnimationFrame(() => {
+          secondFrame = window.requestAnimationFrame(() => {
+            if (focused.isConnected) revealTransactionFormTarget(focused);
+          });
+        });
+      }
+    };
+    const onFocus = (event: FocusEvent) => {
+      if (!(event.target instanceof HTMLElement) || !isEditable(event.target)) return;
+      syncViewport();
+      // Keyboard animation happens after focusin on Safari. Re-check at the
+      // end of the animation even on devices that omit a viewport resize.
+      window.clearTimeout(afterKeyboard);
+      afterKeyboard = window.setTimeout(syncViewport, 300);
     };
     syncViewport();
     viewport?.addEventListener("resize", syncViewport);
     viewport?.addEventListener("scroll", syncViewport);
+    overlay.addEventListener("focusin", onFocus);
     window.addEventListener("resize", syncViewport);
     return () => {
       viewport?.removeEventListener("resize", syncViewport);
       viewport?.removeEventListener("scroll", syncViewport);
+      overlay.removeEventListener("focusin", onFocus);
       window.removeEventListener("resize", syncViewport);
+      window.cancelAnimationFrame(frame);
+      window.cancelAnimationFrame(secondFrame);
+      window.clearTimeout(afterKeyboard);
+      overlay.style.removeProperty("top");
+      overlay.style.removeProperty("height");
+      overlay.style.removeProperty("--fin-visual-height");
     };
   }, [open, portalReady]);
 

@@ -26,28 +26,27 @@ export function MobileNav() {
   const [sheet, setSheet] = useState<"modules" | "transaction" | null>(null);
   const [portalReady, setPortalReady] = useState(false);
   useEffect(() => { setPortalReady(true); }, []);
+  // Never compute the taskbar's bottom offset from VisualViewport. On iOS,
+  // visualViewport.scroll/resize also fires during rubber-band scrolling and
+  // after a mutation, leaving the bar permanently above the screen bottom.
+  // The taskbar is fixed at CSS bottom: 0; we only hide it for a real keyboard.
   useEffect(() => {
     const viewport = window.visualViewport;
-    const update = () => {
-      const bottom = Math.max(0, window.innerHeight - (viewport?.offsetTop ?? 0) - (viewport?.height ?? window.innerHeight));
-      document.documentElement.style.setProperty("--fin-mobile-nav-bottom", `${Math.round(bottom)}px`);
+    const updateKeyboard = () => {
       const focused = document.activeElement;
-      const inputFocused = focused instanceof HTMLInputElement || focused instanceof HTMLTextAreaElement || focused instanceof HTMLSelectElement;
-      document.documentElement.classList.toggle("fin-mobile-keyboard-visible", inputFocused && window.innerHeight - (viewport?.height ?? window.innerHeight) > 180);
+      const editable = focused instanceof HTMLInputElement && !focused.readOnly && focused.type !== "hidden"
+        || focused instanceof HTMLTextAreaElement || focused instanceof HTMLSelectElement;
+      const keyboardOpen = Boolean(editable && viewport && window.innerHeight - viewport.height > 160);
+      document.documentElement.classList.toggle("fin-mobile-keyboard-visible", keyboardOpen);
     };
-    update();
-    viewport?.addEventListener("scroll", update);
-    viewport?.addEventListener("resize", update);
-    window.addEventListener("resize", update);
-    document.addEventListener("focusin", update);
-    document.addEventListener("focusout", update);
+    updateKeyboard();
+    viewport?.addEventListener("resize", updateKeyboard);
+    document.addEventListener("focusin", updateKeyboard);
+    document.addEventListener("focusout", updateKeyboard);
     return () => {
-      viewport?.removeEventListener("scroll", update);
-      viewport?.removeEventListener("resize", update);
-      window.removeEventListener("resize", update);
-      document.removeEventListener("focusin", update);
-      document.removeEventListener("focusout", update);
-      document.documentElement.style.removeProperty("--fin-mobile-nav-bottom");
+      viewport?.removeEventListener("resize", updateKeyboard);
+      document.removeEventListener("focusin", updateKeyboard);
+      document.removeEventListener("focusout", updateKeyboard);
       document.documentElement.classList.remove("fin-mobile-keyboard-visible");
     };
   }, []);
