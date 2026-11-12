@@ -14,7 +14,7 @@ const sql = read("supabase/migrations/20261111180000_instant_copy_batch_v320.sql
 
 test("V3.2.0 full source version and six-module contract", () => {
   const current = JSON.parse(read("package.json")).version;
-  assert.match(current, /^3\.\d+\.\d+$/);
+  assert.match(current, /^(?:3|4)\.\d+\.\d+$/);
   assert.match(read("lib/app-version.ts"), new RegExp(`APP_VERSION = "${current.replaceAll(".", "\\.")}"`));
   assert.deepEqual(readdirSync(join(root, "app/(dashboard)"), { withFileTypes: true })
     .filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort(),

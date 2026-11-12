@@ -74,7 +74,7 @@ test("XLSX creates a genuine workbook with Vietnamese and literal user-provided 
 
 test("V2.5 integrated analytical views and print/XLSX/CSV exports preserve six modules", () => {
   const current = JSON.parse(read("package.json")).version;
-  assert.match(current, /^3\.\d+\.\d+$/);
+  assert.match(current, /^(?:3|4)\.\d+\.\d+$/);
   assert.match(read("lib/app-version.ts"), new RegExp(`APP_VERSION = "${current.replaceAll(".", "\\.")}"`));
   const dirs = readdirSync(join(root,"app/(dashboard)"),{withFileTypes:true}).filter(item=>item.isDirectory()).map(x=>x.name).sort();
   assert.deepEqual(dirs,["accounts","categories","overview","reports","settings","transactions"]);

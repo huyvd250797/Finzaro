@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { ArrowDownLeft, ArrowLeftRight, ArrowUpRight, ChevronRight, CircleDollarSign, Copy, Pencil, Trash2, TrendingDown, TrendingUp, X } from "lucide-react";
 import { deleteTransactionAction } from "@/features/transactions/actions";
 import { CategoryIcon, iconColorValue } from "@/features/categories/icons";
@@ -105,6 +105,23 @@ export function ReportCalendarInteractive({
     window.history.replaceState(window.history.state, "", `${url.pathname}?${url.searchParams.toString()}`);
   }
 
+  function onCalendarDayKeyDown(event: ReactKeyboardEvent<HTMLButtonElement>, date: string) {
+    // Roving focus for keyboard and switch users; preserve native Tab semantics.
+    const offsets: Record<string, number> = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 };
+    const currentIndex = cells.findIndex((cell) => cell.date === date);
+    if (currentIndex < 0) return;
+    let nextIndex: number;
+    if (event.key === "Home") nextIndex = Math.floor(currentIndex / 7) * 7;
+    else if (event.key === "End") nextIndex = Math.floor(currentIndex / 7) * 7 + 6;
+    else if (event.key in offsets) nextIndex = currentIndex + offsets[event.key];
+    else return;
+    const target = cells[nextIndex];
+    if (!target?.current || !target.date) return;
+    event.preventDefault();
+    selectDay(target.date);
+    document.querySelector<HTMLButtonElement>(`[data-fin-calendar-date="${target.date}"]`)?.focus({ preventScroll: true });
+  }
+
   return (
     <>
       <InstantCopyOverlay />
@@ -125,6 +142,8 @@ export function ReportCalendarInteractive({
                 key={cell.key}
                 type="button"
                 onClick={() => selectDay(cell.date!)}
+                onKeyDown={(event) => onCalendarDayKeyDown(event, cell.date!)}
+                data-fin-calendar-date={cell.date}
                 className={cn(
                   "fin-calendar-day min-h-[76px] min-w-0 touch-manipulation bg-[var(--card)] px-0.5 py-1.5 text-center transition-colors active:bg-[var(--muted)]/70 sm:min-h-[90px] sm:px-1.5",
                   hasFlow && "has-flow",

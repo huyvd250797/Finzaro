@@ -1,3 +1,5 @@
+> **Phiên bản hiện tại: Finzaro V4.0.0 — Premium UX Release.** Giai đoạn hoàn thiện UI/UX, không bổ sung nghiệp vụ tài chính. Bổ sung kiểm tra số tiền trước khi lưu và tự đưa lỗi vào vùng nhìn thấy, skeleton theo module, tối ưu list trên iPhone hẹp, Scroll/Focus bottom sheet và đồng bộ theme hệ điều hành. Giữ 6 module và 91 migration SQL. Xem [`DEPLOY_V4.0.0.md`](DEPLOY_V4.0.0.md) và [`docs/V4.0.0_QA.md`](docs/V4.0.0_QA.md).
+
 > **Phiên bản hiện tại: Finzaro V3.6.0 — Fluid Motion & Navigation.** Nâng cấp điều hướng nhớ bộ lọc/kỳ và vị trí cuộn, loading ít nhấp nháy, chuyển cảnh và bottom sheet mượt, phản hồi phím số phóng lớn 14%, và xóa giao dịch phản hồi tức thời có khôi phục khi server lỗi. Giữ 6 module, không thay đổi SQL. Xem [`DEPLOY_V3.6.0.md`](DEPLOY_V3.6.0.md) và [`docs/V3.6.0_QA.md`](docs/V3.6.0_QA.md).
 
 > **Nâng cấp:** Áp dụng trên source V3.5.0. Giữ nguyên tính năng Tổng quan/Báo cáo/Lịch, bản vá nút Lưu trên iPhone và Batch Copy V3.2.x. Không cần SQL migration mới; không thêm dependency. Các chỉ số hiệu năng thực tế phải kiểm chứng sau deploy.

@@ -10,7 +10,7 @@ export default function ReportsError({ error, reset }: { error: Error & { digest
   }, [error]);
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-10 sm:py-16">
+    <div data-fin-app-ready className="mx-auto max-w-2xl px-4 py-10 sm:py-16">
       <div className="rounded-3xl border border-amber-500/25 bg-[var(--card)] p-6 shadow-sm sm:p-8">
         <div className="grid size-12 place-items-center rounded-2xl bg-amber-500/10 text-amber-500"><AlertTriangle className="size-6" /></div>
         <h1 className="mt-4 text-xl font-black">Báo cáo gặp lỗi hiển thị</h1>

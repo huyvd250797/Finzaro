@@ -31,7 +31,7 @@ export function BottomSheet({ open, onClose, children, label, panelClassName, ov
   const onCloseRef = useRef(onClose);
   useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
   if (open) contentRef.current = children;
-  useOverlayScrollLock(open && portalReady);
+  useOverlayScrollLock((open || present) && portalReady);
 
   // A portal puts sheets above the fixed mobile navigation even when a page
   // creates its own stacking context (transform, isolation, animation, etc.).

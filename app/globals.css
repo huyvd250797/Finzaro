@@ -1004,3 +1004,38 @@ body {
 .fin-transaction-row:active:not([data-fin-deleting="true"]) { background: color-mix(in srgb, var(--fin-surface-subtle) 65%, transparent); }
 .fin-transaction-row:focus-within { position: relative; z-index: 1; }
 @media (prefers-reduced-motion: reduce) { .fin-transaction-row:active { background: transparent; } }
+
+/* V4.0.0 Premium UX: polish without remounting financial data or blocking scroll. */
+.fin-page-shell { animation: fin-v400-content-in 135ms cubic-bezier(.2,.8,.2,1) both; }
+@keyframes fin-v400-content-in {
+  from { opacity: 1; transform: translate3d(0, 4px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+.fin-module-skeleton { min-height: 40vh; }
+.fin-form-error-anchor { scroll-margin-block: 4rem; border: 1px solid color-mix(in srgb, var(--fin-expense) 35%, transparent); border-radius: 12px; padding: .75rem; background: color-mix(in srgb, var(--fin-expense) 8%, var(--fin-surface)); outline-offset: 3px; }
+.fin-transaction-entry-form :is(input,select,textarea):user-invalid { border-color: var(--fin-expense); outline-color: var(--fin-expense); }
+.fin-transaction-action { transition: background-color 140ms ease, transform 120ms ease, border-color 140ms ease; touch-action: manipulation; }
+.fin-transaction-action:active { transform: scale(.94); }
+.fin-transaction-action:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.fin-empty-card a:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.fin-sheet-panel { max-height: min(94dvh, calc(var(--fin-visual-height, 100dvh) - 8px)); }
+.fin-sheet-scroll { min-height: 0; -webkit-overflow-scrolling: touch; }
+@media (min-width: 640px) { .fin-sheet-scroll { scrollbar-gutter: stable; } }
+.fin-transaction-sheet .fin-transaction-savebar { scroll-margin-bottom: max(14px, env(safe-area-inset-bottom)); }
+@media (max-width: 390px) {
+  /* Dense finance rows must never overflow a 320px phone. Put actions on row 2. */
+  .fin-transaction-row { display: grid; grid-template-columns: 36px minmax(0,1fr) minmax(0,auto); align-items: start; gap: 6px 8px; }
+  .fin-transaction-row > :nth-child(3) { max-width: 39vw; min-width: 0; overflow-wrap: anywhere; }
+  .fin-transaction-row > :nth-child(3) .whitespace-nowrap { white-space: normal; overflow-wrap: anywhere; }
+  .fin-transaction-row > :nth-child(4) { grid-column: 2 / -1; justify-self: end; }
+  .fin-transaction-action { min-width: 40px; min-height: 40px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fin-page-shell { animation: none !important; }
+  .fin-transaction-action { transition: none !important; transform: none !important; }
+}
+@media (prefers-contrast: more) {
+  .fin-transaction-action, .fin-form-error-anchor { border-width: 2px; }
+}
+/* Strong keyboard location without affecting touch gestures. */
+.fin-calendar-day:focus-visible { outline: 3px solid var(--primary); outline-offset: -3px; }

@@ -1,3 +1,14 @@
+## [4.0.0] — 2026-11-12 · Premium UX Release
+
+- **Transaction UX hardening:** kiểm tra nhanh số tiền trống/0 trước khi gửi RPC; server tiếp tục xác thực chính thức. Khi form lỗi, focus và cuộn tới thông báo trong vùng sheet thay vì cuộn trang nền; hỗ trợ native invalid input. Không thay đổi cách hạch toán.
+- **Mobile-First:** nâng nút Copy/Sửa/Xóa lên 40px, cải thiện bố cục 320–390px tránh tràn ngang, giữ sticky Save/Cancel, safe area và cuộn độc lập.
+- **Bottom Sheet:** giữ khóa cuộn nền cho cả thời gian đóng animation; VisualViewport, portal, focus trap, Escape và reduced motion tiếp tục hoạt động.
+- **Intelligent Loading:** skeleton riêng Tài khoản, Danh mục, Giao dịch, Cài đặt và Sổ báo cáo. Splash không coi skeleton là hoàn thành tải dữ liệu.
+- **Light/Dark Mode:** theo thay đổi chế độ hệ điều hành trước khi người dùng tự lựa chọn, cập nhật trạng thái khi thay đổi giữa các tab; không tạo thêm dependency.
+- **Motion:** hiệu ứng vào trang tinh chỉnh không mờ số liệu, vẫn giữ keypad scale 1.14; tập trung tương tác và khả năng truy cập.
+- **Error/Empty & Calendar:** mở nhanh giao dịch mới từ danh sách trống, xử lý đường lui khi không có dữ liệu; hỗ trợ phím mũi tên, Home/End để chọn ngày trong Lịch. Giữ những cải tiến ở Dashboard, Reports, Calendar, Smart Navigation của V3.5/V3.6.
+- **Stability:** 6 module, toàn bộ SQL nguyên trạng (91 tệp), không migration mới, không thêm dependency. Cần chạy build và E2E trên staging trước production.
+
 ## [3.6.0] — 2026-11-12 · Fluid Motion & Navigation
 
 - **Smart Navigation:** nhớ các bộ lọc hợp lệ của Giao dịch/Báo cáo, kỳ và ngày Lịch; đường dẫn thanh tab mobile/desktop và khu vực Báo cáo sử dụng lại trạng thái đã chọn trong cùng phiên đăng nhập. Nhớ vị trí cuộn theo URL (bộ nhớ tạm thời, không lưu dữ liệu tài chính vào storage); hủy khôi phục nếu người dùng tự cuộn.

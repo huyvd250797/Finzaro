@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useMemo, useState } from "react";
+import { useActionState, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { ArrowLeftRight, CalendarDays, ChevronDown, Sparkles, X } from "lucide-react";
 import { createTransactionStateAction } from "@/features/transactions/actions";
 import type { TransactionType } from "@/features/transactions/constants";
@@ -13,6 +13,8 @@ import { TransactionCategorySelect } from "@/components/transaction-category-sel
 import { Card, CardContent } from "@/components/ui/card";
 import { MobileDateInput } from "@/components/mobile-date-input";
 import { MoneyCalculatorInput } from "@/components/money-calculator-input";
+import { revealTransactionFormTarget } from "@/components/transaction-form-visibility";
+import { validateTransactionAmounts } from "@/features/transactions/client-validation";
 
 export type SimpleAccountOption = { id: string; name: string; currency_code: string; institution_name: string | null; account_type: string; decimal_digits?: number };
 export type SimpleCategoryOption = { id: string; name: string; icon_name: string; icon_color: string | null; parent_id: string | null; category_type: CategoryType; sort_order: number };
@@ -46,6 +48,35 @@ export function TransactionEntryForm({ type, accounts, categories, today, sugges
   const [notes, setNotes] = useState("");
   const [selectedSuggestion, setSelectedSuggestion] = useState("");
   const [state, formAction] = useActionState(createTransactionStateAction, { error: "" });
+  const errorRef = useRef<HTMLParagraphElement>(null);
+  const [invalidHint, setInvalidHint] = useState("");
+  useEffect(() => {
+    if ((!state.error && !invalidHint) || !errorRef.current) return;
+    const frame = requestAnimationFrame(() => {
+      const target = errorRef.current;
+      if (!target) return;
+      revealTransactionFormTarget(target);
+      target.focus({ preventScroll: true });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [state.error, invalidHint]);
+
+  function onSubmit(event: FormEvent<HTMLFormElement>) {
+    const validationError = validateTransactionAmounts(type, fromAmount, toAmount, differentCurrency);
+    if (!validationError) return;
+    event.preventDefault();
+    setInvalidHint(validationError);
+  }
+
+  function onInvalidCapture(event: FormEvent<HTMLFormElement>) {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) return;
+    setInvalidHint("Vui lòng kiểm tra trường được đánh dấu trước khi lưu.");
+    // Focus stays on the actual invalid control. Respect the sheet's own scroller.
+    requestAnimationFrame(() => {
+      if (target.isConnected) revealTransactionFormTarget(target);
+    });
+  }
   const fromAccount = accounts.find((account) => account.id === fromAccountId);
   const toAccount = accounts.find((account) => account.id === toAccountId);
   const differentCurrency = isTransfer && Boolean(fromAccount && toAccount && fromAccount.currency_code !== toAccount.currency_code);
@@ -75,18 +106,18 @@ export function TransactionEntryForm({ type, accounts, categories, today, sugges
     </div>
     {accounts.length < (isTransfer ? 2 : 1) ? <div className="mt-5 rounded-xl border border-dashed border-[var(--border)] p-5 text-sm">{isTransfer ? "Cần ít nhất hai tài khoản hoạt động để chuyển tiền." : "Cần ít nhất một tài khoản hoạt động."} <Link href="/accounts?new=1" className="font-bold text-[var(--primary)]">Thêm tài khoản</Link></div> : <>
       {suggestions.length > 0 && <div className="mt-3"><p className="mb-2 flex items-center gap-1 text-[11px] font-bold text-[var(--muted-foreground)]"><Sparkles className="size-3.5" /> Dùng lại giao dịch gần đây</p><div className="flex snap-x gap-2 overflow-x-auto pb-1.5">{suggestions.slice(0, 5).map((suggestion) => <button key={suggestion.id} type="button" onClick={() => applySuggestion(suggestion)} aria-pressed={selectedSuggestion === suggestion.id} className={`fin-suggestion-chip min-w-[132px] max-w-[170px] shrink-0 snap-start ${selectedSuggestion === suggestion.id ? "is-selected" : ""}`}><span className="flex items-center gap-1.5 truncate text-xs font-semibold"><span style={{ color: iconColorValue(suggestion.category_icon_color) }}>{suggestion.category_icon_name ? <CategoryIcon name={suggestion.category_icon_name} className="size-4" /> : <ArrowLeftRight className="size-4" />}</span><span className="truncate">{suggestion.title}</span></span><span className="mt-1 block truncate text-[11px] font-bold tabular-nums">{suggestion.amount_label}</span></button>)}</div></div>}
-      <form action={formAction} className="fin-transaction-entry-form mt-3 grid min-w-0 gap-3 sm:grid-cols-2">
+      <form action={formAction} onSubmit={onSubmit} onInvalidCapture={onInvalidCapture} onInputCapture={() => { if (invalidHint) setInvalidHint(""); }} className="fin-transaction-entry-form mt-3 grid min-w-0 gap-3 sm:grid-cols-2">
         <input name="transaction_type" type="hidden" value={type} /><input name="transaction_purpose" type="hidden" value={isTransfer ? "transfer" : "standard"} /><input name="return_to" type="hidden" value={returnTo} />
-        {state.error && <p role="alert" className="fin-inline-error sm:col-span-2">{state.error}</p>}
+        {(state.error || invalidHint) && <p ref={errorRef} tabIndex={-1} role="alert" className="fin-inline-error fin-form-error-anchor sm:col-span-2">{invalidHint || state.error}</p>}
         <div className="fin-amount-field sm:col-span-2">
           <span className={`fin-amount-label ${typeTone}`}>{isTransfer ? "Số tiền chuyển" : type === "income" ? "Số tiền thu" : "Số tiền chi"}</span>
-          <MoneyCalculatorInput name={type === "income" ? "to_amount" : "from_amount"} value={type === "income" ? toAmount : fromAmount} onValueChange={type === "income" ? setToAmount : setFromAmount} decimalDigits={primaryAccount?.decimal_digits ?? 0} currencyCode={primaryAccount?.currency_code} required placeholder="0" className="fin-amount-input" />
+          <MoneyCalculatorInput name={type === "income" ? "to_amount" : "from_amount"} value={type === "income" ? toAmount : fromAmount} onValueChange={(value) => { (type === "income" ? setToAmount : setFromAmount)(value); setInvalidHint(""); }} decimalDigits={primaryAccount?.decimal_digits ?? 0} currencyCode={primaryAccount?.currency_code} required placeholder="0" className="fin-amount-input" />
           <p className="mt-1.5 text-[11px] text-[var(--muted-foreground)]">Chạm vào số tiền để mở máy tính</p>
         </div>
         {!isTransfer && <div className="sm:col-span-2"><div className="mb-1 flex items-center justify-between"><span className="field-label mb-0">Danh mục</span><Link href="/categories" className="text-xs font-semibold text-[var(--primary)]">Quản lý</Link></div><TransactionCategorySelect categories={categories} value={categoryId} onValueChange={chooseCategory} /></div>}
         {type !== "income" && <label><span className="field-label">{isTransfer ? "Từ tài khoản" : "Chi từ tài khoản"}</span><select name="from_account_id" value={fromAccountId} onChange={(event) => { const next = event.target.value; setFromAccountId(next); if (isTransfer && next === toAccountId) setToAccountId(accounts.find((account) => account.id !== next)?.id ?? ""); }} className="fin-input" required>{accounts.map((account) => <option key={account.id} value={account.id}>{account.name} · {account.currency_code}</option>)}</select></label>}
         {type !== "expense" && <label><span className="field-label">{isTransfer ? "Đến tài khoản" : "Thu vào tài khoản"}</span><select name="to_account_id" value={toAccountId} onChange={(event) => setToAccountId(event.target.value)} className="fin-input" required>{accounts.filter((account) => !isTransfer || account.id !== fromAccountId).map((account) => <option key={account.id} value={account.id}>{account.name} · {account.currency_code}</option>)}</select></label>}
-        {differentCurrency && <label className="sm:col-span-2"><span className="field-label">Số tiền thực nhận · {toAccount?.currency_code}</span><MoneyCalculatorInput name="to_amount" value={toAmount} onValueChange={setToAmount} decimalDigits={toAccount?.decimal_digits ?? 0} currencyCode={toAccount?.currency_code} required /></label>}
+        {differentCurrency && <label className="sm:col-span-2"><span className="field-label">Số tiền thực nhận · {toAccount?.currency_code}</span><MoneyCalculatorInput name="to_amount" value={toAmount} onValueChange={(value) => { setToAmount(value); setInvalidHint(""); }} decimalDigits={toAccount?.decimal_digits ?? 0} currencyCode={toAccount?.currency_code} required /></label>}
         {isTransfer && !differentCurrency && <input name="to_amount" type="hidden" value="" />}
         <label className="sm:col-span-2"><span className="field-label">Nội dung giao dịch</span><input name="title" className="fin-input" required maxLength={140} placeholder="Nhập nội dung" value={title} onChange={(event) => { setTitle(event.target.value); setAutoTitle(false); }} /></label>
         <details className="fin-transaction-details sm:col-span-2"><summary className="flex cursor-pointer items-center gap-2 text-xs font-semibold text-[var(--muted-foreground)]"><CalendarDays className="size-4" /> Ngày {today.split("-").reverse().join("/")} · Ghi chú <ChevronDown className="ml-auto size-4" /></summary><div className="mt-3 grid gap-3 sm:grid-cols-2"><label><span className="field-label">Ngày giao dịch</span><MobileDateInput name="transaction_date" defaultValue={today} ariaLabel="Ngày giao dịch" /></label><label><span className="field-label">Ghi chú (tùy chọn)</span><textarea name="notes" rows={2} maxLength={500} className="fin-textarea" value={notes} onChange={(event) => setNotes(event.target.value)} /></label></div></details>

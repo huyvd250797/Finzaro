@@ -13,8 +13,8 @@ const css = read("app/globals.css");
 
 test("combined version and scope remain consistent", () => {
   assert.ok((Number(JSON.parse(read("package.json")).version.split(".")[0]) > 2 || Number(JSON.parse(read("package.json")).version.split(".")[1]) >= 2), "release should retain V2.2 baseline");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION\s*=\s*"(?:2\.[2-9]\.\d+|3\.\d+\.\d+)"/);
-  assert.match(read("lib/app-version.ts"), /APP_RELEASE_NAME\s*=\s*"(?:Premium Fintech & Fluid Transaction UX|Financial Dashboard & Advanced Reports|Professional Release|Instant Reports|Premium Visual Foundation|Mobile-First Transaction UX|Premium Overview & Reports|Fluid Motion & Navigation)/);
+  assert.match(read("lib/app-version.ts"), /APP_VERSION\s*=\s*"(?:2\.[2-9]\.\d+|(?:3|4)\.\d+\.\d+)"/);
+  assert.match(read("lib/app-version.ts"), /APP_RELEASE_NAME\s*=\s*"(?:Premium Fintech & Fluid Transaction UX|Financial Dashboard & Advanced Reports|Professional Release|Instant Reports|Premium Visual Foundation|Mobile-First Transaction UX|Premium Overview & Reports|Fluid Motion & Navigation|Premium UX Release)/);
   assert.match(read("README.md"), /V1\.7\.0/);
   assert.match(read("DEPLOY_V1.4.0.md"), /V1\.2\.3.*V1\.3\.0.*V1\.4\.0/s);
   assert.match(read("docs/VERSIONING.md"), /V1\.7\.0/);

@@ -19,7 +19,7 @@ const page = read("app/(dashboard)/transactions/page.tsx");
 
 test("version correctly bumped in package and UI", () => {
  assert.ok((Number(JSON.parse(read("package.json")).version.split(".")[0]) > 2 || Number(JSON.parse(read("package.json")).version.split(".")[1]) >= 2), "release should retain V2.2 baseline");
- assert.match(read("lib/app-version.ts"), /APP_VERSION\s*=\s*["'](?:2\.[2-9]\.\d+|3\.\d+\.\d+)["']/);
+ assert.match(read("lib/app-version.ts"), /APP_VERSION\s*=\s*["'](?:2\.[2-9]\.\d+|(?:3|4)\.\d+\.\d+)["']/);
 });
 test("exactly six user-facing dashboard areas remain", () => {
  const dirs = readdirSync(join(root, "app/(dashboard)"), {withFileTypes:true}).filter(x=>x.isDirectory()).map(x=>x.name).sort();

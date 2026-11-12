@@ -17,7 +17,7 @@ export function AppSplash() {
       // Keep the branded splash until those critical numbers are ready.
       if (window.location.pathname === "/overview") return Boolean(document.querySelector("[data-fin-startup-ready]"));
       return Boolean(document.querySelector(
-        ".fin-page-shell, main.finzaro-grid, .fin-print-document, [data-fin-app-ready]"
+        ".fin-page-shell:not(.fin-route-skeleton), main.finzaro-grid, .fin-print-document, [data-fin-app-ready]"
       ));
     };
     const observer = new MutationObserver(() => check());
