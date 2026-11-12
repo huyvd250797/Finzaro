@@ -3,6 +3,8 @@ import { updatePreferencesAction, updateProfileAction } from "@/app/auth/actions
 import { AuthMessage } from "@/components/auth-message";
 import { DatabaseStatus } from "@/components/database-status";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input, Select } from "@/components/ui/input";
 import { requireUser } from "@/lib/auth";
 import { APP_RELEASE_NAME, APP_VERSION_LABEL } from "@/lib/app-version";
 
@@ -33,8 +35,8 @@ export default async function SettingsPage({ searchParams }: { searchParams: Sea
           <CardContent className="p-5 sm:p-6">
             <div className="flex items-center gap-3"><div className="grid size-10 place-items-center rounded-xl bg-[var(--muted)] text-[var(--primary)]"><UserRound className="size-4.5" /></div><div><h2 className="font-bold">Hồ sơ</h2><p className="text-xs text-[var(--muted-foreground)]">{user.email}</p></div></div>
             <form action={updateProfileAction} className="mt-5 space-y-4">
-              <label className="block"><span className="mb-2 block text-xs font-bold uppercase tracking-wide text-[var(--muted-foreground)]">Tên hiển thị</span><input name="display_name" defaultValue={profile?.display_name ?? ""} minLength={2} maxLength={100} required className="h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-4 text-sm outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--ring)]" /></label>
-              <button type="submit" className="h-10 rounded-xl bg-[var(--primary)] px-4 text-sm font-bold text-white">Lưu hồ sơ</button>
+              <label className="block"><span className="mb-2 block text-xs font-bold uppercase tracking-wide text-[var(--muted-foreground)]">Tên hiển thị</span><Input name="display_name" defaultValue={profile?.display_name ?? ""} minLength={2} maxLength={100} required autoComplete="name" /></label>
+              <Button type="submit" size="compact">Lưu hồ sơ</Button>
             </form>
           </CardContent>
         </Card>
@@ -43,9 +45,9 @@ export default async function SettingsPage({ searchParams }: { searchParams: Sea
           <CardContent className="p-5 sm:p-6">
             <div className="flex items-center gap-3"><div className="grid size-10 place-items-center rounded-xl bg-[var(--muted)] text-[var(--primary)]"><KeyRound className="size-4.5" /></div><div><h2 className="font-bold">Tài chính mặc định</h2><p className="text-xs text-[var(--muted-foreground)]">Được bảo vệ bằng RLS theo user hiện tại.</p></div></div>
             <form action={updatePreferencesAction} className="mt-5 grid gap-4">
-              <label className="block"><span className="mb-2 block text-xs font-bold uppercase tracking-wide text-[var(--muted-foreground)]">Tiền tệ</span><select name="currency_code" defaultValue={preferences?.currency_code ?? "VND"} className="h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 text-sm">{currencies?.map((item) => <option key={item.code} value={item.code}>{item.code} · {item.name} ({item.symbol})</option>)}</select></label>
-              <div className="grid grid-cols-2 gap-3"><label className="block"><span className="mb-2 block text-xs font-bold uppercase tracking-wide text-[var(--muted-foreground)]">Ngôn ngữ</span><select name="locale" defaultValue={preferences?.locale ?? "vi-VN"} className="h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 text-sm"><option value="vi-VN">vi-VN</option><option value="en-US">en-US</option></select></label><label className="block"><span className="mb-2 block text-xs font-bold uppercase tracking-wide text-[var(--muted-foreground)]">Timezone</span><select name="timezone" defaultValue={preferences?.timezone ?? "Asia/Ho_Chi_Minh"} className="h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 text-sm"><option value="Asia/Ho_Chi_Minh">Asia/Ho_Chi_Minh</option><option value="UTC">UTC</option></select></label></div>
-              <button type="submit" className="h-10 justify-self-start rounded-xl bg-[var(--primary)] px-4 text-sm font-bold text-white">Lưu tùy chọn</button>
+              <label className="block"><span className="mb-2 block text-xs font-bold uppercase tracking-wide text-[var(--muted-foreground)]">Tiền tệ</span><Select name="currency_code" defaultValue={preferences?.currency_code ?? "VND"}>{currencies?.map((item) => <option key={item.code} value={item.code}>{item.code} · {item.name} ({item.symbol})</option>)}</Select></label>
+              <div className="grid grid-cols-2 gap-3"><label className="block"><span className="mb-2 block text-xs font-bold uppercase tracking-wide text-[var(--muted-foreground)]">Ngôn ngữ</span><Select name="locale" defaultValue={preferences?.locale ?? "vi-VN"}><option value="vi-VN">vi-VN</option><option value="en-US">en-US</option></Select></label><label className="block"><span className="mb-2 block text-xs font-bold uppercase tracking-wide text-[var(--muted-foreground)]">Timezone</span><Select name="timezone" defaultValue={preferences?.timezone ?? "Asia/Ho_Chi_Minh"}><option value="Asia/Ho_Chi_Minh">Asia/Ho_Chi_Minh</option><option value="UTC">UTC</option></Select></label></div>
+              <Button type="submit" size="compact" className="justify-self-start">Lưu tùy chọn</Button>
             </form>
           </CardContent>
         </Card>

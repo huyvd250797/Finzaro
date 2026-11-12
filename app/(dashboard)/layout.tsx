@@ -16,13 +16,14 @@ async function PersonalizedHeader({ supabase, userId, email }: { supabase: Supab
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { supabase, user, userId } = await requireUser();
-  return <div className="min-h-screen">
+  return <div className="fin-app-shell min-h-screen">
+    <a href="#fin-main-content" className="fin-skip-link">Chuyển đến nội dung chính</a>
     <Suspense fallback={null}><NavigationProgress /></Suspense>
     <AppSidebar />
     <Suspense fallback={<AppHeader email={user.email ?? undefined} />}>
       <PersonalizedHeader supabase={supabase} userId={userId} email={user.email ?? undefined} />
     </Suspense>
-    <main className="pb-[calc(7rem+env(safe-area-inset-bottom))] lg:ml-64 lg:pb-10">{children}</main>
+    <main id="fin-main-content" tabIndex={-1} className="fin-main-region pb-[calc(7rem+env(safe-area-inset-bottom))] lg:ml-64 lg:pb-10">{children}</main>
     <MobileNav />
   </div>;
 }

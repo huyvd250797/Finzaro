@@ -1,3 +1,12 @@
+## [3.3.0] — 2026-11-12 · Premium Visual Foundation
+
+- Thiết kế hệ token Light/Dark thống nhất cho nền ứng dụng, surface, text, border, semantic Thu/Chi/Chuyển, radius và shadow.
+- Nâng cấp typography system-first, hierarchy tiêu đề và số liệu tabular; không bổ sung font/network dependency.
+- Bổ sung shared `Button` variants, `Input`, `Select`, `Textarea`; sử dụng trực tiếp tại Cài đặt.
+- Làm mới header, sidebar, mobile tabbar, theme toggle, bottom sheet, auth shell, Tổng quan và KPI Báo cáo.
+- Bổ sung skip-to-main, nâng tương phản cơ bản, focus, reduced motion, high contrast, mobile hit area.
+- Giữ nguyên sáu module, nghiệp vụ tài chính và toàn bộ SQL migrations; không cần chạy SQL mới. `DEPLOY_V3.3.0.md` và `docs/V3.3.0_QA.md`.
+
 ## V3.2.1 — TypeScript Deploy Hotfix (2026-11-11)
 
 - Sửa lỗi TS2352 ở Report snapshot và period links bằng đối tượng `income`/`expense` được kiểm tra kiểu tường minh.

@@ -1,3 +1,5 @@
+> **Phiên bản hiện tại: Finzaro V3.3.0 — Premium Visual Foundation.** Nâng cấp Design System, typography, Light/Dark, card/button/input/modal và bộ điều hướng. Không đổi nghiệp vụ, không có SQL migration mới. Xem [`DEPLOY_V3.3.0.md`](DEPLOY_V3.3.0.md) và [`docs/DESIGN_SYSTEM_V3.3.0.md`](docs/DESIGN_SYSTEM_V3.3.0.md).
+
 > **Bản deploy hotfix hiện tại: V3.2.1.** Xem `DEPLOY_V3.2.1.md` để khắc phục lỗi TypeScript trên Vercel.
 
 # Finzaro V3.2.0 — Instant Reports & Fast Copy

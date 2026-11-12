@@ -119,7 +119,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
           { label: "Thu nhập", value: totals.income, icon: TrendingUp, color: "text-emerald-500", border: "border-emerald-500/20" },
           { label: "Chi tiêu", value: totals.expense, icon: TrendingDown, color: "text-rose-500", border: "border-rose-500/20" },
           { label: "Ròng", value: totals.net, icon: CircleDollarSign, color: totals.net < 0 ? "text-rose-500" : "text-sky-500", border: "border-sky-500/20" }
-        ]).map((item) => { const Icon = item.icon; return <Card key={item.label} className={`min-w-0 ${item.border}`} title={`${item.label}: ${formatMinorMoney(item.value, currency, digits)}`}><CardContent className="p-2 sm:p-3">
+        ]).map((item) => { const Icon = item.icon; return <Card key={item.label} className={`fin-report-kpi min-w-0 ${item.border}`} title={`${item.label}: ${formatMinorMoney(item.value, currency, digits)}`}><CardContent className="p-2 sm:p-3">
           <div className="flex items-center gap-1"><Icon className={`size-3 shrink-0 sm:size-4 ${item.color}`} /><span className="truncate text-[10px] font-bold text-[var(--muted-foreground)] sm:text-xs">{item.label}</span></div>
           <div className={`mt-1 whitespace-nowrap text-[clamp(11px,3vw,18px)] font-extrabold tabular-nums ${item.color}`}><span className="sm:hidden">{item.value < 0 ? "−" : ""}{kpiValue(item.value)}</span><span className="hidden sm:inline">{formatMinorMoney(item.value, currency, digits)}</span></div>
         </CardContent></Card>; })}

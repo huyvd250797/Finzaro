@@ -6,7 +6,7 @@ import { APP_VERSION_LABEL } from "@/lib/app-version";
 export function AuthShell({ children }: { children: React.ReactNode }) {
   return (
     <main className="finzaro-grid grid min-h-screen place-items-center px-5 py-10">
-      <div className="w-full max-w-md rounded-[28px] border border-[var(--border)] bg-[var(--card)] p-6 shadow-2xl shadow-black/5 sm:p-8">
+      <div className="fin-auth-panel w-full max-w-md rounded-[28px] border border-[var(--border)] bg-[var(--card)] p-6 shadow-2xl shadow-black/5 sm:p-8">
         <div className="flex items-center justify-between gap-4">
           <BrandLogo />
           <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/8 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-[var(--primary)]">

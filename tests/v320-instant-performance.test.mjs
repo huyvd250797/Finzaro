@@ -13,8 +13,9 @@ const actions = read("features/transactions/actions.ts");
 const sql = read("supabase/migrations/20261111180000_instant_copy_batch_v320.sql");
 
 test("V3.2.0 full source version and six-module contract", () => {
-  assert.equal(JSON.parse(read("package.json")).version, "3.2.1");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "3\.2\.1"/);
+  const current = JSON.parse(read("package.json")).version;
+  assert.match(current, /^3\.\d+\.\d+$/);
+  assert.match(read("lib/app-version.ts"), new RegExp(`APP_VERSION = "${current.replaceAll(".", "\\.")}"`));
   assert.deepEqual(readdirSync(join(root, "app/(dashboard)"), { withFileTypes: true })
     .filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort(),
     ["accounts", "categories", "overview", "reports", "settings", "transactions"]);

@@ -48,3 +48,5 @@ Lưu ý: release từng được dự kiến tên `V0.0.13 – Net Worth & Finan
 - **`V2.0.0 — Finzaro UX Release`** combines V1.8.0, V1.9.0, V2.0.0 phases in a single release on V1.7.1. Next modified source must be V2.0.1 or higher.
 
 - **`V2.0.1 — Performance & Transaction Experience`** removes the fixed 700 ms splash, streams the first dashboard separately from historical charts, groups transaction history by transaction date, adds safeguarded multi-day copying, and unifies swipe-dismissable bottom sheets. The next source update must increment to V2.0.2 or higher.
+
+- **`V3.3.0 — Premium Visual Foundation`** nâng cấp đồng bộ giao diện Light/Dark và các UI primitives; source baseline V3.2.1, không có SQL migration mới.
