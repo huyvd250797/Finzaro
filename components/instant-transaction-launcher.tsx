@@ -23,6 +23,12 @@ export function InstantTransactionLauncher({ expense, income, transfer, initialT
     if (initialType) setVisited((current) => current.includes(initialType) ? current : [...current, initialType]);
   }, [initialType]);
 
+  // On type change, show the new form from the beginning while preserving
+  // the entered values in the previously visited form.
+  useEffect(() => {
+    if (type) document.querySelector<HTMLElement>(".fin-transaction-sheet [data-fin-sheet-scroll]")?.scrollTo({ top: 0, behavior: "auto" });
+  }, [type]);
+
   function openType(next: TxType) {
     setVisited((current) => current.includes(next) ? current : [...current, next]);
     setType(next);
@@ -42,7 +48,7 @@ export function InstantTransactionLauncher({ expense, income, transfer, initialT
     <div className="flex flex-wrap gap-2" aria-label="Thao tác giao dịch nhanh">
       {buttons.map(({ type: kind, icon: Icon, label, style }) => <button key={kind} type="button" onClick={() => openType(kind)} className={cn("fin-quick-action inline-flex min-h-11 items-center gap-2 rounded-xl border px-3.5 text-sm font-bold active:scale-[.98]", style)}><Icon className="size-4" />{label}</button>)}
     </div>
-    <BottomSheet open={type !== null} onClose={() => setType(null)} label="Ghi nhận giao dịch" zIndex="z-[90]" overlayClassName="sm:items-center sm:p-6" panelClassName="mx-auto max-w-2xl sm:max-h-[calc(100dvh-48px)] sm:rounded-[24px]">
+    <BottomSheet open={type !== null} onClose={() => setType(null)} label="Ghi nhận giao dịch" zIndex="z-[90]" overlayClassName="sm:items-center sm:p-6" panelClassName="fin-transaction-sheet mx-auto max-w-2xl sm:max-h-[calc(100dvh-48px)] sm:rounded-[24px]">
       <div role="tablist" aria-label="Loại giao dịch" className="fin-transaction-tabs mx-2 mb-2 grid grid-cols-3 gap-1 rounded-2xl bg-[var(--muted)]/60 p-1.5">
         {buttons.map(({ type: kind, label, icon: Icon, style }) => <button
           id={`fin-transaction-tab-${kind}`}

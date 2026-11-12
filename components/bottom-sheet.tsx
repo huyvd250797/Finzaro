@@ -2,6 +2,7 @@
 
 import type { PointerEvent as ReactPointerEvent, ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useOverlayScrollLock } from "@/components/use-overlay-scroll-lock";
 import { cn } from "@/lib/utils";
 
@@ -20,15 +21,45 @@ type BottomSheetProps = {
 /** Shared iOS-safe sheet: animated entry/exit, drag handle, backdrop and Escape close. */
 export function BottomSheet({ open, onClose, children, label, panelClassName, overlayClassName, zIndex = "z-[100]", backdropClassName, mobileOnly = false }: BottomSheetProps) {
   const [present, setPresent] = useState(open);
+  const [portalReady, setPortalReady] = useState(false);
   const [closing, setClosing] = useState(false);
   const contentRef = useRef(children);
   const dragging = useRef<number | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
   const onCloseRef = useRef(onClose);
   useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
   if (open) contentRef.current = children;
-  useOverlayScrollLock(open);
+  useOverlayScrollLock(open && portalReady);
+
+  // A portal puts sheets above the fixed mobile navigation even when a page
+  // creates its own stacking context (transform, isolation, animation, etc.).
+  useEffect(() => { setPortalReady(true); }, []);
+
+  // iOS Safari/PWA has a visual viewport smaller than the layout viewport
+  // when its software keyboard is visible. Size the overlay to the visible
+  // area so form fields and the Save action remain reachable.
+  useEffect(() => {
+    if (!open || !portalReady) return;
+    const overlay = overlayRef.current;
+    if (!overlay) return;
+    const viewport = window.visualViewport;
+    const syncViewport = () => {
+      overlay.style.top = `${Math.max(0, viewport?.offsetTop ?? 0)}px`;
+      overlay.style.height = `${Math.max(1, viewport?.height ?? window.innerHeight)}px`;
+      overlay.style.setProperty("--fin-visual-height", `${Math.max(1, viewport?.height ?? window.innerHeight)}px`);
+    };
+    syncViewport();
+    viewport?.addEventListener("resize", syncViewport);
+    viewport?.addEventListener("scroll", syncViewport);
+    window.addEventListener("resize", syncViewport);
+    return () => {
+      viewport?.removeEventListener("resize", syncViewport);
+      viewport?.removeEventListener("scroll", syncViewport);
+      window.removeEventListener("resize", syncViewport);
+    };
+  }, [open, portalReady]);
 
   useEffect(() => {
     if (open) {
@@ -43,7 +74,7 @@ export function BottomSheet({ open, onClose, children, label, panelClassName, ov
   }, [open, present]);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open || !portalReady) return;
     returnFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const panel = panelRef.current;
     const focusables = () => Array.from(panel?.querySelectorAll<HTMLElement>(
@@ -73,7 +104,7 @@ export function BottomSheet({ open, onClose, children, label, panelClassName, ov
       window.removeEventListener("keydown", onKeyDown);
       if (returnFocusRef.current?.isConnected) returnFocusRef.current.focus({ preventScroll: true });
     };
-  }, [open]);
+  }, [open, portalReady]);
 
   function onDragStart(event: ReactPointerEvent<HTMLButtonElement>) {
     if (!open) return;
@@ -97,14 +128,16 @@ export function BottomSheet({ open, onClose, children, label, panelClassName, ov
     if (distance >= 75) onClose();
   }
 
-  if (!present && !open) return null;
-  return <div className={cn("fin-sheet-backdrop fixed inset-0 flex items-end justify-center overflow-hidden", zIndex, mobileOnly && "lg:hidden", overlayClassName)} data-fin-dialog="true" data-closing={closing || !open ? "true" : "false"}>
+  if (!portalReady || (!present && !open)) return null;
+  return createPortal(<div ref={overlayRef} className={cn("fin-sheet-backdrop fixed inset-x-0 top-0 flex items-end justify-center overflow-hidden", zIndex, mobileOnly && "lg:hidden", overlayClassName)} data-fin-dialog="true" data-closing={closing || !open ? "true" : "false"}>
     <button type="button" tabIndex={-1} aria-label="Đóng bảng" onClick={onClose} className={cn("absolute inset-0 w-full bg-black/45 backdrop-blur-[2px]", backdropClassName)} />
-    <div ref={panelRef} role="dialog" aria-modal="true" aria-label={label} tabIndex={-1} className={cn("fin-sheet-panel fin-premium-dialog relative w-full max-h-[94dvh] overflow-x-hidden overflow-y-auto overscroll-x-contain overscroll-y-contain touch-pan-y [-webkit-overflow-scrolling:touch] rounded-t-[26px] bg-[var(--card)] shadow-2xl pb-[max(env(safe-area-inset-bottom),12px)]", panelClassName)}>
-      <button type="button" aria-label="Kéo xuống để đóng" title="Kéo xuống để đóng" className="fin-sheet-handle sticky top-0 z-20 flex h-6 w-full cursor-grab touch-none items-start justify-center bg-[var(--card)] pt-2 active:cursor-grabbing" onPointerDown={onDragStart} onPointerMove={onDragMove} onPointerUp={onDragEnd} onPointerCancel={onDragEnd}>
+    <div ref={panelRef} role="dialog" aria-modal="true" aria-label={label} tabIndex={-1} className={cn("fin-sheet-panel fin-premium-dialog relative flex w-full min-h-0 max-h-[94dvh] flex-col overflow-hidden rounded-t-[26px] bg-[var(--card)] shadow-2xl", panelClassName)}>
+      <button type="button" aria-label="Kéo xuống để đóng" title="Kéo xuống để đóng" className="fin-sheet-handle relative z-20 flex h-6 w-full shrink-0 cursor-grab touch-none items-start justify-center bg-[var(--card)] pt-2 active:cursor-grabbing" onPointerDown={onDragStart} onPointerMove={onDragMove} onPointerUp={onDragEnd} onPointerCancel={onDragEnd}>
         <span className="h-1.5 w-12 rounded-full bg-[var(--border)]" />
       </button>
-      {contentRef.current}
+      <div className="fin-sheet-scroll min-h-0 w-full flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain touch-pan-y [-webkit-overflow-scrolling:touch] pb-[max(env(safe-area-inset-bottom),12px)]" data-fin-sheet-scroll="true">
+        {contentRef.current}
+      </div>
     </div>
-  </div>;
+  </div>, document.body);
 }

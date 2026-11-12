@@ -780,3 +780,65 @@ body {
   .fin-hero-card, .fin-card { background: white !important; color: #111827 !important; box-shadow: none !important; }
   .fin-skip-link { display: none !important; }
 }
+
+
+/* V3.4.0 — Mobile-first entry: portal overlay + independent scrolling + visible Save.
+   iOS cannot scroll body once a modal is open: scroll ONLY the sheet content. */
+.fin-sheet-backdrop { bottom: auto; height: 100dvh; overscroll-behavior: contain; }
+.fin-sheet-panel {
+  max-height: min(94dvh, calc(var(--fin-visual-height, 100dvh) - 8px));
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.fin-sheet-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  scrollbar-width: thin;
+}
+.fin-sheet-handle { flex: 0 0 auto; }
+/* A transaction sheet fills the available visual viewport, including when
+   the iPhone software keyboard changes its dimensions. */
+@media (max-width: 639px) {
+  .fin-transaction-sheet {
+    height: calc(var(--fin-visual-height, 100dvh) - 8px);
+    max-height: calc(var(--fin-visual-height, 100dvh) - 8px);
+  }
+  .fin-transaction-sheet .fin-transaction-tabs {
+    position: sticky; top: 0; z-index: 25;
+    background: var(--fin-surface);
+    margin-bottom: .5rem;
+  }
+  .fin-transaction-sheet .fin-category-scroll {
+    /* At most four rows; shorter on compact iPhones so content stays usable. */
+    max-height: min(336px, 32dvh);
+    min-height: 0;
+    overscroll-behavior-y: auto;
+    touch-action: pan-y;
+  }
+  .fin-transaction-sheet .fin-mobile-entry-card { overflow: visible; border: 0; box-shadow: none; border-radius: 0; }
+  .fin-transaction-sheet .fin-mobile-entry-card > div { padding-inline: 1rem; }
+  .fin-transaction-sheet .fin-transaction-entry-form { align-content: start; }
+  .fin-transaction-sheet .fin-transaction-savebar {
+    position: sticky; bottom: 0; z-index: 30;
+    margin-inline: -1rem;
+    padding: .75rem 1rem max(.75rem, env(safe-area-inset-bottom));
+    background: var(--fin-surface);
+    border-top: 1px solid var(--fin-edge);
+    box-shadow: 0 -10px 28px -22px rgba(0,0,0,.35);
+  }
+  .fin-transaction-sheet .fin-transaction-savebar > button { min-height: 48px; }
+}
+@media (min-width: 640px) {
+  .fin-transaction-sheet .fin-mobile-entry-card { overflow: visible; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fin-sheet-scroll { scroll-behavior: auto; }
+}

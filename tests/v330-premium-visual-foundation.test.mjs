@@ -17,10 +17,10 @@ function contrast(fg, bg) {
   return (high + 0.05) / (low + 0.05);
 }
 
-test("V3.3.0 version, unchanged module scope and finance RPCs", () => {
-  assert.equal(pkg.version, "3.3.0");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "3\.3\.0"/);
-  assert.match(read("lib/app-version.ts"), /Premium Visual Foundation/);
+test("V3.3.0 design system persists through later versions, unchanged module scope and finance RPCs", () => {
+  assert.ok(Number(pkg.version.split(".")[1]) >= 3, "UI foundation preserved in V3.3+");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "3\.[345]\.0"/);
+  assert.match(read("lib/app-version.ts"), /Foundation|Mobile-First Transaction UX/);
   assert.deepEqual(readdirSync(join(root, "app/(dashboard)"), { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort(), ["accounts", "categories", "overview", "reports", "settings", "transactions"]);
   const actions = read("features/transactions/actions.ts");
   for (const rpc of ["create_simple_transaction_v120", "update_simple_transaction_v120", "delete_simple_transaction_v120", "copy_simple_transaction_batch_v320"]) assert.ok(actions.includes(rpc), rpc);

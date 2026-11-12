@@ -1,3 +1,11 @@
+## [3.4.0] — 2026-11-12 · Mobile-First Transaction UX
+
+- **Fix lỗi iPhone không cuộn đến Lưu:** BottomSheet dùng portal ra `document.body` để tránh lớp điều hướng mobile che form; tách vùng cuộn trong sheet, đưa footer Hủy/Lưu thành sticky và bổ sung safe-area.
+- **Visual viewport:** sheet co giãn theo kích thước vùng hiển thị trên Safari/PWA khi bàn phím ảo mở, không cố định chiều cao vượt khỏi màn hình.
+- Danh mục giữ tối đa bốn hàng, giới hạn thêm theo 32dvh với iPhone màn hình ngắn, vẫn cuộn danh mục độc lập và cho phép cuộn form tại biên.
+- Tab Chi/Thu/Chuyển giữ bản nháp cũ và tự cuộn lại đầu form khi đổi loại giao dịch; thao tác bàn phím và máy tính tiền được giữ nguyên.
+- Không bổ sung SQL migration/dependency; giữ nguyên 6 module và các hàm RPC giao dịch. Xem `DEPLOY_V3.4.0.md` và `docs/V3.4.0_QA.md`.
+
 ## [3.3.0] — 2026-11-12 · Premium Visual Foundation
 
 - Thiết kế hệ token Light/Dark thống nhất cho nền ứng dụng, surface, text, border, semantic Thu/Chi/Chuyển, radius và shadow.

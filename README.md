@@ -1,6 +1,8 @@
+> **Phiên bản hiện tại: Finzaro V3.4.0 — Mobile-First Transaction UX.** Sửa lỗi iPhone không cuộn đến **Lưu giao dịch**, đưa bottom sheet lên lớp overlay độc lập, thêm vùng cuộn riêng, footer dính đáy và hỗ trợ chiều cao bàn phím ảo. Không thay đổi SQL hoặc nghiệp vụ tài chính. Xem [`DEPLOY_V3.4.0.md`](DEPLOY_V3.4.0.md), [`docs/V3.4.0_QA.md`](docs/V3.4.0_QA.md).
+
 > **Phiên bản hiện tại: Finzaro V3.3.0 — Premium Visual Foundation.** Nâng cấp Design System, typography, Light/Dark, card/button/input/modal và bộ điều hướng. Không đổi nghiệp vụ, không có SQL migration mới. Xem [`DEPLOY_V3.3.0.md`](DEPLOY_V3.3.0.md) và [`docs/DESIGN_SYSTEM_V3.3.0.md`](docs/DESIGN_SYSTEM_V3.3.0.md).
 
-> **Bản deploy hotfix hiện tại: V3.2.1.** Xem `DEPLOY_V3.2.1.md` để khắc phục lỗi TypeScript trên Vercel.
+> **Lịch sử:** V3.2.1 là bản vá TypeScript trước đây. Nếu nâng cấp từ V3.3.0, dùng hướng dẫn deploy V3.4.0 phía trên.
 
 # Finzaro V3.2.0 — Instant Reports & Fast Copy
 

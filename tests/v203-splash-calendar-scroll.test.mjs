@@ -9,7 +9,7 @@ const read = (path) => readFileSync(join(root, path), "utf8");
 test("Current release metadata remains consistent across package and visible app version", () => {
   assert.ok((Number(JSON.parse(read("package.json")).version.split(".")[0]) > 2 || Number(JSON.parse(read("package.json")).version.split(".")[1]) >= 2), "release should retain V2.2 baseline");
   assert.match(read("lib/app-version.ts"), /APP_VERSION = "(?:2\.[2-9]\.\d+|3\.\d+\.\d+)"/);
-  assert.match(read("lib/app-version.ts"), /Financial Dashboard & Advanced Reports|Premium Fintech & Fluid Transaction UX|Professional Release|Instant Reports|Premium Visual Foundation/);
+  assert.match(read("lib/app-version.ts"), /Financial Dashboard & Advanced Reports|Premium Fintech & Fluid Transaction UX|Professional Release|Instant Reports|Premium Visual Foundation|Mobile-First Transaction UX/);
 });
 
 test("The branded splash is mounted once in root layout, before initial PWA app content", () => {
@@ -63,5 +63,5 @@ test("Calendar swipe action retains horizontal gestures while vertical gestures 
   assert.match(css, /#calendar-day-detail \[class\*="overflow-x-auto"\] \{ touch-action: auto; \}/);
   assert.match(css, /overscroll-behavior-y: auto/);
   const sheet = read("components/bottom-sheet.tsx");
-  assert.match(sheet, /overflow-y-auto overscroll-x-contain overscroll-y-contain touch-pan-y/);
+  assert.match(sheet, /fin-sheet-scroll[^\n]*overflow-y-auto[^\n]*overscroll-y-contain touch-pan-y/);
 });

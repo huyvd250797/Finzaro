@@ -50,3 +50,5 @@ Lưu ý: release từng được dự kiến tên `V0.0.13 – Net Worth & Finan
 - **`V2.0.1 — Performance & Transaction Experience`** removes the fixed 700 ms splash, streams the first dashboard separately from historical charts, groups transaction history by transaction date, adds safeguarded multi-day copying, and unifies swipe-dismissable bottom sheets. The next source update must increment to V2.0.2 or higher.
 
 - **`V3.3.0 — Premium Visual Foundation`** nâng cấp đồng bộ giao diện Light/Dark và các UI primitives; source baseline V3.2.1, không có SQL migration mới.
+
+- **`V3.4.0 — Mobile-First Transaction UX`** sửa bottom sheet/scroll và nút Lưu trên iPhone, kế thừa V3.3.0. Không có SQL mới; bản tiếp theo phải cao hơn V3.4.0.

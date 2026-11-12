@@ -68,14 +68,14 @@ export function TransactionEntryForm({ type, accounts, categories, today, sugges
     setSelectedSuggestion(suggestion.id);
   }
 
-  return <Card className="fin-transaction-card overflow-hidden shadow-2xl"><CardContent className="p-4 sm:p-6">
+  return <Card className="fin-transaction-card fin-mobile-entry-card shadow-2xl"><CardContent className="p-4 sm:p-6">
     <div className="flex items-center justify-between gap-3">
       <div className="min-w-0"><p className={`text-[11px] font-semibold ${typeTone}`}>Giao dịch mới</p><h2 className={`mt-0.5 text-xl font-extrabold tracking-tight ${typeTone}`}>{type === "expense" ? "Chi tiền" : type === "income" ? "Thu tiền" : "Chuyển tiền"}</h2></div>
       <button type="button" data-instant-close aria-label="Đóng" className="fin-icon-button"><X className="size-4" /></button>
     </div>
     {accounts.length < (isTransfer ? 2 : 1) ? <div className="mt-5 rounded-xl border border-dashed border-[var(--border)] p-5 text-sm">{isTransfer ? "Cần ít nhất hai tài khoản hoạt động để chuyển tiền." : "Cần ít nhất một tài khoản hoạt động."} <Link href="/accounts?new=1" className="font-bold text-[var(--primary)]">Thêm tài khoản</Link></div> : <>
       {suggestions.length > 0 && <div className="mt-3"><p className="mb-2 flex items-center gap-1 text-[11px] font-bold text-[var(--muted-foreground)]"><Sparkles className="size-3.5" /> Dùng lại giao dịch gần đây</p><div className="flex snap-x gap-2 overflow-x-auto pb-1.5">{suggestions.slice(0, 5).map((suggestion) => <button key={suggestion.id} type="button" onClick={() => applySuggestion(suggestion)} aria-pressed={selectedSuggestion === suggestion.id} className={`fin-suggestion-chip min-w-[132px] max-w-[170px] shrink-0 snap-start ${selectedSuggestion === suggestion.id ? "is-selected" : ""}`}><span className="flex items-center gap-1.5 truncate text-xs font-semibold"><span style={{ color: iconColorValue(suggestion.category_icon_color) }}>{suggestion.category_icon_name ? <CategoryIcon name={suggestion.category_icon_name} className="size-4" /> : <ArrowLeftRight className="size-4" />}</span><span className="truncate">{suggestion.title}</span></span><span className="mt-1 block truncate text-[11px] font-bold tabular-nums">{suggestion.amount_label}</span></button>)}</div></div>}
-      <form action={formAction} className="mt-3 grid min-w-0 gap-3 sm:grid-cols-2">
+      <form action={formAction} className="fin-transaction-entry-form mt-3 grid min-w-0 gap-3 sm:grid-cols-2">
         <input name="transaction_type" type="hidden" value={type} /><input name="transaction_purpose" type="hidden" value={isTransfer ? "transfer" : "standard"} /><input name="return_to" type="hidden" value={returnTo} />
         {state.error && <p role="alert" className="fin-inline-error sm:col-span-2">{state.error}</p>}
         <div className="fin-amount-field sm:col-span-2">
@@ -90,7 +90,7 @@ export function TransactionEntryForm({ type, accounts, categories, today, sugges
         {isTransfer && !differentCurrency && <input name="to_amount" type="hidden" value="" />}
         <label className="sm:col-span-2"><span className="field-label">Nội dung giao dịch</span><input name="title" className="fin-input" required maxLength={140} placeholder="Nhập nội dung" value={title} onChange={(event) => { setTitle(event.target.value); setAutoTitle(false); }} /></label>
         <details className="fin-transaction-details sm:col-span-2"><summary className="flex cursor-pointer items-center gap-2 text-xs font-semibold text-[var(--muted-foreground)]"><CalendarDays className="size-4" /> Ngày {today.split("-").reverse().join("/")} · Ghi chú <ChevronDown className="ml-auto size-4" /></summary><div className="mt-3 grid gap-3 sm:grid-cols-2"><label><span className="field-label">Ngày giao dịch</span><MobileDateInput name="transaction_date" defaultValue={today} ariaLabel="Ngày giao dịch" /></label><label><span className="field-label">Ghi chú (tùy chọn)</span><textarea name="notes" rows={2} maxLength={500} className="fin-textarea" value={notes} onChange={(event) => setNotes(event.target.value)} /></label></div></details>
-        <div className="fin-form-footer flex gap-2 sm:col-span-2"><button type="button" data-instant-close className="fin-secondary-btn">Hủy</button><PendingSubmitButton idleLabel="Lưu giao dịch" pendingLabel="Đang lưu…" className="fin-primary-btn flex-1" /></div>
+        <div className="fin-form-footer fin-transaction-savebar flex gap-2 sm:col-span-2"><button type="button" data-instant-close className="fin-secondary-btn">Hủy</button><PendingSubmitButton idleLabel="Lưu giao dịch" pendingLabel="Đang lưu…" className="fin-primary-btn flex-1" /></div>
       </form>
     </>}
   </CardContent></Card>;
