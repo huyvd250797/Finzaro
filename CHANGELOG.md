@@ -1,3 +1,15 @@
+## [3.6.0] — 2026-11-12 · Fluid Motion & Navigation
+
+- **Smart Navigation:** nhớ các bộ lọc hợp lệ của Giao dịch/Báo cáo, kỳ và ngày Lịch; đường dẫn thanh tab mobile/desktop và khu vực Báo cáo sử dụng lại trạng thái đã chọn trong cùng phiên đăng nhập. Nhớ vị trí cuộn theo URL (bộ nhớ tạm thời, không lưu dữ liệu tài chính vào storage); hủy khôi phục nếu người dùng tự cuộn.
+- **Fluid Page Transitions:** hiệu ứng xuất hiện 180 ms nhẹ bằng opacity/transform, nav progress trì hoãn 180 ms để không nhấp nháy khi dữ liệu tải nhanh; có đo thời gian điều hướng khi bật debug.
+- **Micro-interactions 2.0:** thống nhất trạng thái nhấn/chọn/focus cho button, tab, card danh mục, ô lịch và các hành động giao dịch.
+- **Premium Bottom Sheet:** cải thiện kéo-thả grip với ngưỡng khoảng cách/tốc độ, không đóng do `pointercancel`; giữ Portal + VisualViewport + sticky Save iPhone từ V3.4.0, chặn đóng/đổi tab khi server đang lưu.
+- **Intelligent Loading:** giữ skeleton theo màn của V3.5.0 và delay progress; ưu tiên dữ liệu đã render và trạng thái client hiện có; không thêm tải nền hoặc RPC mới.
+- **Optimistic Transaction UX:** danh sách giao dịch ẩn dòng khi xác nhận xóa, chờ kết quả server; nếu server lỗi dòng hiện lại cùng thông báo. Lưu/sửa có trạng thái pending thông qua form status. Không thao tác số dư tại client.
+- **Scroll & Gesture:** duy trì cuộn dọc tự nhiên khi vuốt ngang giao dịch, giới hạn scroll trong sheet, giữ scroll position khi quay lại URL; hỗ trợ nút Lưu có safe-area.
+- **Accessibility & keypad:** phím máy tính tiền scale 1.14 khi nhấn; giữ phản hồi 95 ms cho thao tác chạm nhanh, hỗ trợ pointer/keyboard/focus và Reduced Motion. Tăng focus-visible cho control, không thêm animation layout nặng.
+- **Phạm vi:** 6 module cơ bản, RPC tài chính không đổi, toàn bộ SQL migration giữ nguyên; không thêm dependency.
+
 ## [3.5.0] — 2026-11-12 · Premium Overview & Reports
 
 - **Tổng quan:** hero số dư/Thu/Chi/Ròng mới, phân cấp số liệu, card danh mục và hoạt động gần đây, bố cục responsive có đủ vùng an toàn mobile.

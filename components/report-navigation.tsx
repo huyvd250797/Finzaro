@@ -1,6 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import { BarChart3, CalendarDays, LayoutDashboard, FileText, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useSmartSectionRoutes } from "@/components/navigation-memory";
 
 export type ReportSection = "overview" | "calendar" | "analysis" | "statements";
 
@@ -12,6 +15,7 @@ const items: Array<{ key: ReportSection; href: string; label: string; icon: Luci
 ];
 
 export function ReportNavigation({ active }: { active: ReportSection }) {
+  const smartRoutes = useSmartSectionRoutes();
   return (
     <nav aria-label="Khu vực báo cáo" className="fin-report-navigation grid grid-cols-4 rounded-xl border border-[var(--border)] bg-[var(--card)] p-1">
       {items.map((item) => {
@@ -20,7 +24,7 @@ export function ReportNavigation({ active }: { active: ReportSection }) {
         return (
           <Link
             key={item.key}
-            href={item.href}
+            href={smartRoutes[item.href] ?? item.href}
             prefetch={false}
             aria-current={selected ? "page" : undefined}
             className={cn(

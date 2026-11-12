@@ -24,13 +24,14 @@ export function PendingSubmitButton({
       title={title}
       disabled={disabled || pending}
       aria-busy={pending}
+      data-fin-submit-pending={pending ? "true" : "false"}
       className={cn(
         "inline-flex items-center justify-center gap-2 transition disabled:cursor-not-allowed disabled:opacity-65",
         className
       )}
     >
       {pending && <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />}
-      <span>{pending ? pendingLabel : idleLabel}</span>
+      <span aria-live="polite">{pending ? pendingLabel : idleLabel}</span>
     </button>
   );
 }

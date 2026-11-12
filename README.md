@@ -1,8 +1,6 @@
-> **Phiên bản hiện tại: Finzaro V3.5.0 — Premium Overview & Reports.** Làm mới Dashboard, KPI, biểu đồ dòng tiền/cột/donut tương tác, lịch tài chính, báo cáo và skeleton loading theo màn; tăng kích thước vùng chạm trên mobile, bảo toàn bản vá bottom sheet V3.4.0. Không thay đổi SQL hoặc nghiệp vụ tài chính. Xem [`DEPLOY_V3.5.0.md`](DEPLOY_V3.5.0.md) và [`docs/V3.5.0_QA.md`](docs/V3.5.0_QA.md).
+> **Phiên bản hiện tại: Finzaro V3.6.0 — Fluid Motion & Navigation.** Nâng cấp điều hướng nhớ bộ lọc/kỳ và vị trí cuộn, loading ít nhấp nháy, chuyển cảnh và bottom sheet mượt, phản hồi phím số phóng lớn 14%, và xóa giao dịch phản hồi tức thời có khôi phục khi server lỗi. Giữ 6 module, không thay đổi SQL. Xem [`DEPLOY_V3.6.0.md`](DEPLOY_V3.6.0.md) và [`docs/V3.6.0_QA.md`](docs/V3.6.0_QA.md).
 
-> **Phiên bản hiện tại: Finzaro V3.3.0 — Premium Visual Foundation.** Nâng cấp Design System, typography, Light/Dark, card/button/input/modal và bộ điều hướng. Không đổi nghiệp vụ, không có SQL migration mới. Xem [`DEPLOY_V3.3.0.md`](DEPLOY_V3.3.0.md) và [`docs/DESIGN_SYSTEM_V3.3.0.md`](docs/DESIGN_SYSTEM_V3.3.0.md).
-
-> **Nâng cấp:** Bản này cập nhật trực tiếp từ V3.4.0, giữ nguyên bản vá iPhone cuộn/bấm Lưu và các RPC từ V3.2.1. Nếu đang sử dụng V3.4.0, theo `DEPLOY_V3.5.0.md`; không cần chạy SQL mới.
+> **Nâng cấp:** Áp dụng trên source V3.5.0. Giữ nguyên tính năng Tổng quan/Báo cáo/Lịch, bản vá nút Lưu trên iPhone và Batch Copy V3.2.x. Không cần SQL migration mới; không thêm dependency. Các chỉ số hiệu năng thực tế phải kiểm chứng sau deploy.
 
 # Finzaro V3.2.0 — Instant Reports & Fast Copy
 

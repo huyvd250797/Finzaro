@@ -24,7 +24,7 @@ export function BottomSheet({ open, onClose, children, label, panelClassName, ov
   const [portalReady, setPortalReady] = useState(false);
   const [closing, setClosing] = useState(false);
   const contentRef = useRef(children);
-  const dragging = useRef<number | null>(null);
+  const dragging = useRef<{ y: number; at: number; pointerId: number } | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
@@ -108,24 +108,26 @@ export function BottomSheet({ open, onClose, children, label, panelClassName, ov
 
   function onDragStart(event: ReactPointerEvent<HTMLButtonElement>) {
     if (!open) return;
-    dragging.current = event.clientY;
+    if (event.button !== 0 && event.pointerType === "mouse") return;
+    dragging.current = { y: event.clientY, at: performance.now(), pointerId: event.pointerId };
     event.currentTarget.setPointerCapture(event.pointerId);
   }
   function onDragMove(event: ReactPointerEvent<HTMLButtonElement>) {
-    if (dragging.current === null || !panelRef.current) return;
-    const delta = Math.max(0, event.clientY - dragging.current);
+    if (dragging.current === null || dragging.current.pointerId !== event.pointerId || !panelRef.current) return;
+    const delta = Math.max(0, event.clientY - dragging.current.y);
     panelRef.current.style.transform = `translateY(${Math.min(delta, 260)}px)`;
     panelRef.current.style.transition = "none";
   }
   function onDragEnd(event: ReactPointerEvent<HTMLButtonElement>) {
-    if (dragging.current === null) return;
-    const distance = event.clientY - dragging.current;
+    if (dragging.current === null || dragging.current.pointerId !== event.pointerId) return;
+    const distance = event.clientY - dragging.current.y;
+    const elapsed = Math.max(1, performance.now() - dragging.current.at);
     dragging.current = null;
     if (panelRef.current) {
       panelRef.current.style.transform = "";
       panelRef.current.style.transition = "";
     }
-    if (distance >= 75) onClose();
+    if (event.type !== "pointercancel" && (distance >= 75 || (distance > 35 && distance / elapsed > .75))) onCloseRef.current();
   }
 
   if (!portalReady || (!present && !open)) return null;

@@ -6,6 +6,7 @@ import { BarChart3, LayoutDashboard, ReceiptText, Settings2, Shapes, WalletCards
 import { BrandLogo } from "@/components/brand-logo";
 import { APP_RELEASE_NAME, APP_VERSION_LABEL } from "@/lib/app-version";
 import { cn } from "@/lib/utils";
+import { useSmartSectionRoutes } from "@/components/navigation-memory";
 
 const nav = [
   { href: "/overview", label: "Tổng quan", icon: LayoutDashboard },
@@ -18,10 +19,11 @@ const nav = [
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const smartRoutes = useSmartSectionRoutes();
   return <aside className="fin-app-sidebar fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-[var(--border)] bg-[var(--sidebar)] px-4 py-5 lg:flex">
     <div className="flex items-center gap-1.5 px-1"><BrandLogo className="flex-1" /><span className="shrink-0 rounded-full border border-[var(--border)] px-1.5 py-1 text-[10px] font-bold text-[var(--primary)]">{APP_VERSION_LABEL}</span></div>
     <nav className="fin-side-nav mt-7 flex-1 space-y-1 overflow-y-auto" aria-label="Điều hướng chính">
-      {nav.map((item, index) => { const Icon = item.icon; const active = pathname === item.href || pathname.startsWith(item.href + "/"); return <div key={item.href}>{index === 4 && <p className="mb-2 mt-5 px-3 text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)]">Quản lý</p>}<Link href={item.href} prefetch aria-current={active ? "page" : undefined} className={cn("fin-nav-link flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold transition", active ? "is-active bg-[var(--sidebar-accent)] text-[var(--primary)]" : "text-[var(--muted-foreground)] hover:bg-[var(--muted)]")}><Icon className="size-4.5" />{item.label}</Link></div>; })}
+      {nav.map((item, index) => { const Icon = item.icon; const active = pathname === item.href || pathname.startsWith(item.href + "/"); return <div key={item.href}>{index === 4 && <p className="mb-2 mt-5 px-3 text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)]">Quản lý</p>}<Link href={smartRoutes[item.href] ?? item.href} prefetch aria-current={active ? "page" : undefined} className={cn("fin-nav-link flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold transition", active ? "is-active bg-[var(--sidebar-accent)] text-[var(--primary)]" : "text-[var(--muted-foreground)] hover:bg-[var(--muted)]")}><Icon className="size-4.5" />{item.label}</Link></div>; })}
     </nav>
     <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2.5"><p className="text-xs font-black text-[var(--primary)]">Finzaro {APP_VERSION_LABEL}</p><p className="mt-0.5 text-[10px] text-[var(--muted-foreground)]">{APP_RELEASE_NAME}</p></div>
   </aside>;

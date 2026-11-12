@@ -71,6 +71,9 @@ export function ReportCalendarInteractive({
 }) {
   const [selectedDay, setSelectedDay] = useState(initialSelectedDay);
   const [quickDay, setQuickDay] = useState<string | null>(null);
+  // Preserve the URL-selected day when returning to Calendar; sync only when
+  // a new month/day actually arrives from the server, not on each selection.
+  useEffect(() => { setSelectedDay(initialSelectedDay); }, [initialSelectedDay, period]);
   const lastTap = useRef<{ date: string; at: number }>({ date: "", at: 0 });
 
   useEffect(() => {

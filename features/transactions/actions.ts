@@ -114,6 +114,24 @@ export async function createTransactionAction(formData: FormData) {
   redirect(feedbackDestination(returnTo, "message", "Đã lưu giao dịch và cập nhật số dư."));
 }
 
+/** V3.6.0: return a verified result so a disappearing list row can roll back on failure. */
+export async function deleteTransactionInlineAction(transactionId: string): Promise<{ ok: boolean; error: string }> {
+  try {
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(transactionId)) {
+      throw new Error("Mã giao dịch không hợp lệ.");
+    }
+    const { supabase } = await requireUser();
+    const error = transactionRpcError(await measureServerOperation("transaction.delete.inline.rpc", () =>
+      (supabase as any).rpc("delete_simple_transaction_v120", { p_transaction_id: transactionId })
+    ));
+    if (error) throw new Error(dbError(error));
+    invalidateSimpleLedger();
+    return { ok: true, error: "" };
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : "Không thể xóa giao dịch." };
+  }
+}
+
 export async function deleteTransactionAction(formData: FormData) {
   const returnTo = safeReturnTo(text(formData, "return_to"));
   try {

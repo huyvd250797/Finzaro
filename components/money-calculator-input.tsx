@@ -68,17 +68,24 @@ function MoneyKeyButton({ children, onClick, className, ariaLabel }: {
   ariaLabel: string;
 }) {
   const release = (element: HTMLButtonElement) => { element.dataset.pressed = "false"; };
+  const releaseAfterTap = (element: HTMLButtonElement) => {
+    // Keep a quick tap visible for a moment. The token prevents an old release
+    // from cancelling the next rapid keypress (no React state update required).
+    const token = String(Number(element.dataset.pressToken ?? "0") + 1);
+    element.dataset.pressToken = token;
+    window.setTimeout(() => { if (element.isConnected && element.dataset.pressToken === token) release(element); }, 95);
+  };
   return <button
     type="button"
     onClick={onClick}
     aria-label={ariaLabel}
     className={cn("fin-money-key", className)}
-    onPointerDown={(event) => { if (event.pointerType !== "mouse" || event.button === 0) event.currentTarget.dataset.pressed = "true"; }}
-    onPointerUp={(event) => release(event.currentTarget)}
+    onPointerDown={(event) => { if (event.pointerType !== "mouse" || event.button === 0) { event.currentTarget.dataset.pressToken = String(Number(event.currentTarget.dataset.pressToken ?? "0") + 1); event.currentTarget.dataset.pressed = "true"; } }}
+    onPointerUp={(event) => releaseAfterTap(event.currentTarget)}
     onPointerCancel={(event) => release(event.currentTarget)}
     onPointerLeave={(event) => release(event.currentTarget)}
     onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") event.currentTarget.dataset.pressed = "true"; }}
-    onKeyUp={(event) => release(event.currentTarget)}
+    onKeyUp={(event) => releaseAfterTap(event.currentTarget)}
     onBlur={(event) => release(event.currentTarget)}
   >{children}</button>;
 }

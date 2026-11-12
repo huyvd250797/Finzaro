@@ -956,3 +956,51 @@ body {
   .fin-dashboard-card, .fin-report-kpi, .fin-retention-card { background: white !important; box-shadow: none !important; }
   .fin-chart-reveal, .fin-bar-fill { animation: none !important; }
 }
+
+
+/* V3.6.0 — Fluid Motion & Navigation. Compositor-only tactile effects. */
+.fin-page-shell { animation: fin-v360-content-in 180ms cubic-bezier(.2,.85,.2,1) both; }
+@keyframes fin-v360-content-in {
+  from { opacity: .72; transform: translate3d(0, 6px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+.fin-app-shell :is(.fin-primary-btn,.fin-secondary-btn,.fin-dark-btn,.fin-button,.fin-quick-action,.fin-category-tile,.fin-report-nav-link,.fin-chart-period,.fin-calendar-day,.fin-nav-link,.mobile-tabbar-item) {
+  transition-property: transform, background-color, border-color, box-shadow, opacity;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(.2,.85,.2,1);
+  -webkit-tap-highlight-color: transparent;
+}
+.fin-app-shell :is(.fin-primary-btn,.fin-secondary-btn,.fin-dark-btn,.fin-button,.fin-quick-action,.fin-category-tile,.fin-report-nav-link,.fin-chart-period,.fin-calendar-day,.fin-nav-link,.mobile-tabbar-item):not(:disabled):active { transform: scale(.97); }
+.fin-app-shell :is(.fin-report-nav-link,.mobile-tabbar-item)[aria-current="page"] { opacity: 1; }
+.fin-app-shell :is(.fin-primary-btn,.fin-secondary-btn,.fin-button,.fin-quick-action,.fin-category-tile,.fin-report-nav-link,.fin-calendar-day):focus-visible,
+.fin-sheet-panel :is(button,input,select,textarea,a):focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+/* Amount keypad: stronger 14% zoom and a visible press ring, without layout recalculation. */
+.fin-money-key { transform: scale(1); isolation: isolate; will-change: transform; transition: transform 120ms cubic-bezier(.18,.9,.25,1.4), box-shadow 170ms ease, background-color 145ms ease; }
+.fin-money-key:is(:active,[data-pressed="true"]) { transform: scale(1.14); z-index: 6; box-shadow: 0 9px 23px -9px rgba(4,105,75,.57), 0 0 0 2px color-mix(in srgb,var(--primary) 38%, transparent); }
+.fin-money-key:disabled:is(:active,[data-pressed="true"]) { transform: none; box-shadow: none; }
+[data-money-keypad="true"] { isolation: isolate; overflow: visible; }
+
+/* Optimistic row removal is a reversible view transition, never an optimistic ledger write. */
+.fin-transaction-row { max-height: 350px; transition: max-height 190ms ease, opacity 160ms ease, padding 190ms ease, transform 160ms ease; }
+.fin-transaction-row[data-fin-deleting="true"] { max-height: 0; opacity: 0; padding-top: 0; padding-bottom: 0; transform: translateY(-4px); overflow: hidden; pointer-events: none; }
+.fin-transaction-notice { background: var(--fin-surface-subtle); }
+
+/* Sheet grip stays touch-target sized and never captures body/inner list scrolling. */
+.fin-sheet-handle { min-height: 30px; touch-action: none; }
+.fin-sheet-panel { overscroll-behavior-y: contain; }
+.fin-sheet-scroll { scroll-behavior: auto; overscroll-behavior-y: contain; }
+.fin-calendar-swipe { touch-action: auto; }
+
+@media (prefers-reduced-motion: reduce) {
+  .fin-page-shell { animation: none !important; }
+  .fin-app-shell :is(.fin-primary-btn,.fin-secondary-btn,.fin-dark-btn,.fin-button,.fin-quick-action,.fin-category-tile,.fin-report-nav-link,.fin-chart-period,.fin-calendar-day,.fin-nav-link,.mobile-tabbar-item) { transition: none !important; transform: none !important; }
+  .fin-money-key, .fin-money-key:is(:active,[data-pressed="true"]) { transform: none !important; transition: none !important; box-shadow: none !important; }
+  .fin-transaction-row { transition: none !important; }
+  .fin-skeleton, .fin-navigation-progress > div { animation: none !important; }
+}
+
+/* Fluid detail rows: no horizontal scroll hijacking, touch produces immediate feedback. */
+.fin-transaction-row:active:not([data-fin-deleting="true"]) { background: color-mix(in srgb, var(--fin-surface-subtle) 65%, transparent); }
+.fin-transaction-row:focus-within { position: relative; z-index: 1; }
+@media (prefers-reduced-motion: reduce) { .fin-transaction-row:active { background: transparent; } }

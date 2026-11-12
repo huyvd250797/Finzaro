@@ -29,7 +29,10 @@ export function InstantTransactionLauncher({ expense, income, transfer, initialT
     if (type) document.querySelector<HTMLElement>(".fin-transaction-sheet [data-fin-sheet-scroll]")?.scrollTo({ top: 0, behavior: "auto" });
   }, [type]);
 
+  const saving = () => Boolean(document.querySelector('.fin-transaction-sheet [aria-busy="true"]'));
+
   function openType(next: TxType) {
+    if (saving()) return;
     setVisited((current) => current.includes(next) ? current : [...current, next]);
     setType(next);
   }
@@ -48,7 +51,7 @@ export function InstantTransactionLauncher({ expense, income, transfer, initialT
     <div className="flex flex-wrap gap-2" aria-label="Thao tác giao dịch nhanh">
       {buttons.map(({ type: kind, icon: Icon, label, style }) => <button key={kind} type="button" onClick={() => openType(kind)} className={cn("fin-quick-action inline-flex min-h-11 items-center gap-2 rounded-xl border px-3.5 text-sm font-bold active:scale-[.98]", style)}><Icon className="size-4" />{label}</button>)}
     </div>
-    <BottomSheet open={type !== null} onClose={() => setType(null)} label="Ghi nhận giao dịch" zIndex="z-[90]" overlayClassName="sm:items-center sm:p-6" panelClassName="fin-transaction-sheet mx-auto max-w-2xl sm:max-h-[calc(100dvh-48px)] sm:rounded-[24px]">
+    <BottomSheet open={type !== null} onClose={() => { if (!saving()) setType(null); }} label="Ghi nhận giao dịch" zIndex="z-[90]" overlayClassName="sm:items-center sm:p-6" panelClassName="fin-transaction-sheet mx-auto max-w-2xl sm:max-h-[calc(100dvh-48px)] sm:rounded-[24px]">
       <div role="tablist" aria-label="Loại giao dịch" className="fin-transaction-tabs mx-2 mb-2 grid grid-cols-3 gap-1 rounded-2xl bg-[var(--muted)]/60 p-1.5">
         {buttons.map(({ type: kind, label, icon: Icon, style }) => <button
           id={`fin-transaction-tab-${kind}`}
@@ -63,7 +66,7 @@ export function InstantTransactionLauncher({ expense, income, transfer, initialT
           className={cn("fin-transaction-tab flex min-h-11 items-center justify-center gap-1.5 rounded-xl border px-1.5 text-xs font-bold", style, type === kind && "is-selected")}
         ><Icon className="size-4 shrink-0" />{label}</button>)}
       </div>
-      <div onClickCapture={(event) => { const target = event.target as Element; if (target.closest("[data-instant-close]")) { event.preventDefault(); setType(null); } }}>
+      <div onClickCapture={(event) => { const target = event.target as Element; if (target.closest("[data-instant-close]")) { event.preventDefault(); if (!saving()) setType(null); } }}>
         {visited.map((kind) => <div key={kind} id={`fin-transaction-panel-${kind}`} role="tabpanel" aria-labelledby={`fin-transaction-tab-${kind}`} className="fin-transaction-panel" hidden={type !== kind}>{panels[kind]}</div>)}
       </div>
     </BottomSheet>

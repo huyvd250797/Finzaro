@@ -5,6 +5,7 @@ import { AppHeader } from "@/components/app-header";
 import { AppSidebar } from "@/components/app-sidebar";
 import { MobileNav } from "@/components/mobile-nav";
 import { NavigationProgress } from "@/components/navigation-progress";
+import { NavigationMemory } from "@/components/navigation-memory";
 import { requireUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
@@ -18,7 +19,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const { supabase, user, userId } = await requireUser();
   return <div className="fin-app-shell min-h-screen">
     <a href="#fin-main-content" className="fin-skip-link">Chuyển đến nội dung chính</a>
-    <Suspense fallback={null}><NavigationProgress /></Suspense>
+    <Suspense fallback={null}><NavigationProgress /><NavigationMemory /></Suspense>
     <AppSidebar />
     <Suspense fallback={<AppHeader email={user.email ?? undefined} />}>
       <PersonalizedHeader supabase={supabase} userId={userId} email={user.email ?? undefined} />
