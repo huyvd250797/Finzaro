@@ -12,7 +12,7 @@ const tabs = read("components/instant-transaction-launcher.tsx");
 
 test("V3.4.0 release keeps six modules and transaction services intact",()=>{
   assert.ok(Number(pkg.version.split(".")[0]) > 3 || (Number(pkg.version.split(".")[0]) === 3 && Number(pkg.version.split(".")[1]) >= 4));
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "(?:3\.[4-9]|4\.0)\.0"/);
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "(?:3\.[4-9]\.0|4\.0\.[01])"/);
   assert.deepEqual(readdirSync(join(root,"app/(dashboard)"),{withFileTypes:true}).filter(x=>x.isDirectory()).map(x=>x.name).sort(),["accounts","categories","overview","reports","settings","transactions"]);
   for (const rpc of ["create_simple_transaction_v120","copy_simple_transaction_batch_v320"]) assert.ok(read("features/transactions/actions.ts").includes(rpc));
 });
@@ -32,7 +32,9 @@ test("iOS visual viewport shrink does not bury form save actions under software 
   assert.match(sheet, /viewport\?\.addEventListener\("resize", syncViewport\)/);
   assert.match(sheet, /--fin-visual-height/);
   assert.match(css, /\.fin-transaction-sheet\s*\{\s*height: calc\(var\(--fin-visual-height/s);
-  assert.match(css, /\.fin-transaction-sheet \.fin-transaction-savebar\s*\{[^}]*position: sticky; bottom: 0/s);
+  assert.match(sheet, /data-fin-sheet-action-slot="true"/);
+  assert.match(form, /createPortal\(saveActions, footerSlot\.element\)/);
+  assert.match(css, /\.fin-sheet-action-slot:not\(:empty\)/);
   assert.match(css, /min-height: 48px/);
   assert.match(form, /fin-transaction-savebar/);
   assert.match(form, /Lưu giao dịch/);

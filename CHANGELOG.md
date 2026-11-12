@@ -1,3 +1,11 @@
+## [4.0.1] — 2026-11-12 · Fixed Mobile Chrome & Sheet Actions
+
+- **Fix gap and moving action buttons on mobile:** replaced sticky Hủy/Lưu inside the transaction form scroller with a dedicated action slot at the bottom of the BottomSheet; only contents scroll. Native external form submit and pending state preserved.
+- **Navigation pinned to viewport:** moved mobile taskbar into a body portal, synchronized VisualViewport bottom offset, disabled inherited transform, and hid the background tabbar while a sheet or mobile keyboard is open.
+- **Cross-app form audit:** anchored Copy, Account/Category create/edit and Calculator Xong actions using the same shared action-slot pattern; updated focus trapping and error scrolling.
+- **UX invariants:** safe-area, inner scrolling, existing transaction drafts and six modules preserved. No database migration or new dependency; 91/91 SQL files unchanged.
+- **QA:** 161/161 source tests, 136 file syntax transpilation, 3 Chromium static layout scenarios. Full Next.js build/real iPhone Safari remain staging checks. See `DEPLOY_V4.0.1.md` and `docs/V4.0.1_QA.md`.
+
 ## [4.0.0] — 2026-11-12 · Premium UX Release
 
 - **Transaction UX hardening:** kiểm tra nhanh số tiền trống/0 trước khi gửi RPC; server tiếp tục xác thực chính thức. Khi form lỗi, focus và cuộn tới thông báo trong vùng sheet thay vì cuộn trang nền; hỗ trợ native invalid input. Không thay đổi cách hạch toán.

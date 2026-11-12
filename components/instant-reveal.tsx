@@ -14,17 +14,20 @@ export function InstantReveal({ children, label, initialOpen = false, icon = tru
   useEffect(() => {
     if (!open) return;
     const dialog = dialogRef.current;
-    const first = dialog?.querySelector<HTMLElement>('input:not([type="hidden"]):not([disabled]), textarea:not([disabled]), select:not([disabled]), button:not([disabled])');
+    // The viewport-fixed action slot is a sibling of the scroller; keep it in
+    // the same keyboard focus loop rather than trapping Tab inside content.
+    const surface = dialog?.closest<HTMLElement>(".fin-sheet-panel") ?? dialog;
+    const first = surface?.querySelector<HTMLElement>('input:not([type="hidden"]):not([disabled]), textarea:not([disabled]), select:not([disabled]), button:not([disabled])');
     (first ?? dialog)?.focus();
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") { event.preventDefault(); setOpen(false); return; }
-      if (event.key !== "Tab" || !dialog) return;
-      const focusable = Array.from(dialog.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), input:not([type="hidden"]):not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')).filter((node) => node.getClientRects().length > 0);
-      if (!focusable.length) { event.preventDefault(); dialog.focus(); return; }
+      if (event.key !== "Tab" || !surface) return;
+      const focusable = Array.from(surface.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), input:not([type="hidden"]):not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')).filter((node) => node.getClientRects().length > 0);
+      if (!focusable.length) { event.preventDefault(); surface.focus(); return; }
       const firstNode = focusable[0];
       const lastNode = focusable[focusable.length - 1];
-      if (event.shiftKey && (document.activeElement === firstNode || !dialog.contains(document.activeElement))) { event.preventDefault(); lastNode.focus(); }
-      else if (!event.shiftKey && (document.activeElement === lastNode || !dialog.contains(document.activeElement))) { event.preventDefault(); firstNode.focus(); }
+      if (event.shiftKey && (document.activeElement === firstNode || !surface.contains(document.activeElement))) { event.preventDefault(); lastNode.focus(); }
+      else if (!event.shiftKey && (document.activeElement === lastNode || !surface.contains(document.activeElement))) { event.preventDefault(); firstNode.focus(); }
     };
     window.addEventListener("keydown", onKey);
     return () => { window.removeEventListener("keydown", onKey); triggerRef.current?.focus(); };

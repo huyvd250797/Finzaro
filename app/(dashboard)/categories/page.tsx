@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Archive, Shapes, X } from "lucide-react";
 import { AuthMessage } from "@/components/auth-message";
 import { PendingSubmitButton } from "@/components/pending-submit-button";
+import { SheetFormActions } from "@/components/sheet-form-actions";
 import { InstantReveal } from "@/components/instant-reveal";
 import { CategoryManagerGrid } from "@/components/category-manager-grid";
 import { ConfirmSubmitForm } from "@/components/confirm-submit-form";
@@ -34,6 +35,7 @@ function CategoryForm({
   usageCount?: number;
 }) {
   const action = editing ? updateCategoryAction : createCategoryAction;
+  const formId = editing ? `fin-category-form-${editing.id}` : `fin-category-form-new-${type}`;
   const parentOptions = categories.filter((category) => category.category_type === type && !category.is_archived && category.id !== editing?.id && category.parent_id === null);
 
   return (
@@ -48,7 +50,7 @@ function CategoryForm({
           <Link href="/categories" data-instant-close aria-label="Đóng" className="grid size-9 place-items-center rounded-xl border border-[var(--border)] text-[var(--muted-foreground)]"><X className="size-4" /></Link>
         </div>
 
-        <ConfirmSubmitForm action={action} confirmMessage={editing && usageCount > 0 ? `Danh mục “${editing.name}” đang được sử dụng bởi ${usageCount} giao dịch. Thay đổi tên, icon hoặc màu sẽ cập nhật cách hiển thị của các giao dịch đã phát sinh; số tiền và ledger không thay đổi. Bạn có chắc muốn lưu?` : null} className="mt-5 grid gap-4 md:grid-cols-2">
+        <ConfirmSubmitForm id={formId} action={action} confirmMessage={editing && usageCount > 0 ? `Danh mục “${editing.name}” đang được sử dụng bởi ${usageCount} giao dịch. Thay đổi tên, icon hoặc màu sẽ cập nhật cách hiển thị của các giao dịch đã phát sinh; số tiền và ledger không thay đổi. Bạn có chắc muốn lưu?` : null} className="mt-5 grid gap-4 md:grid-cols-2">
           {editing && <input type="hidden" name="category_id" value={editing.id} />}
           {!editing && <input type="hidden" name="category_type" value={type} />}
 
@@ -70,10 +72,10 @@ function CategoryForm({
             <CategoryIconPicker defaultValue={editing?.icon_name ?? (type === "income" ? "CircleDollarSign" : "Shapes")} defaultColor={editing?.icon_color ?? "#0d8b66"} />
           </div>
 
-          <div className="flex justify-end gap-2 md:col-span-2">
+          <SheetFormActions className="justify-end md:col-span-2">
             <Link href="/categories" data-instant-close className="inline-flex h-10 items-center rounded-xl border border-[var(--border)] px-4 text-sm font-bold">Hủy</Link>
-            <PendingSubmitButton idleLabel={editing ? "Lưu thay đổi" : "Tạo danh mục"} pendingLabel={editing ? "Đang lưu..." : "Đang tạo danh mục..."} className="h-10 rounded-xl bg-[var(--primary)] px-5 text-sm font-bold text-white" />
-          </div>
+            <PendingSubmitButton form={formId} idleLabel={editing ? "Lưu thay đổi" : "Tạo danh mục"} pendingLabel={editing ? "Đang lưu..." : "Đang tạo danh mục..."} className="h-10 rounded-xl bg-[var(--primary)] px-5 text-sm font-bold text-white" />
+          </SheetFormActions>
         </ConfirmSubmitForm>
       </CardContent>
     </Card>

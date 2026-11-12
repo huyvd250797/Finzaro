@@ -24,7 +24,7 @@ test("mobile taskbar reserves room for the plus button without paint clipping", 
   assert.doesNotMatch(nav, /absolute -top-6/);
   assert.doesNotMatch(css, /contain:\s*layout paint/);
   assert.match(css, /\.fin-mobile-taskbar[\s\S]*?overflow:\s*visible/);
-  assert.match(css, /\.fin-mobile-taskbar[\s\S]*?bottom:\s*0\s*!important/);
+  assert.match(css, /\.fin-mobile-taskbar[\s\S]*?bottom:\s*var\(--fin-mobile-nav-bottom,\s*0px\)\s*!important/);
   assert.match(layout, /pb-\[calc\(7rem\+env\(safe-area-inset-bottom\)\)\]/);
   assert.match(pwa, /bottom-\[calc\(6\.25rem\+env\(safe-area-inset-bottom\)\)\]/);
 });

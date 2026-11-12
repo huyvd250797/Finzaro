@@ -1,7 +1,7 @@
 "use client";
 
-import type { PointerEvent as ReactPointerEvent, ReactNode } from "react";
-import { useEffect, useRef, useState } from "react";
+import type { MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent, ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useOverlayScrollLock } from "@/components/use-overlay-scroll-lock";
 import { cn } from "@/lib/utils";
@@ -16,10 +16,17 @@ type BottomSheetProps = {
   zIndex?: string;
   backdropClassName?: string;
   mobileOnly?: boolean;
+  activeFormKey?: string | null;
 };
 
+type SheetFooterSlot = { element: HTMLDivElement | null; activeFormKey?: string | null };
+const SheetFooterContext = createContext<SheetFooterSlot | null>(null);
+
+/** Render actions outside the scrolling area while retaining React form context. */
+export function useSheetFooterSlot() { return useContext(SheetFooterContext); }
+
 /** Shared iOS-safe sheet: animated entry/exit, drag handle, backdrop and Escape close. */
-export function BottomSheet({ open, onClose, children, label, panelClassName, overlayClassName, zIndex = "z-[100]", backdropClassName, mobileOnly = false }: BottomSheetProps) {
+export function BottomSheet({ open, onClose, children, label, panelClassName, overlayClassName, zIndex = "z-[100]", backdropClassName, mobileOnly = false, activeFormKey }: BottomSheetProps) {
   const [present, setPresent] = useState(open);
   const [portalReady, setPortalReady] = useState(false);
   const [closing, setClosing] = useState(false);
@@ -27,6 +34,7 @@ export function BottomSheet({ open, onClose, children, label, panelClassName, ov
   const dragging = useRef<{ y: number; at: number; pointerId: number } | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
+  const [footerElement, setFooterElement] = useState<HTMLDivElement | null>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
   const onCloseRef = useRef(onClose);
   useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
@@ -131,15 +139,26 @@ export function BottomSheet({ open, onClose, children, label, panelClassName, ov
   }
 
   if (!portalReady || (!present && !open)) return null;
+  const onFooterClickCapture = (event: ReactMouseEvent<HTMLDivElement>) => {
+    if (!event.target || !(event.target instanceof Element)) return;
+    if (!event.target.closest("[data-instant-close]")) return;
+    if (panelRef.current?.querySelector('[aria-busy="true"]')) return;
+    event.preventDefault();
+    onCloseRef.current();
+  };
+
   return createPortal(<div ref={overlayRef} className={cn("fin-sheet-backdrop fixed inset-x-0 top-0 flex items-end justify-center overflow-hidden", zIndex, mobileOnly && "lg:hidden", overlayClassName)} data-fin-dialog="true" data-closing={closing || !open ? "true" : "false"}>
     <button type="button" tabIndex={-1} aria-label="Đóng bảng" onClick={onClose} className={cn("absolute inset-0 w-full bg-black/45 backdrop-blur-[2px]", backdropClassName)} />
     <div ref={panelRef} role="dialog" aria-modal="true" aria-label={label} tabIndex={-1} className={cn("fin-sheet-panel fin-premium-dialog relative flex w-full min-h-0 max-h-[94dvh] flex-col overflow-hidden rounded-t-[26px] bg-[var(--card)] shadow-2xl", panelClassName)}>
       <button type="button" aria-label="Kéo xuống để đóng" title="Kéo xuống để đóng" className="fin-sheet-handle relative z-20 flex h-6 w-full shrink-0 cursor-grab touch-none items-start justify-center bg-[var(--card)] pt-2 active:cursor-grabbing" onPointerDown={onDragStart} onPointerMove={onDragMove} onPointerUp={onDragEnd} onPointerCancel={onDragEnd}>
         <span className="h-1.5 w-12 rounded-full bg-[var(--border)]" />
       </button>
-      <div className="fin-sheet-scroll min-h-0 w-full flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain touch-pan-y [-webkit-overflow-scrolling:touch] pb-[max(env(safe-area-inset-bottom),12px)]" data-fin-sheet-scroll="true">
-        {contentRef.current}
-      </div>
+      <SheetFooterContext.Provider value={{ element: footerElement, activeFormKey }}>
+        <div className="fin-sheet-scroll min-h-0 w-full flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain touch-pan-y [-webkit-overflow-scrolling:touch]" data-fin-sheet-scroll="true">
+          {contentRef.current}
+        </div>
+        <div ref={setFooterElement} onClickCapture={onFooterClickCapture} className="fin-sheet-action-slot" data-fin-sheet-action-slot="true" />
+      </SheetFooterContext.Provider>
     </div>
   </div>, document.body);
 }

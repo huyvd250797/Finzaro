@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useMemo, useState } from "react";
+import { useActionState, useId, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
+import { useSheetFooterSlot } from "@/components/bottom-sheet";
 import { CalendarPlus, Check, ChevronLeft, ChevronRight, Copy, X } from "lucide-react";
 import { copyTransactionDatesAction, type CopyTransactionState } from "@/features/transactions/actions";
 
@@ -10,6 +12,8 @@ function monthKey(y: number, m: number) { return `${y}-${String(m).padStart(2, "
 function displayDay(date: string) { const [y, m, d] = date.split("-"); return `${d}/${m}/${y}`; }
 
 export function TransactionCopyPanel({ sourceId, sourceTitle, sourceDate, type, embedded = false, onClose }: { sourceId: string; sourceTitle: string; sourceDate: string; type: string; embedded?: boolean; onClose?: () => void }) {
+  const formId = useId();
+  const footerSlot = useSheetFooterSlot();
   const [month, setMonth] = useState(sourceDate.slice(0, 7));
   const [dates, setDates] = useState<string[]>([]);
   const [manual, setManual] = useState("");
@@ -42,6 +46,10 @@ export function TransactionCopyPanel({ sourceId, sourceTitle, sourceDate, type, 
     setMonth(manual.slice(0, 7));
     setManual("");
   }
+  const actions = <div className={embedded ? "fin-copy-savebar flex flex-wrap gap-2" : "mt-4 flex flex-wrap gap-2"}>
+    <button type="submit" form={formId} disabled={pending || pendingDates.length === 0} className="fin-primary-btn flex-1 disabled:opacity-50"><Copy className="size-4" />{pending ? "Đang sao chép..." : `Sao chép đến ${pendingDates.length} ngày`}</button>
+    {embedded ? <button type="button" className="fin-secondary-btn" onClick={onClose}>Đóng</button> : <Link href="/transactions" className="fin-secondary-btn">Về lịch sử</Link>}
+  </div>;
   return <section className={`${embedded ? "" : "mt-4 border shadow-sm"} rounded-2xl border-[var(--border)] bg-[var(--card)] p-4 sm:p-5`} aria-label="Sao chép giao dịch sang ngày khác">
     <div className="flex items-start justify-between gap-3">
       <div><p className="flex items-center gap-1.5 text-xs font-black text-sky-600"><Copy className="size-4" /> Sao chép giao dịch</p><h2 className="mt-1 text-lg font-black">{sourceTitle}</h2><p className="mt-1 text-xs text-[var(--muted-foreground)]">{type === "income" ? "Khoản thu" : type === "expense" ? "Khoản chi" : "Chuyển tiền"} · ngày gốc {displayDay(sourceDate)}</p></div>
@@ -81,11 +89,10 @@ export function TransactionCopyPanel({ sourceId, sourceTitle, sourceDate, type, 
     <div className="mt-3 flex flex-wrap gap-1.5" aria-live="polite">{dates.length === 0 ? <p className="text-xs text-[var(--muted-foreground)]">Chưa chọn ngày đích (tối đa 20 ngày).</p> : dates.map((date) => <button type="button" key={date} disabled={pending || copied.has(date)} onClick={() => toggle(date)} className={`inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-bold ${copied.has(date) ? "bg-emerald-500/15 text-emerald-600" : "bg-sky-500/10 text-sky-600"}`}>{displayDay(date)}{copied.has(date) ? <Check className="size-3" /> : <X className="size-3" />}</button>)}</div>
     {state.error && <p role="alert" className="fin-inline-error mt-3">{state.error}</p>}
     {copied.size > 0 && <p role="status" className="mt-3 text-sm font-semibold text-emerald-600">Đã sao chép thành công {copied.size} ngày. Những ngày này sẽ không được tạo lại khi thử lại.</p>}
-    <form action={action} className="mt-4 flex flex-wrap gap-2">
+    <form id={formId} action={action}>
       <input type="hidden" name="source_id" value={sourceId} />
       <input type="hidden" name="dates" value={JSON.stringify(dates)} />
-      <button type="submit" disabled={pending || pendingDates.length === 0} className="fin-primary-btn flex-1 disabled:opacity-50"><Copy className="size-4" />{pending ? "Đang sao chép..." : `Sao chép đến ${pendingDates.length} ngày`}</button>
-      {embedded ? <button type="button" className="fin-secondary-btn" onClick={onClose}>Đóng</button> : <Link href="/transactions" className="fin-secondary-btn">Về lịch sử</Link>}
+      {embedded && footerSlot?.element ? createPortal(actions, footerSlot.element) : actions}
     </form>
   </section>;
 }

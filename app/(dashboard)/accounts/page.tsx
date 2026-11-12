@@ -3,6 +3,7 @@ import { WalletCards, X } from "lucide-react";
 import { AuthMessage } from "@/components/auth-message";
 import { InstantReveal } from "@/components/instant-reveal";
 import { PendingSubmitButton } from "@/components/pending-submit-button";
+import { SheetFormActions } from "@/components/sheet-form-actions";
 import { MoneyCalculatorInput } from "@/components/money-calculator-input";
 import { Card, CardContent } from "@/components/ui/card";
 import { ACCOUNT_TYPE_LABELS } from "@/features/accounts/constants";
@@ -32,6 +33,7 @@ function currencyMeta(currencies: Currency[], code: string) {
 function AccountForm({ currencies, account }: { currencies: Currency[]; account?: Account }) {
   const editing = Boolean(account);
   const action = editing ? updateAccountAction : createAccountAction;
+  const formId = editing ? `fin-account-form-${account?.id}` : "fin-account-form-new";
 
   return (
     <Card className="mt-5 border-emerald-500/25">
@@ -45,7 +47,7 @@ function AccountForm({ currencies, account }: { currencies: Currency[]; account?
           <Link href="/accounts" data-instant-close aria-label="Đóng form" className="grid size-9 place-items-center rounded-xl border border-[var(--border)] text-[var(--muted-foreground)] hover:bg-[var(--muted)]"><X className="size-4" /></Link>
         </div>
 
-        <form action={action} className="mt-5 grid gap-4 md:grid-cols-2">
+        <form id={formId} action={action} className="mt-5 grid gap-4 md:grid-cols-2">
           {account && <input type="hidden" name="account_id" value={account.id} />}
           <label className="block md:col-span-2">
             <span className="mb-2 block text-xs font-bold uppercase tracking-wide text-[var(--muted-foreground)]">Tên tài khoản</span>
@@ -76,10 +78,10 @@ function AccountForm({ currencies, account }: { currencies: Currency[]; account?
             <span className="mt-1.5 block text-[11px] leading-5 text-[var(--muted-foreground)]">{editing ? "Không sửa số dư trực tiếp để tránh phá ledger. Hãy tạo giao dịch Thu / Chi / Chuyển." : "Số dư ban đầu chỉ nhập một lần; các giao dịch tiếp theo sẽ cập nhật tự động."}</span>
           </label>
 
-          <div className="flex flex-wrap items-center gap-2 md:col-span-2">
-            <PendingSubmitButton idleLabel={editing ? "Lưu thay đổi" : "Tạo tài khoản"} pendingLabel={editing ? "Đang lưu..." : "Đang tạo tài khoản..."} className="h-10 rounded-xl bg-[var(--primary)] px-4 text-sm font-bold text-white" />
+          <SheetFormActions className="md:col-span-2">
+            <PendingSubmitButton form={formId} idleLabel={editing ? "Lưu thay đổi" : "Tạo tài khoản"} pendingLabel={editing ? "Đang lưu..." : "Đang tạo tài khoản..."} className="h-10 rounded-xl bg-[var(--primary)] px-4 text-sm font-bold text-white" />
             <Link href="/accounts" data-instant-close className="inline-flex h-10 items-center rounded-xl border border-[var(--border)] px-4 text-sm font-bold">Hủy</Link>
-          </div>
+          </SheetFormActions>
         </form>
       </CardContent>
     </Card>

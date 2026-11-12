@@ -3,8 +3,15 @@
 import { Calculator, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { BottomSheet } from "@/components/bottom-sheet";
+import { BottomSheet, useSheetFooterSlot } from "@/components/bottom-sheet";
 import { cn } from "@/lib/utils";
+
+/** Keep Finish at the sheet's viewport bottom on phones with short screens. */
+function CalculatorFinishAction({ onFinish }: { onFinish: () => void }) {
+  const footer = useSheetFooterSlot();
+  const action = <div className="fin-calculator-finish"><button type="button" onClick={onFinish} aria-label="Hoàn tất nhập số tiền" className="fin-primary-btn w-full !min-h-12">Xong</button></div>;
+  return footer?.element ? createPortal(action, footer.element) : action;
+}
 
 type Operator = "+" | "-" | "*" | "/";
 
@@ -257,7 +264,7 @@ export function MoneyCalculatorInput({
   ];
 
   const sheet = mounted ? createPortal(
-    <BottomSheet open={open} onClose={() => setOpen(false)} label={`Máy tính ${currencyCode ?? "số tiền"}`} zIndex="z-[140]" panelClassName="max-h-[min(78dvh,620px)] max-w-md border-t border-[var(--border)] px-4 pb-[max(env(safe-area-inset-bottom),16px)] sm:mb-4 sm:rounded-[28px] sm:border">
+    <BottomSheet open={open} onClose={() => setOpen(false)} label={`Máy tính ${currencyCode ?? "số tiền"}`} zIndex="z-[140]" panelClassName="max-h-[min(78dvh,620px)] max-w-md border-t border-[var(--border)] px-4 sm:mb-4 sm:rounded-[28px] sm:border">
         <div className="mt-3 flex items-center justify-between gap-3">
           <div className="min-w-0"><p className="truncate text-sm font-black">Nhập số tiền{currencyCode ? ` · ${currencyCode}` : ""}</p><p className="mt-0.5 text-[11px] text-[var(--muted-foreground)]">Tự động nhóm hàng nghìn bằng dấu . · phím . nhập phần thập phân.</p></div>
           <button type="button" onClick={() => setOpen(false)} className="grid size-9 shrink-0 place-items-center rounded-xl border border-[var(--border)]" aria-label="Đóng"><X className="size-4" /></button>
@@ -270,9 +277,9 @@ export function MoneyCalculatorInput({
           {keys.map((key, index) => <MoneyKeyButton key={`${key.label}-${index}`} onClick={key.onClick} ariaLabel={key.ariaLabel ?? (/^\d+$/.test(key.label) ? `Nhập ${key.label}` : `Phép tính ${key.label}`)} className={cn("h-12 rounded-xl border border-[var(--border)] bg-[var(--background)] text-base font-black", key.tone === "operator" && "bg-[var(--sidebar-accent)] text-[var(--primary)]")}>{key.label}</MoneyKeyButton>)}
           <MoneyKeyButton onClick={clear} ariaLabel="Xóa toàn bộ số tiền" className="h-12 rounded-xl border border-rose-500/20 bg-rose-500/[.07] text-xs font-black text-rose-500">C</MoneyKeyButton>
           <MoneyKeyButton onClick={backspace} ariaLabel="Xóa một chữ số" className="grid h-12 place-items-center rounded-xl border border-[var(--border)] bg-[var(--background)]"><svg viewBox="0 0 24 24" aria-hidden="true" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 6H9l-6 6 6 6h12a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2Z"/><path d="m18 9-6 6"/><path d="m12 9 6 6"/></svg></MoneyKeyButton>
-          <MoneyKeyButton onClick={equals} ariaLabel="Tính kết quả" className="h-12 rounded-xl bg-[var(--primary)] text-lg font-black text-white">=</MoneyKeyButton>
-          <MoneyKeyButton onClick={() => setOpen(false)} ariaLabel="Hoàn tất nhập số tiền" className="h-12 rounded-xl bg-[var(--foreground)] text-sm font-black text-[var(--background)]">Xong</MoneyKeyButton>
+          <MoneyKeyButton onClick={equals} ariaLabel="Tính kết quả" className="col-span-2 h-12 rounded-xl bg-[var(--primary)] text-lg font-black text-white">=</MoneyKeyButton>
         </div>
+        <CalculatorFinishAction onFinish={() => setOpen(false)} />
     </BottomSheet>, document.body) : null;
 
   return <div className={cn("min-w-0 max-w-full", className)}>

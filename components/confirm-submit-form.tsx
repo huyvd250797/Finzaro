@@ -8,15 +8,18 @@ export function ConfirmSubmitForm({
   action,
   confirmMessage,
   children,
-  className
+  className,
+  id
 }: {
   action: Action;
   confirmMessage?: string | null;
   children: ReactNode;
   className?: string;
+  id?: string;
 }) {
   return (
     <form
+      id={id}
       action={action}
       className={className}
       onSubmit={(event) => {

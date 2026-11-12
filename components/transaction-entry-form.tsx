@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { useActionState, useEffect, useId, useMemo, useRef, useState, type FormEvent } from "react";
+import { createPortal } from "react-dom";
+import { useSheetFooterSlot } from "@/components/bottom-sheet";
 import { ArrowLeftRight, CalendarDays, ChevronDown, Sparkles, X } from "lucide-react";
 import { createTransactionStateAction } from "@/features/transactions/actions";
 import type { TransactionType } from "@/features/transactions/constants";
@@ -27,6 +29,8 @@ export function TransactionEntryForm({ type, accounts, categories, today, sugges
   suggestions: QuickTransactionSuggestion[];
   returnTo?: string;
 }) {
+  const formId = useId();
+  const footerSlot = useSheetFooterSlot();
   const isTransfer = type === "transfer";
   const typeTone = type === "expense" ? "text-rose-500" : type === "income" ? "text-emerald-500" : "text-sky-500";
   // Use the latest actual choice as a default; do not auto-create or modify a transaction.
@@ -99,6 +103,14 @@ export function TransactionEntryForm({ type, accounts, categories, today, sugges
     setSelectedSuggestion(suggestion.id);
   }
 
+  const saveActions = <div className="fin-form-footer fin-transaction-savebar flex gap-2 sm:col-span-2">
+    <button type="button" data-instant-close className="fin-secondary-btn">Hủy</button>
+    <PendingSubmitButton form={formId} idleLabel="Lưu giao dịch" pendingLabel="Đang lưu…" className="fin-primary-btn flex-1" />
+  </div>;
+  const actions = footerSlot?.element
+    ? (footerSlot.activeFormKey == null || footerSlot.activeFormKey === type ? createPortal(saveActions, footerSlot.element) : null)
+    : saveActions;
+
   return <Card className="fin-transaction-card fin-mobile-entry-card shadow-2xl"><CardContent className="p-4 sm:p-6">
     <div className="flex items-center justify-between gap-3">
       <div className="min-w-0"><p className={`text-[11px] font-semibold ${typeTone}`}>Giao dịch mới</p><h2 className={`mt-0.5 text-xl font-extrabold tracking-tight ${typeTone}`}>{type === "expense" ? "Chi tiền" : type === "income" ? "Thu tiền" : "Chuyển tiền"}</h2></div>
@@ -106,7 +118,7 @@ export function TransactionEntryForm({ type, accounts, categories, today, sugges
     </div>
     {accounts.length < (isTransfer ? 2 : 1) ? <div className="mt-5 rounded-xl border border-dashed border-[var(--border)] p-5 text-sm">{isTransfer ? "Cần ít nhất hai tài khoản hoạt động để chuyển tiền." : "Cần ít nhất một tài khoản hoạt động."} <Link href="/accounts?new=1" className="font-bold text-[var(--primary)]">Thêm tài khoản</Link></div> : <>
       {suggestions.length > 0 && <div className="mt-3"><p className="mb-2 flex items-center gap-1 text-[11px] font-bold text-[var(--muted-foreground)]"><Sparkles className="size-3.5" /> Dùng lại giao dịch gần đây</p><div className="flex snap-x gap-2 overflow-x-auto pb-1.5">{suggestions.slice(0, 5).map((suggestion) => <button key={suggestion.id} type="button" onClick={() => applySuggestion(suggestion)} aria-pressed={selectedSuggestion === suggestion.id} className={`fin-suggestion-chip min-w-[132px] max-w-[170px] shrink-0 snap-start ${selectedSuggestion === suggestion.id ? "is-selected" : ""}`}><span className="flex items-center gap-1.5 truncate text-xs font-semibold"><span style={{ color: iconColorValue(suggestion.category_icon_color) }}>{suggestion.category_icon_name ? <CategoryIcon name={suggestion.category_icon_name} className="size-4" /> : <ArrowLeftRight className="size-4" />}</span><span className="truncate">{suggestion.title}</span></span><span className="mt-1 block truncate text-[11px] font-bold tabular-nums">{suggestion.amount_label}</span></button>)}</div></div>}
-      <form action={formAction} onSubmit={onSubmit} onInvalidCapture={onInvalidCapture} onInputCapture={() => { if (invalidHint) setInvalidHint(""); }} className="fin-transaction-entry-form mt-3 grid min-w-0 gap-3 sm:grid-cols-2">
+      <form id={formId} action={formAction} onSubmit={onSubmit} onInvalidCapture={onInvalidCapture} onInputCapture={() => { if (invalidHint) setInvalidHint(""); }} className="fin-transaction-entry-form mt-3 grid min-w-0 gap-3 sm:grid-cols-2">
         <input name="transaction_type" type="hidden" value={type} /><input name="transaction_purpose" type="hidden" value={isTransfer ? "transfer" : "standard"} /><input name="return_to" type="hidden" value={returnTo} />
         {(state.error || invalidHint) && <p ref={errorRef} tabIndex={-1} role="alert" className="fin-inline-error fin-form-error-anchor sm:col-span-2">{invalidHint || state.error}</p>}
         <div className="fin-amount-field sm:col-span-2">
@@ -121,7 +133,7 @@ export function TransactionEntryForm({ type, accounts, categories, today, sugges
         {isTransfer && !differentCurrency && <input name="to_amount" type="hidden" value="" />}
         <label className="sm:col-span-2"><span className="field-label">Nội dung giao dịch</span><input name="title" className="fin-input" required maxLength={140} placeholder="Nhập nội dung" value={title} onChange={(event) => { setTitle(event.target.value); setAutoTitle(false); }} /></label>
         <details className="fin-transaction-details sm:col-span-2"><summary className="flex cursor-pointer items-center gap-2 text-xs font-semibold text-[var(--muted-foreground)]"><CalendarDays className="size-4" /> Ngày {today.split("-").reverse().join("/")} · Ghi chú <ChevronDown className="ml-auto size-4" /></summary><div className="mt-3 grid gap-3 sm:grid-cols-2"><label><span className="field-label">Ngày giao dịch</span><MobileDateInput name="transaction_date" defaultValue={today} ariaLabel="Ngày giao dịch" /></label><label><span className="field-label">Ghi chú (tùy chọn)</span><textarea name="notes" rows={2} maxLength={500} className="fin-textarea" value={notes} onChange={(event) => setNotes(event.target.value)} /></label></div></details>
-        <div className="fin-form-footer fin-transaction-savebar flex gap-2 sm:col-span-2"><button type="button" data-instant-close className="fin-secondary-btn">Hủy</button><PendingSubmitButton idleLabel="Lưu giao dịch" pendingLabel="Đang lưu…" className="fin-primary-btn flex-1" /></div>
+        {actions}
       </form>
     </>}
   </CardContent></Card>;
