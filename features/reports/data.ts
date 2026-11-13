@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/database.types";
 import type { CategoryRow } from "@/features/categories/data";
 import { categoryScopeIds } from "@/features/reports/category-scope";
+import { flowValue } from "@/features/reports/advanced";
 import { loadLedger, transactionEntry, type LedgerAccount, type LedgerCurrency, type LedgerEntry, type TransactionCategory, type TransactionView } from "@/features/transactions/data";
 
 export type ReportRangeKey = "this_month" | "last_month" | "3m" | "6m" | "12m" | "ytd" | "custom";
@@ -414,7 +415,7 @@ export async function loadReportLedger(
 function parseIsoDate(value: string) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
   const d = new Date(`${value}T00:00:00Z`);
-  return Number.isNaN(d.getTime()) ? null : d;
+  return Number.isNaN(d.getTime()) || d.toISOString().slice(0, 10) !== value ? null : d;
 }
 
 function iso(date: Date) {
@@ -486,38 +487,41 @@ export function normalizeReportFilters(params: Record<string, string | undefined
 }
 
 export function filterReportTransactions(transactions: TransactionView[], filters: ReportFilters, categories: CategoryRow[]) {
-  const categorySet = filters.category !== "all" ? new Set(categoryScopeIds(filters.category, categories)) : null;
+  const categorySet = filters.category !== "all" && filters.category !== "uncategorized"
+    ? new Set(categoryScopeIds(filters.category, categories)) : null;
   return transactions.filter((transaction) => {
+    if (transaction.transaction_purpose !== "standard" || !["income", "expense"].includes(transaction.transaction_type)) return false;
     if (transaction.transaction_date < filters.from || transaction.transaction_date > filters.to) return false;
     if (filters.type !== "all" && transaction.transaction_type !== filters.type) return false;
-    if (filters.account !== "all" && !transaction.entries.some((entry) => entry.account_id === filters.account)) return false;
+    if (filters.category === "uncategorized" && transaction.category_id !== null) return false;
     if (categorySet && (!transaction.category_id || !categorySet.has(transaction.category_id))) return false;
-    if (!transaction.entries.some((entry) => entry.currency_code === filters.currency)) return false;
+    // A transaction with mixed-currency entries must use the entry relevant to
+    // its flow, rather than accepting an unrelated entry in another currency.
+    const relevantEntry = transaction.transaction_type === "income" || transaction.transaction_type === "expense"
+      ? transactionEntry(transaction, transaction.transaction_type) : null;
+    const entries = relevantEntry ? [relevantEntry] : transaction.entries;
+    if (!entries.some((entry) => entry.currency_code === filters.currency)) return false;
+    if (filters.account !== "all" && !entries.some((entry) => entry.account_id === filters.account)) return false;
     return true;
   });
 }
 
 export function reportTotals(transactions: TransactionView[], currency: string) {
-  let income = 0;
-  let expense = 0;
-  let transferOut = 0;
-  let transferIn = 0;
-  for (const transaction of transactions) {
-    if (transaction.transaction_type === "income" && transaction.transaction_purpose === "standard") {
-      const entry = transactionEntry(transaction, "income");
-      if (entry?.currency_code === currency) income += Math.abs(entry.amount_minor);
-    } else if (transaction.transaction_type === "expense" && transaction.transaction_purpose === "standard") {
-      const entry = transactionEntry(transaction, "expense");
-      if (entry?.currency_code === currency) expense += Math.abs(entry.amount_minor);
-    } else if (transaction.transaction_type === "transfer") {
-      const out = transactionEntry(transaction, "transfer_out");
-      const incoming = transactionEntry(transaction, "transfer_in");
-      if (out?.currency_code === currency) transferOut += Math.abs(out.amount_minor);
+  let income = 0; let expense = 0; let transferOut = 0; let transferIn = 0; let expenseCount = 0;
+  for (const tx of transactions) {
+    const inc = flowValue(tx, currency, "income");
+    const exp = flowValue(tx, currency, "expense");
+    income += inc; expense += exp;
+    if (exp > 0) expenseCount++;
+    if (tx.transaction_type === "transfer") {
+      const outgoing = transactionEntry(tx, "transfer_out");
+      const incoming = transactionEntry(tx, "transfer_in");
+      if (outgoing?.currency_code === currency) transferOut += Math.abs(outgoing.amount_minor);
       if (incoming?.currency_code === currency) transferIn += Math.abs(incoming.amount_minor);
     }
   }
-  const expenseCount = transactions.filter((item) => item.transaction_type === "expense" && item.transaction_purpose === "standard" && transactionEntry(item, "expense")?.currency_code === currency).length;
-  return { income, expense, net: income - expense, transferOut, transferIn, count: transactions.length, expenseCount, avgExpense: expenseCount > 0 ? Math.round(expense / expenseCount) : 0 };
+  return { income, expense, net: income - expense, transferOut, transferIn,
+    count: transactions.length, expenseCount, avgExpense: expenseCount > 0 ? Math.round(expense / expenseCount) : 0 };
 }
 
 export function monthlyCashflow(transactions: TransactionView[], currency: string, from: string, to: string) {
@@ -556,33 +560,52 @@ export function monthlyCashflow(transactions: TransactionView[], currency: strin
   return rows;
 }
 
-export function categorySpending(transactions: TransactionView[], currency: string) {
-  const totals = new Map<string, { id: string; label: string; icon_name: string; icon_color: string | null; amount: number }>();
-  for (const transaction of transactions) {
-    if (transaction.transaction_type !== "expense" || transaction.transaction_purpose !== "standard") continue;
-    const entry = transactionEntry(transaction, "expense");
-    if (!entry || entry.currency_code !== currency) continue;
-    const id = transaction.category_id ?? "uncategorized";
-    const row = totals.get(id) ?? { id, label: transaction.category?.name ?? transaction.category_label ?? "Chưa phân loại", icon_name: transaction.category?.icon_name ?? "Shapes", icon_color: transaction.category?.icon_color ?? "#0d8b66", amount: 0 };
-    row.amount += Math.abs(entry.amount_minor);
+/** All financial views aggregate only standard Thu/Chi in the requested currency.
+ * Each type gets its own denominator. Transfers, debt/legacy and other currencies
+ * are excluded, and we group on a transaction's leaf category only once.
+ */
+export type FinancialFlowType = "income" | "expense";
+
+export function categoryFlow(transactions: TransactionView[], currency: string, type: FinancialFlowType): CategorySpendRow[] {
+  const totals = new Map<string, Omit<CategorySpendRow, "percent">>();
+  for (const tx of transactions) {
+    const amount = flowValue(tx, currency, type);
+    if (amount <= 0) continue;
+    const id = tx.category_id ?? "uncategorized";
+    const row = totals.get(id) ?? {
+      id, label: tx.category?.name ?? tx.category_label ?? "Chưa phân loại",
+      icon_name: tx.category?.icon_name ?? "Shapes", icon_color: tx.category?.icon_color ?? "#0d8b66", amount: 0
+    };
+    row.amount += amount;
     totals.set(id, row);
   }
-  const rows = Array.from(totals.values()).sort((a, b) => b.amount - a.amount);
+  const rows = [...totals.values()].sort((a, b) => b.amount - a.amount || a.label.localeCompare(b.label));
   const total = rows.reduce((sum, row) => sum + row.amount, 0);
-  return rows.map((row) => ({ ...row, percent: total > 0 ? Math.round((row.amount / total) * 1000) / 10 : 0 }));
+  return rows.map((row) => ({ ...row, percent: total > 0 ? Math.round(row.amount / total * 1000) / 10 : 0 }));
+}
+
+export function accountFlow(transactions: TransactionView[], currency: string, accounts: LedgerAccount[], type: FinancialFlowType): AccountSpendRow[] {
+  const names = new Map(accounts.map((account) => [account.id, account.name]));
+  const totals = new Map<string, number>();
+  for (const tx of transactions) {
+    const amount = flowValue(tx, currency, type);
+    if (amount <= 0) continue;
+    const entry = transactionEntry(tx, type);
+    if (!entry || entry.currency_code !== currency) continue;
+    totals.set(entry.account_id, (totals.get(entry.account_id) ?? 0) + amount);
+    if (!names.has(entry.account_id) && entry.account?.name) names.set(entry.account_id, entry.account.name);
+  }
+  const rows = [...totals.entries()].map(([id, amount]) => ({ id, label: names.get(id) ?? `Tài khoản (${id.slice(0, 8)})`, amount }))
+    .sort((a, b) => b.amount - a.amount || a.label.localeCompare(b.label));
+  const total = rows.reduce((sum, row) => sum + row.amount, 0);
+  return rows.map((row) => ({ ...row, percent: total > 0 ? Math.round(row.amount / total * 1000) / 10 : 0 }));
+}
+
+export function categorySpending(transactions: TransactionView[], currency: string) {
+  return categoryFlow(transactions, currency, "expense");
 }
 
 export function accountSpending(transactions: TransactionView[], currency: string, accounts: LedgerAccount[]) {
-  const names = new Map(accounts.map((account) => [account.id, account.name]));
-  const totals = new Map<string, number>();
-  for (const transaction of transactions) {
-    if (transaction.transaction_type !== "expense" || transaction.transaction_purpose !== "standard") continue;
-    const entry = transactionEntry(transaction, "expense");
-    if (!entry || entry.currency_code !== currency) continue;
-    totals.set(entry.account_id, (totals.get(entry.account_id) ?? 0) + Math.abs(entry.amount_minor));
-  }
-  const rows = Array.from(totals.entries()).map(([id, amount]) => ({ id, label: names.get(id) ?? "Tài khoản", amount })).sort((a, b) => b.amount - a.amount);
-  const total = rows.reduce((sum, row) => sum + row.amount, 0);
-  return rows.map((row) => ({ ...row, percent: total > 0 ? Math.round((row.amount / total) * 1000) / 10 : 0 }));
+  return accountFlow(transactions, currency, accounts, "expense");
 }
 

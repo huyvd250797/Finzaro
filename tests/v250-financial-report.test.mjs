@@ -22,7 +22,8 @@ function loadCompiled(file, injections = {}) {
   return exports;
 }
 const mockTransactionEntry = (tx, role) => tx.entries.find((entry) => entry.entry_role === role) ?? null;
-const analytics = loadCompiled("features/reports/advanced.ts", { "@/features/transactions/data": { transactionEntry: mockTransactionEntry } });
+const canonical = loadCompiled("features/transactions/financial-flow.ts");
+const analytics = loadCompiled("features/reports/advanced.ts", { "@/features/transactions/financial-flow": canonical });
 const workbook = loadCompiled("features/reports/report-workbook.ts");
 const mk = (date, type, amount, role = type, currency = "VND", purpose = "standard", category = "food") => ({
   id: `${date}-${type}-${amount}`, transaction_date: date, transaction_type: type, transaction_purpose: purpose,

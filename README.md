@@ -1,3 +1,5 @@
+> **Latest release: Finzaro V4.1.4 — Financial Accuracy & Release Gate.** Chuẩn hóa số liệu Thu/Chi/Ròng; sửa tỷ trọng Top 5 và Excel/PDF theo bộ lọc; đối soát báo cáo; cấu hình Vercel chỉ deploy sau khi ESLint, TypeScript, tests và production build đều đạt. **Không cần SQL migration V4.1.4.** Xem [`DEPLOY_V4.1.4.md`](DEPLOY_V4.1.4.md). Chưa xác nhận build production trong môi trường đóng gói.
+
 > **Latest release: V4.1.3 — Period Snapshot TypeScript Deploy Hotfix.** Sửa hai lỗi TS2345 của `/api/reports/period-snapshot` khi chuyển Tháng/Năm; không thay đổi nghiệp vụ hoặc SQL. Xem `DEPLOY_V4.1.3.md`.
 
 > **Latest release: V4.1.2 — Compact Reports & Instant Period Navigation.** Báo cáo Tổng quan gọn hơn, bỏ hiệu quả dòng tiền và CTA Phân tích nâng cao. Chuyển Tháng/Năm và kỳ trước/sau bằng API tổng hợp nhanh, cache kỳ đã xem; SQL mới chỉ thêm hàm tổng hợp, không sửa dữ liệu. Xem `DEPLOY_V4.1.2.md`.

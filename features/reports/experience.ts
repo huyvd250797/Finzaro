@@ -1,5 +1,5 @@
 import type { TransactionView } from "@/features/transactions/data";
-import { transactionEntry } from "@/features/transactions/data";
+import { standardFlowValue } from "@/features/transactions/financial-flow";
 
 export type ReportFlowType = "expense" | "income";
 export type ReportCategoryRow = {
@@ -54,13 +54,7 @@ export function shiftMonthKey(key: string, offset: number) {
 }
 
 export function flowAmount(transaction: TransactionView, currency: string, type: ReportFlowType) {
-  if (!transaction || transaction.transaction_type !== type) return 0;
-  if (transaction.transaction_purpose !== "standard") return 0;
-  if (!Array.isArray(transaction.entries)) return 0;
-  const entry = transactionEntry(transaction, type);
-  if (!entry || entry.currency_code !== currency) return 0;
-  const amount = Number(entry.amount_minor);
-  return Number.isFinite(amount) ? Math.abs(amount) : 0;
+  return standardFlowValue(transaction, currency, type);
 }
 
 export function periodTransactions(transactions: TransactionView[], from: string, to: string) {

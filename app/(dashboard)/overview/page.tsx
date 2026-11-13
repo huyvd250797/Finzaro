@@ -31,7 +31,8 @@ async function OverviewEssentials() {
   const matchingAccounts = accounts.filter((account) => account.currency_code === currency);
   const balance = matchingAccounts.reduce((sum, account) => sum + account.current_balance_minor, 0);
   const categories = expenseCategories(ledger.transactions, currency, month).slice(0, 5);
-  const categoryTotal = categories.reduce((sum, row) => sum + row.value, 0);
+  // Percentages are calculated against ALL category spending by expenseCategories, before Top 5.
+  // Never re-normalize to the visible cards.
   // Reuse the month ledger: today is a strict date filter, never a second query.
   // Exclude transfers, archived/legacy purposes and other currencies from spending.
   const todayExpenses = ledger.transactions.flatMap((tx) => {
@@ -41,7 +42,7 @@ async function OverviewEssentials() {
   });
   const todayTotal = todayExpenses.reduce((sum, item) => sum + item.amount, 0);
   const todayCategories = expenseCategories(ledger.transactions, currency, today).slice(0, 5);
-  const todayCategoryTotal = todayCategories.reduce((sum, item) => sum + item.value, 0);
+  // Same full-day denominator is already used in each item.percent.
   const todayTransactionsHref = `/transactions?type=expense&from=${today}&to=${today}`;
   const metrics = [
     { label: "Thu nhập", amount: totals.income, tone: "income", icon: ArrowDownLeft, prefix: "+" },
@@ -79,7 +80,7 @@ async function OverviewEssentials() {
         <div className="space-y-3">{todayCategories.map((item) => <div key={item.label} className="flex min-w-0 items-center gap-3">
           <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-[var(--muted)]" style={{ color: iconColorValue(item.icon_color) }}><CategoryIcon name={item.icon_name} className="size-4.5"/></span>
           <div className="min-w-0 flex-1"><div className="flex items-center justify-between gap-2"><span className="truncate text-xs font-bold">{item.label}</span><span className="shrink-0 text-xs font-extrabold tabular-nums">{formatMinorMoney(item.value, currency, digits)}</span></div>
-            <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[var(--muted)]"><div className="h-full rounded-full" style={{ width: `${todayCategoryTotal ? item.value / todayCategoryTotal * 100 : 0}%`, backgroundColor: iconColorValue(item.icon_color) }}/></div>
+            <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[var(--muted)]"><div className="h-full rounded-full" style={{ width: `${item.percent}%`, backgroundColor: iconColorValue(item.icon_color) }}/></div>
           </div>
         </div>)}</div>
         <details className="fin-today-expense-details group mt-4 border-t border-[var(--border)] pt-3">
@@ -98,7 +99,7 @@ async function OverviewEssentials() {
       <div className="mb-4 flex items-center justify-between gap-2"><div><p className="fin-section-eyebrow">PHÂN BỔ NGÂN SÁCH</p><h2 className="mt-1 text-base font-extrabold">Chi tiêu tháng này</h2></div><Link href="/reports?type=expense" className="fin-text-action">Xem báo cáo <ArrowRight className="size-3.5"/></Link></div>
       {categories.length ? <div className="space-y-4">{categories.map((item) => <div key={item.label} className="flex min-w-0 items-center gap-3">
         <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-[var(--muted)]" style={{ color: iconColorValue(item.icon_color) }}><CategoryIcon name={item.icon_name} className="size-5" /></span>
-        <div className="min-w-0 flex-1"><div className="flex items-center justify-between gap-2"><span className="truncate text-xs font-bold">{item.label}</span><span className="shrink-0 text-xs font-extrabold tabular-nums">{formatMinorMoney(item.value, currency, digits)}</span></div><div className="mt-2 h-2 overflow-hidden rounded-full bg-[var(--muted)]"><div className="fin-bar-progress h-full rounded-full" style={{ width: `${categoryTotal ? item.value / categoryTotal * 100 : 0}%`, backgroundColor: iconColorValue(item.icon_color) }} /></div></div>
+        <div className="min-w-0 flex-1"><div className="flex items-center justify-between gap-2"><span className="truncate text-xs font-bold">{item.label}</span><span className="shrink-0 text-xs font-extrabold tabular-nums">{formatMinorMoney(item.value, currency, digits)}</span></div><div className="mt-2 h-2 overflow-hidden rounded-full bg-[var(--muted)]"><div className="fin-bar-progress h-full rounded-full" style={{ width: `${item.percent}%`, backgroundColor: iconColorValue(item.icon_color) }} /></div></div>
       </div>)}</div> : <div className="fin-empty-card"><Sparkles className="mb-2 size-5 text-[var(--primary)]"/><p className="text-sm font-semibold">Chưa có khoản chi tháng này</p><p className="mt-1 text-xs text-[var(--muted-foreground)]">Các danh mục sẽ xuất hiện khi có giao dịch.</p></div>}
     </CardContent></Card>
   </>;

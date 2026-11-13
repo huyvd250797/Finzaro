@@ -1,5 +1,5 @@
 import type { TransactionView } from "@/features/transactions/data";
-import { transactionEntry } from "@/features/transactions/data";
+import { standardFlowValue } from "@/features/transactions/financial-flow";
 import type { MonthlyCashflowRow } from "@/features/reports/data";
 
 export type PeriodTotals = {
@@ -12,9 +12,7 @@ export type SpendingMovement = { id: string; label: string; current: number; pre
 export type FinancialInsight = { tone: "positive" | "warning" | "neutral"; headline: string; explanation: string };
 
 export function flowValue(tx: TransactionView, currency: string, type: "income" | "expense") {
-  if (tx.transaction_type !== type || tx.transaction_purpose !== "standard") return 0;
-  const entry = transactionEntry(tx, type);
-  return entry?.currency_code === currency ? Math.abs(Number(entry.amount_minor) || 0) : 0;
+  return standardFlowValue(tx, currency, type);
 }
 
 export function calculateFinancialTotals(transactions: TransactionView[], currency: string): PeriodTotals {
@@ -66,11 +64,11 @@ export function dailyCashflow(transactions: TransactionView[], currency: string,
   return Array.from(bucket.values()).sort((a, b) => a.date.localeCompare(b.date));
 }
 
-export function categoryMovement(current: TransactionView[], previous: TransactionView[], currency: string): SpendingMovement[] {
+export function categoryMovement(current: TransactionView[], previous: TransactionView[], currency: string, type: "income" | "expense" = "expense"): SpendingMovement[] {
   const group = (rows: TransactionView[]) => {
     const values = new Map<string, { label: string; amount: number }>();
     for (const tx of rows) {
-      const amount = flowValue(tx, currency, "expense");
+      const amount = flowValue(tx, currency, type);
       if (!amount) continue;
       const id = tx.category_id ?? "uncategorized";
       const value = values.get(id) ?? { label: tx.category?.name ?? tx.category_label ?? "Chưa phân loại", amount: 0 };

@@ -86,7 +86,7 @@ test("no empty UUID list is sent into marker table filters", () => {
  assert.match(read("app/(dashboard)/reports/calendar/page.tsx"),/transferIds\.length > 0/);
 });
 test("Reports excludes legacy special finance transactions", () => {
- assert.match(reportData,/transaction_purpose !== "standard"/);
+ assert.match(read("features/transactions/financial-flow.ts"),/transaction_purpose !== "standard"/);
  assert.match(read("app/api/reports/export/route.ts"),/transaction_purpose === "standard"/);
  assert.match(read("app/(dashboard)/reports/calendar/page.tsx"),/transaction_purpose === "standard"/);
 });

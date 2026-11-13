@@ -4,6 +4,7 @@ import { loadReportLedger } from "@/features/reports/data";
 import { currencyDigits } from "@/features/transactions/data";
 import { currentYearMonth, monthBounds, validMonthKey, validYear, yearBounds } from "@/features/reports/experience";
 import { snapshotFromSummaryRows, snapshotFromTransactions, type ReportSummaryRow } from "@/features/reports/period-snapshot";
+import { reconcilePeriodSnapshot } from "@/features/reports/reconcile-snapshot";
 import type { CategoryDrilldownMode } from "@/features/reports/category-drilldown";
 
 export const dynamic = "force-dynamic";
@@ -49,6 +50,7 @@ export async function GET(request: Request) {
     // transferring the complete ledger to the Next.js server.
     if (!error && data && typeof data === "object" && Array.isArray((data as { rows?: unknown }).rows)) {
       const snapshot = snapshotFromSummaryRows((data as { rows: ReportSummaryRow[] }).rows, args);
+      if (!reconcilePeriodSnapshot(snapshot)) throw new Error("Báo cáo không khớp KPI, danh mục và chi tiết kỳ.");
       return NextResponse.json(snapshot, { headers: PRIVATE_HEADERS });
     }
     // Fallback is ONLY for a missing SQL function, not for an arbitrary DB
@@ -58,6 +60,7 @@ export async function GET(request: Request) {
     if (ledger.diagnostics.strategy === "empty") throw new Error("Không thể tải dữ liệu giao dịch của kỳ báo cáo.");
     const snapshot = snapshotFromTransactions(ledger.transactions, { ...args,
       digits: currencyDigits(ledger.currencies, currency) });
+    if (!reconcilePeriodSnapshot(snapshot)) throw new Error("Báo cáo không khớp KPI, danh mục và chi tiết kỳ.");
     return NextResponse.json(snapshot, { headers: PRIVATE_HEADERS });
   } catch (error) {
     console.error("[Finzaro Reports] period snapshot failed", error);

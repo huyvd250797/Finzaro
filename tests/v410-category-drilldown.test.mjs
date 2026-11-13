@@ -21,8 +21,9 @@ function evaluateTypeScript(file, deps) {
   }, module, module.exports);
   return module.exports;
 }
+const canonical = evaluateTypeScript("features/transactions/financial-flow.ts", {});
 const experience = evaluateTypeScript("features/reports/experience.ts", {
-  "@/features/transactions/data": { transactionEntry: (transaction, role) => transaction.entries.find((entry) => entry.entry_role === role) ?? null }
+  "@/features/transactions/financial-flow": canonical
 });
 const drilldown = evaluateTypeScript("features/reports/category-drilldown.ts", { "@/features/reports/experience": experience });
 const tx = (id, type, date, amount, category = "food", currency = "VND", purpose = "standard") => ({
@@ -32,8 +33,8 @@ const tx = (id, type, date, amount, category = "food", currency = "VND", purpose
 });
 
 test("V4.1.0 release and Today expenses are collapsed by default", () => {
-  assert.equal(JSON.parse(read("package.json")).version, "4.1.3");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.1\.3"/);
+  assert.equal(JSON.parse(read("package.json")).version, "4.1.4");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.1\.4"/);
   const overview = read("app/(dashboard)/overview/page.tsx");
   assert.match(overview, /<details className="fin-today-expense-details/);
   assert.match(overview, /<summary[^>]+aria-label="Mở hoặc thu gọn các khoản đã chi hôm nay"/);

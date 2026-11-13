@@ -1,6 +1,6 @@
 import type { LedgerAccount, TransactionView } from "@/features/transactions/data";
 import { transactionEntry } from "@/features/transactions/data";
-import type { CategorySpendRow, AccountSpendRow, MonthlyCashflowRow } from "@/features/reports/data";
+import { categoryFlow, accountFlow, type CategorySpendRow, type AccountSpendRow, type MonthlyCashflowRow, type FinancialFlowType } from "@/features/reports/data";
 import { calculateFinancialTotals, type PeriodComparison } from "@/features/reports/advanced";
 import type { WorkbookSheet } from "@/features/reports/report-workbook";
 
@@ -8,10 +8,14 @@ export type FinancialStatement = {
   from: string; to: string; currency: string; digits: number; comparison: PeriodComparison;
   monthly: MonthlyCashflowRow[]; categories: CategorySpendRow[]; accounts: AccountSpendRow[];
   transactions: TransactionView[];
+  reportType?: "all" | FinancialFlowType;
 };
 
 export function statementSheets(report: FinancialStatement): WorkbookSheet[] {
-  const { from, to, currency, digits, comparison, monthly, categories, accounts, transactions } = report;
+  const { from, to, currency, digits, comparison, monthly, transactions } = report;
+  const types: FinancialFlowType[] = report.reportType === "income" ? ["income"] : report.reportType === "expense" ? ["expense"] : ["income", "expense"];
+  const categoryRows = types.flatMap((type) => categoryFlow(transactions, currency, type).map((row) => [type === "income" ? "Thu" : "Chi", row.label, row.amount, row.percent] as const));
+  const accountRows = types.flatMap((type) => accountFlow(transactions, currency, [], type).map((row) => [type === "income" ? "Thu" : "Chi", row.label, row.amount, row.percent] as const));
   const unit = 10 ** digits;
   const n = (value: number) => Number((value / unit).toFixed(digits));
   const curr = comparison.current;
@@ -30,8 +34,8 @@ export function statementSheets(report: FinancialStatement): WorkbookSheet[] {
       ["Đơn vị", `Số tiền hiển thị bằng đơn vị ${currency}, không phải minor units.`]
     ] },
     { name: "Theo thang", rows: [["Tháng", `Thu (${currency})`, `Chi (${currency})`, `Ròng (${currency})`], ...monthly.map((row) => [row.key, n(row.income), n(row.expense), n(row.net)])] },
-    { name: "Danh muc", rows: [["Danh mục chi", `Số tiền (${currency})`, "Tỷ trọng (%)"], ...categories.map((row) => [row.label, n(row.amount), row.percent])] },
-    { name: "Tai khoan", rows: [["Tài khoản chi", `Số tiền (${currency})`, "Tỷ trọng (%)"], ...accounts.map((row) => [row.label, n(row.amount), row.percent])] },
+    { name: "Danh muc", rows: [["Loại", "Danh mục", `Số tiền (${currency})`, "Tỷ trọng (%)"], ...categoryRows.map((row) => [row[0], row[1], n(row[2]), row[3]])] },
+    { name: "Tai khoan", rows: [["Loại", "Tài khoản", `Số tiền (${currency})`, "Tỷ trọng (%)"], ...accountRows.map((row) => [row[0], row[1], n(row[2]), row[3]])] },
     { name: "Giao dich", rows: [["Ngày", "Loại", "Nội dung", "Danh mục", "Tài khoản", `Thu (${currency})`, `Chi (${currency})`, "Ghi chú"], ...transactions.flatMap((tx) => {
       if (tx.transaction_purpose !== "standard" || !["income", "expense"].includes(tx.transaction_type)) return [];
       const type = tx.transaction_type as "income" | "expense";
@@ -53,5 +57,17 @@ export function cashAccountPosition(_accounts: LedgerAccount[], _currency: strin
 
 export function statementBalancesMatch(report: FinancialStatement) {
   const recomputed = calculateFinancialTotals(report.transactions, report.currency);
-  return recomputed.income === report.comparison.current.income && recomputed.expense === report.comparison.current.expense;
+  const monthTotals = report.monthly.reduce((sum, row) => ({ income: sum.income + row.income, expense: sum.expense + row.expense }), { income: 0, expense: 0 });
+  const incomeCategories = categoryFlow(report.transactions, report.currency, "income");
+  const expenseCategories = categoryFlow(report.transactions, report.currency, "expense");
+  const incomeAccounts = accountFlow(report.transactions, report.currency, [], "income");
+  const expenseAccounts = accountFlow(report.transactions, report.currency, [], "expense");
+  return recomputed.income === report.comparison.current.income
+    && recomputed.expense === report.comparison.current.expense
+    && recomputed.net === report.comparison.current.net
+    && monthTotals.income === recomputed.income && monthTotals.expense === recomputed.expense
+    && incomeCategories.reduce((sum, row) => sum + row.amount, 0) === recomputed.income
+    && expenseCategories.reduce((sum, row) => sum + row.amount, 0) === recomputed.expense
+    && incomeAccounts.reduce((sum, row) => sum + row.amount, 0) === recomputed.income
+    && expenseAccounts.reduce((sum, row) => sum + row.amount, 0) === recomputed.expense;
 }

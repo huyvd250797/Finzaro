@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { accountSpending, categorySpending, filterReportTransactions, loadReportLedger, monthlyCashflow, normalizeReportFilters, previousComparableRange, resolveReportRange } from "@/features/reports/data";
 import { compareFinancialPeriods, maskIncompleteCashflowRatio } from "@/features/reports/advanced";
-import { statementSheets } from "@/features/reports/statement";
+import { statementSheets, statementBalancesMatch, type FinancialStatement } from "@/features/reports/statement";
 import { makeReportXlsx } from "@/features/reports/report-workbook";
 import { currencyDigits } from "@/features/transactions/data";
 
@@ -37,20 +37,25 @@ export async function GET(request: NextRequest) {
     const filters = {
       ...requested,
       account: requested.account === "all" || ledger.accounts.some((a) => a.id === requested.account && a.currency_code === currency) ? requested.account : "all",
-      category: requested.category === "all" || ledger.categories.some((c) => c.id === requested.category) ? requested.category : "all",
+      category: (requested.category === "all" || requested.category === "uncategorized") || ledger.categories.some((c) => c.id === requested.category) ? requested.category : "all",
       type: ["all", "income", "expense"].includes(requested.type) ? requested.type : "all"
     };
     // Keep only ordinary income/expense entries, never count transfers as flow.
     const current = filterReportTransactions(ledger.transactions, filters, ledger.categories).filter((tx) => tx.transaction_purpose === "standard" && (tx.transaction_type === "income" || tx.transaction_type === "expense"));
     const previous = filterReportTransactions(ledger.transactions, { ...filters, from: previousRange.from, to: previousRange.to }, ledger.categories).filter((tx) => tx.transaction_purpose === "standard" && (tx.transaction_type === "income" || tx.transaction_type === "expense"));
-    const sheets = statementSheets({
+    const report: FinancialStatement = {
       from: range.from, to: range.to, currency, digits,
       comparison: maskIncompleteCashflowRatio(compareFinancialPeriods(current, previous, currency), filters.type),
       monthly: monthlyCashflow(current, currency, range.from, range.to),
       categories: categorySpending(current, currency),
       accounts: accountSpending(current, currency, ledger.accounts),
-      transactions: current
-    });
+      transactions: current, reportType: filters.type === "income" || filters.type === "expense" ? filters.type : "all"
+    };
+    if (!statementBalancesMatch(report)) {
+      console.error("[Finzaro reconcile] Export totals do not match monthly/category/account data.");
+      return NextResponse.json({ error: "Số liệu báo cáo chưa khớp. Tạm ngưng xuất để tránh sai lệch." }, { status: 409 });
+    }
+    const sheets = statementSheets(report);
     const filename = `Finzaro-${range.from}-${range.to}-${currency}`;
     const headers = { "Content-Disposition": `attachment; filename="${filename}.${format}"`, "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff" };
     if (format === "xlsx") {

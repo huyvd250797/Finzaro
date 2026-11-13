@@ -6,9 +6,15 @@ const root = resolve(import.meta.dirname, "..");
 const read = (relative) => readFileSync(join(root, relative), "utf8");
 const pkg = JSON.parse(read("package.json"));
 const appVersion = read("lib/app-version.ts").match(/APP_VERSION\s*=\s*["']([^"']+)/)?.[1];
+const vercel = JSON.parse(read("vercel.json"));
+const scripts = pkg.scripts ?? {};
+const releaseStages = ["npm run lint", "npm run typecheck", "npm run test", "npm run build"];
 const errors = [];
 const fail = (message) => errors.push(message);
 
+if (vercel.buildCommand !== "npm run check") fail("Vercel must run the full quality gate before deployment");
+for (const stage of releaseStages) if (!scripts.check?.includes(stage)) fail(`Release quality gate is missing ${stage}`);
+if (!scripts.typecheck?.includes("tsc --noEmit")) fail("TypeScript typecheck must remain strict");
 if (pkg.version !== appVersion) fail(`Version mismatch: package ${pkg.version}, app ${appVersion}`);
 if (existsSync(join(root, "_diagnostic_only_external_shims.d.ts"))) fail("Offline-only ambient TypeScript shims are not allowed in production source; run npm run source:sync.");
 if (pkg.dependencies?.next !== pkg.devDependencies?.["eslint-config-next"]) fail("Next and eslint-config-next versions differ");

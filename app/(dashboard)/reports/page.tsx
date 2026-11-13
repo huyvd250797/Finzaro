@@ -16,6 +16,7 @@ import {
   yearBounds,
   type ReportFlowType
 } from "@/features/reports/experience";
+import { reconcilePeriodSnapshot } from "@/features/reports/reconcile-snapshot";
 import { loadReportLedger } from "@/features/reports/data";
 import { currencyDigits } from "@/features/transactions/data";
 import { requireUser } from "@/lib/auth";
@@ -71,6 +72,11 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
     ...buildInstantCategoryDetails(transactions, currency, "income", mode, flows.income.categories, 180)
   };
   const periodLabel = mode === "month" ? `Tháng ${Number(period.slice(5, 7))}/${period.slice(0, 4)}` : `Năm ${year}`;
+  const snapshot = { mode, period, year, from: bounds.from, to: bounds.to, periodLabel,
+    currency, digits, totals, flows, prefetchedDetails };
+  if (ledger.diagnostics.strategy === "empty" || !reconcilePeriodSnapshot(snapshot)) {
+    return <div role="alert" className="p-5 text-sm text-rose-600">Dữ liệu báo cáo chưa sẵn sàng hoặc không khớp. Vui lòng tải lại sau; Finzaro sẽ không hiển thị các tổng tiền chưa xác nhận.</div>;
+  }
 
   return (
     <div className="fin-page-shell mx-auto max-w-[1180px] px-3 py-4 sm:px-4 md:px-6 lg:px-8 lg:py-7">
@@ -80,10 +86,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
       <div className="mt-3"><ReportNavigation active="overview" /></div>
       <ReportDataStatus diagnostics={ledger.diagnostics} />
 
-      <FastReportOverview initialType={type} initialSnapshot={{
-        mode, period, year, from: bounds.from, to: bounds.to, periodLabel,
-        currency, digits, totals, flows, prefetchedDetails
-      }} />
+      <FastReportOverview initialType={type} initialSnapshot={snapshot} />
     </div>
   );
 }

@@ -1,3 +1,13 @@
+## [4.1.4] — 2026-11-13 · Financial Accuracy & Release Gate
+
+- **Accurate top-category shares:** Dashboard category bars use all spending categories as the denominator before Top 5 is displayed; remove the fake minimum bar share.
+- **Correct exports:** Excel category/account sheets separate Thu and Chi and respect current type filters; CSV and print report preserve the same scope and currency.
+- **Canonical flow calculation:** new `standardFlowValue()` is used by Overview, Reporting, Drilldown and statements, excluding transfers, nonstandard finance transactions and other currencies.
+- **Reconciliation:** block export when KPI/month/category/account aggregates conflict; reject inconsistent Report Overview and period-snapshot responses instead of showing wrong figures.
+- **Integrity and filters:** unify valid income/expense scope, account/currency role, child/uncategorized category selection and strict date parsing; leave Supabase RPCs untouched.
+- **Release gate:** Vercel invokes `npm run check` (lint → strict TypeScript → test → Next.js build), no failure bypass. No SQL/dependency changes.
+- **QA:** 195/195 source tests PASS including new independently expected numeric fixtures. Full build, typecheck, lint and Safari/Vercel still require a network-enabled staging environment.
+
 ## [4.1.3] — 2026-11-13 · Period Snapshot TypeScript Deploy Hotfix
 
 - Fix two `TS2345` build errors in `app/api/reports/period-snapshot/route.ts` by narrowing `mode` to `CategoryDrilldownMode` (`month | year`).

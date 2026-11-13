@@ -17,7 +17,8 @@ function load(file, deps = {}) {
   }, module, module.exports);
   return module.exports;
 }
-const experience = load("features/reports/experience.ts", { "@/features/transactions/data": { transactionEntry: (t, role) => t.entries.find((e) => e.entry_role === role) ?? null } });
+const canonical = load("features/transactions/financial-flow.ts");
+const experience = load("features/reports/experience.ts", { "@/features/transactions/financial-flow": canonical });
 const drilldown = load("features/reports/category-drilldown.ts", { "@/features/reports/experience": experience });
 const preview = load("features/reports/category-detail-preview.ts", { "@/features/reports/experience": experience });
 const fast = load("features/reports/fast-category-entries.ts");
@@ -28,7 +29,7 @@ const tx = (id, type, date, amount, categoryId = "food", currency = "VND", purpo
 });
 
 test("V4.1.1 category drilldown opens a full viewport portal with close button and category-colored bars", () => {
-  assert.equal(JSON.parse(read("package.json")).version, "4.1.3");
+  assert.equal(JSON.parse(read("package.json")).version, "4.1.4");
   const component = read("components/instant-report-breakdown.tsx");
   const css = read("app/globals.css");
   assert.match(component, /createPortal\(/);

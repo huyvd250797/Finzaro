@@ -7,6 +7,7 @@ import { FinanceMetricCard } from "@/components/finance-metric-card";
 import { InstantReportBreakdown } from "@/components/instant-report-breakdown";
 import type { FastPeriodSnapshot } from "@/features/reports/period-snapshot";
 import type { ReportFlowType } from "@/features/reports/experience";
+import { reconcilePeriodSnapshot } from "@/features/reports/reconcile-snapshot";
 import { shiftMonthKey } from "@/features/reports/experience";
 import { cn, formatMinorMoney } from "@/lib/utils";
 import { measureClientPaint } from "@/lib/client-performance";
@@ -35,7 +36,7 @@ function isSnapshot(value: unknown): value is FastPeriodSnapshot {
   return !!snapshot.flows?.income && !!snapshot.flows?.expense &&
     Array.isArray(snapshot.flows.income.categories) && Array.isArray(snapshot.flows.expense.categories) &&
     typeof snapshot.totals?.income === "number" && typeof snapshot.totals?.expense === "number" &&
-    typeof snapshot.from === "string" && typeof snapshot.to === "string";
+    typeof snapshot.from === "string" && typeof snapshot.to === "string" && reconcilePeriodSnapshot(snapshot as FastPeriodSnapshot);
 }
 
 /** Fast period navigation: changes month/year locally rather than re-rendering

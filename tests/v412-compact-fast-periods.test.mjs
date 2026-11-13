@@ -16,7 +16,8 @@ function load(path, deps = {}) {
   },module,module.exports);
   return module.exports;
 }
-const experience = load('features/reports/experience.ts', { '@/features/transactions/data': {transactionEntry:(t,role)=>t.entries.find(e=>e.entry_role===role)??null} });
+const canonical = load('features/transactions/financial-flow.ts');
+const experience = load('features/reports/experience.ts', { '@/features/transactions/financial-flow': canonical });
 const drilldown = load('features/reports/category-drilldown.ts', {'@/features/reports/experience':experience});
 const period = load('features/reports/period-snapshot.ts', {
   '@/features/categories/icons': {iconColorValue:color=>color??'#0d8b66'},
@@ -28,7 +29,7 @@ const args = (mode, periodKey, year) => ({mode, period:periodKey, year, from:`${
 const row = (type,id,bucket,amount,count=1) => ({type,id,label:id??'Chưa phân loại',iconName:'Utensils',iconColor:'#ff6500',bucket,amount,count});
 
 test('V4.1.2 report entry is compact: no oversized cash-retention CTA or advanced shortcut',()=>{
-  assert.equal(JSON.parse(read('package.json')).version,'4.1.3');
+  assert.equal(JSON.parse(read('package.json')).version,'4.1.4');
   const page=read('app/(dashboard)/reports/page.tsx');
   assert.doesNotMatch(page,/Hiệu quả dòng tiền|HIỆU QUẢ DÒNG TIỀN|Tỷ lệ giữ lại trong kỳ|Phân tích nâng cao|fin-retention-card/);
   assert.match(page,/<FastReportOverview/);

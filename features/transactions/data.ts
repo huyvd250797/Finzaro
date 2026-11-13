@@ -3,6 +3,7 @@ import type { Database } from "@/lib/supabase/database.types";
 import type { CategoryRow } from "@/features/categories/data";
 import { minorToMajorInput } from "@/features/accounts/money";
 import { formatMinorMoney } from "@/lib/utils";
+import { standardFlowValue } from "@/features/transactions/financial-flow";
 
 export type LedgerAccount = {
   id: string;
@@ -215,17 +216,11 @@ export function sixMonthWindow(timeZone: string) {
 }
 
 export function monthTotals(transactions: TransactionView[], defaultCurrency: string, targetMonth: string) {
-  let income = 0;
-  let expense = 0;
-  for (const transaction of transactions) {
-    if (!transaction.transaction_date.startsWith(targetMonth)) continue;
-    if (transaction.transaction_type === "income" && transaction.transaction_purpose === "standard") {
-      const entry = transactionEntry(transaction, "income");
-      if (entry?.currency_code === defaultCurrency) income += entry.amount_minor;
-    } else if (transaction.transaction_type === "expense" && transaction.transaction_purpose === "standard") {
-      const entry = transactionEntry(transaction, "expense");
-      if (entry?.currency_code === defaultCurrency) expense += Math.abs(entry.amount_minor);
-    }
+  let income = 0; let expense = 0;
+  for (const tx of transactions) {
+    if (!tx.transaction_date.startsWith(targetMonth)) continue;
+    income += standardFlowValue(tx, defaultCurrency, "income");
+    expense += standardFlowValue(tx, defaultCurrency, "expense");
   }
   return { income, expense, net: income - expense };
 }
@@ -234,14 +229,11 @@ export function monthTotals(transactions: TransactionView[], defaultCurrency: st
 export function monthlyCashflowTotals(transactions: TransactionView[], currency: string, months: string[]) {
   const totals = new Map(months.map((month) => [month, { income: 0, expense: 0, net: 0 }]));
   for (const tx of transactions) {
-    if (tx.transaction_purpose !== "standard") continue;
     if (tx.transaction_type !== "income" && tx.transaction_type !== "expense") continue;
     const bucket = totals.get(tx.transaction_date.slice(0, 7));
     if (!bucket) continue;
-    const entry = transactionEntry(tx, tx.transaction_type);
-    if (!entry || entry.currency_code !== currency) continue;
-    if (tx.transaction_type === "income") bucket.income += entry.amount_minor;
-    else bucket.expense += Math.abs(entry.amount_minor);
+    bucket.income += standardFlowValue(tx, currency, "income");
+    bucket.expense += standardFlowValue(tx, currency, "expense");
     bucket.net = bucket.income - bucket.expense;
   }
   return totals;
@@ -259,20 +251,20 @@ export function cashflowSeries(transactions: TransactionView[], defaultCurrency:
 export function expenseCategories(transactions: TransactionView[], defaultCurrency: string, targetMonth: string) {
   const totals = new Map<string, { label: string; icon_name: string; icon_color: string | null; value: number }>();
   for (const transaction of transactions) {
-    if (transaction.transaction_type !== "expense" || transaction.transaction_purpose !== "standard" || !transaction.transaction_date.startsWith(targetMonth)) continue;
-    const entry = transactionEntry(transaction, "expense");
-    if (!entry || entry.currency_code !== defaultCurrency) continue;
+    if (!transaction.transaction_date.startsWith(targetMonth)) continue;
+    const amount = standardFlowValue(transaction, defaultCurrency, "expense");
+    if (amount <= 0) continue;
     const key = transaction.category_id ?? transaction.category_label ?? "uncategorized";
     const label = transaction.category?.name ?? transaction.category_label ?? "Chưa phân loại";
     const icon_name = transaction.category?.icon_name ?? "Shapes";
     const icon_color = transaction.category?.icon_color ?? "#0d8b66";
     const current = totals.get(key) ?? { label, icon_name, icon_color, value: 0 };
-    current.value += Math.abs(entry.amount_minor);
+    current.value += amount;
     totals.set(key, current);
   }
   const rows = Array.from(totals.values()).sort((a, b) => b.value - a.value);
   const sum = rows.reduce((total, row) => total + row.value, 0);
-  return rows.slice(0, 5).map((row) => ({ ...row, percent: sum > 0 ? Math.max(4, Math.round((row.value / sum) * 100)) : 0 }));
+  return rows.slice(0, 5).map((row) => ({ ...row, percent: sum > 0 ? Math.round((row.value / sum) * 1000) / 10 : 0 }));
 }
 
 export type QuickTransactionSuggestion = {
