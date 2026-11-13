@@ -137,7 +137,10 @@ export function BottomSheet({ open, onClose, children, label, panelClassName, ov
       'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
     ) ?? []).filter((element) => element.getClientRects().length && !element.closest('[hidden], [inert]'));
     // Wait until the visible sheet has entered the DOM, without adding an arbitrary delay.
-    const frame = window.requestAnimationFrame(() => (panel?.querySelector<HTMLElement>('[data-money-keypad="true"] .fin-money-key') ?? focusables()[0] ?? panel)?.focus({ preventScroll: true }));
+    // Focus the dialog surface rather than the full-width drag handle. Focusing
+    // that button rendered a bright rectangular outline around the grip on iOS.
+    // Tab still enters the first real control; Escape works on the dialog.
+    const frame = window.requestAnimationFrame(() => panel?.focus({ preventScroll: true }));
     const onKeyDown = (event: KeyboardEvent) => {
       // Only the latest open sheet handles shortcuts when overlays are nested.
       const sheets = document.querySelectorAll('[data-fin-dialog="true"][data-closing="false"]');
@@ -198,7 +201,7 @@ export function BottomSheet({ open, onClose, children, label, panelClassName, ov
   return createPortal(<div ref={overlayRef} className={cn("fin-sheet-backdrop fixed inset-x-0 top-0 flex items-end justify-center overflow-hidden", zIndex, mobileOnly && "lg:hidden", overlayClassName)} data-fin-dialog="true" data-closing={closing || !open ? "true" : "false"}>
     <button type="button" tabIndex={-1} aria-label="Đóng bảng" onClick={onClose} className={cn("absolute inset-0 w-full bg-black/45 backdrop-blur-[2px]", backdropClassName)} />
     <div ref={panelRef} role="dialog" aria-modal="true" aria-label={label} tabIndex={-1} className={cn("fin-sheet-panel fin-premium-dialog relative flex w-full min-h-0 max-h-[94dvh] flex-col overflow-hidden rounded-t-[26px] bg-[var(--card)] shadow-2xl", panelClassName)}>
-      <button type="button" aria-label="Kéo xuống để đóng" title="Kéo xuống để đóng" className="fin-sheet-handle relative z-20 flex h-6 w-full shrink-0 cursor-grab touch-none items-start justify-center bg-[var(--card)] pt-2 active:cursor-grabbing" onPointerDown={onDragStart} onPointerMove={onDragMove} onPointerUp={onDragEnd} onPointerCancel={onDragEnd}>
+      <button type="button" tabIndex={-1} aria-label="Kéo xuống để đóng" title="Kéo xuống để đóng" className="fin-sheet-handle relative z-20 flex h-6 w-full shrink-0 cursor-grab touch-none items-start justify-center bg-[var(--card)] pt-2 active:cursor-grabbing" onPointerDown={onDragStart} onPointerMove={onDragMove} onPointerUp={onDragEnd} onPointerCancel={onDragEnd}>
         <span className="h-1.5 w-12 rounded-full bg-[var(--border)]" />
       </button>
       <SheetFooterContext.Provider value={{ element: footerElement, activeFormKey }}>

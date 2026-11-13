@@ -1,3 +1,11 @@
+## [4.0.3] — 2026-11-13 · Instant Launch Splash, Clean Sheet Grip & Today Spending
+
+- **PWA startup without pre-splash blank redirect:** `/pwa` is now a minimal, standalone HTML splash response with inline critical CSS and SVG. It paints the Finzaro brand before any Supabase auth work, then navigates to the existing authenticated Overview/Login flow. `proxy.ts` bypasses expensive auth on this *public-only* bootstrap route. The service worker caches only the anonymous `/pwa` splash for subsequent starts; authenticated HTML remains network-only. The root layout also has critical splash CSS to reduce CSS/JS loading flashes on normal direct URLs.
+- **Bottom sheet green frame:** the swipe handle is no longer the initial focused element; focus is placed on the labelled dialog panel. The full-width grip is excluded from keyboard tab order while swipe-to-close and Escape/close controls remain intact. Remove the oversized focus outline only for the grip/panel, not for other form controls.
+- **Today's expenses on Overview:** a new card presents the current date (according to the user's configured timezone), total spent, expense categories and up to five actual purchases. The “Xem tất cả” link filters Expense transactions exactly to that date. Reuses the monthly ledger and currency. Transfers/legacy-special entries/other currencies are excluded; no extra database request or balance mutation.
+- **Safety:** preserves 6 modules, existing finance RPCs, fixed bottom taskbar and sticky bottom-sheet actions from V4.0.2. No database migration or dependency change.
+- **QA:** 169/169 source tests, TypeScript AST parse and CSS parsing passed; screenshot of anonymous startup shell in Chromium. Full Next.js production build, first-start network timing and Safari iOS PWA testing remain required before production signoff.
+
 ## [4.0.2] — 2026-11-12 · Viewport-Locked Mobile Chrome & Keyboard Focus
 
 - **Root cause of bouncing taskbar:** remove VisualViewport-scroll-derived `--fin-mobile-nav-bottom`; taskbar is fixed at CSS bottom 0, independent of focus, route refresh and overscroll.

@@ -165,7 +165,7 @@ body {
 .mobile-tabbar-icon { display: grid; width: 2rem; height: 1.7rem; place-items: center; border-radius: .65rem; transition: background .15s ease; }
 .mobile-tabbar-label { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10px; line-height: 12px; }
 
-.finzaro-splash { position: fixed; inset: 0; z-index: 9999; display: flex; min-height: 100dvh; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; background: radial-gradient(circle at 50% 38%, color-mix(in srgb, var(--primary) 10%, var(--background)) 0, var(--background) 42%); color: var(--foreground); animation: splash-in .18s ease-out; }
+.finzaro-splash { position: fixed; inset: 0; z-index: 9999; display: flex; min-height: 100dvh; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; background: radial-gradient(circle at 50% 38%, color-mix(in srgb, var(--primary) 10%, var(--background)) 0, var(--background) 42%); color: var(--foreground); }
 .finzaro-splash-mark { display: grid; width: 5rem; height: 5rem; place-items: center; border-radius: 1.65rem; background: var(--card); box-shadow: 0 22px 60px -24px rgba(7, 101, 75, .45); }
 .finzaro-splash-loader { margin-top: .75rem; width: 5rem; height: .22rem; overflow: hidden; border-radius: 999px; background: var(--muted); }
 .finzaro-splash-loader span { display: block; height: 100%; width: 45%; border-radius: inherit; background: var(--primary); animation: splash-loader 1s ease-in-out infinite; }
@@ -1161,3 +1161,13 @@ body:has(.fin-sheet-backdrop[data-fin-dialog="true"]) .fin-mobile-taskbar,
   .fin-sheet-scroll { overscroll-behavior-y: none !important; }
   .fin-sheet-action-slot:not(:empty) { flex-shrink: 0 !important; }
 }
+
+/* V4.0.3 — Handle is a touch gesture, not a visually outlined full-width button.
+   Keep accessible dialog focus on its labelled panel, and leave other focus rings intact. */
+.fin-sheet-panel:focus, .fin-sheet-handle:focus { outline: none; }
+.fin-sheet-handle { -webkit-tap-highlight-color: transparent; }
+.fin-overview-today { background: var(--fin-surface); }
+.fin-today-expense-row + .fin-today-expense-row { border-top: 1px solid var(--border); }
+/* The swipe grip cannot be activated through Tab; do not paint a full-width
+   bright keyboard ring if Safari restores focus to it after opening the sheet. */
+.fin-sheet-panel .fin-sheet-handle:focus-visible { outline: none !important; box-shadow: none; }

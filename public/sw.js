@@ -1,6 +1,8 @@
 const APP_VERSION = new URL(self.location.href).searchParams.get("v") || "unknown";
 const CACHE_NAME = `finzaro-static-v${APP_VERSION}`;
-const REQUIRED_SHELL = ["/offline", "/pwa-error"];
+// /pwa is a public, cookie-free splash document; safe to cache for instant PWA
+// first paint. Dashboard, Login and every authenticated route remain network-only.
+const REQUIRED_SHELL = ["/offline", "/pwa-error", "/pwa?source=homescreen"];
 const OPTIONAL_SHELL = ["/icons/finzaro-v0012-192.png", "/icons/finzaro-v0012-512.png", "/icons/finzaro-v0012-apple.png"];
 
 self.addEventListener("install", (event) => {
@@ -39,6 +41,14 @@ self.addEventListener("fetch", (event) => {
   // installed PWA, show a deterministic recovery screen instead of WebKit's
   // generic "This page couldn't load" screen.
   if (event.request.mode === "navigate") {
+    // Cache-first is safe ONLY for the anonymous launch splash. It has no
+    // account data and immediately navigates to the authenticated route.
+    if (url.pathname === "/pwa") {
+      event.respondWith((async () =>
+        (await caches.match("/pwa?source=homescreen")) || fetch(event.request, { cache: "no-store" })
+      )());
+      return;
+    }
     event.respondWith((async () => {
       try {
         const response = await fetch(event.request, { cache: "no-store" });

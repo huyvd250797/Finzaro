@@ -1,22 +1,29 @@
-import { NextResponse, type NextRequest } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+/** Zero-dependency installed-PWA first paint. No session fetch or HTTP 30x before the branded splash. */
+export const dynamic = "force-static";
 
-export const dynamic = "force-dynamic";
+const launchHtml = `<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b1412">
+<title>Finzaro · Đang khởi động</title><style>
+:root{color-scheme:light dark;--bg:#f5f7f7;--fg:#13201d;--card:#fff;--muted:#637a72;--primary:#0d8b66}
+@media(prefers-color-scheme:dark){:root{--bg:#0c1211;--fg:#eef7f3;--card:#111a18;--muted:#9aaba5;--primary:#2fc28f}}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:var(--bg);color:var(--fg);font-family:Arial,Helvetica,sans-serif}
+.launch{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:16px;background:radial-gradient(circle at 50% 38%,color-mix(in srgb,var(--primary) 10%,var(--bg)),var(--bg) 44%)}
+.mark{display:grid;place-items:center;width:84px;height:84px;border-radius:26px;background:var(--card);box-shadow:0 20px 50px -22px #07553b66}.mark svg{width:64px;height:64px}
+h1{font-size:27px;letter-spacing:-.7px;margin:0;font-weight:800}.subtitle{margin:-10px 0 0;font-size:11px;font-weight:700;letter-spacing:2.2px;color:var(--muted)}
+.loader{width:84px;height:4px;border-radius:999px;overflow:hidden;background:color-mix(in srgb,var(--fg) 12%,transparent);margin-top:8px}.loader span{display:block;width:45%;height:100%;border-radius:inherit;background:var(--primary);animation:flow 1s infinite ease-in-out}@keyframes flow{from{transform:translateX(-110%)}55%{transform:translateX(95%)}to{transform:translateX(220%)}}
+@media(prefers-reduced-motion:reduce){.loader span{animation:none;width:100%}}
+a{color:var(--primary);font-size:12px;margin-top:12px;visibility:hidden;animation:show-retry 0s 5s forwards}@keyframes show-retry{to{visibility:visible}}
+</style></head><body><div class="launch" role="status" aria-label="Đang mở Finzaro">
+<div class="mark"><svg viewBox="0 0 64 64" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#0f9f78"/><stop offset="1" stop-color="#0a4438"/></linearGradient></defs><rect x="3" y="3" width="58" height="58" rx="19" fill="url(#g)"/><path d="M19 47V35M32 47V28M45 47V21" stroke="#e9fff7" stroke-width="8" stroke-linecap="round"/><path d="m16 29 11.5-5.5L36 28 49 17.5m-5 0h5v5" stroke="#55ddb0" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+<h1>Finzaro</h1><p class="subtitle">PERSONAL FINANCE</p><div class="loader" aria-hidden="true"><span></span></div>
+<a href="/overview">Mở ứng dụng</a></div>
+<script>(function(){var go=function(){location.replace('/overview')};if('requestAnimationFrame' in window){requestAnimationFrame(function(){requestAnimationFrame(go)})}else{go()}})();</script>
+</body></html>`;
 
-export async function GET(request: NextRequest) {
-  const loginUrl = new URL("/login", request.url);
-  loginUrl.searchParams.set("source", "pwa");
-
-  try {
-    const supabase = await createClient();
-    const { data, error } = await supabase.auth.getClaims();
-    if (!error && typeof data?.claims?.sub === "string") {
-      return NextResponse.redirect(new URL("/overview", request.url), 307);
-    }
-  } catch {
-    // A fresh installed PWA may have no auth cookies yet. Auth bootstrap must
-    // fail open to Login instead of surfacing a Server Component error.
-  }
-
-  return NextResponse.redirect(loginUrl, 307);
+export function GET() {
+  return new Response(launchHtml, { status: 200, headers: {
+    "Content-Type": "text/html; charset=utf-8",
+    "Cache-Control": "public, max-age=0, must-revalidate",
+    "X-Content-Type-Options": "nosniff"
+  } });
 }

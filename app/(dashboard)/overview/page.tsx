@@ -9,7 +9,7 @@ import { CategoryIcon, iconColorValue } from "@/features/categories/icons";
 import { loadReportLedger } from "@/features/reports/data";
 import { monthBounds } from "@/features/reports/experience";
 import { compactCalendarAmount } from "@/features/reports/compact-money";
-import { currentMonthKey, monthTotals, sixMonthWindow, monthlyCashflowTotals, currencyDigits, expenseCategories } from "@/features/transactions/data";
+import { currentDateKey, currentMonthKey, monthTotals, sixMonthWindow, monthlyCashflowTotals, currencyDigits, expenseCategories, transactionEntry } from "@/features/transactions/data";
 import { requireUser } from "@/lib/auth";
 import { measureServerOperation } from "@/lib/performance";
 import { formatMinorMoney } from "@/lib/utils";
@@ -21,7 +21,9 @@ async function OverviewEssentials() {
   const { supabase, userId } = await requireUser();
   const { data: pref } = await supabase.from("user_preferences").select("currency_code, timezone").eq("id", userId).maybeSingle();
   const currency = pref?.currency_code ?? "VND";
-  const month = currentMonthKey(pref?.timezone ?? "Asia/Ho_Chi_Minh");
+  const timeZone = pref?.timezone ?? "Asia/Ho_Chi_Minh";
+  const month = currentMonthKey(timeZone);
+  const today = currentDateKey(timeZone);
   const ledger = await measureServerOperation("overview.essentials", () => loadReportLedger(supabase, userId, { fromDate: `${month}-01`, toDate: monthBounds(month).to, includeAccounts: true, includeCategories: true }));
   const digits = currencyDigits(ledger.currencies, currency);
   const totals = monthTotals(ledger.transactions, currency, month);
@@ -30,6 +32,17 @@ async function OverviewEssentials() {
   const balance = matchingAccounts.reduce((sum, account) => sum + account.current_balance_minor, 0);
   const categories = expenseCategories(ledger.transactions, currency, month).slice(0, 5);
   const categoryTotal = categories.reduce((sum, row) => sum + row.value, 0);
+  // Reuse the month ledger: today is a strict date filter, never a second query.
+  // Exclude transfers, archived/legacy purposes and other currencies from spending.
+  const todayExpenses = ledger.transactions.flatMap((tx) => {
+    if (tx.transaction_date !== today || tx.transaction_type !== "expense" || tx.transaction_purpose !== "standard") return [];
+    const entry = transactionEntry(tx, "expense");
+    return entry?.currency_code === currency ? [{ tx, amount: Math.abs(entry.amount_minor) }] : [];
+  });
+  const todayTotal = todayExpenses.reduce((sum, item) => sum + item.amount, 0);
+  const todayCategories = expenseCategories(ledger.transactions, currency, today).slice(0, 5);
+  const todayCategoryTotal = todayCategories.reduce((sum, item) => sum + item.value, 0);
+  const todayTransactionsHref = `/transactions?type=expense&from=${today}&to=${today}`;
   const metrics = [
     { label: "Thu nhập", amount: totals.income, tone: "income", icon: ArrowDownLeft, prefix: "+" },
     { label: "Chi tiêu", amount: totals.expense, tone: "expense", icon: ArrowUpRight, prefix: "−" },
@@ -50,6 +63,33 @@ async function OverviewEssentials() {
           <p className="mt-2 whitespace-nowrap text-[clamp(.75rem,2.9vw,1.25rem)] font-extrabold tracking-[-.025em] tabular-nums"><span className="sm:hidden">{item.amount < 0 ? "−" : item.prefix}{compactCalendarAmount(Math.abs(item.amount), digits) || "0"}</span><span className="hidden sm:inline">{formatMinorMoney(item.amount, currency, digits)}</span></p>
         </div>; })}
       </div>
+    </CardContent></Card>
+    <Card className="fin-overview-today fin-dashboard-card"><CardContent className="p-4 sm:p-5">
+      <div className="mb-4 flex items-start justify-between gap-2">
+        <div><p className="fin-section-eyebrow">CHI TIÊU TRONG NGÀY</p><h2 className="mt-1 text-base font-extrabold">Chi tiêu hôm nay</h2>
+          <p className="mt-1 text-xs text-[var(--muted-foreground)]">{today.split("-").reverse().join("/")} · {todayExpenses.length} khoản chi</p>
+        </div>
+        <Link href={todayTransactionsHref} className="fin-text-action shrink-0">Xem tất cả <ArrowRight className="size-3.5"/></Link>
+      </div>
+      <p className="mb-4 text-[clamp(1.5rem,5.3vw,2rem)] font-extrabold tracking-tight tabular-nums text-[var(--fin-expense)]" aria-label={`Tổng chi hôm nay ${formatMinorMoney(todayTotal, currency, digits)}`}>
+        {formatMinorMoney(todayTotal, currency, digits)}
+      </p>
+      {todayExpenses.length ? <>
+        <p className="mb-3 text-xs font-bold text-[var(--muted-foreground)]">Theo danh mục</p>
+        <div className="space-y-3">{todayCategories.map((item) => <div key={item.label} className="flex min-w-0 items-center gap-3">
+          <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-[var(--muted)]" style={{ color: iconColorValue(item.icon_color) }}><CategoryIcon name={item.icon_name} className="size-4.5"/></span>
+          <div className="min-w-0 flex-1"><div className="flex items-center justify-between gap-2"><span className="truncate text-xs font-bold">{item.label}</span><span className="shrink-0 text-xs font-extrabold tabular-nums">{formatMinorMoney(item.value, currency, digits)}</span></div>
+            <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[var(--muted)]"><div className="h-full rounded-full" style={{ width: `${todayCategoryTotal ? item.value / todayCategoryTotal * 100 : 0}%`, backgroundColor: iconColorValue(item.icon_color) }}/></div>
+          </div>
+        </div>)}</div>
+        <div className="mt-4 border-t border-[var(--border)] pt-3"><p className="mb-2 text-xs font-bold text-[var(--muted-foreground)]">Các khoản đã chi</p>
+          <div className="space-y-0">{todayExpenses.slice(0, 5).map(({ tx, amount }) => <div key={tx.id} className="fin-today-expense-row flex min-w-0 items-center justify-between gap-3 py-2.5">
+            <div className="min-w-0"><p className="truncate text-sm font-semibold" title={tx.title}>{tx.title}</p><p className="truncate text-[11px] text-[var(--muted-foreground)]">{tx.category?.name ?? tx.category_label ?? "Chưa phân loại"}</p></div>
+            <span className="shrink-0 text-xs font-extrabold tabular-nums">−{formatMinorMoney(amount, currency, digits)}</span>
+          </div>)}</div>
+          {todayExpenses.length > 5 && <Link href={todayTransactionsHref} className="fin-text-action mt-2">Xem thêm {todayExpenses.length - 5} khoản chi <ArrowRight className="size-3.5"/></Link>}
+        </div>
+      </> : <div className="fin-empty-card"><Sparkles className="mb-2 size-5 text-[var(--primary)]"/><p className="text-sm font-semibold">Hôm nay chưa có khoản chi</p><p className="mt-1 text-xs text-[var(--muted-foreground)]">Giao dịch chi tiêu hôm nay sẽ xuất hiện tại đây.</p></div>}
     </CardContent></Card>
     <Card className="fin-overview-spend fin-dashboard-card"><CardContent className="p-4 sm:p-5">
       <div className="mb-4 flex items-center justify-between gap-2"><div><p className="fin-section-eyebrow">PHÂN BỔ NGÂN SÁCH</p><h2 className="mt-1 text-base font-extrabold">Chi tiêu tháng này</h2></div><Link href="/reports?type=expense" className="fin-text-action">Xem báo cáo <ArrowRight className="size-3.5"/></Link></div>

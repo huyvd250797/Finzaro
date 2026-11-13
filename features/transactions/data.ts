@@ -191,6 +191,17 @@ export function currentMonthKey(timeZone: string) {
   return monthKey(year, month);
 }
 
+/** Date key in the user's preferred timezone (never the server UTC day). */
+export function currentDateKey(timeZone: string, now = new Date()) {
+  try {
+    const parts = new Intl.DateTimeFormat("en-US", { timeZone, year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(now);
+    const value = (kind: string) => parts.find((part) => part.type === kind)?.value ?? "";
+    return `${value("year")}-${value("month")}-${value("day")}`;
+  } catch {
+    return now.toISOString().slice(0, 10);
+  }
+}
+
 export function sixMonthWindow(timeZone: string) {
   const { year, month } = zonedYearMonth(timeZone);
   const result: Array<{ key: string; label: string }> = [];

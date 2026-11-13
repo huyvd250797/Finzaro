@@ -32,6 +32,18 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="vi" suppressHydrationWarning>
       <head>
+        {/* Critical first-paint splash styles, independent of Tailwind and hydrated bundles. */}
+        <style dangerouslySetInnerHTML={{ __html: `
+          .finzaro-splash{position:fixed;inset:0;z-index:9999;display:flex;min-height:100vh;min-height:100dvh;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:#f5f7f7;color:#13201d;font-family:Arial,Helvetica,sans-serif}
+          .dark .finzaro-splash{background:#0c1211;color:#eef7f3}
+          .finzaro-splash-mark{display:grid;width:80px;height:80px;place-items:center;border-radius:26px;background:#fff}
+          .dark .finzaro-splash-mark{background:#111a18}
+          .finzaro-splash-mark svg{width:64px;height:64px}
+          .finzaro-splash-loader{width:80px;height:4px;overflow:hidden;border-radius:999px;background:#879b9340}
+          .finzaro-splash-loader span{display:block;height:100%;width:45%;border-radius:inherit;background:#0d8b66;animation:fin-instant-loader 1s ease-in-out infinite}
+          @keyframes fin-instant-loader{from{transform:translateX(-110%)}55%{transform:translateX(95%)}to{transform:translateX(220%)}}
+          @media(prefers-reduced-motion:reduce){.finzaro-splash-loader span{animation:none;width:100%}}
+        ` }} />
         <script
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var s=localStorage.getItem('finzaro-theme');var d=s?s==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;document.documentElement.classList.toggle('dark',d);document.documentElement.style.colorScheme=d?'dark':'light';}catch(e){}})();`

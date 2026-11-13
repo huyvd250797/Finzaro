@@ -31,7 +31,7 @@ test("overlay scroll lock is reference-counted and never fixes body position", a
 
 test("PWA install attempts recovery and artwork without blocking updates on unavailable routes", async () => {
   const sw = await read("public/sw.js");
-  assert.match(sw, /const REQUIRED_SHELL = \["\/offline", "\/pwa-error"\]/);
+  assert.match(sw, /const REQUIRED_SHELL = \["\/offline", "\/pwa-error", "\/pwa\?source=homescreen"\]/);
   assert.match(sw, /Promise\.allSettled\(\[\.\.\.REQUIRED_SHELL, \.\.\.OPTIONAL_SHELL\]/);
   assert.match(sw, /key\.startsWith\("finzaro-static-v"\)/);
   assert.doesNotMatch(sw, /keys\.filter\(\(key\) => key !== CACHE_NAME\)/);

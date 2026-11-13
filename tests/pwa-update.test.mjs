@@ -37,8 +37,13 @@ test("version endpoint and service worker are delivered without stale cache", ()
 
 test("installed PWA starts through public auth bootstrap", () => {
   assert.match(manifest, /start_url: "\/pwa\?source=homescreen"/);
-  assert.match(bootstrap, /\/login/);
+  assert.match(bootstrap, /Zero-dependency installed-PWA first paint/);
+  assert.match(bootstrap, /force-static/);
   assert.match(bootstrap, /\/overview/);
+  assert.match(bootstrap, /new Response\(launchHtml/);
+  assert.doesNotMatch(bootstrap, /getClaims\(/);
+  assert.doesNotMatch(bootstrap, /NextResponse\.redirect/);
+  assert.match(read("proxy.ts"), /pathname === "\/pwa"/);
   assert.match(auth, /optionalUser/);
   assert.match(auth, /new URLSearchParams/);
   assert.match(auth, /redirect\(`\/login\?\$\{params\.toString\(\)\}`\)/);

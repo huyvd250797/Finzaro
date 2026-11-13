@@ -8,8 +8,8 @@ const source = (name) => readFileSync(join(root, name), "utf8");
 const css = source("app/globals.css");
 
 test("V4.0.1 hotfix preserves modules and does not alter accounting actions", () => {
-  assert.equal(JSON.parse(source("package.json")).version, "4.0.2");
-  assert.match(source("lib/app-version.ts"), /APP_VERSION = "4\.0\.2"/);
+  assert.equal(JSON.parse(source("package.json")).version, "4.0.3");
+  assert.match(source("lib/app-version.ts"), /APP_VERSION = "4\.0\.3"/);
   assert.deepEqual(readdirSync(join(root, "app/(dashboard)"), { withFileTypes: true }).filter((item) => item.isDirectory()).map((item) => item.name).sort(), ["accounts", "categories", "overview", "reports", "settings", "transactions"]);
   for (const action of ["create_simple_transaction_v120", "update_simple_transaction_v120", "copy_simple_transaction_batch_v320"]) {
     assert.ok(source("features/transactions/actions.ts").includes(action));
