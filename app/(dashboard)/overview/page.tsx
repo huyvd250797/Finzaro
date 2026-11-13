@@ -82,13 +82,16 @@ async function OverviewEssentials() {
             <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[var(--muted)]"><div className="h-full rounded-full" style={{ width: `${todayCategoryTotal ? item.value / todayCategoryTotal * 100 : 0}%`, backgroundColor: iconColorValue(item.icon_color) }}/></div>
           </div>
         </div>)}</div>
-        <div className="mt-4 border-t border-[var(--border)] pt-3"><p className="mb-2 text-xs font-bold text-[var(--muted-foreground)]">Các khoản đã chi</p>
+        <details className="fin-today-expense-details group mt-4 border-t border-[var(--border)] pt-3">
+          <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 rounded-xl px-2 py-2 text-xs font-bold text-[var(--foreground)] hover:bg-[var(--muted)]/60 focus-visible:outline-2 focus-visible:outline-[var(--primary)] [&::-webkit-details-marker]:hidden" aria-label="Mở hoặc thu gọn các khoản đã chi hôm nay">
+            <span>Các khoản đã chi ({todayExpenses.length})</span><ChevronRight className="size-4 text-[var(--muted-foreground)] transition-transform group-open:rotate-90"/>
+          </summary>
           <div className="space-y-0">{todayExpenses.slice(0, 5).map(({ tx, amount }) => <div key={tx.id} className="fin-today-expense-row flex min-w-0 items-center justify-between gap-3 py-2.5">
             <div className="min-w-0"><p className="truncate text-sm font-semibold" title={tx.title}>{tx.title}</p><p className="truncate text-[11px] text-[var(--muted-foreground)]">{tx.category?.name ?? tx.category_label ?? "Chưa phân loại"}</p></div>
             <span className="shrink-0 text-xs font-extrabold tabular-nums">−{formatMinorMoney(amount, currency, digits)}</span>
           </div>)}</div>
           {todayExpenses.length > 5 && <Link href={todayTransactionsHref} className="fin-text-action mt-2">Xem thêm {todayExpenses.length - 5} khoản chi <ArrowRight className="size-3.5"/></Link>}
-        </div>
+        </details>
       </> : <div className="fin-empty-card"><Sparkles className="mb-2 size-5 text-[var(--primary)]"/><p className="text-sm font-semibold">Hôm nay chưa có khoản chi</p><p className="mt-1 text-xs text-[var(--muted-foreground)]">Giao dịch chi tiêu hôm nay sẽ xuất hiện tại đây.</p></div>}
     </CardContent></Card>
     <Card className="fin-overview-spend fin-dashboard-card"><CardContent className="p-4 sm:p-5">

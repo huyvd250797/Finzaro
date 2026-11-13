@@ -1171,3 +1171,9 @@ body:has(.fin-sheet-backdrop[data-fin-dialog="true"]) .fin-mobile-taskbar,
 /* The swipe grip cannot be activated through Tab; do not paint a full-width
    bright keyboard ring if Safari restores focus to it after opening the sheet. */
 .fin-sheet-panel .fin-sheet-handle:focus-visible { outline: none !important; box-shadow: none; }
+
+/* V4.1.0 Category Drill-down: responsive horizontally scrolling day/month chart. */
+.fin-category-bucket-bar { transition: height 180ms ease, opacity 160ms ease, background-color 160ms ease; }
+.fin-category-bucket-explorer button:active .fin-category-bucket-bar { transform: scaleX(1.08); }
+.fin-today-expense-details[open] summary { margin-bottom: .3rem; }
+@media (prefers-reduced-motion: reduce) { .fin-category-bucket-bar { transition: none; } }

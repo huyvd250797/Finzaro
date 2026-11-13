@@ -7,13 +7,13 @@ import { ReportNavigation } from "@/components/report-navigation";
 import { ReportPeriodControls } from "@/components/report-period-controls";
 import { iconColorValue } from "@/features/categories/icons";
 import { InstantReportBreakdown, type ReportFlowSnapshot } from "@/components/instant-report-breakdown";
+import { buildCategoryPeriodGroups } from "@/features/reports/category-drilldown";
 import {
   currentYearMonth,
   monthBounds,
   periodFlowTotals,
   periodTransactions,
   reportCategoryBreakdown,
-  flowAmount,
   shiftMonthKey,
   validMonthKey,
   validYear,
@@ -70,13 +70,8 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
       color: iconColorValue(item.icon_color),
       href: item.id.startsWith("uncategorized-") ? null : `/reports/category/${item.id}?${new URLSearchParams({ mode, type: flowType, ...(mode === "month" ? { period } : { year: String(year) }) }).toString()}`
     }));
-    const previews = transactions.filter((item) => flowAmount(item, currency, flowType) > 0).slice(0, 8).map((item) => ({
-      id: item.id, title: item.title, transactionDate: item.transaction_date,
-      categoryName: item.category?.name ?? item.category_label ?? item.title,
-      iconName: item.category?.icon_name ?? null, iconColor: item.category?.icon_color ?? null,
-      amount: flowAmount(item, currency, flowType)
-    }));
-    return { amount: flowType === "income" ? totals.income : totals.expense, slices, transactions: previews };
+    const categoriesByPeriod = buildCategoryPeriodGroups(transactions, currency, flowType, mode, period, year);
+    return { amount: flowType === "income" ? totals.income : totals.expense, slices, categories: categoriesByPeriod };
   };
   // Explicit keys prove to TypeScript that both report types are always present.
   const flows: Record<ReportFlowType, ReportFlowSnapshot> = {
@@ -121,7 +116,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
       </CardContent></Card>
 
       <InstantReportBreakdown
-        initialType={type} periodLabel={periodLabel}
+        initialType={type} periodLabel={periodLabel} mode={mode}
         periodKey={`${mode}-${mode === "month" ? period : year}`}
         from={bounds.from} to={bounds.to} currency={currency} digits={digits} flows={flows}
       />

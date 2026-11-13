@@ -27,13 +27,14 @@ test("Instant Reports: both flow datasets are computed once from one ledger", ()
   assert.match(reportPage, /income: buildFlowSnapshot\("income"\)/);
   assert.match(reportPage, /expense: buildFlowSnapshot\("expense"\)/);
   assert.match(reportPage, /reportCategoryBreakdown\(transactions, currency, flowType\)/);
-  assert.match(reportPage, /flowAmount\(item, currency, flowType\)/);
+  assert.match(reportPage, /buildCategoryPeriodGroups\(transactions, currency, flowType/);
   assert.match(reportPage, /<InstantReportBreakdown/);
   assert.match(instantFlow, /"use client"/);
   assert.match(instantFlow, /const \[type, setType\] = useState/);
   assert.match(instantFlow, /window\.history\.pushState/);
   assert.match(instantFlow, /window\.addEventListener\("popstate"/);
-  assert.doesNotMatch(instantFlow, /router\.(?:push|replace|refresh)|fetch\(|useSWR|useQuery/);
+  assert.doesNotMatch(instantFlow, /router\.(?:push|replace|refresh)|useSWR|useQuery/);
+  assert.match(instantFlow, /fetch\(`\/api\/reports\/category-entries/);
   assert.match(instantFlow, /aria-pressed=\{type === next\}/);
 });
 

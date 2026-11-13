@@ -67,12 +67,13 @@ function arcPosition(slices: SafeSlice[], index: number) {
   return { left: `${50 + Math.cos(angle) * radius}%`, top: `${50 + Math.sin(angle) * radius}%` };
 }
 
-export function ReportDonut({ slices, total, currency, decimalDigits = 0, centerLabel }: {
+export function ReportDonut({ slices, total, currency, decimalDigits = 0, centerLabel, onCategoryOpen }: {
   slices: DonutSlice[];
   total: number;
   currency: string;
   decimalDigits?: number;
   centerLabel: string;
+  onCategoryOpen?: (categoryId: string) => void;
 }) {
   const values = useMemo(() => normalizeSlices(slices), [slices]);
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -87,11 +88,18 @@ export function ReportDonut({ slices, total, currency, decimalDigits = 0, center
     const x = event.clientX - rect.left - rect.width / 2;
     const y = event.clientY - rect.top - rect.height / 2;
     const angle = (Math.atan2(y, x) * 180 / Math.PI + 450) % 360;
-    setSelectedIndex(sliceIndexAt(values, angle / 3.6));
+    const index = sliceIndexAt(values, angle / 3.6);
+    setSelectedIndex(index);
+    if (onCategoryOpen && values[index]?.id) onCategoryOpen(values[index].id);
   }
 
   function onPieKey(event: KeyboardEvent<HTMLDivElement>) {
     if (!values.length) return;
+    if ((event.key === "Enter" || event.key === " ") && onCategoryOpen && values[currentIndex]?.id) {
+      event.preventDefault();
+      onCategoryOpen(values[currentIndex].id!);
+      return;
+    }
     if (["ArrowRight", "ArrowDown", "ArrowLeft", "ArrowUp", "Home", "End"].includes(event.key)) {
       event.preventDefault();
       if (event.key === "Home") setSelectedIndex(0);
@@ -126,7 +134,7 @@ export function ReportDonut({ slices, total, currency, decimalDigits = 0, center
               <span className="size-3 shrink-0 rounded-full" style={{ backgroundColor: selected.color }} />
               <div className="min-w-0"><p className="truncate text-xs font-extrabold">{selected.label} · {selected.percent.toFixed(1).replace(".", ",")}%</p><p className="text-xs font-bold tabular-nums">{money(selected.amount)}</p></div>
             </div>
-            {selected.href && <Link href={selected.href} className="inline-flex shrink-0 items-center gap-0.5 rounded-lg bg-[var(--card)] px-2 py-1.5 text-[11px] font-bold text-[var(--primary)]" aria-label={`Xem giao dịch thuộc ${selected.label}`}>Chi tiết<ArrowUpRight className="size-3.5"/></Link>}
+            {onCategoryOpen && selected.id ? <button type="button" onClick={() => onCategoryOpen(selected.id!)} className="inline-flex shrink-0 items-center gap-0.5 rounded-lg bg-[var(--card)] px-2 py-1.5 text-[11px] font-bold text-[var(--primary)]">Xem biểu đồ<ArrowUpRight className="size-3.5"/></button> : selected.href && <Link href={selected.href} className="inline-flex shrink-0 items-center gap-0.5 rounded-lg bg-[var(--card)] px-2 py-1.5 text-[11px] font-bold text-[var(--primary)]" aria-label={`Xem giao dịch thuộc ${selected.label}`}>Chi tiết<ArrowUpRight className="size-3.5"/></Link>}
           </div>
         )}
         <div className="grid max-h-[230px] grid-cols-2 gap-1.5 overflow-y-auto pr-1 [scrollbar-width:thin] md:max-h-[265px]" aria-label="Danh mục theo tỷ trọng">
@@ -134,7 +142,7 @@ export function ReportDonut({ slices, total, currency, decimalDigits = 0, center
             <button
               key={`${slice.id ?? slice.label}-${index}-legend`}
               type="button"
-              onClick={() => setSelectedIndex(index)}
+              onClick={() => { setSelectedIndex(index); if (onCategoryOpen && slice.id) onCategoryOpen(slice.id); }}
               aria-pressed={currentIndex === index}
               className={`fin-donut-legend min-w-0 rounded-xl border px-2 py-2 text-left transition-colors ${currentIndex === index ? "border-[var(--primary)] bg-[var(--sidebar-accent)]" : "border-[var(--border)] bg-[var(--card)] hover:bg-[var(--muted)]"}`}
             >

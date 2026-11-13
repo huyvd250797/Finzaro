@@ -1,3 +1,5 @@
+> **Latest release: V4.1.0 — Category Drill-down Reports & Today Spending Disclosure.** Chi tiêu hôm nay mặc định thu gọn danh sách giao dịch; Báo cáo Tổng quan nhóm theo danh mục, cho phép chọn danh mục rồi chọn cột ngày (khi xem tháng) hoặc cột tháng (khi xem năm) để tải giao dịch đúng kỳ. Không yêu cầu SQL migration. Xem `DEPLOY_V4.1.0.md`.
+
 > **Latest release: V4.0.3 — Instant Launch Splash, Clean Sheet Grip & Today Spending.** Khởi động PWA bằng Splash HTML ngay khi nhận được phản hồi, không chờ redirect xác thực; xử lý viền focus thanh kéo bottom sheet; thêm Chi tiêu hôm nay trên Tổng quan. Không cần chạy SQL mới. Xem `DEPLOY_V4.0.3.md`.
 
 > **Phiên bản hiện tại: Finzaro V4.0.2 — Viewport-Locked Mobile Chrome & Keyboard Focus.** Bản vá V4.0.1 xử lý nguyên nhân taskbar bị đẩy lên sau lưu/xóa hoặc khi kéo quá cuối danh sách: bỏ phép tính VisualViewport bottom, cô lập vùng cuộn chính, cố định Hủy/Lưu ngoài vùng cuộn và tự đưa ô Nội dung vào tầm nhìn khi bàn phím iPhone mở. Không thay đổi 6 module, SQL, dữ liệu hoặc nghiệp vụ. Xem [`DEPLOY_V4.0.2.md`](DEPLOY_V4.0.2.md) và [`docs/V4.0.2_QA.md`](docs/V4.0.2_QA.md).

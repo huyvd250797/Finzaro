@@ -1,3 +1,13 @@
+## [4.1.0] — 2026-11-13 · Category Drill-down Reports & Today Spending Disclosure
+
+- **Chi tiêu hôm nay:** vẫn hiện tổng tiền và phân bổ theo danh mục, nhưng phần “Các khoản đã chi” dùng nút mở rộng/thu gọn, mặc định đóng khi truy cập Dashboard. Giữ số ngày theo múi giờ cài đặt và liên kết xem toàn bộ.
+- **Báo cáo → Tổng quan:** thay danh sách 8 giao dịch gần nhất bằng **tổng hợp Thu/Chi theo danh mục** trong kỳ; mỗi dòng có tên, số giao dịch, tổng tiền và tỷ trọng. Trạng thái Thu/Chi vẫn chuyển tức thời trên client, không gọi lại toàn bộ báo cáo.
+- **Khoan sâu theo tháng:** chọn một danh mục mở biểu đồ cột theo toàn bộ ngày của tháng (28–31 ngày, kể cả ngày 0). Chọn cột sẽ tải danh sách từng giao dịch đúng **ngày + danh mục + loại Thu/Chi**.
+- **Khoan sâu theo năm:** chọn danh mục mở 12 cột theo tháng của năm; chọn cột sẽ tải danh sách giao dịch đúng **tháng + danh mục + loại Thu/Chi**.
+- **Hiệu năng và bảo mật:** cả hai loại Thu/Chi và các cột tổng hợp đều được tính bằng một lần tải ledger phía server; chỉ tải giao dịch chi tiết khi nhấn cột qua `/api/reports/category-entries`, kiểm tra phiên đăng nhập, phạm vi user, kỳ hợp lệ, loại nghiệp vụ và tiền tệ; kết quả không cache công khai. Client có cache phiên, hủy request cũ khi chuyển cột và hiển thị giao dịch thành từng đợt 40 dòng.
+- **Không thay đổi dữ liệu:** giữ 6 module, nghiệp vụ số dư, giao dịch và 91 file SQL; không migration, không dependency mới. Giữ mobile fixed taskbar / sheet action / Splash từ V4.0.3.
+- **Kiểm chứng:** 174/174 bài test tự động gồm 5 ca cho V4.1.0; source parse và kiểm tra module/import. Build production, typecheck đầy đủ và nghiệm thu mobile Safari cần thực hiện trên CI/staging.
+
 ## [4.0.3] — 2026-11-13 · Instant Launch Splash, Clean Sheet Grip & Today Spending
 
 - **PWA startup without pre-splash blank redirect:** `/pwa` is now a minimal, standalone HTML splash response with inline critical CSS and SVG. It paints the Finzaro brand before any Supabase auth work, then navigates to the existing authenticated Overview/Login flow. `proxy.ts` bypasses expensive auth on this *public-only* bootstrap route. The service worker caches only the anonymous `/pwa` splash for subsequent starts; authenticated HTML remains network-only. The root layout also has critical splash CSS to reduce CSS/JS loading flashes on normal direct URLs.
