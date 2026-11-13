@@ -1,3 +1,10 @@
+## [4.1.3] — 2026-11-13 · Period Snapshot TypeScript Deploy Hotfix
+
+- Fix two `TS2345` build errors in `app/api/reports/period-snapshot/route.ts` by narrowing `mode` to `CategoryDrilldownMode` (`month | year`).
+- Verify the assembled period arguments with `satisfies Parameters<typeof snapshotFromSummaryRows>[1]` to catch future type regressions at the source.
+- Preserve V4.1.2 fast-report RPC, fallback behavior, six core modules, and all database migrations. No SQL migration required for this patch.
+- Source tests, release gate, isolated TypeScript route validation; full Next.js build pending npm dependencies.
+
 ## [4.1.2] — 2026-11-13 · Compact Reports & Instant Period Navigation
 
 - **Báo cáo gọn:** bỏ CTA Phân tích nâng cao ở đầu Tổng quan và card Hiệu quả dòng tiền/Tỷ lệ giữ lại; giữ 3 KPI cốt lõi, biểu đồ donut và nhóm danh mục.

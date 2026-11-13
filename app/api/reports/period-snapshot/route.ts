@@ -4,6 +4,7 @@ import { loadReportLedger } from "@/features/reports/data";
 import { currencyDigits } from "@/features/transactions/data";
 import { currentYearMonth, monthBounds, validMonthKey, validYear, yearBounds } from "@/features/reports/experience";
 import { snapshotFromSummaryRows, snapshotFromTransactions, type ReportSummaryRow } from "@/features/reports/period-snapshot";
+import type { CategoryDrilldownMode } from "@/features/reports/category-drilldown";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -20,7 +21,7 @@ export async function GET(request: Request) {
     const timeZone = preferences?.timezone ?? "Asia/Ho_Chi_Minh";
     const today = currentYearMonth(timeZone);
     const currentMonth = `${today.year}-${String(today.month).padStart(2, "0")}`;
-    const mode = url.searchParams.get("mode") === "year" ? "year" : "month";
+    const mode: CategoryDrilldownMode = url.searchParams.get("mode") === "year" ? "year" : "month";
     const period = validMonthKey(url.searchParams.get("period") ?? undefined, currentMonth);
     const year = validYear(url.searchParams.get("year") ?? undefined, today.year);
     // Prevent malformed search inputs from returning misleading period totals.
@@ -42,7 +43,7 @@ export async function GET(request: Request) {
     ]);
     if (currencyResult.error) throw currencyResult.error;
     const digits = currencyDigits(currencyResult.data ? [currencyResult.data] : [], currency);
-    const args = { mode, period, year, from: bounds.from, to: bounds.to, periodLabel, currency, digits };
+    const args = { mode, period, year, from: bounds.from, to: bounds.to, periodLabel, currency, digits } satisfies Parameters<typeof snapshotFromSummaryRows>[1];
     const { data, error } = summaryResult as { data: unknown; error: { code?: string; message?: string } | null };
     // Fast path: PostgreSQL aggregates income/expense category buckets without
     // transferring the complete ledger to the Next.js server.

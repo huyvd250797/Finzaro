@@ -8,8 +8,8 @@ const file = (path) => readFileSync(join(root, path), "utf8");
 const css = file("app/globals.css");
 
 test("V4.0.2 release preserves 6 modules, finance RPCs and database semantics", () => {
-  assert.equal(JSON.parse(file("package.json")).version, "4.1.2");
-  assert.match(file("lib/app-version.ts"), /APP_VERSION = "4\.1\.2"/);
+  assert.equal(JSON.parse(file("package.json")).version, "4.1.3");
+  assert.match(file("lib/app-version.ts"), /APP_VERSION = "4\.1\.3"/);
   assert.deepEqual(readdirSync(join(root,"app/(dashboard)"), { withFileTypes:true })
     .filter((item) => item.isDirectory()).map((item) => item.name).sort(),
     ["accounts", "categories", "overview", "reports", "settings", "transactions"]);

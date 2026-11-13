@@ -9,7 +9,7 @@ const read = (path) => readFileSync(join(root, path), "utf8");
 test("Current release metadata remains consistent across package and visible app version", () => {
   assert.ok((Number(JSON.parse(read("package.json")).version.split(".")[0]) > 2 || Number(JSON.parse(read("package.json")).version.split(".")[1]) >= 2), "release should retain V2.2 baseline");
   assert.match(read("lib/app-version.ts"), /APP_VERSION = "(?:2\.[2-9]\.\d+|(?:3|4)\.\d+\.\d+)"/);
-  assert.match(read("lib/app-version.ts"), /Financial Dashboard & Advanced Reports|Premium Fintech & Fluid Transaction UX|Professional Release|Instant Reports|Premium Visual Foundation|Mobile-First Transaction UX|Premium Overview & Reports|Fluid Motion & Navigation|Premium UX Release|Fixed Mobile Chrome & Sheet Actions|Viewport-Locked Mobile Chrome & Keyboard Focus|Instant Launch Splash, Clean Sheet Grip & Today Spending|Category Drill-down Reports & Today Spending Disclosure|Full-screen Category Analytics & Instant Details|Compact Reports & Instant Period Navigation/);
+  assert.match(read("lib/app-version.ts"), /Financial Dashboard & Advanced Reports|Premium Fintech & Fluid Transaction UX|Professional Release|Instant Reports|Premium Visual Foundation|Mobile-First Transaction UX|Premium Overview & Reports|Fluid Motion & Navigation|Premium UX Release|Fixed Mobile Chrome & Sheet Actions|Viewport-Locked Mobile Chrome & Keyboard Focus|Instant Launch Splash, Clean Sheet Grip & Today Spending|Category Drill-down Reports & Today Spending Disclosure|Full-screen Category Analytics & Instant Details|Compact Reports & Instant Period Navigation|Period Snapshot Type Safety Hotfix/);
 });
 
 test("The branded splash is mounted once in root layout, before initial PWA app content", () => {
