@@ -33,3 +33,13 @@ Redeploy V4.1.3 source with the same environment variables. No V4.1.4 SQL rollba
 - **Not verified:** real Supabase data, actual iPhone Safari/PWA, Vercel staging or production latency. The implementation must not be labeled production-ready until those pass.
 
 Details: `docs/V4.1.4_QA.md`.
+
+## V4.1.4 rollback — ESLint 9.17.0 deployment fix (same app version)
+
+If Vercel previously failed with `ERR_PACKAGE_PATH_NOT_EXPORTED: Package subpath './config'` from `eslint.config.mjs`, use the **V4.1.4 ESLint Deploy Fix** ZIP rather than the original V4.1.4 ZIP. The app version deliberately remains `4.1.4` as requested; this is a source hotfix to the same release, not V4.1.5.
+
+**Cause:** `package.json` pins ESLint `9.17.0` while the old `eslint.config.mjs` imported `defineConfig` and `globalIgnores` from `eslint/config`, a subpath not exported in the pinned ESLint release.
+
+**Fix:** Export a native flat-config array directly, keep the Next.js Core Web Vitals and TypeScript rule sets, and use a standalone `ignores` config. No package upgrades, rule disabling, SQL/database changes or business-logic changes.
+
+Deploy the complete ZIP source and verify that the new `eslint.config.mjs` is present on GitHub/Vercel. Run `npm run check` with Node 22/npm 10 using your project environment. This command still requires successful lint, typecheck, tests, and production build. A successful source-level test suite is **not** a substitute for a full Vercel build. No new migration required.
