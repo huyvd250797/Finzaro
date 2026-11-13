@@ -1,3 +1,12 @@
+## [4.1.2] — 2026-11-13 · Compact Reports & Instant Period Navigation
+
+- **Báo cáo gọn:** bỏ CTA Phân tích nâng cao ở đầu Tổng quan và card Hiệu quả dòng tiền/Tỷ lệ giữ lại; giữ 3 KPI cốt lõi, biểu đồ donut và nhóm danh mục.
+- **Điều hướng kỳ không tải lại RSC:** chuyển Tháng/Năm và kỳ trước/sau ngay trên client; cập nhật URL bằng History API, giữ loại Thu/Chi.
+- **RPC tổng hợp:** thêm `report_period_summary_v412` chỉ trả về các tổng hợp theo danh mục/ngày/tháng đã lọc user + loại + currency, thay cho chuyển toàn bộ ledger khi đổi kỳ; có fallback trên DB chưa nâng migration.
+- **Cache phiên:** 12 kỳ, TTL 90 giây; prefetch theo hover/focus có kiểm soát, loading từng vùng, lỗi/Thử lại.
+- **Bảo toàn:** 6 module, modal phân tích danh mục V4.1.1, Splash, taskbar, thông tin giao dịch; không sửa schema bảng và không thêm npm dependency.
+- **QA:** 183/183 test source đạt; cần typecheck/build và chạy RPC staging trên Supabase thật trước production.
+
 ## [4.1.1] — 2026-11-13 · Full-screen Category Analytics & Instant Details
 
 - **Modal toàn màn hình:** chọn một danh mục ở Báo cáo → Tổng quan sẽ mở modal React Portal riêng, có nút X / Escape, khóa cuộn nền, safe area cho iPhone và focus trap. Không còn biểu đồ mở rộng dưới danh sách.

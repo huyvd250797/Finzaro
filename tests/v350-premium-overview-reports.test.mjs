@@ -11,8 +11,8 @@ const calendar = read("components/report-calendar-interactive.tsx");
 const css = read("app/globals.css");
 
 test("V3.5.0 release keeps six modules and finance actions", () => {
-  assert.equal(pkg.version, "4.1.1");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.1\.1"/);
+  assert.equal(pkg.version, "4.1.2");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.1\.2"/);
   assert.deepEqual(readdirSync(join(root,"app/(dashboard)"),{withFileTypes:true}).filter(d=>d.isDirectory()).map(d=>d.name).sort(),["accounts","categories","overview","reports","settings","transactions"]);
   const actions = read("features/transactions/actions.ts");
   for(const rpc of ["create_simple_transaction_v120","update_simple_transaction_v120","delete_simple_transaction_v120","copy_simple_transaction_batch_v320"]) assert.ok(actions.includes(rpc));
@@ -31,7 +31,7 @@ test("Six-month SVG chart is touch/key accessible, client-only and does not fetc
 });
 
 test("Report KPI, period controls and flow toggles preserve instant client tab switching", () => {
-  assert.match(reports, /FinanceMetricCard/);
+  assert.match(read("components/fast-report-overview.tsx"), /FinanceMetricCard/);
   assert.match(reports, /const flows: Record<ReportFlowType, ReportFlowSnapshot>/);
   assert.match(reports, /income: buildFlowSnapshot\("income"\)/);
   assert.match(reports, /expense: buildFlowSnapshot\("expense"\)/);

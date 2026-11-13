@@ -11,9 +11,10 @@ test("V3.2.1: report snapshots and period URLs have statically complete flow key
   assert.match(report, /const flows: Record<ReportFlowType, ReportFlowSnapshot> = \{/);
   assert.match(report, /income: buildFlowSnapshot\("income"\)/);
   assert.match(report, /expense: buildFlowSnapshot\("expense"\)/);
-  assert.match(report, /const periodLinks: Record<ReportFlowType, PeriodLinks> = \{/);
-  assert.match(report, /income: buildPeriodLinks\("income"\)/);
-  assert.match(report, /expense: buildPeriodLinks\("expense"\)/);
+  assert.match(report, /<FastReportOverview/);
+  assert.match(read("components/fast-report-overview.tsx"), /periodId\(visible\)/);
+  assert.match(read("components/fast-report-overview.tsx"), /mode === "year"/);
+  assert.match(read("components/fast-report-overview.tsx"), /shiftMonthKey/);
   assert.doesNotMatch(report, /Object\.fromEntries\([^;]+as Record<ReportFlowType/);
 });
 

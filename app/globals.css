@@ -1231,3 +1231,12 @@ body:has(.fin-sheet-backdrop[data-fin-dialog="true"]) .fin-mobile-taskbar,
 @media (prefers-reduced-motion: reduce) {
   .fin-report-drilldown-modal *, .fin-report-drilldown-close { scroll-behavior: auto !important; animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+/* V4.1.2 - report overview density: remove oversized retention panel,
+   keep the three key figures readable on compact phone widths. */
+.fin-compact-report-kpis .fin-metric-card > div { gap: .5rem; padding: .75rem; }
+.fin-compact-report-kpis .fin-metric-icon { width: 1.75rem; height: 1.75rem; border-radius: .625rem; }
+@media (max-width: 420px) {
+  .fin-report-header { gap: .5rem; }
+  .fin-compact-report-kpis .fin-metric-value { font-size: clamp(.9rem, 4.1vw, 1.13rem); }
+}

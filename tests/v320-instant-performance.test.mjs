@@ -28,7 +28,7 @@ test("Instant Reports: both flow datasets are computed once from one ledger", ()
   assert.match(reportPage, /expense: buildFlowSnapshot\("expense"\)/);
   assert.match(reportPage, /reportCategoryBreakdown\(transactions, currency, flowType\)/);
   assert.match(reportPage, /buildCategoryPeriodGroups\(transactions, currency, flowType/);
-  assert.match(reportPage, /<InstantReportBreakdown/);
+  assert.match(read("components/fast-report-overview.tsx"), /<InstantReportBreakdown/);
   assert.match(instantFlow, /"use client"/);
   assert.match(instantFlow, /const \[type, setType\] = useState/);
   assert.match(instantFlow, /window\.history\.pushState/);

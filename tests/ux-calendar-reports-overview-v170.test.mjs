@@ -69,7 +69,7 @@ test("date selection is local; quick-create, swipe, back-navigation and safe ove
 test("Reports pie keeps actual configured category colors and interactive selection", () => {
   assert.match(reports, /color: iconColorValue\(item\.icon_color\)/);
   assert.match(read("components/instant-report-breakdown.tsx"), /ReportDonut key=/);
-  assert.match(reports, /InstantReportBreakdown/);
+  assert.match(read("components/fast-report-overview.tsx"), /InstantReportBreakdown/);
   assert.match(donut, /conic-gradient/);
   assert.match(donut, /slice\.color/);
   assert.match(donut, /slice\.href/);

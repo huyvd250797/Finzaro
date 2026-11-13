@@ -19,8 +19,8 @@ function contrast(fg, bg) {
 
 test("V3.3.0 design system persists through later versions, unchanged module scope and finance RPCs", () => {
   assert.ok((Number(pkg.version.split(".")[0]) > 3 || Number(pkg.version.split(".")[1]) >= 3), "UI foundation preserved in V3.3+");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.1\.1"/);
-  assert.match(read("lib/app-version.ts"), /Foundation|Mobile-First Transaction UX|Premium Overview & Reports|Fluid Motion & Navigation|Premium UX Release|Fixed Mobile Chrome & Sheet Actions|Viewport-Locked Mobile Chrome & Keyboard Focus|Instant Launch Splash, Clean Sheet Grip & Today Spending|Category Drill-down Reports & Today Spending Disclosure|Full-screen Category Analytics & Instant Details/);
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.1\.2"/);
+  assert.match(read("lib/app-version.ts"), /Foundation|Mobile-First Transaction UX|Premium Overview & Reports|Fluid Motion & Navigation|Premium UX Release|Fixed Mobile Chrome & Sheet Actions|Viewport-Locked Mobile Chrome & Keyboard Focus|Instant Launch Splash, Clean Sheet Grip & Today Spending|Category Drill-down Reports & Today Spending Disclosure|Full-screen Category Analytics & Instant Details|Compact Reports & Instant Period Navigation/);
   assert.deepEqual(readdirSync(join(root, "app/(dashboard)"), { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort(), ["accounts", "categories", "overview", "reports", "settings", "transactions"]);
   const actions = read("features/transactions/actions.ts");
   for (const rpc of ["create_simple_transaction_v120", "update_simple_transaction_v120", "delete_simple_transaction_v120", "copy_simple_transaction_batch_v320"]) assert.ok(actions.includes(rpc), rpc);
@@ -56,7 +56,7 @@ test("Shared primitives and concrete screens use the design system", () => {
   const overview = read("app/(dashboard)/overview/page.tsx");
   assert.match(overview, /fin-hero-card/);
   assert.match(overview, /fin-overview-chart/);
-  assert.match(read("app/(dashboard)/reports/page.tsx"), /fin-report-kpi/);
+  assert.match(read("components/finance-metric-card.tsx"), /fin-report-kpi/);
 });
 
 test("Accessibility and modal focus management survive visual redesign", () => {

@@ -1,3 +1,5 @@
+> **Latest release: V4.1.2 — Compact Reports & Instant Period Navigation.** Báo cáo Tổng quan gọn hơn, bỏ hiệu quả dòng tiền và CTA Phân tích nâng cao. Chuyển Tháng/Năm và kỳ trước/sau bằng API tổng hợp nhanh, cache kỳ đã xem; SQL mới chỉ thêm hàm tổng hợp, không sửa dữ liệu. Xem `DEPLOY_V4.1.2.md`.
+
 > **Latest release: V4.1.1 — Full-screen Category Analytics & Instant Details.** Chi tiêu hôm nay mặc định thu gọn danh sách giao dịch; Báo cáo Tổng quan nhóm theo danh mục, cho phép chọn danh mục rồi chọn cột ngày (khi xem tháng) hoặc cột tháng (khi xem năm) để tải giao dịch đúng kỳ. Không yêu cầu SQL migration. Xem `DEPLOY_V4.1.1.md`.
 
 > **Latest release: V4.0.3 — Instant Launch Splash, Clean Sheet Grip & Today Spending.** Khởi động PWA bằng Splash HTML ngay khi nhận được phản hồi, không chờ redirect xác thực; xử lý viền focus thanh kéo bottom sheet; thêm Chi tiêu hôm nay trên Tổng quan. Không cần chạy SQL mới. Xem `DEPLOY_V4.0.3.md`.
