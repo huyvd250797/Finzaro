@@ -54,7 +54,6 @@ function EditTransactionForm({ transaction, accounts, categories, currencies, re
 
 export default async function TransactionsPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
-  const startedAt = performance.now();
   const pageSize = 80;
   const historyPage = Math.min(13, Math.max(1, Number.parseInt(params.page ?? "1", 10) || 1));
   const displayLimit = historyPage * pageSize;
@@ -93,7 +92,6 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
     supabase.from("user_preferences").select("currency_code, timezone").eq("id", userId).maybeSingle(),
     loadLedger(supabase, userId, ledgerOptions)
   ]);
-  if (process.env.NODE_ENV === "development") console.info(`[Finzaro] transactions loader ${Math.round(performance.now() - startedAt)}ms (${quickFormOnly ? "quick" : editDate ? "edit" : "list"})`);
   const timeZone = preferences?.timezone ?? "Asia/Ho_Chi_Minh";
   const activeAccounts = ledger.accounts.filter((account) => !account.is_archived && ["bank", "cash", "ewallet"].includes(account.account_type)).map((account) => ({
     ...account,
@@ -145,6 +143,7 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
   nextPageQuery.set("page", String(historyPage + 1));
   const transferIds = shownTransactions.filter(tx => tx.transaction_type === "transfer").map(tx => tx.id).slice(0, 500);
   const { data: simpleTransferRows } = transferIds.length > 0
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Historical dynamic Supabase table/RPC adapter; update generated DB types in a schema release.
     ? await (supabase as any).from("simple_transaction_ids_v120").select("transaction_id").eq("user_id", userId).in("transaction_id", transferIds)
     : { data: [] };
   const deletableTransferIds: string[] = (simpleTransferRows ?? []).map((row: { transaction_id: string })=>row.transaction_id);

@@ -77,6 +77,7 @@ async function commitSimpleTransaction(formData: FormData) {
   if (transactionType === "transfer" && !text(formData, "to_amount") && fromAccount?.currency_code === toAccount?.currency_code) toAmount = fromAmount;
   if (transactionType !== "expense" && (!toAmount || toAmount <= 0)) throw new Error("Số tiền nhận không hợp lệ.");
   if (transactionType === "transfer" && fromAccount?.currency_code === toAccount?.currency_code && fromAmount !== toAmount) throw new Error("Chuyển cùng loại tiền phải có giá trị gửi và nhận bằng nhau.");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Historical dynamic Supabase table/RPC adapter; update generated DB types in a schema release.
   const error = transactionRpcError(await measureServerOperation("transaction.create.rpc", () => (supabase as any).rpc("create_simple_transaction_v120", {
     p_transaction_type: transactionType, p_title: title, p_category_id: categoryId,
     p_notes: notes || null, p_transaction_date: transactionDate,
@@ -122,6 +123,7 @@ export async function deleteTransactionInlineAction(transactionId: string): Prom
     }
     const { supabase } = await requireUser();
     const error = transactionRpcError(await measureServerOperation("transaction.delete.inline.rpc", () =>
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Historical dynamic Supabase table/RPC adapter; update generated DB types in a schema release.
       (supabase as any).rpc("delete_simple_transaction_v120", { p_transaction_id: transactionId })
     ));
     if (error) throw new Error(dbError(error));
@@ -138,6 +140,7 @@ export async function deleteTransactionAction(formData: FormData) {
     const id = text(formData, "transaction_id");
     if (!id) throw new Error("Thiếu mã giao dịch.");
     const { supabase } = await requireUser();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Historical dynamic Supabase table/RPC adapter; update generated DB types in a schema release.
     const error = transactionRpcError(await measureServerOperation("transaction.delete.rpc", () => (supabase as any).rpc("delete_simple_transaction_v120", { p_transaction_id: id })));
     if (error) throw new Error(dbError(error));
     invalidateSimpleLedger();
@@ -177,6 +180,7 @@ export async function updateTransactionAction(formData: FormData) {
     if (digits === undefined) throw new Error("Không tìm thấy tiền tệ.");
     const amount = parseMajorAmountToMinor(text(formData, "amount"), digits);
     if (!amount || amount <= 0) throw new Error("Số tiền không hợp lệ.");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Historical dynamic Supabase table/RPC adapter; update generated DB types in a schema release.
     const error = transactionRpcError(await measureServerOperation("transaction.update.rpc", () => (supabase as any).rpc("update_simple_transaction_v120", {
       p_transaction_id: transactionId, p_title: title, p_category_id: categoryId, p_notes: notes || null,
       p_transaction_date: date, p_account_id: accountId, p_amount_minor: amount
@@ -226,6 +230,7 @@ export async function copyTransactionDatesAction(previous: CopyTransactionState,
     // and returns receipts for prior successes rather than creating duplicates.
     const { supabase } = await requireUser();
     const result = await measureServerOperation("transaction.copy.batch.rpc", () =>
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Historical dynamic Supabase table/RPC adapter; update generated DB types in a schema release.
       (supabase as any).rpc("copy_simple_transaction_batch_v320", {
         p_source_id: sourceId,
         p_destination_dates: remaining

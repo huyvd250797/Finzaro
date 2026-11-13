@@ -23,6 +23,8 @@ export type ReportFlowSnapshot = {
   categories: CategoryPeriodGroup[];
 };
 
+function eventMonotonicNow() { return performance.now(); }
+
 type ReportDetailPayload = CategoryDetailPayload;
 type DetailState = { key: string; status: "idle" | "loading" | "ready" | "error"; payload: ReportDetailPayload | null; error?: string };
 
@@ -125,7 +127,7 @@ export function InstantReportBreakdown({
       else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
     };
     window.addEventListener("keydown", onKeyDown);
-    return () => { cancelAnimationFrame(focusFrame); window.removeEventListener("keydown", onKeyDown); prior?.isConnected && prior.focus({ preventScroll: true }); };
+    return () => { cancelAnimationFrame(focusFrame); window.removeEventListener("keydown", onKeyDown); if (prior?.isConnected) prior.focus({ preventScroll: true }); };
   }, [activeCategoryId, portalReady]);
   const selected = flows[type];
   const activeCategory = selected.categories.find((item) => item.id === activeCategoryId) ?? null;
@@ -158,7 +160,7 @@ export function InstantReportBreakdown({
 
   function changeType(next: ReportFlowType) {
     if (next === type) return;
-    const startedAt = performance.now();
+    const startedAt = eventMonotonicNow();
     const url = new URL(window.location.href);
     url.searchParams.set("type", next);
     window.history.pushState(window.history.state, "", `${url.pathname}${url.search}${url.hash}`);

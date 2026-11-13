@@ -31,8 +31,8 @@ test('V4.1.3 annotates period mode as month/year and enforces PeriodArgs at cons
 });
 
 test('V4.1.3 deploy hotfix keeps the authenticated RPC and existing fallback', () => {
-  assert.equal(JSON.parse(read('package.json')).version, '4.1.4');
-  assert.match(read('lib/app-version.ts'), /APP_VERSION = "4\.1\.4"/);
+  assert.equal(JSON.parse(read('package.json')).version, '4.1.5');
+  assert.match(read('lib/app-version.ts'), /APP_VERSION = "4\.1\.5"/);
   const route = read('app/api/reports/period-snapshot/route.ts');
   for (const text of ['requireUser()', 'report_period_summary_v412', 'loadReportLedger', 'PGRST202', 'PRIVATE_HEADERS']) {
     assert.ok(route.includes(text), `missing ${text}`);

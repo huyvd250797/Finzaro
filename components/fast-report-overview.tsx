@@ -14,6 +14,8 @@ import { measureClientPaint } from "@/lib/client-performance";
 
 const ttlMs = 90_000;
 const maxPeriods = 12;
+// The seed gets a real timestamp in the mount synchronization effect.
+// Do not call Date.now() in a ref initializer during React render.
 type PeriodPick = Pick<FastPeriodSnapshot, "mode" | "period" | "year">;
 const periodId = (value: PeriodPick) => value.mode === "year" ? `year:${value.year}` : `month:${value.period}`;
 const buildRequestUrl = (value: PeriodPick) => `/api/reports/period-snapshot?${new URLSearchParams({
@@ -53,7 +55,7 @@ export function FastReportOverview({ initialSnapshot, initialType }: {
   const [error, setError] = useState("");
   const [type, setType] = useState<ReportFlowType>(initialType);
   const cacheRef = useRef(new Map<string, { snapshot: FastPeriodSnapshot; at: number }>([
-    [periodId(initialSnapshot), { snapshot: initialSnapshot, at: Date.now() }]
+    [periodId(initialSnapshot), { snapshot: initialSnapshot, at: 0 }]
   ]));
   const inFlightRef = useRef(new Map<string, Promise<FastPeriodSnapshot>>());
   const requestSequence = useRef(0);

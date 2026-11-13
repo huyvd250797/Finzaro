@@ -38,6 +38,7 @@ export async function GET(request: Request) {
     // serial Supabase round trip on every uncached period switch.
     const [currencyResult, summaryResult] = await Promise.all([
       supabase.from("supported_currencies").select("code, decimal_digits, symbol").eq("code", currency).maybeSingle(),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Historical dynamic Supabase table/RPC adapter; update generated DB types in a schema release.
       (supabase as any).rpc("report_period_summary_v412", {
         p_from_date: bounds.from, p_to_date: bounds.to, p_currency: currency, p_mode: mode
       })

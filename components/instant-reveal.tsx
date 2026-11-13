@@ -14,6 +14,7 @@ export function InstantReveal({ children, label, initialOpen = false, icon = tru
   useEffect(() => {
     if (!open) return;
     const dialog = dialogRef.current;
+    const trigger = triggerRef.current;
     // The viewport-fixed action slot is a sibling of the scroller; keep it in
     // the same keyboard focus loop rather than trapping Tab inside content.
     const surface = dialog?.closest<HTMLElement>(".fin-sheet-panel") ?? dialog;
@@ -30,7 +31,7 @@ export function InstantReveal({ children, label, initialOpen = false, icon = tru
       else if (!event.shiftKey && (document.activeElement === lastNode || !surface.contains(document.activeElement))) { event.preventDefault(); firstNode.focus(); }
     };
     window.addEventListener("keydown", onKey);
-    return () => { window.removeEventListener("keydown", onKey); triggerRef.current?.focus(); };
+    return () => { window.removeEventListener("keydown", onKey); trigger?.focus(); };
   }, [open]);
 
   return <>

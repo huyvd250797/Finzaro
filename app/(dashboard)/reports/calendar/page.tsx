@@ -87,6 +87,7 @@ export default async function ReportCalendarPage({ searchParams }: { searchParam
 
   const transferIds = ledger.transactions.filter(tx => tx.transaction_type === "transfer").map(tx => tx.id).slice(0, 500);
   const { data: transferDeleteRows } = transferIds.length > 0
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Historical dynamic Supabase table/RPC adapter; update generated DB types in a schema release.
     ? await (supabase as any).from("simple_transaction_ids_v120").select("transaction_id").eq("user_id", userId).in("transaction_id", transferIds)
     : { data: [] };
   const deletable = new Set<string>((transferDeleteRows ?? []).map((row: { transaction_id: string }) => row.transaction_id));

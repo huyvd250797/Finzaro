@@ -49,6 +49,7 @@ export function statementSheets(report: FinancialStatement): WorkbookSheet[] {
   ];
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- Public compatibility placeholder; report does not claim accounting balances.
 export function cashAccountPosition(_accounts: LedgerAccount[], _currency: string) {
   // Deliberately not presented as a balance-sheet statement. Historical ledger
   // filters and transfers are insufficient to certify opening/closing balances.

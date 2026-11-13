@@ -3,7 +3,7 @@
 // database records, git metadata, environment variables or active modules.
 // Idempotent on fresh V1.7.1 archives and GitHub/Vercel checkouts.
 import { existsSync, lstatSync, rmSync } from "node:fs";
-import { join, resolve, sep } from "node:path";
+import { resolve, sep } from "node:path";
 
 const root = resolve(import.meta.dirname, "..");
 

@@ -21,7 +21,6 @@ function loadCompiled(file, injections = {}) {
   vm.runInNewContext(result.outputText, { exports, require: (id) => injections[id] ?? require(id), Buffer, TextEncoder, Uint32Array, Math, Set, Map, Number, String, Object, Date, Intl, console });
   return exports;
 }
-const mockTransactionEntry = (tx, role) => tx.entries.find((entry) => entry.entry_role === role) ?? null;
 const canonical = loadCompiled("features/transactions/financial-flow.ts");
 const analytics = loadCompiled("features/reports/advanced.ts", { "@/features/transactions/financial-flow": canonical });
 const workbook = loadCompiled("features/reports/report-workbook.ts");

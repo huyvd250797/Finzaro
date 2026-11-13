@@ -14,7 +14,6 @@ const form = read("components/transaction-entry-form.tsx");
 const actions = read("features/transactions/actions.ts");
 const sql = read("supabase/sql-editor/V1.2.0_simple_expense_management.sql");
 const accounts = read("app/(dashboard)/accounts/page.tsx");
-const reportData = read("features/reports/experience.ts");
 const page = read("app/(dashboard)/transactions/page.tsx");
 
 test("version correctly bumped in package and UI", () => {

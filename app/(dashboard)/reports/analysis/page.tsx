@@ -22,7 +22,7 @@ export default async function ReportAnalysisPage({ searchParams }: { searchParam
   const raw = await searchParams;
   const params = Object.fromEntries(Object.entries(raw).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v])) as Record<string, string | undefined>;
   const report = await loadFinancialReport(params);
-  const { range, previousRange, ledger, currency, digits, filters, comparison, monthly, categories, accounts, movements, insights, query } = report;
+  const { range, ledger, currency, digits, filters, comparison, monthly, categories, accounts, movements, insights, query } = report;
   const money = (amount: number) => formatMinorMoney(amount, currency, digits);
   const disabled = ledger.diagnostics.strategy === "empty";
   const exportLink = (format: string) => `/api/reports/export?${query}&format=${format}`;

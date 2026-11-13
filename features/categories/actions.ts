@@ -48,6 +48,7 @@ export async function createCategoryAction(formData: FormData) {
       }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Historical dynamic Supabase table/RPC adapter; update generated DB types in a schema release.
     const { error } = await (supabase as any).from("categories").insert({
       user_id: userId,
       name,
@@ -107,6 +108,7 @@ export async function updateCategoryAction(formData: FormData) {
 
     const { data, error } = await supabase
       .from("categories")
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Historical dynamic Supabase table/RPC adapter; update generated DB types in a schema release.
       .update({ name, icon_name: iconName, icon_color: iconColor, parent_id: parentId } as any)
       .eq("id", categoryId)
       .eq("user_id", userId)

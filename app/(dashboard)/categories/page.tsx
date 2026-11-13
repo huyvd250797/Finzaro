@@ -82,7 +82,7 @@ function CategoryForm({
   );
 }
 
-function CategorySection({ type, categories, showArchived, usageCounts }: { type: CategoryType; categories: CategoryRow[]; showArchived: boolean; usageCounts: Map<string, number> }) {
+function CategorySection({ type, categories, showArchived }: { type: CategoryType; categories: CategoryRow[]; showArchived: boolean }) {
   const categoryById = new Map(categories.map((category) => [category.id, category]));
   const visible = categories
     .filter((category) => category.category_type === type && (showArchived ? category.is_archived : !category.is_archived))
@@ -146,8 +146,8 @@ export default async function CategoriesPage({ searchParams }: { searchParams: S
       {editing && <CategoryForm type={editing.category_type} categories={categories} editing={editing} usageCount={usageCounts.get(editing.id) ?? 0} />}
 
       <div className="mt-5 grid gap-4">
-        <CategorySection type="expense" categories={categories} showArchived={showArchived} usageCounts={usageCounts} />
-        <CategorySection type="income" categories={categories} showArchived={showArchived} usageCounts={usageCounts} />
+        <CategorySection type="expense" categories={categories} showArchived={showArchived} />
+        <CategorySection type="income" categories={categories} showArchived={showArchived} />
       </div>
     </div>
   );

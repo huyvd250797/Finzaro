@@ -13,7 +13,7 @@ const expectedRoutes = ["accounts", "categories", "overview", "reports", "settin
 test("V2.0.0 single release synchronizes version, API, PWA and visible mobile + desktop UI", () => {
   assert.ok((Number(JSON.parse(read("package.json")).version.split(".")[0]) > 2 || Number(JSON.parse(read("package.json")).version.split(".")[1]) >= 2), "release should retain V2.2 baseline");
   assert.match(version, /APP_VERSION = "(?:2\.[2-9]\.\d+|(?:3|4)\.\d+\.\d+)"/);
-  assert.match(version, /APP_RELEASE_NAME = "(?:Premium Fintech & Fluid Transaction UX|Financial Dashboard & Advanced Reports|Professional Release · Scale, Motion & Accessibility|Instant Reports, Fast Copy & Splash|Premium Visual Foundation|Mobile-First Transaction UX|Premium Overview & Reports|Fluid Motion & Navigation|Premium UX Release|Fixed Mobile Chrome & Sheet Actions|Viewport-Locked Mobile Chrome & Keyboard Focus|Instant Launch Splash, Clean Sheet Grip & Today Spending|Category Drill-down Reports & Today Spending Disclosure|Full-screen Category Analytics & Instant Details|Compact Reports & Instant Period Navigation|Period Snapshot Type Safety Hotfix|Financial Accuracy & Release Gate)"/);
+  assert.match(version, /APP_RELEASE_NAME = "(?:Premium Fintech & Fluid Transaction UX|Financial Dashboard & Advanced Reports|Professional Release · Scale, Motion & Accessibility|Instant Reports, Fast Copy & Splash|Premium Visual Foundation|Mobile-First Transaction UX|Premium Overview & Reports|Fluid Motion & Navigation|Premium UX Release|Fixed Mobile Chrome & Sheet Actions|Viewport-Locked Mobile Chrome & Keyboard Focus|Instant Launch Splash, Clean Sheet Grip & Today Spending|Category Drill-down Reports & Today Spending Disclosure|Full-screen Category Analytics & Instant Details|Compact Reports & Instant Period Navigation|Period Snapshot Type Safety Hotfix|Financial Accuracy & Release Gate|Release Gate Lint Compatibility)"/);
   for (const file of ["components/app-header.tsx", "components/app-sidebar.tsx", "components/mobile-nav.tsx", "app/(dashboard)/settings/page.tsx", "app/api/version/route.ts", "components/pwa-register.tsx"]) assert.match(read(file), /APP_VERSION/);
   assert.match(read("components/app-header.tsx"), /fin-version-pill inline-flex/);
   assert.doesNotMatch(read("components/app-header.tsx"), /hidden sm:inline-flex/);
@@ -69,7 +69,7 @@ test("UX release preserves zoom, keyboard focus, reduced motion and PWA update r
   const app = read("app/layout.tsx");
   assert.doesNotMatch(app, /userScalable:\s*false|maximumScale:\s*1/);
   const instant = read("components/instant-reveal.tsx");
-  for (const pattern of [/<BottomSheet/, /event\.key !== "Tab"/, /event\.key === "Escape"/, /triggerRef\.current\?\.focus\(\)/]) assert.match(instant, pattern);
+  for (const pattern of [/<BottomSheet/, /event\.key !== "Tab"/, /event\.key === "Escape"/, /(?:triggerRef\.current|trigger)\?\.focus\(\)/]) assert.match(instant, pattern);
   assert.match(read("components/bottom-sheet.tsx"), /aria-modal="true"/);
   const css = read("app/globals.css");
   assert.match(css, /prefers-reduced-motion: reduce/);

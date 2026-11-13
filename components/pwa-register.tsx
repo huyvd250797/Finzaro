@@ -78,7 +78,7 @@ export function PwaRegister() {
     if (!("serviceWorker" in navigator) || process.env.NODE_ENV !== "production") return;
 
     let disposed = false;
-    let periodic: number | undefined;
+    
 
     const watchRegistration = (registration: ServiceWorkerRegistration) => {
       registrationRef.current = registration;
@@ -113,7 +113,7 @@ export function PwaRegister() {
     const onOnline = () => onVisible();
     document.addEventListener("visibilitychange", onVisible);
     window.addEventListener("online", onOnline);
-    periodic = window.setInterval(onVisible, 15 * 60 * 1000);
+    const periodic = window.setInterval(onVisible, 15 * 60 * 1000);
 
     return () => {
       disposed = true;

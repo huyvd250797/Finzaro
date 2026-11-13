@@ -3,7 +3,7 @@ import type { Database } from "@/lib/supabase/database.types";
 import type { CategoryRow } from "@/features/categories/data";
 import { categoryScopeIds } from "@/features/reports/category-scope";
 import { flowValue } from "@/features/reports/advanced";
-import { loadLedger, transactionEntry, type LedgerAccount, type LedgerCurrency, type LedgerEntry, type TransactionCategory, type TransactionView } from "@/features/transactions/data";
+import { loadLedger, transactionEntry, type LedgerAccount, type LedgerCurrency, type LedgerEntry, type TransactionView } from "@/features/transactions/data";
 
 export type ReportRangeKey = "this_month" | "last_month" | "3m" | "6m" | "12m" | "ytd" | "custom";
 export type ReportFilters = {
@@ -67,6 +67,7 @@ function reportLog(strategy: string, error: unknown) {
   console.error(`[Finzaro Reports] ${strategy} failed`, error);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Historical dynamic Supabase table/RPC adapter; update generated DB types in a schema release.
 function schemaCompatibilityError(error: any) {
   const code = String(error?.code ?? "");
   const message = String(error?.message ?? "").toLowerCase();
@@ -89,6 +90,7 @@ async function loadReportTransactionsDirect(
     let incompatible = false;
 
     while (rows.length <= 100000) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Historical dynamic Supabase table/RPC adapter; update generated DB types in a schema release.
       const { data, error } = await (supabase as any)
         .from("transactions")
         .select(projection)
@@ -139,6 +141,7 @@ async function loadReportEntriesDirect(
   }
   for (let index = 0; index < chunks.length; index += concurrency) {
     const results = await Promise.all(chunks.slice(index, index + concurrency).map(async (chunk) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Historical dynamic Supabase table/RPC adapter; update generated DB types in a schema release.
       const { data, error } = await (supabase as any)
         .from("transaction_entries")
         .select("id, transaction_id, account_id, currency_code, amount_minor, entry_role")
@@ -162,6 +165,7 @@ async function loadReportEntriesLegacyCore(
   const pageSize = 1000;
   let offset = 0;
   while (offset <= 200000) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Historical dynamic Supabase table/RPC adapter; update generated DB types in a schema release.
     const { data, error } = await (supabase as any)
       .from("transaction_entries")
       .select("id, transaction_id, account_id, currency_code, amount_minor, entry_role")
@@ -187,6 +191,7 @@ async function loadReportCurrenciesBestEffort(
   supabase: SupabaseClient<Database>,
   entryCurrencies: string[]
 ) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Historical dynamic Supabase table/RPC adapter; update generated DB types in a schema release.
   const result = await (supabase as any)
     .from("supported_currencies")
     .select("code, decimal_digits, symbol")
@@ -204,6 +209,7 @@ async function loadReportCategoriesBestEffort(
   supabase: SupabaseClient<Database>,
   userId: string
 ) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Historical dynamic Supabase table/RPC adapter; update generated DB types in a schema release.
   const modern = await (supabase as any)
     .from("categories")
     .select("id, user_id, name, category_type, parent_id, icon_name, icon_color, system_key, is_system, is_archived, sort_order, created_at, updated_at")
@@ -212,12 +218,14 @@ async function loadReportCategoriesBestEffort(
   if (!modern.error) return (modern.data ?? []) as CategoryRow[];
   if (!schemaCompatibilityError(modern.error)) return [] as CategoryRow[];
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Historical dynamic Supabase table/RPC adapter; update generated DB types in a schema release.
   const legacy = await (supabase as any)
     .from("categories")
     .select("id, user_id, name, category_type, parent_id, icon_name, is_system, is_archived, sort_order, created_at, updated_at")
     .eq("user_id", userId)
     .order("sort_order");
   if (legacy.error) return [] as CategoryRow[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Historical dynamic Supabase table/RPC adapter; update generated DB types in a schema release.
   return ((legacy.data ?? []) as any[]).map((row) => ({ ...row, icon_color: "#0d8b66", system_key: row.system_key ?? null })) as CategoryRow[];
 }
 
@@ -225,6 +233,7 @@ async function loadReportAccountsBestEffort(
   supabase: SupabaseClient<Database>,
   userId: string
 ) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Historical dynamic Supabase table/RPC adapter; update generated DB types in a schema release.
   const modern = await (supabase as any)
     .from("accounts")
     .select("id, name, account_type, currency_code, institution_name, is_archived, current_balance_minor")
@@ -232,11 +241,13 @@ async function loadReportAccountsBestEffort(
   if (!modern.error) return (modern.data ?? []) as LedgerAccount[];
   if (!schemaCompatibilityError(modern.error)) return [] as LedgerAccount[];
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Historical dynamic Supabase table/RPC adapter; update generated DB types in a schema release.
   const legacy = await (supabase as any)
     .from("accounts")
     .select("id, name, account_type, currency_code, institution_name, is_archived")
     .eq("user_id", userId);
   if (legacy.error) return [] as LedgerAccount[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Historical dynamic Supabase table/RPC adapter; update generated DB types in a schema release.
   return ((legacy.data ?? []) as any[]).map((row) => ({ ...row, current_balance_minor: 0 })) as LedgerAccount[];
 }
 
@@ -339,6 +350,7 @@ async function legacyCoreReportLedger(
   const pageSize = 750;
   let offset = 0;
   while (rows.length <= 100000) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Historical dynamic Supabase table/RPC adapter; update generated DB types in a schema release.
     const { data, error } = await (supabase as any)
       .from("transactions")
       .select("id, transaction_type, title, category_label, notes, transaction_date, created_at")

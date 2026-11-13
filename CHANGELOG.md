@@ -1,3 +1,11 @@
+## [4.1.5] — 2026-11-13 · Release Gate Lint Compatibility
+
+- Fix the second-stage Vercel lint failures surfaced after resolving the ESLint 9.17 `eslint/config` import incompatibility.
+- Retain Next.js/TypeScript strict ESLint baseline while using narrow, explicit legacy React Hooks exceptions; annotate dynamic Supabase casts per line rather than disabling no-explicit-any globally.
+- Remove accidental Next.js app-only rule from test/benchmark fixtures; fix source lint issues including render purity, `prefer-const`, unused symbols and ref capture.
+- Keep 6 modules, financial reconciliation, all transactions/RPC logic, SQL, Node 22 and mandatory `npm run check`.
+- QA: local source and regression tests, TypeScript syntax AST and release validation; real lint/typecheck/production build require npm dependencies unavailable in packaging runtime.
+
 ## [4.1.4] — 2026-11-13 · Financial Accuracy & Release Gate
 
 - **Accurate top-category shares:** Dashboard category bars use all spending categories as the denominator before Top 5 is displayed; remove the fake minimum bar share.

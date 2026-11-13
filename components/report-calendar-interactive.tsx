@@ -35,6 +35,8 @@ type CalendarTransaction = {
   deletable: boolean;
 };
 
+function eventClockNow() { return Date.now(); }
+
 const WEEKDAYS = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
 
 
@@ -90,7 +92,7 @@ export function ReportCalendarInteractive({
 
   function selectDay(date: string) {
     setSelectedDay(date);
-    const now = Date.now();
+    const now = eventClockNow();
     const previous = lastTap.current;
     if (previous.date === date && now - previous.at <= 360) {
       setQuickDay(date);

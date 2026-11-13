@@ -8,7 +8,7 @@ import { MoneyCalculatorInput } from "@/components/money-calculator-input";
 import { Card, CardContent } from "@/components/ui/card";
 import { ACCOUNT_TYPE_LABELS } from "@/features/accounts/constants";
 import { AccountCollection } from "@/components/account-collection";
-import { createAccountAction, setAccountArchivedAction, updateAccountAction } from "@/features/accounts/actions";
+import { createAccountAction, updateAccountAction } from "@/features/accounts/actions";
 import { requireUser } from "@/lib/auth";
 import { formatMinorMoney } from "@/lib/utils";
 

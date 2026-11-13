@@ -60,13 +60,6 @@ function sliceIndexAt(slices: SafeSlice[], percentage: number) {
   return Math.max(0, slices.length - 1);
 }
 
-function arcPosition(slices: SafeSlice[], index: number) {
-  const starting = slices.slice(0, index).reduce((sum, slice) => sum + slice.percent, 0);
-  const angle = ((starting + slices[index].percent / 2) * 3.6 - 90) * Math.PI / 180;
-  const radius = slices[index].percent >= 38 ? 26 : 32;
-  return { left: `${50 + Math.cos(angle) * radius}%`, top: `${50 + Math.sin(angle) * radius}%` };
-}
-
 export function ReportDonut({ slices, total, currency, decimalDigits = 0, centerLabel, onCategoryOpen }: {
   slices: DonutSlice[];
   total: number;
