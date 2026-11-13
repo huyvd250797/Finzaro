@@ -19,11 +19,11 @@ test("App first load restores splash and still streams overview sections indepen
   assert.match(read("app/layout.tsx"), /<AppSplash/);
   const overview = read("app/(dashboard)/overview/page.tsx");
   assert.match(overview, /<Suspense fallback=/);
-  assert.match(overview, /function OverviewEssentials/);
-  assert.match(overview, /function OverviewTrends/);
+  assert.match(overview, /function OverviewDashboard/);
   assert.match(overview, /function OverviewRecent/);
-  assert.match(overview, /fromDate: `\$\{month\}-01`/);
-  assert.match(overview, /fromDate: `\$\{months\[0\]\.key\}-01`/);
+  assert.match(overview, /loadDashboardSnapshot/);
+  assert.equal((overview.match(/loadDashboardSnapshot\(supabase/g) ?? []).length, 1);
+  assert.match(overview, /cache\(async \(\) =>/);
   assert.match(read("app/(dashboard)/layout.tsx"), /<Suspense fallback=\{<AppHeader/);
 });
 

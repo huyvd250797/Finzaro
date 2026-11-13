@@ -36,7 +36,12 @@ test("V1.2.1 version and active module scope are consistent", () => {
 
 test("reports never silently serve a failed ledger read as a verified zero or empty CSV", () => {
   assert.match(read("components/report-data-status.tsx"), /diagnostics\?\.strategy !== "empty"/);
-  for (const route of ["app/(dashboard)/overview/page.tsx", "app/(dashboard)/reports/page.tsx", "app/(dashboard)/reports/calendar/page.tsx", "app/(dashboard)/reports/analysis/page.tsx", "app/(dashboard)/reports/category/[categoryId]/page.tsx"]) {
+  // Fast RPC pages surface a blocking error rather than misleading zeros;
+  // older ledger-backed views retain the status component.
+  for (const route of ["app/(dashboard)/overview/page.tsx", "app/(dashboard)/reports/page.tsx"]) {
+    assert.match(read(route), /Không tải được/);
+  }
+  for (const route of ["app/(dashboard)/reports/calendar/page.tsx", "app/(dashboard)/reports/category/[categoryId]/page.tsx"]) {
     assert.match(read(route), /ReportDataStatus/);
   }
   const csv = read("app/api/reports/export/route.ts");

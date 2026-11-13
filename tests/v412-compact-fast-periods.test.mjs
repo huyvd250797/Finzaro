@@ -30,12 +30,12 @@ const args = (mode, periodKey, year) => ({mode, period:periodKey, year, from:`${
 const row = (type,id,bucket,amount,count=1) => ({type,id,label:id??'Chưa phân loại',iconName:'Utensils',iconColor:'#ff6500',bucket,amount,count});
 
 test('V4.1.2 report entry is compact: no oversized cash-retention CTA or advanced shortcut',()=>{
-  assert.equal(JSON.parse(read('package.json')).version,'4.1.7');
+  assert.equal(JSON.parse(read('package.json')).version,'4.2.0');
   const page=read('app/(dashboard)/reports/page.tsx');
   assert.doesNotMatch(page,/Hiệu quả dòng tiền|HIỆU QUẢ DÒNG TIỀN|Tỷ lệ giữ lại trong kỳ|Phân tích nâng cao|fin-retention-card/);
   assert.match(page,/<FastReportOverview/);
   assert.match(read('components/fast-report-overview.tsx'),/<FinanceMetricCard/);
-  assert.match(read('components/report-navigation.tsx'),/Phân tích/,'the separate Analysis tab is not deleted');
+  assert.doesNotMatch(read('components/report-navigation.tsx'),/Phân tích/,'Analysis tab must be removed in V4.2.0');
 });
 
 test('fast SQL aggregates only standard income/expense, currency-scoped user-owned ledger entries',()=>{
@@ -80,7 +80,8 @@ test('period switches are client-only, cache bounded, and API is private with SQ
     'fetchPeriod(next)', 'requestSequence.current', 'finzaro:report-flow-change', 'setLoading(true)']) assert.ok(controls.includes(part),part);
   assert.doesNotMatch(controls,/router\.push\(|router\.refresh\(/);
   const api=read('app/api/reports/period-snapshot/route.ts');
-  for(const part of ['requireUser()', 'report_period_summary_v412','snapshotFromSummaryRows','loadReportLedger','snapshotFromTransactions',
-    '"Cache-Control": "private, no-store, max-age=0"', 'PGRST202']) assert.ok(api.includes(part),part);
-  assert.match(api,/ledger\.diagnostics\.strategy === "empty"/);
+  const loader=read('features/reports/load-period-snapshot.ts');
+  for(const part of ['requireUser()', 'loadPeriodSnapshot', '"Cache-Control": "private, no-store, max-age=0"']) assert.ok(api.includes(part),part);
+  for(const part of ['report_period_summary_v412','snapshotFromSummaryRows','loadReportLedger','snapshotFromTransactions','PGRST202']) assert.ok(loader.includes(part),part);
+  assert.match(loader,/ledger\.diagnostics\.strategy === "empty"/);
 });

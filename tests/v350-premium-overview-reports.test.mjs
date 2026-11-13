@@ -11,30 +11,32 @@ const calendar = read("components/report-calendar-interactive.tsx");
 const css = read("app/globals.css");
 
 test("V3.5.0 release keeps six modules and finance actions", () => {
-  assert.equal(pkg.version, "4.1.7");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.1\.7"/);
+  assert.equal(pkg.version, "4.2.0");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.2\.0"/);
   assert.deepEqual(readdirSync(join(root,"app/(dashboard)"),{withFileTypes:true}).filter(d=>d.isDirectory()).map(d=>d.name).sort(),["accounts","categories","overview","reports","settings","transactions"]);
   const actions = read("features/transactions/actions.ts");
   for(const rpc of ["create_simple_transaction_v120","update_simple_transaction_v120","delete_simple_transaction_v120","copy_simple_transaction_batch_v320"]) assert.ok(actions.includes(rpc));
 });
 
 test("Overview has premium hero, recent activity, category breakdown and chart without changing ledger math", () => {
-  for(const fragment of ["fin-dashboard-hero","fin-hero-balance","fin-hero-metrics","fin-overview-spend","fin-overview-recent","fin-overview-chart","monthTotals","expenseCategories","monthlyCashflowTotals","current_balance_minor"]) assert.ok(overview.includes(fragment), fragment);
-  assert.match(overview, /<CashflowChart data=\{series\} decimalDigits=\{digits\} currency=\{currency\}/);
+  for(const fragment of ["fin-dashboard-hero","fin-hero-balance","fin-hero-metrics","fin-overview-recent","fin-overview-chart","snapshot.monthTotals","loadDashboardSnapshot"]) assert.ok(overview.includes(fragment), fragment);
+  assert.match(overview, /<CashflowChart daily=\{snapshot.daily\}/);
+  assert.match(read("components/spending-period-card.tsx"), /Các khoản đã chi/);
+  assert.match(read("features/dashboard/snapshot.ts"), /current_balance_minor/);
 });
 
 test("Six-month SVG chart is touch/key accessible, client-only and does not fetch", () => {
   const chart = read("components/cashflow-chart.tsx");
   assert.match(chart, /^"use client";/);
-  for(const fragment of ["useState", "aria-pressed", "onClick", "aria-live", "fin-chart-reveal", "formatMinorMoney"]) assert.ok(chart.includes(fragment),fragment);
+  for(const fragment of ["useState", "aria-pressed", "onClick", "aria-live", "TrendPlot", "formatMinorMoney", "Maximize2"]) assert.ok(chart.includes(fragment),fragment);
   assert.doesNotMatch(chart, /fetch\(|router\.push\(|createClient\(/);
 });
 
 test("Report KPI, period controls and flow toggles preserve instant client tab switching", () => {
   assert.match(read("components/fast-report-overview.tsx"), /FinanceMetricCard/);
-  assert.match(reports, /const flows: Record<ReportFlowType, ReportFlowSnapshot>/);
-  assert.match(reports, /income: buildFlowSnapshot\("income"\)/);
-  assert.match(reports, /expense: buildFlowSnapshot\("expense"\)/);
+  assert.match(reports, /loadPeriodSnapshot/);
+  assert.match(read("features/reports/period-snapshot.ts"), /income: makeFlow\("income"\)/);
+  assert.match(read("features/reports/period-snapshot.ts"), /expense: makeFlow\("expense"\)/);
   const breakdown = read("components/instant-report-breakdown.tsx");
   assert.match(breakdown, /history\.pushState/);
   assert.match(breakdown, /setType\(next\)/);
@@ -62,7 +64,8 @@ test("Calendar separates today, selection and non-empty dates; retains swipe and
 });
 
 test("Route skeletons exist for overview, reports, calendar and analysis", () => {
-  for(const name of ["overview/loading.tsx", "reports/loading.tsx", "reports/calendar/loading.tsx", "reports/analysis/loading.tsx"]) assert.match(read(`app/(dashboard)/${name}`), /ReportSkeleton/);
+  for(const name of ["overview/loading.tsx", "reports/loading.tsx", "reports/calendar/loading.tsx"]) assert.match(read(`app/(dashboard)/${name}`), /ReportSkeleton/);
+  assert.match(read("app/(dashboard)/reports/analysis/page.tsx"), /redirect/);
   const skeleton = read("components/report-skeleton.tsx");
   assert.match(skeleton, /aria-busy="true"/);
   assert.match(css, /\.fin-skeleton \{/);

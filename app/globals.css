@@ -668,7 +668,7 @@ body {
 }
 .fin-report-kpi { box-shadow: var(--fin-shadow-soft); }
 .fin-report-kpi:hover { border-color: color-mix(in srgb, var(--primary) 27%, var(--fin-edge)); }
-.fin-overview-spend, .fin-overview-chart, .fin-overview-recent { background: var(--fin-surface); }
+.fin-overview-spend, .fin-overview-spend-today, .fin-overview-spend-month, .fin-overview-spend-year, .fin-overview-chart, .fin-overview-recent { background: var(--fin-surface); }
 .fin-overview-recent { overflow: hidden; }
 
 /* Clear controls, real hover/focus/disabled states, 44 px mobile hit area. */

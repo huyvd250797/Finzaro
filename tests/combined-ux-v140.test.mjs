@@ -14,7 +14,7 @@ const css = read("app/globals.css");
 test("combined version and scope remain consistent", () => {
   assert.ok((Number(JSON.parse(read("package.json")).version.split(".")[0]) > 2 || Number(JSON.parse(read("package.json")).version.split(".")[1]) >= 2), "release should retain V2.2 baseline");
   assert.match(read("lib/app-version.ts"), /APP_VERSION\s*=\s*"(?:2\.[2-9]\.\d+|(?:3|4)\.\d+\.\d+)"/);
-  assert.match(read("lib/app-version.ts"), /APP_RELEASE_NAME\s*=\s*"(?:Premium Fintech & Fluid Transaction UX|Financial Dashboard & Advanced Reports|Professional Release|Instant Reports|Premium Visual Foundation|Mobile-First Transaction UX|Premium Overview & Reports|Fluid Motion & Navigation|Premium UX Release|Fixed Mobile Chrome & Sheet Actions|Viewport-Locked Mobile Chrome & Keyboard Focus|Instant Launch Splash, Clean Sheet Grip & Today Spending|Category Drill-down Reports & Today Spending Disclosure|Full-screen Category Analytics & Instant Details|Compact Reports & Instant Period Navigation|Period Snapshot Type Safety Hotfix|Financial Accuracy & Release Gate|Release Gate Lint Compatibility|Financial Snapshot Type Safety Hotfix|Portable Test Runner CI Hotfix)/);
+  assert.match(read("lib/app-version.ts"), /APP_RELEASE_NAME\s*=\s*"(?:Premium Fintech & Fluid Transaction UX|Financial Dashboard & Advanced Reports|Professional Release|Instant Reports|Premium Visual Foundation|Mobile-First Transaction UX|Premium Overview & Reports|Fluid Motion & Navigation|Premium UX Release|Fixed Mobile Chrome & Sheet Actions|Viewport-Locked Mobile Chrome & Keyboard Focus|Instant Launch Splash, Clean Sheet Grip & Today Spending|Category Drill-down Reports & Today Spending Disclosure|Full-screen Category Analytics & Instant Details|Compact Reports & Instant Period Navigation|Period Snapshot Type Safety Hotfix|Financial Accuracy & Release Gate|Release Gate Lint Compatibility|Financial Snapshot Type Safety Hotfix|Portable Test Runner CI Hotfix|Unified Fast Data Layer)/);
   assert.match(read("README.md"), /V1\.7\.0/);
   assert.match(read("DEPLOY_V1.4.0.md"), /V1\.2\.3.*V1\.3\.0.*V1\.4\.0/s);
   assert.match(read("docs/VERSIONING.md"), /V1\.7\.0/);
@@ -53,8 +53,8 @@ test("semantic design tokens and opt-in non-sensitive performance timings exist"
   const perf = read("lib/performance.ts");
   assert.match(perf, /FINZARO_PERF_LOG/);
   assert.match(perf, /console\.info\(`\[Finzaro performance\] \${label}: \${Math\.round/);
-  for (const name of ["transaction.create.rpc", "transaction.update.rpc", "reports.overview.load", "reports.calendar.load", "overview.essentials"]) {
-    assert.ok(read("features/transactions/actions.ts") .includes(name) || ["app/(dashboard)/reports/page.tsx", "app/(dashboard)/reports/calendar/page.tsx", "app/(dashboard)/overview/page.tsx"].some((path) => read(path).includes(name)), name);
+  for (const name of ["transaction.create.rpc", "transaction.update.rpc", "reports.calendar.load", "dashboard.v420.summary", "reports.v420.aggregate"]) {
+    assert.ok(["features/transactions/actions.ts", "features/dashboard/snapshot.ts", "features/reports/load-period-snapshot.ts", "app/(dashboard)/reports/calendar/page.tsx"].some((path) => read(path).includes(name)), name);
   }
 });
 

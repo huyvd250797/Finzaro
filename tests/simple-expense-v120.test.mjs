@@ -92,7 +92,7 @@ test("Reports excludes legacy special finance transactions", () => {
 test("Overview has a three-column monthly KPI row and no advanced loaders", () => {
  assert.match(home,/grid-cols-3/);
  assert.match(home,/monthTotals/);
- assert.match(home,/account_type/);
+ assert.match(read("features/dashboard/snapshot.ts"),/account_type/);
  for(const stale of ["loadLoan", "loadCreditCard", "loadDeposit", "loadForecast", "loadDebtStrategy", "loadSavingsGoal"]) assert.ok(!home.includes(stale));
 });
 test("Account create/edit only permits ordinary cash, bank or e-wallet", () => {

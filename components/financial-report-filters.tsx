@@ -23,6 +23,6 @@ export function FinancialReportFilters({ range, filters, currency, currencies, a
     <label className="text-xs font-semibold">Từ ngày<input name="from" type="date" value={from} onChange={(e) => { setFrom(e.target.value); setRangeKey("custom"); }} max={to} className="fin-input mt-1" /></label>
     <label className="text-xs font-semibold">Đến ngày<input name="to" type="date" value={to} onChange={(e) => { setTo(e.target.value); setRangeKey("custom"); }} min={from} className="fin-input mt-1" /></label>
     <label className="text-xs font-semibold">Tiền tệ<select name="currency" defaultValue={currency} className="fin-input mt-1">{currencies.map((code) => <option key={code} value={code}>{code}</option>)}</select></label>
-    <div className="col-span-2 flex flex-wrap items-center gap-2 md:col-span-4 lg:col-span-7"><button className="fin-primary-btn !min-h-9" type="submit">Áp dụng bộ lọc</button><Link href="/reports/analysis" className="fin-secondary-btn !min-h-9">Đặt lại</Link><span className="text-[11px] text-[var(--muted-foreground)]">Chọn ngày để tự chuyển sang khoảng tùy chọn.</span></div>
+    <div className="col-span-2 flex flex-wrap items-center gap-2 md:col-span-4 lg:col-span-7"><button className="fin-primary-btn !min-h-9" type="submit">Áp dụng bộ lọc</button><Link href="/reports" className="fin-secondary-btn !min-h-9">Đặt lại</Link><span className="text-[11px] text-[var(--muted-foreground)]">Chọn ngày để tự chuyển sang khoảng tùy chọn.</span></div>
   </form>;
 }

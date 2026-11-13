@@ -42,7 +42,11 @@ export async function GET(request: NextRequest) {
       });
       return NextResponse.json(payload, { headers: { "Cache-Control": "private, no-store" } });
     } catch (fastError) {
-      console.warn("[Finzaro Drilldown] targeted loader failed; using compatible ledger path", fastError);
+      // Never issue an expensive full-ledger fallback on latency, permissions,
+      // RLS or connectivity failures. Compatibility fallback is for old schema only.
+      const typed = fastError as { code?: string; message?: string } | null;
+      if (!["42703", "PGRST200", "PGRST204"].includes(typed?.code ?? "")) throw fastError;
+      console.warn("[Finzaro Drilldown] unsupported legacy schema, using compatible ledger path", typed?.code);
     }
     const ledger = await loadReportLedger(supabase, userId, { fromDate, toDate });
     if (ledger.diagnostics.strategy === "empty" && ledger.diagnostics.warnings.length) {

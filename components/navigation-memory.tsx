@@ -10,7 +10,6 @@ const sectionFilters: Record<string, readonly string[]> = {
   "/transactions": ["type", "account", "category", "from", "to", "q", "page", "legacy"],
   "/reports": ["type", "mode", "period", "year"],
   "/reports/calendar": ["period", "day"],
-  "/reports/analysis": ["from", "to", "period", "year", "mode"],
   "/reports/statements": ["from", "to", "account", "category", "type"]
 };
 const rememberedRoutes = new Map<string, string>();

@@ -29,7 +29,7 @@ const tx = (id, type, date, amount, categoryId = "food", currency = "VND", purpo
 });
 
 test("V4.1.1 category drilldown opens a full viewport portal with close button and category-colored bars", () => {
-  assert.equal(JSON.parse(read("package.json")).version, "4.1.7");
+  assert.equal(JSON.parse(read("package.json")).version, "4.2.0");
   const component = read("components/instant-report-breakdown.tsx");
   const css = read("app/globals.css");
   assert.match(component, /createPortal\(/);
@@ -78,6 +78,6 @@ test("API first uses focused loader but preserves legacy fallback and no-store p
   assert.match(api, /await loadReportLedger\(/);
   assert.match(api, /await requireUser\(\)/);
   assert.match(api, /Cache-Control": "private, no-store"/);
-  assert.match(read("app/(dashboard)/reports/page.tsx"), /prefetchedDetails/);
+  assert.match(read("features/reports/period-snapshot.ts"), /prefetchedDetails/);
   assert.match(read("components/fast-report-overview.tsx"), /prefetchedDetails=\{visible.prefetchedDetails\}/);
 });

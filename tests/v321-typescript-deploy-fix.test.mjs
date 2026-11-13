@@ -8,9 +8,10 @@ const read = (name) => readFileSync(join(root, name), "utf8");
 
 test("V3.2.1: report snapshots and period URLs have statically complete flow keys", () => {
   const report = read("app/(dashboard)/reports/page.tsx");
-  assert.match(report, /const flows: Record<ReportFlowType, ReportFlowSnapshot> = \{/);
-  assert.match(report, /income: buildFlowSnapshot\("income"\)/);
-  assert.match(report, /expense: buildFlowSnapshot\("expense"\)/);
+  const snapshots = read("features/reports/period-snapshot.ts");
+  assert.match(report, /loadPeriodSnapshot/);
+  assert.match(snapshots, /income: makeFlow\("income"\)/);
+  assert.match(snapshots, /expense: makeFlow\("expense"\)/);
   assert.match(report, /<FastReportOverview/);
   assert.match(read("components/fast-report-overview.tsx"), /periodId\(visible\)/);
   assert.match(read("components/fast-report-overview.tsx"), /mode === "year"/);

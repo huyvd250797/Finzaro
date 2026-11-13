@@ -51,11 +51,11 @@ function fixture(sliceId = "food", sliceAmount = 40) {
   };
 }
 
-test("V4.1.7 typechecks financial snapshot reconciliation with an optional DonutSlice.id", () => {
+test("V4.2.0 typechecks financial snapshot reconciliation with an optional DonutSlice.id", () => {
   assert.deepEqual(semanticErrors(source).map((d) => ({ code: d.code, message: ts.flattenDiagnosticMessageText(d.messageText, " ") })), []);
 });
 
-test("V4.1.7 TS regression fixture reproduces original TS2345 without the guard", () => {
+test("V4.2.0 TS regression fixture reproduces original TS2345 without the guard", () => {
   const oldSource = source.replace(
     /typeof slice\.id !== "string" \|\| !slice\.id \|\| !amountOk\(slice\.amount\)/,
     "!amountOk(slice.amount)"
@@ -79,8 +79,8 @@ test("Financial reconciliation accepts identified categories and rejects missing
 
 test("Release gate remains strict: typecheck, lint, tests and build remain enforced", () => {
   const pkg = JSON.parse(read("package.json"));
-  assert.equal(pkg.version, "4.1.7");
-  assert.equal(read("lib/app-version.ts").includes('APP_VERSION = "4.1.7"'), true);
+  assert.equal(pkg.version, "4.2.0");
+  assert.equal(read("lib/app-version.ts").includes('APP_VERSION = "4.2.0"'), true);
   assert.equal(pkg.scripts.typecheck, "tsc --noEmit");
   assert.match(pkg.scripts.check, /npm run lint && npm run typecheck && npm run test && npm run build/);
   assert.equal(JSON.parse(read("vercel.json")).buildCommand, "npm run check");

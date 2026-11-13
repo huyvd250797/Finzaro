@@ -137,6 +137,20 @@ export function FastReportOverview({ initialSnapshot, initialType }: {
     return () => { window.removeEventListener("popstate", onPopState); window.removeEventListener("finzaro:report-flow-change", onFlow); };
   }, [navigate, initialSnapshot]);
 
+  // Prefetch the previous period after the visible chart settles. Keep it
+  // bounded to one small RPC response, and skip metered/slow connections.
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      const connection = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
+      if (connection?.saveData || connection?.effectiveType === "2g" || connection?.effectiveType === "slow-2g") return;
+      const previous: PeriodPick = requested.mode === "year"
+        ? { ...requested, year: requested.year - 1 }
+        : { ...requested, period: shiftMonthKey(requested.period, -1), year: Number(shiftMonthKey(requested.period, -1).slice(0,4)) };
+      if (previous.year >= 2000) void fetchPeriod(previous).catch(() => {});
+    }, 800);
+    return () => window.clearTimeout(timer);
+  }, [requested, fetchPeriod]);
+
   const changeMode = (mode: "month" | "year") => {
     if (requested.mode === mode) return;
     if (mode === "year") navigate({ mode, period: requested.period, year: Number(requested.period.slice(0, 4)) });

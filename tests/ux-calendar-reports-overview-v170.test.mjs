@@ -67,7 +67,7 @@ test("date selection is local; quick-create, swipe, back-navigation and safe ove
 });
 
 test("Reports pie keeps actual configured category colors and interactive selection", () => {
-  assert.match(reports, /color: iconColorValue\(item\.icon_color\)/);
+  assert.match(read("features/reports/period-snapshot.ts"), /color: iconColorValue\(item.iconColor\)/);
   assert.match(read("components/instant-report-breakdown.tsx"), /ReportDonut key=/);
   assert.match(read("components/fast-report-overview.tsx"), /InstantReportBreakdown/);
   assert.match(donut, /conic-gradient/);
@@ -80,12 +80,12 @@ test("Reports pie keeps actual configured category colors and interactive select
 });
 
 test("Overview combines account balance and three KPIs while preserving ledger logic", () => {
-  assert.match(overview, /monthTotals\(ledger\.transactions/);
-  assert.match(overview, /current_balance_minor/);
+  assert.match(overview, /loadDashboardSnapshot/);
+  assert.match(overview, /snapshot.monthTotals/);
   assert.match(overview, /grid grid-cols-3/);
-  assert.match(overview, /compactCalendarAmount/);
-  assert.match(overview, /iconColorValue\(item\.icon_color\)/);
-  assert.match(overview, /transaction_purpose === "standard"/);
+  assert.match(read("features/dashboard/snapshot.ts"), /current_balance_minor/);
+  assert.match(read("features/transactions/financial-flow.ts"), /transaction_purpose !== "standard"/);
+  assert.match(read("components/spending-period-card.tsx"), /iconColorValue\(item.iconColor\)/);
   assert.doesNotMatch(overview, /loadLoan|loadCreditCard|loadDeposit|loadDebtStrategy/);
 });
 

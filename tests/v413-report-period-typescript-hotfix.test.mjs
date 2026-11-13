@@ -12,7 +12,7 @@ const ts = require('typescript');
 
 /** Regression for the TS2345 failure in V4.1.2 period-snapshot/route.ts. */
 test('V4.1.3 annotates period mode as month/year and enforces PeriodArgs at construction', () => {
-  const route = read('app/api/reports/period-snapshot/route.ts');
+  const route = read('features/reports/load-period-snapshot.ts');
   const parsed = ts.createSourceFile('route.ts', route, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
   const declarations = [];
   function walk(node) {
@@ -20,9 +20,11 @@ test('V4.1.3 annotates period mode as month/year and enforces PeriodArgs at cons
     ts.forEachChild(node, walk);
   }
   walk(parsed);
-  const mode = declarations.find((node) => node.name.getText(parsed) === 'mode');
-  assert.ok(mode, 'period mode variable must exist');
-  assert.equal(mode.type?.getText(parsed), 'CategoryDrilldownMode', 'mode must not be widened to string');
+  // V4.2.0 derives mode from a parameter typed as ReportPeriodRequest,
+  // instead of declaring it on the route itself. This retains the TS2345 guard.
+  assert.match(route, /mode: "month" \| "year"/);
+  assert.match(route, /pick: ReportPeriodRequest/);
+  assert.match(route, /const \{ mode, period, year, currency \} = pick/);
   const args = declarations.find((node) => node.name.getText(parsed) === 'args');
   assert.ok(args, 'period snapshot args must exist');
   assert.ok(ts.isSatisfiesExpression(args.initializer), 'verify PeriodArgs structurally at the construction site');
@@ -32,10 +34,10 @@ test('V4.1.3 annotates period mode as month/year and enforces PeriodArgs at cons
 });
 
 test('V4.1.3 deploy hotfix keeps the authenticated RPC and existing fallback', () => {
-  assert.equal(JSON.parse(read('package.json')).version, '4.1.7');
-  assert.match(read('lib/app-version.ts'), /APP_VERSION = "4\.1\.7"/);
+  assert.equal(JSON.parse(read('package.json')).version, '4.2.0');
+  assert.match(read('lib/app-version.ts'), /APP_VERSION = "4\.2\.0"/);
   const route = read('app/api/reports/period-snapshot/route.ts');
-  for (const text of ['requireUser()', 'report_period_summary_v412', 'loadReportLedger', 'PGRST202', 'PRIVATE_HEADERS']) {
-    assert.ok(route.includes(text), `missing ${text}`);
-  }
+  const loader = read('features/reports/load-period-snapshot.ts');
+  for (const text of ['requireUser()', 'PRIVATE_HEADERS', 'loadPeriodSnapshot']) assert.ok(route.includes(text), `missing ${text}`);
+  for (const text of ['report_period_summary_v412', 'loadReportLedger', 'PGRST202']) assert.ok(loader.includes(text), `missing ${text}`);
 });

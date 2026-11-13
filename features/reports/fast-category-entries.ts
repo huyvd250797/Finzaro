@@ -21,6 +21,7 @@ export async function loadFastCategoryEntries(
       .select("id, title, transaction_date, transaction_type, transaction_purpose, category_id, category_label, categories(name, icon_name, icon_color), transaction_entries(currency_code, amount_minor, entry_role)")
       .eq("user_id", userId)
       .eq("transaction_type", params.type)
+      .eq("transaction_purpose", "standard")
       .gte("transaction_date", params.from)
       .lte("transaction_date", params.to)
       .order("transaction_date", { ascending: false })

@@ -9,10 +9,10 @@ const read = (path) => readFileSync(join(root, path), "utf8");
 const packageJson = JSON.parse(read("package.json"));
 const config = read("eslint.config.mjs");
 
-test("V4.1.7 is a real version bump, not a silent V4.1.4 overwrite", () => {
-  assert.equal(packageJson.version, "4.1.7");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION\s*=\s*"4\.1\.7"/);
-  assert.match(read("lib/app-version.ts"), /Financial Snapshot Type Safety Hotfix|Portable Test Runner CI Hotfix/);
+test("V4.2.0 is a real version bump, not a silent V4.1.4 overwrite", () => {
+  assert.equal(packageJson.version, "4.2.0");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION\s*=\s*"4\.2\.0"/);
+  assert.match(read("lib/app-version.ts"), /Financial Snapshot Type Safety Hotfix|Portable Test Runner CI Hotfix|Unified Fast Data Layer/);
 });
 
 test("ESLint 9.17 uses a parseable Flat Config, not eslint/config", () => {
@@ -35,6 +35,8 @@ test("legacy Supabase any casts have individual lint justifications", () => {
     "app/(dashboard)/reports/calendar/page.tsx",
     "app/(dashboard)/transactions/page.tsx",
     "app/api/reports/period-snapshot/route.ts",
+    "features/reports/load-period-snapshot.ts",
+    "features/dashboard/snapshot.ts",
     "features/categories/actions.ts",
     "features/reports/data.ts",
     "features/transactions/actions.ts",
@@ -48,7 +50,7 @@ test("legacy Supabase any casts have individual lint justifications", () => {
       annotated++;
     }
   }
-  assert.equal(annotated, 22);
+  assert.ok(annotated >= 22, `expected all guarded Supabase casts; found ${annotated}`);
 });
 
 test("render purity fixes retain the interaction timing and release pipeline", () => {

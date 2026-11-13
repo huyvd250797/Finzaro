@@ -22,12 +22,13 @@ test("V3.2.0 full source version and six-module contract", () => {
 });
 
 test("Instant Reports: both flow datasets are computed once from one ledger", () => {
-  assert.equal((reportPage.match(/loadReportLedger\(/g) ?? []).length, 1);
-  assert.match(reportPage, /const flows: Record<ReportFlowType, ReportFlowSnapshot>/);
-  assert.match(reportPage, /income: buildFlowSnapshot\("income"\)/);
-  assert.match(reportPage, /expense: buildFlowSnapshot\("expense"\)/);
-  assert.match(reportPage, /reportCategoryBreakdown\(transactions, currency, flowType\)/);
-  assert.match(reportPage, /buildCategoryPeriodGroups\(transactions, currency, flowType/);
+  assert.match(reportPage, /loadPeriodSnapshot/);
+  const loader = read("features/reports/load-period-snapshot.ts");
+  const snapshot = read("features/reports/period-snapshot.ts");
+  assert.match(loader, /report_period_summary_v412/);
+  assert.match(loader, /snapshotFromTransactions/);
+  assert.match(snapshot, /income: makeFlow\("income"\)/);
+  assert.match(snapshot, /expense: makeFlow\("expense"\)/);
   assert.match(read("components/fast-report-overview.tsx"), /<InstantReportBreakdown/);
   assert.match(instantFlow, /"use client"/);
   assert.match(instantFlow, /const \[type, setType\] = useState/);

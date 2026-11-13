@@ -79,9 +79,10 @@ test("V2.5 integrated analytical views and print/XLSX/CSV exports preserve six m
   const dirs = readdirSync(join(root,"app/(dashboard)"),{withFileTypes:true}).filter(item=>item.isDirectory()).map(x=>x.name).sort();
   assert.deepEqual(dirs,["accounts","categories","overview","reports","settings","transactions"]);
   const page = read("app/(dashboard)/reports/analysis/page.tsx");
-  for(const item of ["FinancialTrendExplorer","ReportDonut","comparison.current.savingsRate","categoryMovement","insights","/reports/statements"]) {
-    const bundle = page + read("features/reports/server-report.ts"); assert.ok(bundle.includes(item),item);
-  }
+  assert.match(page, /redirect\("\/reports"\)/, "retired Analysis URL should redirect to the overview");
+  const navigation = read("components/report-navigation.tsx");
+  assert.doesNotMatch(navigation, /label: "Phân tích"/);
+  for (const file of ["features/reports/statement.ts", "features/reports/server-report.ts", "features/reports/period-snapshot.ts"]) assert.ok(read(file).length > 0);
   assert.match(read("app/api/reports/export/route.ts"), /makeReportXlsx\(sheets\)/);
   assert.match(read("app/api/reports/export/route.ts"), /getClaims\(\)/);
   assert.match(read("app/api/reports/export/route.ts"), /no-store/);

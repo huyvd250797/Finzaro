@@ -1,3 +1,13 @@
+## V4.2.0 — Unified Fast Data Layer (2026-11-13)
+
+- Replaced duplicated Dashboard KPI/trend/spend loaders with authenticated DB `dashboard_snapshot_v420` (one grouped response, currency-scoped; bounded recent list separate).
+- Added Chi tiêu tháng này and Chi tiêu năm nay cards matching Chi tiêu hôm nay, expandable by default-collapsed transaction details; removed Phân bổ ngân sách.
+- Rebuilt chart for 7 ngày, 1 tháng, 3 tháng, 6 tháng (default), 1 năm; blue historical liquid-account position, dual money y axes and full-screen interactive modal; removed Analyze CTA and Report Analysis tab.
+- Unified Reports first SSR request and subsequent period API with `loadPeriodSnapshot`, date/category targeted drilldown, bounded prefetch and 90-second in-view cache; invalidated after server transactions mutations.
+- Added RLS-respecting, authenticated, read-only Dashboard aggregation migration and supporting index; added optional per-process perf p50/p95 instrumentation (static operation names only).
+- No business-table data migrations, no changes to six modules. Financial totals exclude non-standard purposes and FX conversions; blue net position is NOT complete balance-sheet net worth.
+- Regression suite 217/217 passed at packaging; production lint/typecheck/build, SQL execution and iOS QA still need verification on staging.
+
 ## [4.1.7] — 2026-11-13 · Portable Test Runner CI Hotfix
 
 - **Vercel test-stage repair:** fixed `tests/v412-compact-fast-periods.test.mjs` and `tests/v413-report-period-typescript-hotfix.test.mjs`, which attempted to load TypeScript from a hardcoded global Node installation derived from `process.execPath` instead of the installed project `devDependency`.

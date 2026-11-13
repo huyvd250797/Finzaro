@@ -29,10 +29,11 @@ type ReportDetailPayload = CategoryDetailPayload;
 type DetailState = { key: string; status: "idle" | "loading" | "ready" | "error"; payload: ReportDetailPayload | null; error?: string };
 
 /** Month mode: every calendar day. Year mode: all 12 months. */
-function BucketExplorer({ buckets, activeKey, onSelect, currency, digits, mode, color }: {
+function BucketExplorer({ buckets, activeKey, onSelect, onWarm, currency, digits, mode, color }: {
   buckets: CategoryPeriodBucket[];
   activeKey: string | null;
   onSelect: (bucket: CategoryPeriodBucket) => void;
+  onWarm?: (bucket: CategoryPeriodBucket) => void;
   currency: string;
   digits: number;
   mode: CategoryDrilldownMode;
@@ -46,7 +47,7 @@ function BucketExplorer({ buckets, activeKey, onSelect, currency, digits, mode, 
       <div className="flex min-w-full items-end gap-1.5" style={{ width: `max(100%, ${buckets.length * (mode === "month" ? 44 : 54)}px)` }} role="group" aria-label="Chọn cột để tải giao dịch">
         {buckets.map((item) => {
           const isSelected = activeKey === item.key;
-          return <button type="button" key={item.key} onClick={() => onSelect(item)} aria-pressed={isSelected}
+          return <button type="button" key={item.key} onClick={() => onSelect(item)} onMouseEnter={() => onWarm?.(item)} onFocus={() => onWarm?.(item)} aria-pressed={isSelected}
             aria-label={`${mode === "month" ? `Ngày ${Number(item.key.slice(8))}` : `Tháng ${Number(item.key.slice(5))}`}: ${formatMinorMoney(item.amount, currency, digits)}. ${item.count} giao dịch`}
             title={`${item.key} · ${formatMinorMoney(item.amount, currency, digits)} · ${item.count} giao dịch`}
             className={cn("group flex min-w-0 flex-1 flex-col items-center justify-end rounded-xl px-0.5 pt-2 pb-1 outline-offset-2 transition-colors focus-visible:outline-2 focus-visible:outline-[var(--primary)]", isSelected ? "bg-[var(--muted)]" : "hover:bg-[var(--muted)]/60")}>
@@ -85,6 +86,7 @@ export function InstantReportBreakdown({
   const [activeBucket, setActiveBucket] = useState<CategoryPeriodBucket | null>(null);
   const [detail, setDetail] = useState<DetailState>({ key: "", status: "idle", payload: null });
   const [visibleRows, setVisibleRows] = useState(40);
+  const warmInFlight = useRef(new Map<string, Promise<ReportDetailPayload>>());
   const detailsCache = useRef(new Map<string, ReportDetailPayload>(
     Object.entries(prefetchedDetails).map(([key, value]) => [`${periodKey}|${key}`, value])
   ));
@@ -99,6 +101,7 @@ export function InstantReportBreakdown({
   useEffect(() => { setType(initialType); setActiveCategoryId(null); setActiveBucket(null); }, [initialType, periodKey]);
   useEffect(() => {
     detailsCache.current = new Map(Object.entries(prefetchedDetails).map(([key, value]) => [`${periodKey}|${key}`, value]));
+    warmInFlight.current.clear();
   }, [prefetchedDetails, periodKey]);
   useEffect(() => {
     const onHistory = () => {
@@ -133,6 +136,30 @@ export function InstantReportBreakdown({
   const activeCategory = selected.categories.find((item) => item.id === activeCategoryId) ?? null;
   const detailKey = activeCategory && activeBucket ? `${periodKey}|${type}|${activeCategory.id}|${activeBucket.key}` : null;
 
+  // Warm only two small high-value buckets while the modal is opening;
+  // reuse an in-flight request if the user selects its column meanwhile.
+  function warmBucket(category: CategoryPeriodGroup, bucket: CategoryPeriodBucket) {
+    if (bucket.count <= 0 || bucket.count > 60) return;
+    const connection = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
+    if (connection?.saveData) return;
+    const key = `${periodKey}|${type}|${category.id}|${bucket.key}`;
+    if (detailsCache.current.has(key) || warmInFlight.current.has(key)) return;
+    const params = new URLSearchParams({ type, mode, category: category.id, key: bucket.key });
+    const work = fetch(`/api/reports/category-entries?${params}`, { cache: "no-store", credentials: "same-origin" }).then(async (response) => {
+      if (!response.ok) throw new Error("Không thể tải trước giao dịch.");
+      const value: unknown = await response.json();
+      const payload = value as Partial<ReportDetailPayload>;
+      if (!Array.isArray(payload?.transactions) || !Number.isSafeInteger(payload.total) || payload.count !== bucket.count || payload.total !== bucket.amount) {
+        throw new Error("Dữ liệu xem trước không khớp cột.");
+      }
+      const complete = payload as ReportDetailPayload;
+      detailsCache.current.set(key, complete);
+      return complete;
+    }).finally(() => warmInFlight.current.delete(key));
+    warmInFlight.current.set(key, work);
+    void work.catch(() => {});
+  }
+
   useEffect(() => {
     if (!detailKey || !activeCategory || !activeBucket) return;
     // Zero-value buckets are already known from the server summary: avoid an unnecessary request.
@@ -142,6 +169,14 @@ export function InstantReportBreakdown({
     }
     const cached = detailsCache.current.get(detailKey);
     if (cached) { setDetail({ key: detailKey, status: "ready", payload: cached }); return; }
+    const pending = warmInFlight.current.get(detailKey);
+    if (pending) {
+      let alive = true;
+      setDetail({ key: detailKey, status: "loading", payload: null });
+      void pending.then((payload) => { if (alive) setDetail({ key: detailKey, status: "ready", payload }); })
+        .catch(() => { if (alive) setDetail({ key: detailKey, status: "error", payload: null, error: "Không tải được dữ liệu. Hãy thử lại." }); });
+      return () => { alive = false; };
+    }
     const controller = new AbortController();
     setDetail({ key: detailKey, status: "loading", payload: null });
     const params = new URLSearchParams({ type, mode, category: activeCategory.id, key: activeBucket.key });
@@ -170,6 +205,11 @@ export function InstantReportBreakdown({
   }
 
   function chooseCategory(id: string) {
+    const target = selected.categories.find((row) => row.id === id);
+    if (target) {
+      for (const bucket of target.buckets.filter((item) => item.count > 0 && item.count <= 60)
+        .sort((a, b) => b.amount - a.amount).slice(0, 2)) warmBucket(target, bucket);
+    }
     triggerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     setActiveCategoryId(id);
     setActiveBucket(null); setVisibleRows(40);
@@ -227,7 +267,7 @@ export function InstantReportBreakdown({
               <div className="flex flex-wrap items-center justify-between gap-2"><div><div className="flex items-center gap-2"><BarChart3 className="size-4 text-[var(--primary)]"/><h3 className="font-extrabold">{mode === "month" ? "Chi tiết theo ngày" : "Chi tiết theo tháng"}</h3></div><p className="mt-1 text-xs text-[var(--muted-foreground)]">{activeCategory.count} giao dịch · Chạm vào cột để xem chi tiết</p></div><p className="text-lg font-black tabular-nums">{money(activeCategory.amount)}</p></div>
             </div>
             <div className="mt-4 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3 sm:p-5">
-              <BucketExplorer buckets={activeCategory.buckets} activeKey={activeBucket?.key ?? null} onSelect={(bucket) => { setActiveBucket(bucket); setVisibleRows(40); }} currency={currency} digits={digits} mode={mode} color={activeCategory.iconColor ?? ""}/>
+              <BucketExplorer buckets={activeCategory.buckets} activeKey={activeBucket?.key ?? null} onWarm={(bucket) => warmBucket(activeCategory, bucket)} onSelect={(bucket) => { setActiveBucket(bucket); setVisibleRows(40); }} currency={currency} digits={digits} mode={mode} color={activeCategory.iconColor ?? ""}/>
             </div>
         <div className="mt-4 rounded-xl border border-[var(--border)] bg-[var(--card)]" aria-live="polite">
           {!activeBucket ? <p className="p-4 text-xs text-[var(--muted-foreground)]">Chọn một cột {mode === "month" ? "ngày" : "tháng"} để tải các giao dịch tương ứng.</p> : <>

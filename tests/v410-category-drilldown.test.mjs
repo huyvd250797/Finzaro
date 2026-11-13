@@ -33,12 +33,12 @@ const tx = (id, type, date, amount, category = "food", currency = "VND", purpose
 });
 
 test("V4.1.0 release and Today expenses are collapsed by default", () => {
-  assert.equal(JSON.parse(read("package.json")).version, "4.1.7");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.1\.7"/);
-  const overview = read("app/(dashboard)/overview/page.tsx");
-  assert.match(overview, /<details className="fin-today-expense-details/);
-  assert.match(overview, /<summary[^>]+aria-label="Mở hoặc thu gọn các khoản đã chi hôm nay"/);
-  assert.doesNotMatch(overview, /<details[^>]*\sopen(?:\s|=|>)/);
+  assert.equal(JSON.parse(read("package.json")).version, "4.2.0");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.2\.0"/);
+  const card = read("components/spending-period-card.tsx");
+  assert.match(card, /<details className="fin-today-expense-details/);
+  assert.match(card, /<summary/);
+  assert.doesNotMatch(card, /<details[^>]*\sopen(?:\s|=|>)/);
 });
 
 test("calendar month chart covers February leap year and the actual day count, including zero-spend days", () => {
@@ -87,9 +87,9 @@ test("report summary precomputes both flow tabs, and only selected bar triggers 
   const reports = read("app/(dashboard)/reports/page.tsx");
   const component = read("components/instant-report-breakdown.tsx");
   const api = read("app/api/reports/category-entries/route.ts");
-  assert.match(reports, /income: buildFlowSnapshot\("income"\)/);
-  assert.match(reports, /expense: buildFlowSnapshot\("expense"\)/);
-  assert.match(reports, /buildCategoryPeriodGroups\(transactions, currency, flowType, mode, period, year\)/);
+  assert.match(reports, /loadPeriodSnapshot/);
+  assert.match(read("features/reports/period-snapshot.ts"), /income: makeFlow\("income"\)/);
+  assert.match(read("features/reports/period-snapshot.ts"), /expense: makeFlow\("expense"\)/);
   assert.match(component, /history\.pushState/);
   assert.match(component, /fetch\(`\/api\/reports\/category-entries/);
   assert.match(component, /aria-pressed=\{isSelected\}/);
