@@ -1,3 +1,11 @@
+## [4.1.7] — 2026-11-13 · Portable Test Runner CI Hotfix
+
+- **Vercel test-stage repair:** fixed `tests/v412-compact-fast-periods.test.mjs` and `tests/v413-report-period-typescript-hotfix.test.mjs`, which attempted to load TypeScript from a hardcoded global Node installation derived from `process.execPath` instead of the installed project `devDependency`.
+- **Verified exact reproduction:** on V4.1.6, running Node from an alternative installation directory reproduced the reported `201 tests / 199 pass / 2 fail` (both files fail to load before their 7 combined subtests are registered). After the fix and three added portability regression tests, the same Node setup passed `209/209` tests.
+- **Clean release metadata:** updated package/app version to `4.1.7`, adjusted historical release-assertion fixtures, and added portable TypeScript-loader coverage.
+- **No app behavior change:** all financial calculations, Supabase RPCs, six application modules and existing SQL files remain unchanged. All CI gates remain mandatory: `lint → typecheck → test → build`.
+- **Verification limits:** ESLint/Next.js production build still require a complete dependency installation and target environment. Passing source tests does not prove a complete deploy; verify all stages of `npm run check` on Vercel.
+
 ## [4.1.6] — 2026-11-13 · Financial Snapshot Type Safety Hotfix
 
 - **Vercel TS2345 fix:** `features/reports/reconcile-snapshot.ts` now narrows optional `DonutSlice.id` to a nonempty string before `Map<string, ...>.get()`, rather than passing `string | undefined` to `Map.get`.

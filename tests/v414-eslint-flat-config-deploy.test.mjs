@@ -7,9 +7,9 @@ import { execFileSync } from 'node:child_process';
 const root = resolve(import.meta.dirname, '..');
 const read = path => readFileSync(join(root, path), 'utf8');
 
-test('V4.1.6 hotfix bumps app version while pinning ESLint 9.17', () => {
+test('V4.1.7 hotfix bumps app version while pinning ESLint 9.17', () => {
   const pkg = JSON.parse(read('package.json'));
-  assert.equal(pkg.version, '4.1.6');
+  assert.equal(pkg.version, '4.1.7');
   assert.equal(pkg.devDependencies.eslint, '9.17.0');
 });
 
@@ -26,7 +26,7 @@ test('ESLint flat config avoids exports unavailable in ESLint 9.17.0', () => {
   }
 });
 
-test('Release Quality Gate stays active in V4.1.6', () => {
+test('Release Quality Gate stays active in V4.1.7', () => {
   const pkg = JSON.parse(read('package.json'));
   assert.match(pkg.scripts.check, /npm run lint\s*&&\s*npm run typecheck\s*&&\s*npm run test\s*&&\s*npm run build/);
   assert.equal(JSON.parse(read('vercel.json')).buildCommand, 'npm run check');

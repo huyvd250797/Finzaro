@@ -1,3 +1,5 @@
+> **Latest release: Finzaro V4.1.7 — Portable Test Runner CI Hotfix.** Sửa lỗi 2 suite kiểm thử V4.1.2/V4.1.3 tải TypeScript bằng đường dẫn cài Node tuyệt đối. Đã tái hiện đúng `201 tests / 199 pass / 2 fail` và xác nhận sau sửa `209/209` test đạt trong môi trường mô phỏng Node path khác. Giữ nguyên nghiệp vụ, SQL và các bước Release Quality Gate. Xem [`DEPLOY_V4.1.7.md`](DEPLOY_V4.1.7.md). Cần xác nhận Next.js production build trên Vercel.
+
 > **Latest release: Finzaro V4.1.6 — Financial Snapshot Type Safety Hotfix.** Sửa lỗi Vercel `TS2345` trong đối soát báo cáo do `DonutSlice.id` có thể `undefined`; giữ nguyên dữ liệu, công thức và Release Quality Gate. Không cần SQL migration. Xem [`DEPLOY_V4.1.6.md`](DEPLOY_V4.1.6.md). Cần xác nhận build đầy đủ trên Vercel.
 
 > **Latest release: Finzaro V4.1.5 — Release Gate Lint Compatibility.** Vá lint failure xuất hiện sau khi sửa `eslint/config` trên V4.1.4; giữ nguyên tính toán tài chính, 6 module và DB. Không tắt Quality Gate. Xem [`DEPLOY_V4.1.5.md`](DEPLOY_V4.1.5.md). Lint/typecheck/build production vẫn cần xác nhận trên Vercel.

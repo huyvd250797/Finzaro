@@ -9,10 +9,10 @@ const read = (path) => readFileSync(join(root, path), "utf8");
 const packageJson = JSON.parse(read("package.json"));
 const config = read("eslint.config.mjs");
 
-test("V4.1.6 is a real version bump, not a silent V4.1.4 overwrite", () => {
-  assert.equal(packageJson.version, "4.1.6");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION\s*=\s*"4\.1\.6"/);
-  assert.match(read("lib/app-version.ts"), /Financial Snapshot Type Safety Hotfix/);
+test("V4.1.7 is a real version bump, not a silent V4.1.4 overwrite", () => {
+  assert.equal(packageJson.version, "4.1.7");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION\s*=\s*"4\.1\.7"/);
+  assert.match(read("lib/app-version.ts"), /Financial Snapshot Type Safety Hotfix|Portable Test Runner CI Hotfix/);
 });
 
 test("ESLint 9.17 uses a parseable Flat Config, not eslint/config", () => {

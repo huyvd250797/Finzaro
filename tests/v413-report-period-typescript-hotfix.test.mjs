@@ -7,7 +7,8 @@ import { createRequire } from 'node:module';
 const root = resolve(import.meta.dirname, '..');
 const read = (file) => readFileSync(join(root, file), 'utf8');
 const require = createRequire(import.meta.url);
-const ts = require(`${process.execPath.replace(/\/bin\/node$/, '')}/lib/node_modules/typescript`);
+// Resolve the project-local devDependency installed by npm on Vercel/CI.
+const ts = require('typescript');
 
 /** Regression for the TS2345 failure in V4.1.2 period-snapshot/route.ts. */
 test('V4.1.3 annotates period mode as month/year and enforces PeriodArgs at construction', () => {
@@ -31,8 +32,8 @@ test('V4.1.3 annotates period mode as month/year and enforces PeriodArgs at cons
 });
 
 test('V4.1.3 deploy hotfix keeps the authenticated RPC and existing fallback', () => {
-  assert.equal(JSON.parse(read('package.json')).version, '4.1.6');
-  assert.match(read('lib/app-version.ts'), /APP_VERSION = "4\.1\.6"/);
+  assert.equal(JSON.parse(read('package.json')).version, '4.1.7');
+  assert.match(read('lib/app-version.ts'), /APP_VERSION = "4\.1\.7"/);
   const route = read('app/api/reports/period-snapshot/route.ts');
   for (const text of ['requireUser()', 'report_period_summary_v412', 'loadReportLedger', 'PGRST202', 'PRIVATE_HEADERS']) {
     assert.ok(route.includes(text), `missing ${text}`);

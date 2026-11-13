@@ -6,7 +6,8 @@ import { createRequire } from 'node:module';
 const root = resolve(import.meta.dirname, '..');
 const read = (path) => readFileSync(join(root, path), 'utf8');
 const require = createRequire(import.meta.url);
-const ts = require(`${process.execPath.replace(/\/bin\/node$/, '')}/lib/node_modules/typescript`) || require('typescript');
+// Resolve the project-local devDependency installed by npm on Vercel/CI.
+const ts = require('typescript');
 function load(path, deps = {}) {
   const compiled = ts.transpileModule(read(path), {fileName:path, compilerOptions: {target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}});
   const module = {exports:{}};
@@ -29,7 +30,7 @@ const args = (mode, periodKey, year) => ({mode, period:periodKey, year, from:`${
 const row = (type,id,bucket,amount,count=1) => ({type,id,label:id??'Chưa phân loại',iconName:'Utensils',iconColor:'#ff6500',bucket,amount,count});
 
 test('V4.1.2 report entry is compact: no oversized cash-retention CTA or advanced shortcut',()=>{
-  assert.equal(JSON.parse(read('package.json')).version,'4.1.6');
+  assert.equal(JSON.parse(read('package.json')).version,'4.1.7');
   const page=read('app/(dashboard)/reports/page.tsx');
   assert.doesNotMatch(page,/Hiệu quả dòng tiền|HIỆU QUẢ DÒNG TIỀN|Tỷ lệ giữ lại trong kỳ|Phân tích nâng cao|fin-retention-card/);
   assert.match(page,/<FastReportOverview/);
