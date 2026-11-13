@@ -2,25 +2,20 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { BarChart3, ChevronDown, ChevronRight, LoaderCircle, RotateCcw } from "lucide-react";
+import { createPortal } from "react-dom";
+import { useOverlayScrollLock } from "@/components/use-overlay-scroll-lock";
+import { BarChart3, ChevronRight, LoaderCircle, RotateCcw, X } from "lucide-react";
 import { CategoryIcon, iconColorValue } from "@/features/categories/icons";
 import { ReportDonut, type DonutSlice } from "@/components/report-donut";
 import { ReportVisualBoundary } from "@/components/report-visual-boundary";
 import { Card, CardContent } from "@/components/ui/card";
 import type { CategoryPeriodBucket, CategoryPeriodGroup, CategoryDrilldownMode } from "@/features/reports/category-drilldown";
+import type { CategoryDetailPayload, CategoryDetailRow } from "@/features/reports/category-detail-preview";
 import type { ReportFlowType } from "@/features/reports/experience";
 import { cn, formatMinorMoney } from "@/lib/utils";
 import { measureClientPaint } from "@/lib/client-performance";
 
-export type ReportPreviewRow = {
-  id: string;
-  title: string;
-  transactionDate: string;
-  categoryName: string;
-  iconName: string | null;
-  iconColor: string | null;
-  amount: number;
-};
+export type ReportPreviewRow = CategoryDetailRow;
 
 export type ReportFlowSnapshot = {
   amount: number;
@@ -28,21 +23,21 @@ export type ReportFlowSnapshot = {
   categories: CategoryPeriodGroup[];
 };
 
-type ReportDetailPayload = { transactions: ReportPreviewRow[]; total: number; count: number };
+type ReportDetailPayload = CategoryDetailPayload;
 type DetailState = { key: string; status: "idle" | "loading" | "ready" | "error"; payload: ReportDetailPayload | null; error?: string };
 
 /** Month mode: every calendar day. Year mode: all 12 months. */
-function BucketExplorer({ buckets, activeKey, onSelect, currency, digits, mode, type }: {
+function BucketExplorer({ buckets, activeKey, onSelect, currency, digits, mode, color }: {
   buckets: CategoryPeriodBucket[];
   activeKey: string | null;
   onSelect: (bucket: CategoryPeriodBucket) => void;
   currency: string;
   digits: number;
   mode: CategoryDrilldownMode;
-  type: ReportFlowType;
+  color: string;
 }) {
   const peak = Math.max(1, ...buckets.map((item) => item.amount));
-  const barTone = type === "income" ? "var(--fin-income)" : "var(--fin-expense)";
+  const barTone = iconColorValue(color);
   return <div className="fin-category-bucket-explorer min-w-0">
     <p className="mb-3 text-xs font-medium text-[var(--muted-foreground)]">{mode === "month" ? "Mỗi cột là một ngày trong tháng. Chọn cột để xem các giao dịch của ngày đó." : "Mỗi cột là một tháng trong năm. Chọn cột để xem các giao dịch của tháng đó."}</p>
     <div className="overflow-x-auto overscroll-x-contain pb-2 [scrollbar-width:thin]" role="region" tabIndex={0} aria-label={mode === "month" ? "Biểu đồ chi tiết theo ngày" : "Biểu đồ chi tiết theo tháng"}>
@@ -70,7 +65,7 @@ function BucketExplorer({ buckets, activeKey, onSelect, currency, digits, mode, 
 
 /** Both flows and all chart buckets are pre-aggregated on the server. Only a selected bucket fetches transaction rows. */
 export function InstantReportBreakdown({
-  initialType, periodLabel, periodKey, mode, currency, digits, from, to, flows
+  initialType, periodLabel, periodKey, mode, currency, digits, from, to, flows, prefetchedDetails
 }: {
   initialType: ReportFlowType;
   periodLabel: string;
@@ -81,17 +76,28 @@ export function InstantReportBreakdown({
   from: string;
   to: string;
   flows: Record<ReportFlowType, ReportFlowSnapshot>;
+  prefetchedDetails: Record<string, ReportDetailPayload>;
 }) {
   const [type, setType] = useState<ReportFlowType>(initialType);
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
   const [activeBucket, setActiveBucket] = useState<CategoryPeriodBucket | null>(null);
   const [detail, setDetail] = useState<DetailState>({ key: "", status: "idle", payload: null });
   const [visibleRows, setVisibleRows] = useState(40);
-  const detailsCache = useRef(new Map<string, ReportDetailPayload>());
+  const detailsCache = useRef(new Map<string, ReportDetailPayload>(
+    Object.entries(prefetchedDetails).map(([key, value]) => [`${periodKey}|${key}`, value])
+  ));
+  const [portalReady, setPortalReady] = useState(false);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLElement | null>(null);
+  useOverlayScrollLock(Boolean(activeCategoryId) && portalReady);
+  useEffect(() => setPortalReady(true), []);
   const money = useMemo(() => (value: number) => formatMinorMoney(value, currency, digits), [currency, digits]);
 
   useEffect(() => { setType(initialType); setActiveCategoryId(null); setActiveBucket(null); }, [initialType, periodKey]);
-  useEffect(() => { detailsCache.current.clear(); }, [flows]);
+  useEffect(() => {
+    detailsCache.current = new Map(Object.entries(prefetchedDetails).map(([key, value]) => [`${periodKey}|${key}`, value]));
+  }, [prefetchedDetails, periodKey]);
   useEffect(() => {
     const onHistory = () => {
       const next = new URLSearchParams(window.location.search).get("type");
@@ -101,13 +107,26 @@ export function InstantReportBreakdown({
     window.addEventListener("popstate", onHistory);
     return () => window.removeEventListener("popstate", onHistory);
   }, []);
+  // Full-screen dialog is portaled outside route transitions and the mobile tabbar.
+  // Focus stays in the modal; closing returns focus to the selected category.
   useEffect(() => {
-    if (!activeCategoryId) return;
-    const node = document.getElementById("fin-category-explorer");
-    if (!node) return;
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    node.scrollIntoView({ block: "nearest", behavior: reduced ? "instant" : "smooth" });
-  }, [activeCategoryId, periodKey, type]);
+    if (!activeCategoryId || !portalReady) return;
+    const prior = triggerRef.current;
+    const focusFrame = requestAnimationFrame(() => closeRef.current?.focus({ preventScroll: true }));
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") { event.preventDefault(); setActiveCategoryId(null); return; }
+      if (event.key !== "Tab") return;
+      const nodes = Array.from(modalRef.current?.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), a[href], input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      ) ?? []).filter((node) => node.getClientRects().length > 0);
+      if (!nodes.length) return;
+      const first = nodes[0], last = nodes[nodes.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => { cancelAnimationFrame(focusFrame); window.removeEventListener("keydown", onKeyDown); prior?.isConnected && prior.focus({ preventScroll: true }); };
+  }, [activeCategoryId, portalReady]);
   const selected = flows[type];
   const activeCategory = selected.categories.find((item) => item.id === activeCategoryId) ?? null;
   const detailKey = activeCategory && activeBucket ? `${periodKey}|${type}|${activeCategory.id}|${activeBucket.key}` : null;
@@ -149,12 +168,19 @@ export function InstantReportBreakdown({
   }
 
   function chooseCategory(id: string) {
-    setActiveCategoryId((previous) => previous === id ? null : id);
+    triggerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    setActiveCategoryId(id);
     setActiveBucket(null); setVisibleRows(40);
     setDetail({ key: "", status: "idle", payload: null });
   }
 
-  const selectedDetail = detail.key === detailKey ? detail : { key: "", status: "idle" as const, payload: null };
+  // Render fully cached bucket rows in the SAME paint as the selected column;
+  // do not wait for useEffect to run before showing already available data.
+  const cachedDetail = detailKey ? detailsCache.current.get(detailKey) : null;
+  const selectedDetail: DetailState = cachedDetail && detailKey
+    ? { key: detailKey, status: "ready", payload: cachedDetail }
+    : detail.key === detailKey ? detail
+    : { key: detailKey ?? "", status: activeBucket && activeBucket.count > 0 ? "loading" : "idle", payload: null };
   return <>
     <Card className="fin-report-breakdown-card mt-3"><CardContent className="p-4 sm:p-5">
       <div className="flex flex-wrap items-start justify-between gap-2">
@@ -175,17 +201,32 @@ export function InstantReportBreakdown({
       </div>
       {selected.categories.length === 0 ? <p className="p-6 text-sm text-[var(--muted-foreground)]">Không có dữ liệu theo danh mục trong kỳ.</p> : <div className="max-h-[540px] divide-y divide-[var(--border)] overflow-y-auto overscroll-contain [scrollbar-width:thin]" role="list" aria-label="Tổng tiền theo danh mục">
         {selected.categories.map((category) => <div key={category.id} role="listitem">
-          <button type="button" onClick={() => chooseCategory(category.id)} aria-expanded={activeCategoryId === category.id} className={cn("flex w-full min-w-0 items-center gap-3 px-3.5 py-3.5 text-left transition-colors hover:bg-[var(--muted)]/60 sm:px-4", activeCategoryId === category.id && "bg-[var(--muted)]/70")}>
+          <button type="button" onClick={() => chooseCategory(category.id)} aria-haspopup="dialog" className="flex w-full min-w-0 items-center gap-3 px-3.5 py-3.5 text-left transition-colors hover:bg-[var(--muted)]/60 sm:px-4">
             <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-[var(--muted)]" style={{ color: iconColorValue(category.iconColor) }}><CategoryIcon name={category.iconName} className="size-[18px]"/></span>
             <span className="min-w-0 flex-1"><span className="block truncate text-sm font-extrabold">{category.label}</span><span className="mt-0.5 block text-[11px] text-[var(--muted-foreground)]">{category.count} giao dịch · {category.percent.toFixed(1).replace(".", ",")}% tổng {type === "expense" ? "chi" : "thu"}</span></span>
             <span className="shrink-0 text-right"><span className={cn("block text-sm font-black tabular-nums", type === "income" ? "text-[var(--fin-income)]" : "text-[var(--fin-expense)]")}>{money(category.amount)}</span></span>
-            <ChevronDown className={cn("size-4 shrink-0 text-[var(--muted-foreground)] transition-transform", activeCategoryId === category.id && "rotate-180")}/>
+            <ChevronRight className="size-4 shrink-0 text-[var(--muted-foreground)]"/>
           </button>
         </div>)}
       </div>}
-      {activeCategory && <div className="border-t border-[var(--border)] p-3.5 sm:p-5" id="fin-category-explorer">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-2"><div><div className="flex items-center gap-2"><BarChart3 className="size-4 text-[var(--primary)]"/><h3 className="font-extrabold">{activeCategory.label}</h3></div><p className="mt-1 text-xs text-[var(--muted-foreground)]">{periodLabel} · Tổng {activeCategory.count} giao dịch</p></div><p className="text-lg font-black tabular-nums">{money(activeCategory.amount)}</p></div>
-        <BucketExplorer buckets={activeCategory.buckets} activeKey={activeBucket?.key ?? null} onSelect={(bucket) => { setActiveBucket(bucket); setVisibleRows(40); }} currency={currency} digits={digits} mode={mode} type={type}/>
+    </CardContent></Card>
+    {portalReady && activeCategory && createPortal(
+      <div className="fin-report-drilldown-modal" role="dialog" aria-modal="true" aria-labelledby="fin-drilldown-dialog-title" ref={modalRef}>
+        <div className="fin-report-drilldown-header">
+          <div className="flex min-w-0 flex-1 items-center gap-3">
+            <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[var(--muted)]" style={{ color: iconColorValue(activeCategory.iconColor) }}><CategoryIcon name={activeCategory.iconName} className="size-5" /></span>
+            <div className="min-w-0"><p className="text-[11px] font-semibold text-[var(--muted-foreground)]">{type === "expense" ? "Chi tiêu" : "Thu nhập"} · {periodLabel}</p><h2 className="truncate text-lg font-black sm:text-xl" id="fin-drilldown-dialog-title">{activeCategory.label}</h2></div>
+          </div>
+          <button ref={closeRef} type="button" onClick={() => setActiveCategoryId(null)} aria-label="Đóng chi tiết danh mục" className="fin-report-drilldown-close"><X className="size-5"/></button>
+        </div>
+        <div className="fin-report-drilldown-scroll" id="fin-category-explorer">
+          <div className="mx-auto w-full max-w-[1160px] p-3 pb-10 sm:p-6">
+            <div className="border-b border-[var(--border)] pb-4 sm:pb-5">
+              <div className="flex flex-wrap items-center justify-between gap-2"><div><div className="flex items-center gap-2"><BarChart3 className="size-4 text-[var(--primary)]"/><h3 className="font-extrabold">{mode === "month" ? "Chi tiết theo ngày" : "Chi tiết theo tháng"}</h3></div><p className="mt-1 text-xs text-[var(--muted-foreground)]">{activeCategory.count} giao dịch · Chạm vào cột để xem chi tiết</p></div><p className="text-lg font-black tabular-nums">{money(activeCategory.amount)}</p></div>
+            </div>
+            <div className="mt-4 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3 sm:p-5">
+              <BucketExplorer buckets={activeCategory.buckets} activeKey={activeBucket?.key ?? null} onSelect={(bucket) => { setActiveBucket(bucket); setVisibleRows(40); }} currency={currency} digits={digits} mode={mode} color={activeCategory.iconColor ?? ""}/>
+            </div>
         <div className="mt-4 rounded-xl border border-[var(--border)] bg-[var(--card)]" aria-live="polite">
           {!activeBucket ? <p className="p-4 text-xs text-[var(--muted-foreground)]">Chọn một cột {mode === "month" ? "ngày" : "tháng"} để tải các giao dịch tương ứng.</p> : <>
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border)] p-3.5"><div><h4 className="text-sm font-extrabold">{mode === "month" ? `Ngày ${activeBucket.key.slice(8, 10)}/${activeBucket.key.slice(5, 7)}/${activeBucket.key.slice(0, 4)}` : `Tháng ${Number(activeBucket.key.slice(5))}/${activeBucket.key.slice(0, 4)}`}</h4><p className="text-[11px] text-[var(--muted-foreground)]">{activeBucket.count} giao dịch · {money(activeBucket.amount)}</p></div>
@@ -202,7 +243,9 @@ export function InstantReportBreakdown({
             </div> : <p className="p-4 text-xs text-[var(--muted-foreground)]">Không có giao dịch trong kỳ được chọn.</p>)}
           </>}
         </div>
-      </div>}
-    </CardContent></Card>
+          </div>
+        </div>
+      </div>, document.body
+    )}
   </>;
 }

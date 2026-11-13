@@ -1177,3 +1177,57 @@ body:has(.fin-sheet-backdrop[data-fin-dialog="true"]) .fin-mobile-taskbar,
 .fin-category-bucket-explorer button:active .fin-category-bucket-bar { transform: scaleX(1.08); }
 .fin-today-expense-details[open] summary { margin-bottom: .3rem; }
 @media (prefers-reduced-motion: reduce) { .fin-category-bucket-bar { transition: none; } }
+
+/* V4.1.1 — full-viewport report drilldown; never scroll inside the overview card. */
+.fin-report-drilldown-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 250;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--background);
+  color: var(--foreground);
+  overscroll-behavior: none;
+}
+.fin-report-drilldown-header {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: calc(env(safe-area-inset-top, 0px) + 12px) 16px 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--card);
+  z-index: 1;
+}
+.fin-report-drilldown-close {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: var(--muted);
+  color: var(--foreground);
+  transition: background-color 160ms ease, transform 160ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.fin-report-drilldown-close:active { transform: scale(.94); }
+.fin-report-drilldown-close:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.fin-report-drilldown-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.fin-report-drilldown-modal .fin-category-bucket-bar { transition: height 160ms ease, opacity 140ms ease, background-color 140ms ease; }
+@media (prefers-reduced-motion: reduce) {
+  .fin-report-drilldown-modal *, .fin-report-drilldown-close { scroll-behavior: auto !important; animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}

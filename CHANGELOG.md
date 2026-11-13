@@ -1,3 +1,11 @@
+## [4.1.1] — 2026-11-13 · Full-screen Category Analytics & Instant Details
+
+- **Modal toàn màn hình:** chọn một danh mục ở Báo cáo → Tổng quan sẽ mở modal React Portal riêng, có nút X / Escape, khóa cuộn nền, safe area cho iPhone và focus trap. Không còn biểu đồ mở rộng dưới danh sách.
+- **Màu biểu đồ theo danh mục:** cột ngày/tháng dùng `icon_color` đúng của danh mục; cột không phát sinh màu trung tính.
+- **Fast details:** các cột có ít giao dịch được preload đầy đủ từ ledger đã tải (ngân sách tối đa 300 dòng Chi + 180 dòng Thu, 60 dòng/bucket) và hiển thị tức thời mà không gọi API. Các cột còn lại dùng truy vấn Supabase trực tiếp được lọc server-side theo danh mục/kỳ/loại và user; fallback tương thích vẫn có nếu schema cũ lỗi.
+- **Bảo toàn:** 6 module, 91 file SQL, RPC Thu/Chi, taskbar/Splash và các fix iPhone không đổi; không migration/dependency mới.
+- **Kiểm thử:** 178 bài regression, logic preload, mock query và cấu trúc modal; phải chạy production build, typecheck đầy đủ, UI Safari và đo p95 ở staging.
+
 ## [4.1.0] — 2026-11-13 · Category Drill-down Reports & Today Spending Disclosure
 
 - **Chi tiêu hôm nay:** vẫn hiện tổng tiền và phân bổ theo danh mục, nhưng phần “Các khoản đã chi” dùng nút mở rộng/thu gọn, mặc định đóng khi truy cập Dashboard. Giữ số ngày theo múi giờ cài đặt và liên kết xem toàn bộ.

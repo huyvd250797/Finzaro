@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { loadReportLedger } from "@/features/reports/data";
 import { flowAmount, monthBounds, type ReportFlowType } from "@/features/reports/experience";
+import { loadFastCategoryEntries } from "@/features/reports/fast-category-entries";
 import { requireUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
@@ -33,6 +34,16 @@ export async function GET(request: NextRequest) {
       .select("currency_code").eq("id", userId).maybeSingle();
     if (preferencesError) throw preferencesError;
     const currency = (preferences?.currency_code ?? "VND").toUpperCase();
+    // Fast path: one filtered transaction query with embedded ledger entries, no
+    // entire report rehydration. Legacy installations still use the old loader.
+    try {
+      const payload = await loadFastCategoryEntries(supabase, userId, {
+        type: type as ReportFlowType, category, from: fromDate, to: toDate, currency
+      });
+      return NextResponse.json(payload, { headers: { "Cache-Control": "private, no-store" } });
+    } catch (fastError) {
+      console.warn("[Finzaro Drilldown] targeted loader failed; using compatible ledger path", fastError);
+    }
     const ledger = await loadReportLedger(supabase, userId, { fromDate, toDate });
     if (ledger.diagnostics.strategy === "empty" && ledger.diagnostics.warnings.length) {
       return fail("Không thể tải dữ liệu giao dịch. Vui lòng thử lại.", 503);

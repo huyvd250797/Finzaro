@@ -8,6 +8,7 @@ import { ReportPeriodControls } from "@/components/report-period-controls";
 import { iconColorValue } from "@/features/categories/icons";
 import { InstantReportBreakdown, type ReportFlowSnapshot } from "@/components/instant-report-breakdown";
 import { buildCategoryPeriodGroups } from "@/features/reports/category-drilldown";
+import { buildInstantCategoryDetails } from "@/features/reports/category-detail-preview";
 import {
   currentYearMonth,
   monthBounds,
@@ -85,6 +86,12 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
     previous: mode === "month" ? reportUrl({ mode, period: shiftMonthKey(period, -1), type: flowType }) : reportUrl({ mode, year: year - 1, type: flowType }),
     next: mode === "month" ? reportUrl({ mode, period: shiftMonthKey(period, 1), type: flowType }) : reportUrl({ mode, year: year + 1, type: flowType })
   });
+  // Bounded complete bucket previews reuse the ledger already loaded for the
+  // overview. Most small day/month buckets can open without ANY new request.
+  const prefetchedDetails = {
+    ...buildInstantCategoryDetails(transactions, currency, "expense", mode, flows.expense.categories, 300),
+    ...buildInstantCategoryDetails(transactions, currency, "income", mode, flows.income.categories, 180)
+  };
   const periodLinks: Record<ReportFlowType, PeriodLinks> = {
     income: buildPeriodLinks("income"),
     expense: buildPeriodLinks("expense")
@@ -118,7 +125,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
       <InstantReportBreakdown
         initialType={type} periodLabel={periodLabel} mode={mode}
         periodKey={`${mode}-${mode === "month" ? period : year}`}
-        from={bounds.from} to={bounds.to} currency={currency} digits={digits} flows={flows}
+        from={bounds.from} to={bounds.to} currency={currency} digits={digits} flows={flows} prefetchedDetails={prefetchedDetails}
       />
     </div>
   );
