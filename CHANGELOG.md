@@ -1,11 +1,3 @@
-## [4.1.5] — 2026-11-13 · ESLint Flat Config Deploy Hotfix
-
-- **Fix deploy:** ESLint `9.17.0` does not provide package subpath `eslint/config`. Replace `defineConfig`/`globalIgnores` with ESLint 9-compatible flat-config array and standalone global-ignore object, keeping Next.js Core Web Vitals and TypeScript rule sets intact.
-- **Release Gate remains enforced:** `npm run check` still runs ESLint, TypeScript, tests, and Next.js production build in that order. No `ignoreBuildErrors`, `ignoreDuringBuilds` or lint bypass.
-- **Regression:** add 3 tests for package compatibility, flat config, and Vercel release gate; update version metadata to V4.1.5.
-- **Scope:** no changes to transactions, reports, SQL, migrations, dependencies, or PWA behavior.
-- **Validation:** 198/198 local Node tests; config passes `node --check` and dependency-free release verification. Full npm lint/typecheck/Next production build remains unverified in this environment because npm dependencies cannot be installed; verify on Vercel/staging.
-
 ## [4.1.4] — 2026-11-13 · Financial Accuracy & Release Gate
 
 - **Accurate top-category shares:** Dashboard category bars use all spending categories as the denominator before Top 5 is displayed; remove the fake minimum bar share.
