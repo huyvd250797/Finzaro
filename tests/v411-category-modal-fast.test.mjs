@@ -29,7 +29,7 @@ const tx = (id, type, date, amount, categoryId = "food", currency = "VND", purpo
 });
 
 test("V4.1.1 category drilldown opens a full viewport portal with close button and category-colored bars", () => {
-  assert.equal(JSON.parse(read("package.json")).version, "4.1.5");
+  assert.equal(JSON.parse(read("package.json")).version, "4.1.6");
   const component = read("components/instant-report-breakdown.tsx");
   const css = read("app/globals.css");
   assert.match(component, /createPortal\(/);

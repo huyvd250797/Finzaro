@@ -29,7 +29,7 @@ const args = (mode, periodKey, year) => ({mode, period:periodKey, year, from:`${
 const row = (type,id,bucket,amount,count=1) => ({type,id,label:id??'Chưa phân loại',iconName:'Utensils',iconColor:'#ff6500',bucket,amount,count});
 
 test('V4.1.2 report entry is compact: no oversized cash-retention CTA or advanced shortcut',()=>{
-  assert.equal(JSON.parse(read('package.json')).version,'4.1.5');
+  assert.equal(JSON.parse(read('package.json')).version,'4.1.6');
   const page=read('app/(dashboard)/reports/page.tsx');
   assert.doesNotMatch(page,/Hiệu quả dòng tiền|HIỆU QUẢ DÒNG TIỀN|Tỷ lệ giữ lại trong kỳ|Phân tích nâng cao|fin-retention-card/);
   assert.match(page,/<FastReportOverview/);

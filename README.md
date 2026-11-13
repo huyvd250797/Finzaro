@@ -1,3 +1,5 @@
+> **Latest release: Finzaro V4.1.6 — Financial Snapshot Type Safety Hotfix.** Sửa lỗi Vercel `TS2345` trong đối soát báo cáo do `DonutSlice.id` có thể `undefined`; giữ nguyên dữ liệu, công thức và Release Quality Gate. Không cần SQL migration. Xem [`DEPLOY_V4.1.6.md`](DEPLOY_V4.1.6.md). Cần xác nhận build đầy đủ trên Vercel.
+
 > **Latest release: Finzaro V4.1.5 — Release Gate Lint Compatibility.** Vá lint failure xuất hiện sau khi sửa `eslint/config` trên V4.1.4; giữ nguyên tính toán tài chính, 6 module và DB. Không tắt Quality Gate. Xem [`DEPLOY_V4.1.5.md`](DEPLOY_V4.1.5.md). Lint/typecheck/build production vẫn cần xác nhận trên Vercel.
 
 > **Latest release: Finzaro V4.1.4 — Financial Accuracy & Release Gate.** Chuẩn hóa số liệu Thu/Chi/Ròng; sửa tỷ trọng Top 5 và Excel/PDF theo bộ lọc; đối soát báo cáo; cấu hình Vercel chỉ deploy sau khi ESLint, TypeScript, tests và production build đều đạt. **Không cần SQL migration V4.1.4.** Xem [`DEPLOY_V4.1.4.md`](DEPLOY_V4.1.4.md). Chưa xác nhận build production trong môi trường đóng gói.

@@ -18,7 +18,10 @@ export function reconcilePeriodSnapshot(snapshot: FastPeriodSnapshot): boolean {
     if (flow.categories.reduce((sum, row) => sum + row.amount, 0) !== flow.amount) return false;
     if (flow.slices.reduce((sum, row) => sum + row.amount, 0) !== flow.amount) return false;
     for (const slice of flow.slices) {
-      if (!amountOk(slice.amount) || categories.get(slice.id)?.amount !== slice.amount) return false;
+      // DonutSlice.id is optional for generic charts, but a financial snapshot
+      // must identify every category to reconcile it with the category group.
+      // Guard before Map.get: never coerce a missing ID or claim a match.
+      if (typeof slice.id !== "string" || !slice.id || !amountOk(slice.amount) || categories.get(slice.id)?.amount !== slice.amount) return false;
     }
     for (const group of flow.categories) {
       if (!amountOk(group.amount) || !Number.isSafeInteger(group.count) || group.count < 0) return false;

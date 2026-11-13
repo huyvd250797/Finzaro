@@ -1,3 +1,11 @@
+## [4.1.6] — 2026-11-13 · Financial Snapshot Type Safety Hotfix
+
+- **Vercel TS2345 fix:** `features/reports/reconcile-snapshot.ts` now narrows optional `DonutSlice.id` to a nonempty string before `Map<string, ...>.get()`, rather than passing `string | undefined` to `Map.get`.
+- **Accuracy preserved:** reject a snapshot with missing/empty slice identifiers instead of coercing a value or allowing an unmatched category to be reconciled.
+- **Type regression coverage:** new isolated strict TypeScript semantic check reproduces the original TS2345 and proves the guarded implementation passes; additional runtime fixtures check missing, empty, mismatched IDs and incorrect amounts.
+- Bump all active release metadata to **4.1.6**. Retain all 6 modules, unchanged financial/RPC logic, V4.1.5 scoped ESLint configuration, existing SQL and mandatory `lint → typecheck → test → build` Vercel gate.
+- QA: source regression tests and isolated typecheck pass. Full Next.js typecheck/production build require npm packages unavailable in the offline packaging environment; verify on Vercel before production approval.
+
 ## [4.1.5] — 2026-11-13 · Release Gate Lint Compatibility
 
 - Fix the second-stage Vercel lint failures surfaced after resolving the ESLint 9.17 `eslint/config` import incompatibility.
