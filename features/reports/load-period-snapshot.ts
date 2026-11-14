@@ -10,6 +10,26 @@ import { measureServerOperation } from "@/lib/performance";
 export type ReportPeriodRequest = { mode: "month" | "year"; period: string; year: number; currency: string };
 export type PeriodSnapshotLoad = { snapshot: FastPeriodSnapshot; source: "rpc" | "compatibility"; warnings: string[] };
 
+/** Supabase RPC types are generated from the deployed database. This optional
+ * RPC may not yet be present in the generated Database type, so the generic
+ * performance wrapper returns `unknown`. Narrow the wire envelope at runtime
+ * before reading any fields; do not suppress TS18046 with `any` assertions.
+ */
+type ReportSummaryRpcResult = {
+  data: unknown;
+  error: { code?: string; message?: string } | null;
+};
+
+function isReportSummaryRpcResult(value: unknown): value is ReportSummaryRpcResult {
+  if (value === null || typeof value !== "object" || !("data" in value) || !("error" in value)) return false;
+  const error = value.error;
+  if (error === null) return true;
+  if (!error || typeof error !== "object") return false;
+  const candidate = error as { code?: unknown; message?: unknown };
+  return (candidate.code === undefined || typeof candidate.code === "string") &&
+    (candidate.message === undefined || typeof candidate.message === "string");
+}
+
 /** Identical report path for initial navigation and client period switches.
  * No duplicate financial definitions or full-ledger hydration on first paint.
  */
@@ -32,10 +52,13 @@ export async function loadPeriodSnapshot(supabase: SupabaseClient<Database>, use
   let snapshot: FastPeriodSnapshot;
   let source: PeriodSnapshotLoad["source"] = "rpc";
   const warnings: string[] = [];
-  if (!summaryResult.error && summaryResult.data && typeof summaryResult.data === "object" && Array.isArray((summaryResult.data as { rows?: unknown }).rows)) {
-    snapshot = snapshotFromSummaryRows((summaryResult.data as { rows: ReportSummaryRow[] }).rows, args);
+  if (!isReportSummaryRpcResult(summaryResult)) throw new Error("Phản hồi RPC báo cáo không hợp lệ.");
+  const payload = summaryResult.data;
+  if (!summaryResult.error && payload !== null && typeof payload === "object" &&
+      "rows" in payload && Array.isArray(payload.rows)) {
+    snapshot = snapshotFromSummaryRows(payload.rows as ReportSummaryRow[], args);
   } else {
-    const error = summaryResult.error as { code?: string; message?: string } | null;
+    const error = summaryResult.error;
     // Do not replace database errors with fake zero totals.
     if (!error || !["42883", "PGRST202"].includes(error.code ?? "")) throw error ?? new Error("Phản hồi RPC báo cáo không hợp lệ.");
     const ledger = await measureServerOperation("reports.v420.compatibility", () => loadReportLedger(supabase, userId, {

@@ -1,3 +1,11 @@
+## V4.2.2 — Report RPC Type Safety & Deploy Hotfix (2026-11-14)
+
+- **Fix Vercel TypeScript TS18046:** `features/reports/load-period-snapshot.ts` was reading `.data` / `.error` on `summaryResult` inferred as `unknown`, because the optional `report_period_summary_v412` RPC is not part of the current generated Supabase `Database` types. Added a runtime RPC response-envelope type guard before reading its properties, retaining strict TypeScript rather than bypassing the release gate.
+- **Preserve report correctness:** successful RPC still supplies rows to `snapshotFromSummaryRows`; only `42883`/`PGRST202` (missing RPC) use the existing ledger compatibility path; malformed responses and genuine database errors raise errors rather than returning misleading totals.
+- **Regression coverage:** added isolated strict TypeScript tests reproducing TS18046 without narrowing and verifying the guarded version; runtime tests for success, missing-RPC fallback, malformed response and database errors.
+- **Version/packaging:** bump active app/package metadata to `4.2.2`; update historical release-name/version assertions. No functional UI changes, SQL changes, npm dependency changes or Supabase migration; keep 6 modules and strict `lint → typecheck → test → build` Vercel gate.
+- **Validation:** node regression tests and release source checks pass. Full project `npm run check`/Next.js production build are **not locally verified** because npm registry DNS fails in the packaging environment (`EAI_AGAIN`); final CI/Vercel verification remains required.
+
 ## V4.2.1 — React Error Boundary & Release Gate Hotfix (2026-11-14)
 
 - **Fix Vercel lint errors `react-hooks/error-boundaries`:** render Dashboard and Reports JSX *after* `try/catch`, not inside it. The catch handles only authenticated snapshot-loading failures. This keeps the current authenticated Supabase data pipeline, spending cards, trend chart and financial reconciliation untouched.
