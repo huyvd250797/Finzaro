@@ -11,15 +11,15 @@ const calendar = read("components/report-calendar-interactive.tsx");
 const css = read("app/globals.css");
 
 test("V3.5.0 release keeps six modules and finance actions", () => {
-  assert.equal(pkg.version, "4.4.0");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.4\.0"/);
+  assert.equal(pkg.version, "4.5.0");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.5\.0"/);
   assert.deepEqual(readdirSync(join(root,"app/(dashboard)"),{withFileTypes:true}).filter(d=>d.isDirectory()).map(d=>d.name).sort(),["accounts","categories","overview","reports","settings","transactions"]);
   const actions = read("features/transactions/actions.ts");
   for(const rpc of ["create_simple_transaction_v120","update_simple_transaction_v120","delete_simple_transaction_v120","copy_simple_transaction_batch_v320"]) assert.ok(actions.includes(rpc));
 });
 
 test("Overview has premium hero, recent activity, category breakdown and chart without changing ledger math", () => {
-  for(const fragment of ["fin-dashboard-hero","fin-hero-balance","fin-hero-metrics","fin-overview-recent","fin-overview-chart","snapshot.monthTotals","loadDashboardSnapshot"]) assert.ok(overview.includes(fragment), fragment);
+  for(const fragment of ["fin-dashboard-hero","BalanceVisibility","fin-hero-metrics","fin-overview-recent","fin-overview-chart","snapshot.monthTotals","loadDashboardSnapshot"]) assert.ok(overview.includes(fragment), fragment);
   assert.match(overview, /<CashflowChart daily=\{snapshot.daily\}/);
   assert.match(read("components/spending-period-card.tsx"), /Các khoản đã chi/);
   assert.match(read("features/dashboard/snapshot.ts"), /current_balance_minor/);

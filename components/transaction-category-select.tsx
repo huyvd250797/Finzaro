@@ -175,7 +175,15 @@ export function TransactionCategorySelect({
       {priorityCategories.length > 0 && !search && <div className="mb-3 min-w-0" aria-label="Danh mục thường dùng">
         <div className="fin-category-favorites flex min-w-0 snap-x snap-mandatory items-center gap-2 overflow-x-auto pb-1.5" role="group" aria-label="Cuộn ngang danh mục thường dùng">
           <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap text-[10px] font-semibold text-[var(--muted-foreground)]"><Star className="size-3" /> Thường dùng</span>
-          {priorityCategories.map((category) => <button key={category.id} type="button" onClick={() => setValue(category.id)} aria-pressed={category.id === currentValue} className={`min-h-9 shrink-0 snap-start whitespace-nowrap rounded-lg border px-3 text-[11px] font-bold ${category.id === currentValue ? "border-[var(--primary)] text-[var(--primary)]" : "border-[var(--border)]"}`}>{category.name}</button>)}
+          {priorityCategories.map((category) => {
+            const color = iconColorValue(category.icon_color);
+            return <button key={category.id} type="button" onClick={() => setValue(category.id)} aria-pressed={category.id === currentValue}
+              className={`inline-flex min-h-9 shrink-0 snap-start whitespace-nowrap rounded-lg border px-2.5 text-[11px] font-bold items-center gap-1.5 ${category.id === currentValue ? "ring-1 ring-[var(--primary)]" : ""}`}
+              style={{ borderColor: category.id === currentValue ? color : "var(--border)", backgroundColor: `${color}16` }}>
+              <span style={{ color }}><CategoryIcon name={category.icon_name} className="size-4 shrink-0" /></span>
+              <span style={{ color }} className="max-w-36 truncate">{category.name}</span>
+            </button>;
+          })}
         </div>
       </div>}
       <div className="mb-2 flex items-center justify-between gap-2 text-[10px] font-bold text-[var(--muted-foreground)]">

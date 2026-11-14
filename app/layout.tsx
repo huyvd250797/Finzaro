@@ -38,7 +38,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           .dark .finzaro-splash{background:#0c1211;color:#eef7f3}
           .finzaro-splash-mark{display:grid;width:80px;height:80px;place-items:center;border-radius:26px;background:#fff}
           .dark .finzaro-splash-mark{background:#111a18}
-          .finzaro-splash-mark svg{width:64px;height:64px}
+          .finzaro-splash-mark img{width:100%;height:100%;object-fit:cover;border-radius:21px}
           .finzaro-splash-loader{width:80px;height:4px;overflow:hidden;border-radius:999px;background:#879b9340}
           .finzaro-splash-loader span{display:block;height:100%;width:45%;border-radius:inherit;background:#0d8b66;animation:fin-instant-loader 1s ease-in-out infinite}
           @keyframes fin-instant-loader{from{transform:translateX(-110%)}55%{transform:translateX(95%)}to{transform:translateX(220%)}}

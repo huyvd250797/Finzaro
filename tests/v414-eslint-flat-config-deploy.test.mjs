@@ -9,7 +9,7 @@ const read = path => readFileSync(join(root, path), 'utf8');
 
 test('V4.2.0 hotfix bumps app version while pinning ESLint 9.17', () => {
   const pkg = JSON.parse(read('package.json'));
-  assert.equal(pkg.version, '4.4.0');
+  assert.equal(pkg.version, '4.5.0');
   assert.equal(pkg.devDependencies.eslint, '9.17.0');
 });
 

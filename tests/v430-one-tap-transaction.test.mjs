@@ -21,26 +21,26 @@ const userA = "11111111-1111-4111-8111-111111111111";
 const userB = "22222222-2222-4222-8222-222222222222";
 const draft = (title = "Ăn trưa") => ({ title, from_account_id: "account-a", to_account_id: "", category_id: "food", from_amount: "45000", to_amount: "", notes: "Bữa trưa" });
 
-test("V4.4.0 release retains six modules, no database migration, and strict quality gate", () => {
+test("V4.5.0 release retains six modules, one read-only dashboard RPC migration, and strict quality gate", () => {
   const pkg = JSON.parse(source("package.json"));
-  assert.equal(pkg.version, "4.4.0");
-  assert.match(source("lib/app-version.ts"), /APP_VERSION = "4\.4\.0"/);
-  assert.match(source("lib/app-version.ts"), /One-Tap Transaction UX|Reporting Trust & UX/);
+  assert.equal(pkg.version, "4.5.0");
+  assert.match(source("lib/app-version.ts"), /APP_VERSION = "4\.5\.0"/);
+  assert.match(source("lib/app-version.ts"), /One-Tap Transaction UX|Reporting Trust & UX|Mobile Finance UX & Reporting Layout/);
   assert.equal(pkg.scripts.check, "npm run lint && npm run typecheck && npm run test && npm run build");
   assert.equal(JSON.parse(source("vercel.json")).buildCommand, "npm run check");
   assert.deepEqual(readdirSync(join(root, "app/(dashboard)"), { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name).sort(), ["accounts", "categories", "overview", "reports", "settings", "transactions"]);
   assert.equal(readdirSync(join(root, "supabase/migrations")).filter((name) => name.endsWith(".sql")).length,
-    26);
+    27);
 });
 
-test("V4.4.0 storage keys isolate templates/preferences by account and transaction type", () => {
+test("V4.5.0 storage keys isolate templates/preferences by account and transaction type", () => {
   assert.notEqual(quick.quickEntryStorageKey(userA, "expense"), quick.quickEntryStorageKey(userB, "expense"));
   assert.notEqual(quick.quickEntryStorageKey(userA, "expense"), quick.quickEntryStorageKey(userA, "income"));
   assert.equal(quick.quickEntryStorageKey("invalid", "expense"), "");
   assert.equal(quick.quickEntryStorageKey(userA, "unknown"), "");
 });
 
-test("V4.4.0 old template payloads are ignored without losing preferences", () => {
+test("V4.5.0 old template payloads are ignored without losing preferences", () => {
   const payload = { preference: { from_account_id: "a", recent_category_ids: ["food", "food", 1, null, "travel"] }, templates: [
     { id: "valid", name: "Ăn sáng", type: "expense", draft: draft() },
     { id: "other", name: "Khác", type: "income", draft: draft() },
@@ -53,14 +53,14 @@ test("V4.4.0 old template payloads are ignored without losing preferences", () =
   assert.deepEqual(quick.parseQuickEntryState(null, "expense"), quick.emptyQuickEntryState());
 });
 
-test("V4.4.0 templates API is retired and financial RPC remains the only save path", () => {
+test("V4.5.0 templates API is retired and financial RPC remains the only save path", () => {
   assert.equal("upsertQuickEntryTemplate" in quick, false);
   assert.equal("removeQuickEntryTemplate" in quick, false);
   assert.ok(!("templates" in quick.emptyQuickEntryState()));
   assert.doesNotMatch(source("components/transaction-entry-form.tsx"), /data-fin-transaction-templates|Lưu mẫu|applyTemplate\(/);
 });
 
-test("V4.4.0 user preferences remember only account/category choices after confirmed save", () => {
+test("V4.5.0 user preferences remember only account/category choices after confirmed save", () => {
   const next = quick.rememberSavedChoice(quick.emptyQuickEntryState(), draft());
   assert.equal(next.preference.from_account_id, "account-a");
   assert.equal(next.preference.category_id, "food");
@@ -72,7 +72,7 @@ test("V4.4.0 user preferences remember only account/category choices after confi
   assert.deepEqual(repeated.preference.recent_category_ids, ["food", "travel"]);
 });
 
-test("V4.4.0 Quick Add opens directly from taskbar and still switches all three types", () => {
+test("V4.5.0 Quick Add opens directly from taskbar and still switches all three types", () => {
   const nav = source("components/mobile-nav.tsx");
   const launcher = source("components/instant-transaction-launcher.tsx");
   assert.match(nav, /href=\{`\/transactions\?new=\$\{quickType\}`\}/);
@@ -84,7 +84,7 @@ test("V4.4.0 Quick Add opens directly from taskbar and still switches all three 
   assert.match(launcher, /measureClientPaint/);
 });
 
-test("V4.4.0 form stays mounted on errors, remembers preferences only after server-confirmed save", () => {
+test("V4.5.0 form stays mounted on errors, remembers preferences only after server-confirmed save", () => {
   const actions = source("features/transactions/actions.ts");
   const form = source("components/transaction-entry-form.tsx");
   assert.match(actions, /return \{ error: "", saved: true \}/);
@@ -99,7 +99,7 @@ test("V4.4.0 form stays mounted on errors, remembers preferences only after serv
   assert.match(form, /Lưu giao dịch/);
 });
 
-test("V4.4.0 category search and recent/frequent shortcuts preserve drag-order outside search", () => {
+test("V4.5.0 category search and recent/frequent shortcuts preserve drag-order outside search", () => {
   const selector = source("components/transaction-category-select.tsx");
   assert.match(selector, /normalize\("NFD"\)/);
   assert.match(selector, /type="search"/);
@@ -109,7 +109,7 @@ test("V4.4.0 category search and recent/frequent shortcuts preserve drag-order o
   assert.match(selector, /reorderCategoriesAction\(/);
 });
 
-test("V4.4.0 duplicate requires a new save and editing uses the same atomic update RPC", () => {
+test("V4.5.0 duplicate requires a new save and editing uses the same atomic update RPC", () => {
   const page = source("app/(dashboard)/transactions/page.tsx");
   const list = source("components/transaction-list.tsx");
   const edit = source("components/edit-transaction-dialog.tsx");
@@ -124,7 +124,7 @@ test("V4.4.0 duplicate requires a new save and editing uses the same atomic upda
   assert.match(source("features/transactions/actions.ts"), /update_simple_transaction_v120/);
 });
 
-test("V4.4.0 fixed sheet actions keep iPhone keyboard separate from page scroll", () => {
+test("V4.5.0 fixed sheet actions keep iPhone keyboard separate from page scroll", () => {
   const sheet = source("components/bottom-sheet.tsx");
   const footer = source("components/transaction-form-footer-slot.tsx");
   const form = source("components/transaction-entry-form.tsx");
@@ -136,7 +136,7 @@ test("V4.4.0 fixed sheet actions keep iPhone keyboard separate from page scroll"
   assert.match(form, /pendingLabel="Đang lưu…"/);
 });
 
-test("V4.4.0 device-local preferences never mix users and discard legacy templates", () => {
+test("V4.5.0 device-local preferences never mix users and discard legacy templates", () => {
   const previous = global.window;
   const records = new Map();
   global.window = { localStorage: {
@@ -159,7 +159,7 @@ test("V4.4.0 device-local preferences never mix users and discard legacy templat
   } finally { if (previous === undefined) delete global.window; else global.window = previous; }
 });
 
-test("V4.4.0 duplicate draft requires explicit submit; retired templates have no UI", () => {
+test("V4.5.0 duplicate draft requires explicit submit; retired templates have no UI", () => {
   const form = source("components/transaction-entry-form.tsx");
   const page = source("app/(dashboard)/transactions/page.tsx");
   assert.match(form, /action=\{formAction\}/);
@@ -168,7 +168,7 @@ test("V4.4.0 duplicate draft requires explicit submit; retired templates have no
   assert.match(page, /quickTransactionSuggestions\(\[sourceDuplicate\]/);
 });
 
-test("V4.4.0 device-local preference model passes strict TypeScript typecheck", () => {
+test("V4.5.0 device-local preference model passes strict TypeScript typecheck", () => {
   const configPath = join(root, "tsconfig.v430-isolated.json");
   const configFile = ts.readConfigFile(configPath, ts.sys.readFile);
   assert.equal(configFile.error, undefined);

@@ -4,6 +4,7 @@ import { ArrowDownLeft, ArrowUpRight, CalendarDays, ChevronRight, CircleDollarSi
 import { Card, CardContent } from "@/components/ui/card";
 import { CashflowChart } from "@/components/cashflow-chart";
 import { SpendingPeriodCard } from "@/components/spending-period-card";
+import { BalanceVisibility } from "@/components/balance-visibility";
 import { TransactionList } from "@/components/transaction-list";
 import { loadDashboardSnapshot } from "@/features/dashboard/snapshot";
 import { loadLedger } from "@/features/transactions/data";
@@ -52,7 +53,7 @@ async function OverviewDashboard() {
         <div className="fin-hero-glow pointer-events-none absolute -right-20 -top-24 size-64 rounded-full" aria-hidden="true"/>
         <div className="relative flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0 flex-1"><p className="flex items-center gap-1.5 text-xs font-semibold text-[var(--fin-hero-muted)]"><WalletCards className="size-4"/> Số dư khả dụng · {currency}</p>
-            <p className="fin-hero-balance mt-2 break-words text-[clamp(1.65rem,6vw,2.75rem)] font-extrabold leading-tight tracking-[-.045em] tabular-nums">{money(snapshot.balance)}</p>
+            <BalanceVisibility amount={money(snapshot.balance)} />
             <p className="mt-2 text-xs text-[var(--fin-hero-muted)]">Tổng tiền mặt, ngân hàng và ví đang hoạt động</p>
           </div>
           <Link href="/accounts" className="fin-hero-accounts inline-flex min-h-10 items-center gap-1.5 rounded-xl px-3 text-xs font-bold">Tài khoản <ChevronRight className="size-4"/></Link>
@@ -66,7 +67,7 @@ async function OverviewDashboard() {
       </CardContent></Card>
       <div className="grid gap-3 lg:grid-cols-3">
         {(["today", "month", "year"] as const).map((period) => <SpendingPeriodCard key={period} period={period}
-          summary={snapshot.spending[period]} today={snapshot.today} currency={currency} digits={snapshot.digits}/>)}
+          summary={snapshot.spending[period]} incomeSummary={snapshot.incoming[period]} today={snapshot.today} currency={currency} digits={snapshot.digits}/>)}
       </div>
       <Card className="fin-overview-chart fin-dashboard-card"><CardContent className="p-4 sm:p-5">
         <div className="mb-4"><p className="fin-section-eyebrow">XU HƯỚNG TÀI CHÍNH</p><h2 className="mt-1 text-base font-extrabold">Thu · Chi · Tài sản ròng</h2></div>

@@ -77,7 +77,7 @@ function reportFor(transactions,reportType='all') {
 }
 const sum=(arr)=>arr.reduce((n,r)=>n+r.amount,0);
 test('V4.1.4 release version and CI gates include lint, typecheck, tests, build',()=>{
-  assert.equal(JSON.parse(read('package.json')).version,'4.4.0');
+  assert.equal(JSON.parse(read('package.json')).version,'4.5.0');
   assert.match(read('.github/workflows/ci.yml'),/npm run lint/);
   assert.match(read('.github/workflows/ci.yml'),/npm run typecheck/);
   assert.match(read('.github/workflows/ci.yml'),/npm run test/);
@@ -90,7 +90,7 @@ test('Top-5 category display uses denominator including undisplayed categories w
   assert.equal(top.length,5);
   assert.equal(top[0].percent,Math.round(40/140*1000)/10);
   assert.ok(top.reduce((s,r)=>s+r.percent,0)<100,'top five must not sum to 100% when other categories exist');
-  assert.match(read('components/spending-period-card.tsx'),/item.amount \/ summary.amount \* 100/);
+  assert.match(read('components/spending-period-card.tsx'),/item.amount \/ current.amount \* 100/);
   assert.doesNotMatch(read('features/transactions/data.ts'),/Math\.max\(4, Math\.round\(\(row\.value/);
 });
 test('A single canonical minor-unit policy matches dashboard, analysis, report and category drilldown',()=>{

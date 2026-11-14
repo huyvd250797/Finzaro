@@ -1,3 +1,13 @@
+## V4.5.0 — Mobile Finance UX & Reporting Layout (2026-11-14)
+
+- **Reports mobile:** changed four-column category/account summaries to adaptive fixed-width tables with wrapped category names and amounts; mobile transaction detail now shows all five fields in legible stacked rows without sideways scrolling.
+- **Quick Add:** frequent category chips now show each category's actual icon and saved color, retaining one horizontal swipe row.
+- **Dashboard privacy:** new Eye/EyeOff control beside Available Balance; masks only the balance with five asterisks and restores exact value.
+- **Dashboard dual-flow:** added Chi/Thu toggle independently to Today/This Month/This Year cards. Each mode shows correct total, count, categories, recent transactions and link filters, excluding transfers, debt-purpose transactions and other currencies.
+- **Fast RPC:** new read-only, user-scoped `dashboard_snapshot_v450` aggregates income and expense per 3 periods, preserving chart and balance fields; ledger fallback if RPC not installed. Preserves all 93 historical SQL files; adds one migration.
+- **PWA:** use actual `finzaro-v0012-192.png` logo on both React startup splash and `/pwa`, matching header and installed app icon.
+- **Quality:** 258/258 automated tests, including 10 new V4.5 regressions; TypeScript AST syntax, CSS syntax and isolated strict typecheck pass. Full lint/Next production build not locally verified due missing npm packages (`EAI_AGAIN`); keep strict Vercel release gate.
+
 ## V4.4.0 — Reporting Trust & UX (2026-11-14)
 
 - Removed Quick Add transaction templates and deprecated device-local template payloads; kept user-isolated saved account/category preferences and single-tap actions.

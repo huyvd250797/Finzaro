@@ -33,10 +33,10 @@ const tx = (id, type, date, amount, category = "food", currency = "VND", purpose
 });
 
 test("V4.1.0 release and Today expenses are collapsed by default", () => {
-  assert.equal(JSON.parse(read("package.json")).version, "4.4.0");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.4\.0"/);
+  assert.equal(JSON.parse(read("package.json")).version, "4.5.0");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.5\.0"/);
   const card = read("components/spending-period-card.tsx");
-  assert.match(card, /<details className="fin-today-expense-details/);
+  assert.match(card, /<details key=\{flow\} className="fin-today-expense-details/);
   assert.match(card, /<summary/);
   assert.doesNotMatch(card, /<details[^>]*\sopen(?:\s|=|>)/);
 });

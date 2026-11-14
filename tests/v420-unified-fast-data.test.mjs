@@ -118,7 +118,7 @@ test("V4.2.0 UI: three period cards, 5 trend ranges, net worth, fullscreen chart
   const navigation = read("components/report-navigation.tsx");
   assert.match(dashboard, /\["today", "month", "year"\]/);
   assert.doesNotMatch(dashboard, /Phân bổ ngân sách|Phân tích/);
-  assert.match(spending, /<details className=/);
+  assert.match(spending, /<details key=\{flow\} className=/);
   assert.match(chart, /"6m"/);
   assert.match(chart, /createPortal\(/);
   assert.match(chart, /netWorth/);
@@ -138,11 +138,11 @@ test("V4.2.0 user-scoped SQL RPC and index are present; no write into business t
 
 test("V4.2.0 performance instrumentation and safe fallbacks preserve release quality gate", () => {
   const pkg = JSON.parse(read("package.json"));
-  assert.equal(pkg.version, "4.4.0");
+  assert.equal(pkg.version, "4.5.0");
   assert.equal(pkg.scripts.check, "npm run lint && npm run typecheck && npm run test && npm run build");
   const loader = read("features/dashboard/snapshot.ts");
-  assert.match(loader, /dashboard\.v420\.summary/);
-  assert.match(loader, /dashboard\.v420\.compatibility/);
+  assert.match(loader, /dashboard\.v450\.summary/);
+  assert.match(loader, /dashboard\.v450\.compatibility/);
   assert.match(read("features/reports/fast-category-entries.ts"), /transaction_purpose/);
   assert.match(read("lib/performance.ts"), /FINZARO_PERF_LOG/);
 });
