@@ -19,7 +19,7 @@ function contrast(fg, bg) {
 
 test("V3.3.0 design system persists through later versions, unchanged module scope and finance RPCs", () => {
   assert.ok((Number(pkg.version.split(".")[0]) > 3 || Number(pkg.version.split(".")[1]) >= 3), "UI foundation preserved in V3.3+");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.2\.0"/);
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.2\.1"/);
   assert.match(read("lib/app-version.ts"), /Foundation|Mobile-First Transaction UX|Premium Overview & Reports|Fluid Motion & Navigation|Premium UX Release|Fixed Mobile Chrome & Sheet Actions|Viewport-Locked Mobile Chrome & Keyboard Focus|Instant Launch Splash, Clean Sheet Grip & Today Spending|Category Drill-down Reports & Today Spending Disclosure|Full-screen Category Analytics & Instant Details|Compact Reports & Instant Period Navigation|Period Snapshot Type Safety Hotfix|Financial Accuracy & Release Gate|Release Gate Lint Compatibility|Financial Snapshot Type Safety Hotfix|Portable Test Runner CI Hotfix|Unified Fast Data Layer/);
   assert.deepEqual(readdirSync(join(root, "app/(dashboard)"), { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort(), ["accounts", "categories", "overview", "reports", "settings", "transactions"]);
   const actions = read("features/transactions/actions.ts");

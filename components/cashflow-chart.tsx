@@ -83,6 +83,7 @@ export function CashflowChart({ daily, closingBalance, today, decimalDigits = 0,
   const changeRange = (value: TrendRange) => { setRange(value); setSelectedKey(null); };
   useEffect(() => {
     if (!expanded) return;
+    const returnFocusTarget = expandRef.current;
     const frame = window.requestAnimationFrame(() => closeRef.current?.focus({ preventScroll: true }));
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") { event.preventDefault(); setExpanded(false); return; }
@@ -95,7 +96,7 @@ export function CashflowChart({ daily, closingBalance, today, decimalDigits = 0,
       else if (!event.shiftKey && document.activeElement === tabbables[tabbables.length-1]) { event.preventDefault(); tabbables[0].focus(); }
     };
     window.addEventListener("keydown", onKey);
-    return () => { window.cancelAnimationFrame(frame); window.removeEventListener("keydown", onKey); expandRef.current?.focus({ preventScroll: true }); };
+    return () => { window.cancelAnimationFrame(frame); window.removeEventListener("keydown", onKey); returnFocusTarget?.focus({ preventScroll: true }); };
   }, [expanded]);
   const controls = (isModal: boolean) => <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Chọn khoảng thời gian xu hướng">
     {TREND_RANGES.map((item) => <button key={item.key} type="button" aria-pressed={range===item.key} onClick={() => changeRange(item.key)}

@@ -1,3 +1,11 @@
+## V4.2.1 — React Error Boundary & Release Gate Hotfix (2026-11-14)
+
+- **Fix Vercel lint errors `react-hooks/error-boundaries`:** render Dashboard and Reports JSX *after* `try/catch`, not inside it. The catch handles only authenticated snapshot-loading failures. This keeps the current authenticated Supabase data pipeline, spending cards, trend chart and financial reconciliation untouched.
+- **Clean two lint warnings:** capture the trend-modal expand button ref in effect setup before its cleanup, and remove an unused variable from a regression test.
+- **Preserve behavior:** no change to financial calculations, report period filters, transaction mutations, SQL/RPC, active 6-module structure or the V4.2.0 migration.
+- **Release discipline:** bump package/runtime version to `4.2.1`, keep the full `lint → typecheck → tests → build` Vercel gate, add four TypeScript-AST regression tests that prevent JSX inside data-loading try blocks.
+- **QA:** 221/221 node tests pass, 149 source files parse, CSS parses and all 93 SQL files match V4.2.0 byte-for-byte. Full ESLint/typecheck/Next production build **not verified** because npm dependency installation timed out in this environment. Run the complete gate on Vercel/staging before production approval.
+
 ## V4.2.0 — Unified Fast Data Layer (2026-11-13)
 
 - Replaced duplicated Dashboard KPI/trend/spend loaders with authenticated DB `dashboard_snapshot_v420` (one grouped response, currency-scoped; bounded recent list separate).

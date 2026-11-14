@@ -10,8 +10,8 @@ const packageJson = JSON.parse(read("package.json"));
 const config = read("eslint.config.mjs");
 
 test("V4.2.0 is a real version bump, not a silent V4.1.4 overwrite", () => {
-  assert.equal(packageJson.version, "4.2.0");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION\s*=\s*"4\.2\.0"/);
+  assert.equal(packageJson.version, "4.2.1");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION\s*=\s*"4\.2\.1"/);
   assert.match(read("lib/app-version.ts"), /Financial Snapshot Type Safety Hotfix|Portable Test Runner CI Hotfix|Unified Fast Data Layer/);
 });
 

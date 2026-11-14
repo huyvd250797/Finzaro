@@ -9,8 +9,8 @@ const read = (path) => readFileSync(join(root, path), "utf8");
 const css = read("app/globals.css");
 
 test("V4.0.0 release keeps six standard modules, server RPC contracts and explicit version", () => {
-  assert.equal(JSON.parse(read("package.json")).version, "4.2.0");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.2\.0"/);
+  assert.equal(JSON.parse(read("package.json")).version, "4.2.1");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.2\.1"/);
   assert.match(read("lib/app-version.ts"), /Premium UX Release|Fixed Mobile Chrome & Sheet Actions|Viewport-Locked Mobile Chrome & Keyboard Focus|Instant Launch Splash, Clean Sheet Grip & Today Spending|Category Drill-down Reports & Today Spending Disclosure|Full-screen Category Analytics & Instant Details|Compact Reports & Instant Period Navigation|Period Snapshot Type Safety Hotfix|Financial Accuracy & Release Gate|Release Gate Lint Compatibility|Financial Snapshot Type Safety Hotfix|Portable Test Runner CI Hotfix|Unified Fast Data Layer/);
   const modules = readdirSync(join(root, "app/(dashboard)"), { withFileTypes: true }).filter(x=>x.isDirectory()).map(x=>x.name).sort();
   assert.deepEqual(modules, ["accounts", "categories", "overview", "reports", "settings", "transactions"]);

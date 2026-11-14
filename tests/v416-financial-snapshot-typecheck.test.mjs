@@ -79,8 +79,8 @@ test("Financial reconciliation accepts identified categories and rejects missing
 
 test("Release gate remains strict: typecheck, lint, tests and build remain enforced", () => {
   const pkg = JSON.parse(read("package.json"));
-  assert.equal(pkg.version, "4.2.0");
-  assert.equal(read("lib/app-version.ts").includes('APP_VERSION = "4.2.0"'), true);
+  assert.equal(pkg.version, "4.2.1");
+  assert.equal(read("lib/app-version.ts").includes('APP_VERSION = "4.2.1"'), true);
   assert.equal(pkg.scripts.typecheck, "tsc --noEmit");
   assert.match(pkg.scripts.check, /npm run lint && npm run typecheck && npm run test && npm run build/);
   assert.equal(JSON.parse(read("vercel.json")).buildCommand, "npm run check");

@@ -22,7 +22,7 @@ test("App first load restores splash and still streams overview sections indepen
   assert.match(overview, /function OverviewDashboard/);
   assert.match(overview, /function OverviewRecent/);
   assert.match(overview, /loadDashboardSnapshot/);
-  assert.equal((overview.match(/loadDashboardSnapshot\(supabase/g) ?? []).length, 1);
+  assert.equal((overview.match(/loadDashboardSnapshot\((?:context\.)?supabase/g) ?? []).length, 1);
   assert.match(overview, /cache\(async \(\) =>/);
   assert.match(read("app/(dashboard)/layout.tsx"), /<Suspense fallback=\{<AppHeader/);
 });

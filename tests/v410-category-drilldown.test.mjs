@@ -33,8 +33,8 @@ const tx = (id, type, date, amount, category = "food", currency = "VND", purpose
 });
 
 test("V4.1.0 release and Today expenses are collapsed by default", () => {
-  assert.equal(JSON.parse(read("package.json")).version, "4.2.0");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.2\.0"/);
+  assert.equal(JSON.parse(read("package.json")).version, "4.2.1");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.2\.1"/);
   const card = read("components/spending-period-card.tsx");
   assert.match(card, /<details className="fin-today-expense-details/);
   assert.match(card, /<summary/);

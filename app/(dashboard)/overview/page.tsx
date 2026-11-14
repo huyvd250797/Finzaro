@@ -26,16 +26,27 @@ const overviewContext = cache(async () => {
 });
 
 async function OverviewDashboard() {
+  // Catch only data-loading failures. React creates/commits JSX outside the
+  // try block; render errors belong to the route error boundary, not here.
+  let snapshot: Awaited<ReturnType<typeof loadDashboardSnapshot>> | undefined;
+  let currency = "VND";
   try {
-    const { supabase, userId, currency, timeZone } = await overviewContext();
-    const snapshot = await loadDashboardSnapshot(supabase, userId, currency, timeZone);
-    const money = (amount: number) => formatMinorMoney(amount, snapshot.currency, snapshot.digits);
-    const metrics = [
-      { label: "Thu nhập", amount: snapshot.monthTotals.income, tone: "income", icon: ArrowDownLeft },
-      { label: "Chi tiêu", amount: snapshot.monthTotals.expense, tone: "expense", icon: ArrowUpRight },
-      { label: "Dòng tiền ròng", amount: snapshot.monthTotals.net, tone: "net", icon: CircleDollarSign }
-    ];
-    return <>
+    const context = await overviewContext();
+    currency = context.currency;
+    snapshot = await loadDashboardSnapshot(context.supabase, context.userId, currency, context.timeZone);
+  } catch (error) {
+    console.error("[Finzaro Dashboard] aggregate unavailable", error);
+  }
+  if (!snapshot) {
+    return <div role="alert" className="rounded-xl border border-rose-500/30 p-4 text-sm text-rose-600">Không tải được dữ liệu tài chính để đối soát. Vui lòng thử tải lại trang.</div>;
+  }
+  const money = (amount: number) => formatMinorMoney(amount, snapshot.currency, snapshot.digits);
+  const metrics = [
+    { label: "Thu nhập", amount: snapshot.monthTotals.income, tone: "income", icon: ArrowDownLeft },
+    { label: "Chi tiêu", amount: snapshot.monthTotals.expense, tone: "expense", icon: ArrowUpRight },
+    { label: "Dòng tiền ròng", amount: snapshot.monthTotals.net, tone: "net", icon: CircleDollarSign }
+  ];
+  return <>
       <span hidden data-fin-startup-ready />
       <Card className="fin-hero-card fin-dashboard-hero overflow-hidden"><CardContent className="relative p-4 sm:p-6 lg:p-7">
         <div className="fin-hero-glow pointer-events-none absolute -right-20 -top-24 size-64 rounded-full" aria-hidden="true"/>
@@ -62,11 +73,7 @@ async function OverviewDashboard() {
         <CashflowChart daily={snapshot.daily} today={snapshot.today} closingBalance={snapshot.closingBalance}
           decimalDigits={snapshot.digits} currency={currency}/>
       </CardContent></Card>
-    </>;
-  } catch (error) {
-    console.error("[Finzaro Dashboard] aggregate unavailable", error);
-    return <div role="alert" className="rounded-xl border border-rose-500/30 p-4 text-sm text-rose-600">Không tải được dữ liệu tài chính để đối soát. Vui lòng thử tải lại trang.</div>;
-  }
+  </>;
 }
 
 async function OverviewRecent() {

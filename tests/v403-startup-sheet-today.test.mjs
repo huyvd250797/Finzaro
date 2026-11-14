@@ -32,7 +32,6 @@ test("sheet grip does not receive automatic focus and still supports drag and Es
 });
 
 test("daily spend uses locale timezone, same ledger, valid expense roles and existing currency", () => {
-  const overview = file("app/(dashboard)/overview/page.tsx");
   const data = file("features/transactions/data.ts");
   assert.match(data, /export function currentDateKey\(timeZone: string/);
   assert.match(data, /Intl\.DateTimeFormat\("en-US", \{ timeZone, year: "numeric", month: "2-digit", day: "2-digit" \}\)/);
