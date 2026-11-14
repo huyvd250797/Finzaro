@@ -1,3 +1,12 @@
+## V4.3.0 — One-Tap Transaction UX (2026-11-14)
+
+- One-tap mobile quick add with remembered type; smart account/category defaults after server-confirmed save.
+- Transaction templates per user/device (create/apply/delete), category search and frequently selected chips.
+- Fast transaction save with pending lock, server-confirmed feedback and RSC refresh.
+- Duplicate-to-draft and bottom-sheet quick edit; existing batch copy unchanged.
+- iOS footer actions for editing, quick-add paint telemetry; no SQL migration.
+- Keep six modules, strict release quality gate and all financial RPC validations.
+
 ## V4.2.2 — Report RPC Type Safety & Deploy Hotfix (2026-11-14)
 
 - **Fix Vercel TypeScript TS18046:** `features/reports/load-period-snapshot.ts` was reading `.data` / `.error` on `summaryResult` inferred as `unknown`, because the optional `report_period_summary_v412` RPC is not part of the current generated Supabase `Database` types. Added a runtime RPC response-envelope type guard before reading its properties, retaining strict TypeScript rather than bypassing the release gate.

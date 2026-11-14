@@ -1,10 +1,12 @@
 "use client";
 
 import type { KeyboardEvent, ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ArrowDownLeft, ArrowLeftRight, ArrowUpRight } from "lucide-react";
 import { BottomSheet } from "@/components/bottom-sheet";
 import { cn } from "@/lib/utils";
+import { measureClientPaint } from "@/lib/client-performance";
 
 type TxType = "expense" | "income" | "transfer";
 const buttons: Array<{ type: TxType; label: string; icon: typeof ArrowUpRight; style: string }> = [
@@ -15,6 +17,7 @@ const buttons: Array<{ type: TxType; label: string; icon: typeof ArrowUpRight; s
 
 /** Lazily mounts each transaction form on first visit. Switching tabs does not throw away drafts. */
 export function InstantTransactionLauncher({ expense, income, transfer, initialType = null }: { expense: ReactNode; income: ReactNode; transfer: ReactNode; initialType?: TxType | null }) {
+  const router = useRouter();
   const [type, setType] = useState<TxType | null>(initialType);
   const [visited, setVisited] = useState<TxType[]>(initialType ? [initialType] : []);
 
@@ -22,6 +25,12 @@ export function InstantTransactionLauncher({ expense, income, transfer, initialT
     setType(initialType);
     if (initialType) setVisited((current) => current.includes(initialType) ? current : [...current, initialType]);
   }, [initialType]);
+
+  useEffect(() => {
+    const onSaved = () => { setType(null); setVisited([]); };
+    window.addEventListener("finzaro:transaction-saved", onSaved);
+    return () => window.removeEventListener("finzaro:transaction-saved", onSaved);
+  }, []);
 
   // On type change, show the new form from the beginning while preserving
   // the entered values in the previously visited form.
@@ -33,6 +42,8 @@ export function InstantTransactionLauncher({ expense, income, transfer, initialT
 
   function openType(next: TxType) {
     if (saving()) return;
+    try { window.localStorage.setItem("finzaro:quick-type", next); } catch { /* privacy mode */ }
+    window.dispatchEvent(new CustomEvent("finzaro:quick-type", { detail: { type: next } }));
     setVisited((current) => current.includes(next) ? current : [...current, next]);
     setType(next);
   }
@@ -46,12 +57,17 @@ export function InstantTransactionLauncher({ expense, income, transfer, initialT
     document.getElementById(`fin-transaction-tab-${next}`)?.focus();
   }
 
+  function closeLauncher() {
+    if (saving()) return;
+    setType(null);
+    if (initialType && (window.location.search.includes("new=") || window.location.search.includes("duplicate="))) router.replace("/transactions");
+  }
   const panels: Record<TxType, ReactNode> = { expense, income, transfer };
   return <>
     <div className="flex flex-wrap gap-2" aria-label="Thao tác giao dịch nhanh">
-      {buttons.map(({ type: kind, icon: Icon, label, style }) => <button key={kind} type="button" onClick={() => openType(kind)} className={cn("fin-quick-action inline-flex min-h-11 items-center gap-2 rounded-xl border px-3.5 text-sm font-bold active:scale-[.98]", style)}><Icon className="size-4" />{label}</button>)}
+      {buttons.map(({ type: kind, icon: Icon, label, style }) => <button key={kind} type="button" onClick={() => { const startedAt = performance.now(); openType(kind); measureClientPaint("transactions.quick_add.open", startedAt); }} className={cn("fin-quick-action inline-flex min-h-11 items-center gap-2 rounded-xl border px-3.5 text-sm font-bold active:scale-[.98]", style)}><Icon className="size-4" />{label}</button>)}
     </div>
-    <BottomSheet open={type !== null} onClose={() => { if (!saving()) setType(null); }} label="Ghi nhận giao dịch" activeFormKey={type} zIndex="z-[90]" overlayClassName="sm:items-center sm:p-6" panelClassName="fin-transaction-sheet mx-auto max-w-2xl sm:max-h-[calc(100dvh-48px)] sm:rounded-[24px]">
+    <BottomSheet open={type !== null} onClose={closeLauncher} label="Ghi nhận giao dịch" activeFormKey={type} zIndex="z-[90]" overlayClassName="sm:items-center sm:p-6" panelClassName="fin-transaction-sheet mx-auto max-w-2xl sm:max-h-[calc(100dvh-48px)] sm:rounded-[24px]">
       <div role="tablist" aria-label="Loại giao dịch" className="fin-transaction-tabs mx-2 mb-2 grid grid-cols-3 gap-1 rounded-2xl bg-[var(--muted)]/60 p-1.5">
         {buttons.map(({ type: kind, label, icon: Icon, style }) => <button
           id={`fin-transaction-tab-${kind}`}
@@ -61,12 +77,12 @@ export function InstantTransactionLauncher({ expense, income, transfer, initialT
           aria-selected={type === kind}
           aria-controls={`fin-transaction-panel-${kind}`}
           tabIndex={type === kind ? 0 : -1}
-          onClick={() => openType(kind)}
+          onClick={() => { const startedAt = performance.now(); openType(kind); measureClientPaint("transactions.quick_add.type", startedAt); }}
           onKeyDown={(event) => onTabKeyDown(event, kind)}
           className={cn("fin-transaction-tab flex min-h-11 items-center justify-center gap-1.5 rounded-xl border px-1.5 text-xs font-bold", style, type === kind && "is-selected")}
         ><Icon className="size-4 shrink-0" />{label}</button>)}
       </div>
-      <div onClickCapture={(event) => { const target = event.target as Element; if (target.closest("[data-instant-close]")) { event.preventDefault(); if (!saving()) setType(null); } }}>
+      <div onClickCapture={(event) => { const target = event.target as Element; if (target.closest("[data-instant-close]")) { event.preventDefault(); closeLauncher(); } }}>
         {visited.map((kind) => <div key={kind} id={`fin-transaction-panel-${kind}`} role="tabpanel" aria-labelledby={`fin-transaction-tab-${kind}`} className="fin-transaction-panel" hidden={type !== kind}>{panels[kind]}</div>)}
       </div>
     </BottomSheet>

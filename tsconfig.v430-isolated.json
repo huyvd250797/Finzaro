@@ -1,0 +1,13 @@
+{
+ "extends":"./tsconfig.json",
+ "compilerOptions":{
+  "plugins": [],
+  "incremental":false,
+  "types":[],
+  "noEmit":true,
+  "moduleResolution":"bundler"
+ },
+ "files":["features/transactions/constants.ts","features/transactions/quick-entry.ts"],
+ "include":[],
+ "exclude":[]
+}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, useTransition, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent } from "react";
-import { GripVertical } from "lucide-react";
+import { GripVertical, Search, Star } from "lucide-react";
 import { reorderCategoriesAction } from "@/features/categories/actions";
 import type { CategoryType } from "@/features/categories/constants";
 import { CategoryIcon, iconColorValue } from "@/features/categories/icons";
@@ -30,16 +30,22 @@ function sortOptions(categories: Option[]) {
   return [...categories].sort((a, b) => a.sort_order - b.sort_order || a.name.localeCompare(b.name, "vi"));
 }
 
+function normalizeCategorySearch(value: string) {
+  return value.toLocaleLowerCase("vi").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d");
+}
+
 export function TransactionCategorySelect({
   categories,
   defaultValue,
   value,
-  onValueChange
+  onValueChange,
+  priorityIds = [],
 }: {
   categories: Option[];
   defaultValue?: string | null;
   value?: string;
   onValueChange?: (value: string) => void;
+  priorityIds?: string[];
 }) {
   const [orderedCategories, setOrderedCategories] = useState(() => sortOptions(categories));
   const orderRef = useRef(orderedCategories);
@@ -47,12 +53,19 @@ export function TransactionCategorySelect({
   const [internalValue, setInternalValue] = useState(defaultId);
   const [dragId, setDragId] = useState<string | null>(null);
   const [saveError, setSaveError] = useState("");
+  const [search, setSearch] = useState("");
   const [, startTransition] = useTransition();
   const pressRef = useRef<PressState | null>(null);
   const suppressClickRef = useRef(false);
   const controlled = value !== undefined;
   const currentValue = controlled ? value : internalValue;
   const categoryById = useMemo(() => new Map(orderedCategories.map((category) => [category.id, category])), [orderedCategories]);
+  const priorityCategories = useMemo(() => priorityIds.map((id) => categoryById.get(id)).filter((item): item is Option => Boolean(item)).slice(0, 6), [priorityIds, categoryById]);
+  const visibleCategories = useMemo(() => {
+    const query = normalizeCategorySearch(search.trim());
+    return query ? orderedCategories.filter((category) => normalizeCategorySearch(`${category.name} ${category.parent_id ? categoryById.get(category.parent_id)?.name ?? "" : ""}`).includes(query)) : orderedCategories;
+  }, [search, orderedCategories, categoryById]);
+  const hasSelectedVisible = visibleCategories.some((category) => category.id === currentValue);
 
   useEffect(() => {
     const next = sortOptions(categories);
@@ -73,11 +86,11 @@ export function TransactionCategorySelect({
   function onCategoryKeyDown(event: ReactKeyboardEvent<HTMLButtonElement>, id: string) {
     if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(event.key) || dragId) return;
     event.preventDefault();
-    const index = orderedCategories.findIndex((category) => category.id === id);
+    const index = visibleCategories.findIndex((category) => category.id === id);
     const columns = window.matchMedia('(min-width: 640px)').matches ? 4 : 3;
     const step = event.key === 'ArrowLeft' ? -1 : event.key === 'ArrowRight' ? 1 : event.key === 'ArrowUp' ? -columns : columns;
-    const nextIndex = event.key === 'Home' ? 0 : event.key === 'End' ? orderedCategories.length - 1 : Math.max(0, Math.min(index + step, orderedCategories.length - 1));
-    const next = orderedCategories[nextIndex];
+    const nextIndex = event.key === 'Home' ? 0 : event.key === 'End' ? visibleCategories.length - 1 : Math.max(0, Math.min(index + step, visibleCategories.length - 1));
+    const next = visibleCategories[nextIndex];
     if (!next) return;
     setValue(next.id);
     event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>('[data-category-grid-id]')[nextIndex]?.focus();
@@ -105,6 +118,7 @@ export function TransactionCategorySelect({
   function movePress(event: ReactPointerEvent<HTMLElement>) {
     const press = pressRef.current;
     if (!press) return;
+    if (search) { clearPress(); return; }
     if (!dragId) {
       if (Math.hypot(event.clientX - press.x, event.clientY - press.y) > 9) clearPress();
       return;
@@ -154,12 +168,17 @@ export function TransactionCategorySelect({
   return (
     <div>
       <input type="hidden" name="category_id" required value={currentValue} />
-      <div className="mb-2 flex items-center justify-between gap-2 text-[10px] font-bold text-[var(--muted-foreground)]">
-        <span>Chạm để chọn</span>
-        <span className="inline-flex items-center gap-1"><GripVertical className="size-3" /> Giữ để sắp xếp</span>
+      <div className="relative mb-2">
+        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[var(--muted-foreground)]" />
+        <input type="search" aria-label="Tìm danh mục" autoComplete="off" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Tìm nhanh danh mục..." className="fin-input min-h-10 w-full pl-9 text-sm" />
       </div>
-      <div className="fin-category-scroll grid grid-cols-3 auto-rows-[78px] gap-2 sm:grid-cols-4" role="radiogroup" aria-label="Danh mục giao dịch, cuộn để xem thêm" tabIndex={orderedCategories.length > 12 ? 0 : undefined} style={{ touchAction: dragId ? "none" : "pan-y" }}>
-        {orderedCategories.map((category) => {
+      {priorityCategories.length > 0 && !search && <div className="mb-3 flex flex-wrap items-center gap-1.5" aria-label="Danh mục thường dùng"><span className="inline-flex items-center gap-1 text-[10px] font-semibold text-[var(--muted-foreground)]"><Star className="size-3" /> Thường dùng</span>{priorityCategories.map((category) => <button key={category.id} type="button" onClick={() => setValue(category.id)} aria-pressed={category.id === currentValue} className={`min-h-8 rounded-lg border px-2.5 text-[11px] font-bold ${category.id === currentValue ? "border-[var(--primary)] text-[var(--primary)]" : "border-[var(--border)]"}`}>{category.name}</button>)}</div>}
+      <div className="mb-2 flex items-center justify-between gap-2 text-[10px] font-bold text-[var(--muted-foreground)]">
+        <span>{search ? `${visibleCategories.length} kết quả` : "Chạm để chọn"}</span>
+        {!search && <span className="inline-flex items-center gap-1"><GripVertical className="size-3" /> Giữ để sắp xếp</span>}
+      </div>
+      <div className="fin-category-scroll grid grid-cols-3 auto-rows-[78px] gap-2 sm:grid-cols-4" role="radiogroup" aria-label="Danh mục giao dịch, cuộn để xem thêm" tabIndex={visibleCategories.length > 12 ? 0 : undefined} style={{ touchAction: dragId ? "none" : "pan-y" }}>
+        {visibleCategories.map((category) => {
           const active = category.id === currentValue;
           const dragging = category.id === dragId;
           const color = iconColorValue(category.icon_color);
@@ -169,10 +188,10 @@ export function TransactionCategorySelect({
               type="button"
               role="radio"
               aria-checked={active}
-              tabIndex={active ? 0 : -1}
+              tabIndex={active || (!hasSelectedVisible && visibleCategories[0]?.id === category.id) ? 0 : -1}
               onKeyDown={(event) => onCategoryKeyDown(event, category.id)}
               data-category-grid-id={category.id}
-              onPointerDown={(event) => beginPress(event, category.id)}
+              onPointerDown={(event) => { if (!search) beginPress(event, category.id); }}
               onPointerMove={movePress}
               onPointerUp={endPress}
               onPointerCancel={() => { clearPress(); setDragId(null); }}
@@ -193,6 +212,7 @@ export function TransactionCategorySelect({
           );
         })}
       </div>
+      {visibleCategories.length === 0 && <p className="py-3 text-xs text-[var(--muted-foreground)]">Không tìm thấy danh mục phù hợp.</p>}
       {saveError && <p className="mt-2 text-[10px] font-semibold text-rose-500">{saveError}</p>}
     </div>
   );

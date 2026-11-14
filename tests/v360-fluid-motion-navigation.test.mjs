@@ -8,8 +8,8 @@ const pkg = JSON.parse(source("package.json"));
 const css = source("app/globals.css");
 
 test("V3.6.0 release: versioned full source, six standard modules and unchanged transaction RPC", () => {
-  assert.equal(pkg.version, "4.2.2");
-  assert.match(source("lib/app-version.ts"), /APP_VERSION = "4\.2\.2"/);
+  assert.equal(pkg.version, "4.3.0");
+  assert.match(source("lib/app-version.ts"), /APP_VERSION = "4\.3\.0"/);
   assert.deepEqual(readdirSync(join(root,"app/(dashboard)"), { withFileTypes:true }).filter(x=>x.isDirectory()).map(x=>x.name).sort(),["accounts","categories","overview","reports","settings","transactions"]);
   const actions = source("features/transactions/actions.ts");
   for(const contract of ["create_simple_transaction_v120","update_simple_transaction_v120","delete_simple_transaction_v120","copy_simple_transaction_batch_v320"]) assert.ok(actions.includes(contract));
@@ -52,7 +52,8 @@ test("Bottom sheet retains portal above navigation, visual viewport handling, fo
   const sheet = source("components/bottom-sheet.tsx");
   for (const flag of ["createPortal", "visualViewport", "data-fin-sheet-scroll", "overscroll-y-contain", "role=\"dialog\"", "aria-modal=\"true\"", "event.key === \"Escape\"", "event.key !== \"Tab\"", "onPointerCancel", "pointercancel"]) assert.ok(sheet.includes(flag),flag);
   assert.match(sheet,/distance > 35 && distance \/ elapsed > \.75/);
-  assert.match(source("components/instant-transaction-launcher.tsx"),/if \(!saving\(\)\) setType\(null\)/);
+  assert.match(source("components/instant-transaction-launcher.tsx"), /function closeLauncher\(\)/);
+  assert.match(source("components/instant-transaction-launcher.tsx"), /if \(saving\(\)\) return;/);
   assert.match(css,/\.fin-transaction-sheet \.fin-transaction-savebar/);
 });
 

@@ -10,6 +10,8 @@ import { TransactionCategorySelect } from "@/components/transaction-category-sel
 import { TransactionList } from "@/components/transaction-list";
 import { TransactionCopyPanel } from "@/components/transaction-copy-panel";
 import { InstantCopyOverlay } from "@/components/instant-copy-overlay";
+import { EditTransactionDialog } from "@/components/edit-transaction-dialog";
+import { TransactionFormFooterSlot } from "@/components/transaction-form-footer-slot";
 import { Card, CardContent } from "@/components/ui/card";
 import { minorToMajorInput } from "@/features/accounts/money";
 import { updateTransactionAction } from "@/features/transactions/actions";
@@ -22,7 +24,7 @@ import { requireUser } from "@/lib/auth";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Giao dịch" };
 
-type SearchParams = Promise<{ page?: string; search?: string; legacy?: string; new?: string; edit?: string; copy?: string; date?: string; return_to?: string; q?: string; type?: string; account?: string; category?: string; from?: string; to?: string; error?: string; message?: string }>;
+type SearchParams = Promise<{ page?: string; search?: string; legacy?: string; new?: string; edit?: string; duplicate?: string; copy?: string; date?: string; return_to?: string; q?: string; type?: string; account?: string; category?: string; from?: string; to?: string; error?: string; message?: string }>;
 
 function EditTransactionForm({ transaction, accounts, categories, currencies, returnTo }: {
   transaction: TransactionView;
@@ -47,7 +49,7 @@ function EditTransactionForm({ transaction, accounts, categories, currencies, re
       <label className="md:col-span-2"><span className="field-label">Danh mục</span><TransactionCategorySelect categories={categories} defaultValue={transaction.category_id} /></label>
       <label><span className="field-label">Ngày giao dịch</span><MobileDateInput name="transaction_date" defaultValue={transaction.transaction_date} ariaLabel="Ngày giao dịch" /></label>
       <label className="md:col-span-2"><span className="field-label">Ghi chú</span><textarea name="notes" rows={3} maxLength={500} defaultValue={transaction.notes ?? ""} className="fin-textarea" /></label>
-      <div className="flex justify-end gap-2 md:col-span-2"><Link href={returnTo || "/transactions"} className="fin-secondary-btn">Hủy</Link><PendingSubmitButton idleLabel="Cập nhật giao dịch" pendingLabel="Đang cập nhật..." className="fin-primary-btn" /></div>
+      <div className="md:col-span-2"><TransactionFormFooterSlot><Link href={returnTo || "/transactions"} className="fin-secondary-btn">Hủy</Link><PendingSubmitButton idleLabel="Cập nhật giao dịch" pendingLabel="Đang cập nhật..." className="fin-primary-btn" /></TransactionFormFooterSlot></div>
     </form>
   </CardContent></Card>;
 }
@@ -78,14 +80,22 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
       {eligible ? <TransactionCopyPanel sourceId={source.id} sourceTitle={source.title} sourceDate={source.transaction_date} type={source.transaction_type} /> : <p role="alert" className="fin-inline-error mt-4">Không tìm thấy giao dịch hợp lệ để sao chép.</p>}
     </div>;
   }
-  const newType = params.new && isTransactionType(params.new) ? params.new : null;
+  // Duplicate only fetches the source transaction's date, even when it falls
+  // outside the last 1,000 records; the user must confirm a NEW save explicitly.
+  const duplicateId = params.duplicate && /^[0-9a-f-]{36}$/i.test(params.duplicate) ? params.duplicate : null;
+  const duplicateDate = duplicateId
+    ? (await supabase.from("transactions").select("transaction_date, transaction_purpose, transaction_type").eq("id", duplicateId).eq("user_id", userId).maybeSingle()).data
+    : null;
+  const duplicateType = duplicateDate && duplicateDate.transaction_purpose === (duplicateDate.transaction_type === "transfer" ? "transfer" : "standard") && isTransactionType(duplicateDate.transaction_type)
+    ? duplicateDate.transaction_type : null;
+  const newType = duplicateType ?? (params.new && isTransactionType(params.new) ? params.new : null);
   const quickFormOnly = Boolean(newType && !params.edit && !params.copy);
   // Editing a historic record must not depend on it being in the latest 500 rows.
   const selectedId = params.edit;
   const editDate = selectedId
     ? (await supabase.from("transactions").select("transaction_date").eq("id", selectedId).eq("user_id", userId).maybeSingle()).data?.transaction_date
     : null;
-  const ledgerOptions = quickFormOnly ? { limit: 24 }
+  const ledgerOptions = quickFormOnly ? { ...(duplicateType ? { fromDate: duplicateDate!.transaction_date, toDate: duplicateDate!.transaction_date, limit: 1000 } : { limit: 24 }) }
     : editDate ? { fromDate: editDate, toDate: editDate, limit: 1000 }
     : { limit: lookupLimit, ...(params.from ? { fromDate: params.from } : {}), ...(params.to ? { toDate: params.to } : {}), ...(params.legacy === "1" ? {} : { type: params.type, categoryId: params.category }) };
   const [{ data: preferences }, ledger] = await Promise.all([
@@ -116,16 +126,19 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
   const validTransferRows = ledger.transactions.filter((tx) => tx.transaction_type === "transfer" && tx.transaction_purpose === "transfer" && tx.entries.some(e => e.entry_role === "transfer_in") && tx.entries.some(e => e.entry_role === "transfer_out"));
   const transferSuggestions = quickTransactionSuggestions(validTransferRows.filter(tx => tx.entries.every(e => ["cash", "bank", "ewallet"].includes(e.account?.account_type ?? ""))), ledger.currencies, "transfer");
   const editing = params.edit ? ledger.transactions.find((tx) => tx.id === params.edit && tx.transaction_purpose === "standard" && (tx.transaction_type === "income" || tx.transaction_type === "expense")) ?? null : null;
+  const sourceDuplicate = duplicateId && duplicateType ? ledger.transactions.find((tx) => tx.id === duplicateId) ?? null : null;
+  const duplicateSuggestion = sourceDuplicate && duplicateType ? quickTransactionSuggestions([sourceDuplicate], ledger.currencies, duplicateType, 1)[0] : undefined;
   const launcher = <InstantTransactionLauncher
     initialType={newType}
-    expense={<TransactionEntryForm type="expense" accounts={activeAccounts} categories={expenseCategories} today={requestedDate} returnTo={returnTo} suggestions={expenseSuggestions} />}
-    income={<TransactionEntryForm type="income" accounts={activeAccounts} categories={incomeCategories} today={requestedDate} returnTo={returnTo} suggestions={incomeSuggestions} />}
-    transfer={<TransactionEntryForm type="transfer" accounts={activeAccounts} categories={[]} today={requestedDate} returnTo={returnTo} suggestions={transferSuggestions} />}
+    expense={<TransactionEntryForm key={duplicateType === "expense" ? duplicateId : "expense"} type="expense" userId={userId} prefill={duplicateType === "expense" ? duplicateSuggestion : undefined} accounts={activeAccounts} categories={expenseCategories} today={requestedDate} returnTo={returnTo} suggestions={expenseSuggestions} />}
+    income={<TransactionEntryForm key={duplicateType === "income" ? duplicateId : "income"} type="income" userId={userId} prefill={duplicateType === "income" ? duplicateSuggestion : undefined} accounts={activeAccounts} categories={incomeCategories} today={requestedDate} returnTo={returnTo} suggestions={incomeSuggestions} />}
+    transfer={<TransactionEntryForm key={duplicateType === "transfer" ? duplicateId : "transfer"} type="transfer" userId={userId} prefill={duplicateType === "transfer" ? duplicateSuggestion : undefined} accounts={activeAccounts} categories={[]} today={requestedDate} returnTo={returnTo} suggestions={transferSuggestions} />}
   />;
   if (quickFormOnly) return <div className="fin-page-shell mx-auto max-w-3xl px-4 py-6">
     <Link href={returnTo || "/transactions"} className="text-sm font-semibold text-[var(--primary)]">← Lịch sử giao dịch</Link>
     <h1 className="mt-3 text-xl font-extrabold">Ghi nhận thu – chi</h1>
     <p className="mt-1 text-sm text-[var(--muted-foreground)]">Thu tiền, chi tiền hoặc chuyển giữa các tài khoản.</p>
+    {params.duplicate && !duplicateSuggestion && <p role="alert" className="fin-inline-error mt-3">Không thể lấy dữ liệu của giao dịch cần nhân bản. Kiểm tra quyền truy cập hoặc thử lại từ lịch sử.</p>}
     <div className="mt-4">{launcher}</div>
   </div>;
 
@@ -138,7 +151,7 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
   const hasMoreHistory = historyPage < 13 && (filtered.length > displayLimit || (ledger.transactions.length >= lookupLimit && lookupLimit < 1000));
   const nextPageQuery = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {
-    if (key !== "page" && typeof value === "string" && value) nextPageQuery.set(key, value);
+    if (key !== "page" && key !== "duplicate" && typeof value === "string" && value) nextPageQuery.set(key, value);
   }
   nextPageQuery.set("page", String(historyPage + 1));
   const transferIds = shownTransactions.filter(tx => tx.transaction_type === "transfer").map(tx => tx.id).slice(0, 500);
@@ -154,7 +167,7 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
     <div className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-xs font-semibold text-[var(--primary)]">Finzaro · Thu chi</p><h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">Giao dịch</h1><p className="mt-1 text-sm text-[var(--muted-foreground)]">Thu, Chi, Chuyển tiền · thao tác nhanh, số dư tự cập nhật.</p></div>{launcher}</div>
     <InstantCopyOverlay />
     <AuthMessage error={params.error} message={params.message} />
-    {editing && <EditTransactionForm transaction={editing} accounts={activeAccounts} categories={editing.transaction_type === "income" ? incomeCategories : expenseCategories} currencies={ledger.currencies} returnTo={returnTo} />}
+    {editing && <EditTransactionDialog closeHref={returnTo || "/transactions"}><EditTransactionForm transaction={editing} accounts={activeAccounts} categories={editing.transaction_type === "income" ? incomeCategories : expenseCategories} currencies={ledger.currencies} returnTo={returnTo} /></EditTransactionDialog>}
 
 
     <details open={params.search === "1" || Boolean(params.q || params.type || params.account || params.category || params.from || params.to)} className="fin-filter-panel mt-4"><summary className="flex min-h-11 cursor-pointer items-center gap-2 px-3 font-semibold text-sm"><Filter className="size-4 text-[var(--primary)]"/> Bộ lọc lịch sử <span className="ml-auto text-xs text-[var(--muted-foreground)]">Mở bộ lọc</span></summary><form method="get" className="grid gap-3 p-3 md:grid-cols-2 xl:grid-cols-[1.25fr_.65fr_.8fr_.8fr_.8fr_.8fr_auto]"><div className="relative"><Search className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[var(--muted-foreground)]" /><input name="q" defaultValue={params.q ?? ""} placeholder="Tìm nội dung, danh mục, tài khoản..." className="fin-input pl-10" /></div><select name="type" defaultValue={params.type ?? "all"} className="fin-input"><option value="all">Mọi loại</option><option value="income">Thu nhập</option><option value="expense">Chi tiêu</option><option value="transfer">Chuyển tiền</option></select><select name="account" defaultValue={params.account ?? "all"} className="fin-input"><option value="all">Mọi tài khoản</option>{ledger.accounts.map((account) => <option key={account.id} value={account.id}>{account.name}</option>)}</select><select name="category" defaultValue={params.category ?? "all"} className="fin-input"><option value="all">Mọi danh mục</option><option value="uncategorized">Chưa phân loại</option>{filterCategories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</select><input type="date" name="from" defaultValue={params.from ?? ""} aria-label="Từ ngày" className="fin-input" /><input type="date" name="to" defaultValue={params.to ?? ""} aria-label="Đến ngày" className="fin-input" /><div className="flex gap-2"><button type="submit" className="fin-dark-btn"><Filter className="size-3.5" /> Lọc</button><Link href="/transactions" className="grid size-10 place-items-center rounded-xl border border-[var(--border)]"><X className="size-4" /></Link></div></form></details>

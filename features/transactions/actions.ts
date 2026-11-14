@@ -88,20 +88,22 @@ async function commitSimpleTransaction(formData: FormData) {
   invalidateSimpleLedger();
 }
 
-export type CreateTransactionState = { error: string };
+export type CreateTransactionState = { error: string; saved?: boolean };
 
 /** Client action state: validation/RPC errors remain in the open form so user input is preserved. */
 export async function createTransactionStateAction(
   _previous: CreateTransactionState,
   formData: FormData
 ): Promise<CreateTransactionState> {
-  const returnTo = safeReturnTo(text(formData, "return_to"));
   try {
     await commitSimpleTransaction(formData);
   } catch (error) {
     return { error: error instanceof Error ? error.message : "Không thể lưu giao dịch. Hãy thử lại." };
   }
-  redirect(feedbackDestination(returnTo, "message", "Đã lưu giao dịch và cập nhật số dư."));
+  // A verified server result lets the client close its sheet, persist preferences
+  // only after successful DB commit, then refresh RSC totals without an extra redirect.
+  // Redirect-based legacy callers below are unaffected.
+  return { error: "", saved: true };
 }
 
 /** Redirect-based adapter retained for non-interactive callers. */

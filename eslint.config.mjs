@@ -21,6 +21,7 @@ const legacyEffectSyncFiles = [
   "components/report-calendar-interactive.tsx",
   "components/report-period-controls.tsx",
   "components/transaction-category-select.tsx",
+  "components/transaction-entry-form.tsx",
 ];
 
 const config = [
