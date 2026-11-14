@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useId, useMemo, useRef, useState, type FormEvent } from "react";
 import { createPortal } from "react-dom";
 import { useSheetFooterSlot } from "@/components/bottom-sheet";
-import { ArrowLeftRight, BookmarkPlus, CalendarDays, ChevronDown, Sparkles, Trash2, X } from "lucide-react";
+import { ArrowLeftRight, CalendarDays, ChevronDown, Sparkles, X } from "lucide-react";
 import { createTransactionStateAction } from "@/features/transactions/actions";
 import type { TransactionType } from "@/features/transactions/constants";
 import type { CategoryType } from "@/features/categories/constants";
@@ -18,7 +18,7 @@ import { MobileDateInput } from "@/components/mobile-date-input";
 import { MoneyCalculatorInput } from "@/components/money-calculator-input";
 import { revealTransactionFormTarget } from "@/components/transaction-form-visibility";
 import { validateTransactionAmounts } from "@/features/transactions/client-validation";
-import { cleanQuickEntryDraft, emptyQuickEntryState, readQuickEntry, rememberSavedChoice, removeQuickEntryTemplate, upsertQuickEntryTemplate, writeQuickEntry, type QuickEntryDraft } from "@/features/transactions/quick-entry";
+import { cleanQuickEntryDraft, emptyQuickEntryState, readQuickEntry, rememberSavedChoice, writeQuickEntry, type QuickEntryDraft } from "@/features/transactions/quick-entry";
 
 export type SimpleAccountOption = { id: string; name: string; currency_code: string; institution_name: string | null; account_type: string; decimal_digits?: number };
 export type SimpleCategoryOption = { id: string; name: string; icon_name: string; icon_color: string | null; parent_id: string | null; category_type: CategoryType; sort_order: number };
@@ -57,8 +57,6 @@ export function TransactionEntryForm({ type, accounts, categories, today, sugges
   const [notes, setNotes] = useState("");
   const [selectedSuggestion, setSelectedSuggestion] = useState("");
   const [quickState, setQuickState] = useState(emptyQuickEntryState);
-  const [templateName, setTemplateName] = useState("");
-  const [templateNotice, setTemplateNotice] = useState("");
   const [state, formAction] = useActionState(createTransactionStateAction, { error: "", saved: false });
   const submittedDraft = useRef<QuickEntryDraft | null>(null);
   const submittingRef = useRef(false);
@@ -165,40 +163,6 @@ export function TransactionEntryForm({ type, accounts, categories, today, sugges
     setCategoryId(next);
     if (autoTitle) setTitle(orderedCategories.find((category) => category.id === next)?.name ?? "");
   }
-  function applyTemplate(draft: QuickEntryDraft, id: string) {
-    setTitle(draft.title || (isTransfer ? "Chuyển tiền" : ""));
-    setAutoTitle(false);
-    const source = activeIds.has(draft.from_account_id) ? draft.from_account_id : fromAccountId;
-    setFromAccountId(source);
-    const destination = activeIds.has(draft.to_account_id) && (!isTransfer || draft.to_account_id !== source)
-      ? draft.to_account_id : accounts.find((account) => account.id !== source)?.id ?? "";
-    setToAccountId(isTransfer ? destination : (activeIds.has(draft.to_account_id) ? draft.to_account_id : toAccountId));
-    if (!isTransfer && categories.some((category) => category.id === draft.category_id)) setCategoryId(draft.category_id);
-    setFromAmount(draft.from_amount);
-    setToAmount(draft.to_amount);
-    setNotes(draft.notes);
-    setSelectedSuggestion(id);
-    setTemplateNotice("Đã điền mẫu. Kiểm tra thông tin trước khi lưu.");
-  }
-
-  function saveTemplate(id: string) {
-    const name = (templateName.trim() || title.trim()).slice(0, 64);
-    if (!name) { setTemplateNotice("Hãy nhập tên mẫu trước khi lưu."); return; }
-    const draft = cleanQuickEntryDraft(currentDraft());
-    if (!draft) return;
-    const next = upsertQuickEntryTemplate(quickState, { id, name, type, draft });
-    if (!writeQuickEntry(userId, type, next)) { setTemplateNotice("Không lưu được mẫu trên thiết bị này. Kiểm tra chế độ duyệt riêng tư/dung lượng lưu trữ."); return; }
-    setQuickState(next);
-    setTemplateName("");
-    setTemplateNotice(`Đã lưu mẫu “${name}” trên thiết bị này.`);
-  }
-  function deleteTemplate(id: string) {
-    const next = removeQuickEntryTemplate(quickState, id);
-    if (!writeQuickEntry(userId, type, next)) { setTemplateNotice("Không thể xóa mẫu trên thiết bị này."); return; }
-    setQuickState(next);
-    setTemplateNotice("Đã xóa mẫu.");
-  }
-
   function applySuggestion(suggestion: QuickTransactionSuggestion) {
     setTitle(suggestion.title);
     setAutoTitle(false);
@@ -230,18 +194,6 @@ export function TransactionEntryForm({ type, accounts, categories, today, sugges
       <button type="button" data-instant-close aria-label="Đóng" className="fin-icon-button"><X className="size-4" /></button>
     </div>
     {accounts.length < (isTransfer ? 2 : 1) ? <div className="mt-5 rounded-xl border border-dashed border-[var(--border)] p-5 text-sm">{isTransfer ? "Cần ít nhất hai tài khoản hoạt động để chuyển tiền." : "Cần ít nhất một tài khoản hoạt động."} <Link href="/accounts?new=1" className="font-bold text-[var(--primary)]">Thêm tài khoản</Link></div> : <>
-      <details className="mt-3 rounded-xl border border-[var(--border)] p-3" data-fin-transaction-templates>
-        <summary className="flex min-h-8 cursor-pointer items-center gap-2 text-xs font-bold"><BookmarkPlus className="size-4 text-[var(--primary)]" /> Mẫu giao dịch ({quickState.templates.length}) <ChevronDown className="ml-auto size-4" /></summary>
-        <div className="mt-3 space-y-3">
-          {quickState.templates.length > 0 && <div className="flex flex-wrap gap-2">{quickState.templates.map((template) => <div key={template.id} className="inline-flex items-center rounded-lg border border-[var(--border)]"><button type="button" onClick={() => applyTemplate(template.draft, template.id)} className="min-h-9 px-3 text-xs font-semibold" aria-label={`Dùng mẫu ${template.name}`}>{template.name}</button><button type="button" onClick={() => deleteTemplate(template.id)} className="grid size-9 place-items-center border-l border-[var(--border)] text-rose-500" aria-label={`Xóa mẫu ${template.name}`}><Trash2 className="size-3.5" /></button></div>)}</div>}
-          <div className="flex flex-wrap gap-2"><input aria-label="Tên mẫu giao dịch" value={templateName} onChange={(event) => setTemplateName(event.target.value)} placeholder="Tên mẫu (vd: Ăn trưa)" maxLength={64} className="fin-input min-h-10 min-w-0 flex-1 text-xs" /><button type="button" onClick={() => {
-              if (typeof crypto === "undefined" || !("randomUUID" in crypto)) { setTemplateNotice("Trình duyệt hiện không hỗ trợ lưu mẫu an toàn."); return; }
-              saveTemplate(crypto.randomUUID());
-            }} className="fin-secondary-btn min-h-10 text-xs" disabled={quickState.templates.length >= 12}>Lưu mẫu</button></div>
-          <p className="text-[11px] leading-4 text-[var(--muted-foreground)]">Lưu nội dung, số tiền, danh mục và tài khoản trên thiết bị này. Mẫu không tự tạo giao dịch và chưa đồng bộ giữa các thiết bị. Tối đa 12 mẫu mỗi loại.</p>
-          {templateNotice && <p role="status" className="text-xs text-[var(--primary)]">{templateNotice}</p>}
-        </div>
-      </details>
       {suggestions.length > 0 && <div className="mt-3"><p className="mb-2 flex items-center gap-1 text-[11px] font-bold text-[var(--muted-foreground)]"><Sparkles className="size-3.5" /> Dùng lại giao dịch gần đây</p><div className="flex snap-x gap-2 overflow-x-auto pb-1.5">{suggestions.slice(0, 5).map((suggestion) => <button key={suggestion.id} type="button" onClick={() => applySuggestion(suggestion)} aria-pressed={selectedSuggestion === suggestion.id} className={`fin-suggestion-chip min-w-[132px] max-w-[170px] shrink-0 snap-start ${selectedSuggestion === suggestion.id ? "is-selected" : ""}`}><span className="flex items-center gap-1.5 truncate text-xs font-semibold"><span style={{ color: iconColorValue(suggestion.category_icon_color) }}>{suggestion.category_icon_name ? <CategoryIcon name={suggestion.category_icon_name} className="size-4" /> : <ArrowLeftRight className="size-4" />}</span><span className="truncate">{suggestion.title}</span></span><span className="mt-1 block truncate text-[11px] font-bold tabular-nums">{suggestion.amount_label}</span></button>)}</div></div>}
       <form id={formId} action={formAction} onSubmit={onSubmit} onInvalidCapture={onInvalidCapture} onInputCapture={() => { if (invalidHint) setInvalidHint(""); }} className="fin-transaction-entry-form mt-3 grid min-w-0 gap-3 sm:grid-cols-2">
         <input name="transaction_type" type="hidden" value={type} /><input name="transaction_purpose" type="hidden" value={isTransfer ? "transfer" : "standard"} /><input name="return_to" type="hidden" value={returnTo} />
@@ -251,12 +203,12 @@ export function TransactionEntryForm({ type, accounts, categories, today, sugges
           <MoneyCalculatorInput name={type === "income" ? "to_amount" : "from_amount"} value={type === "income" ? toAmount : fromAmount} onValueChange={(value) => { (type === "income" ? setToAmount : setFromAmount)(value); setInvalidHint(""); }} decimalDigits={primaryAccount?.decimal_digits ?? 0} currencyCode={primaryAccount?.currency_code} required placeholder="0" className="fin-amount-input" />
           <p className="mt-1.5 text-[11px] text-[var(--muted-foreground)]">Chạm vào số tiền để mở máy tính</p>
         </div>
+        <label className="sm:col-span-2"><span className="field-label">Nội dung giao dịch</span><input name="title" className="fin-input" required maxLength={140} placeholder="Nhập nội dung" value={title} onChange={(event) => { setTitle(event.target.value); setAutoTitle(false); }} /></label>
         {!isTransfer && <div className="sm:col-span-2"><div className="mb-1 flex items-center justify-between"><span className="field-label mb-0">Danh mục</span><Link href="/categories" className="text-xs font-semibold text-[var(--primary)]">Quản lý</Link></div><TransactionCategorySelect categories={categories} value={categoryId} priorityIds={priorityCategoryIds} onValueChange={chooseCategory} /></div>}
         {type !== "income" && <label><span className="field-label">{isTransfer ? "Từ tài khoản" : "Chi từ tài khoản"}</span><select name="from_account_id" value={fromAccountId} onChange={(event) => { const next = event.target.value; setFromAccountId(next); if (isTransfer && next === toAccountId) setToAccountId(accounts.find((account) => account.id !== next)?.id ?? ""); }} className="fin-input" required>{accounts.map((account) => <option key={account.id} value={account.id}>{account.name} · {account.currency_code}</option>)}</select></label>}
         {type !== "expense" && <label><span className="field-label">{isTransfer ? "Đến tài khoản" : "Thu vào tài khoản"}</span><select name="to_account_id" value={toAccountId} onChange={(event) => setToAccountId(event.target.value)} className="fin-input" required>{accounts.filter((account) => !isTransfer || account.id !== fromAccountId).map((account) => <option key={account.id} value={account.id}>{account.name} · {account.currency_code}</option>)}</select></label>}
         {differentCurrency && <label className="sm:col-span-2"><span className="field-label">Số tiền thực nhận · {toAccount?.currency_code}</span><MoneyCalculatorInput name="to_amount" value={toAmount} onValueChange={(value) => { setToAmount(value); setInvalidHint(""); }} decimalDigits={toAccount?.decimal_digits ?? 0} currencyCode={toAccount?.currency_code} required /></label>}
         {isTransfer && !differentCurrency && <input name="to_amount" type="hidden" value="" />}
-        <label className="sm:col-span-2"><span className="field-label">Nội dung giao dịch</span><input name="title" className="fin-input" required maxLength={140} placeholder="Nhập nội dung" value={title} onChange={(event) => { setTitle(event.target.value); setAutoTitle(false); }} /></label>
         <details className="fin-transaction-details sm:col-span-2"><summary className="flex cursor-pointer items-center gap-2 text-xs font-semibold text-[var(--muted-foreground)]"><CalendarDays className="size-4" /> Ngày {today.split("-").reverse().join("/")} · Ghi chú <ChevronDown className="ml-auto size-4" /></summary><div className="mt-3 grid gap-3 sm:grid-cols-2"><label><span className="field-label">Ngày giao dịch</span><MobileDateInput name="transaction_date" defaultValue={today} ariaLabel="Ngày giao dịch" /></label><label><span className="field-label">Ghi chú (tùy chọn)</span><textarea name="notes" rows={2} maxLength={500} className="fin-textarea" value={notes} onChange={(event) => setNotes(event.target.value)} /></label></div></details>
         {actions}
       </form>

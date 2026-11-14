@@ -21,10 +21,10 @@ for (const file of ["v412-compact-fast-periods.test.mjs", "v413-report-period-ty
 
 test("V4.2.0 retains full quality gate and all historical test suites", () => {
   const pkg = JSON.parse(read("package.json"));
-  assert.equal(pkg.version, "4.3.0");
+  assert.equal(pkg.version, "4.4.0");
   assert.equal(pkg.devDependencies.typescript, "5.9.3");
   assert.equal(pkg.scripts.test, "node --test tests/*.test.mjs");
   assert.equal(pkg.scripts.check, "npm run lint && npm run typecheck && npm run test && npm run build");
   assert.equal(JSON.parse(read("vercel.json")).buildCommand, "npm run check");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.3\.0"/);
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.4\.0"/);
 });

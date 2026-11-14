@@ -1,3 +1,12 @@
+## V4.4.0 — Reporting Trust & UX (2026-11-14)
+
+- Removed Quick Add transaction templates and deprecated device-local template payloads; kept user-isolated saved account/category preferences and single-tap actions.
+- Frequently used category chips now swipe horizontally on one line. Moved transaction title directly beneath the amount field.
+- Increased iPhone category grid to four full rows (336px) before vertical scrolling; corrected magnifier/placeholder spacing with dedicated input padding.
+- Added a visible reconciled-status indicator for Report Overview after a fully loaded period. Financial Statements and Print now refuse to show unverified totals and suppress export/print controls when reconciliation fails, using the same policy as Excel/CSV export.
+- Preserved six modules, financial flow calculations, transaction RPCs and all 93 existing SQL files; **no new migration**.
+- Added ten V4.4-specific regression tests (248/248 Node tests pass). Full ESLint/typecheck/Next production build requires Vercel because npm registry unavailable in packaging environment (`EAI_AGAIN`).
+
 ## V4.3.0 — One-Tap Transaction UX (2026-11-14)
 
 - One-tap mobile quick add with remembered type; smart account/category defaults after server-confirmed save.

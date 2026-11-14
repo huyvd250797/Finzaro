@@ -1,4 +1,4 @@
-/** V4.3.0 — user-scoped, device-local Quick Entry preferences and explicit templates.
+/** V4.4.0 — user-scoped, device-local Quick Entry preferences (no templates).
  * No transaction is written by this module; the server action remains authoritative.
  * Local storage is a convenience, not a cross-device/backup store.
  */
@@ -19,8 +19,7 @@ export type QuickEntryPreference = {
   category_id: string;
   recent_category_ids: string[];
 };
-export type QuickEntryTemplate = { id: string; name: string; type: TransactionType; draft: QuickEntryDraft };
-export type QuickEntryState = { preference: QuickEntryPreference; templates: QuickEntryTemplate[] };
+export type QuickEntryState = { preference: QuickEntryPreference };
 const EMPTY_PREFERENCE: QuickEntryPreference = { from_account_id: "", to_account_id: "", category_id: "", recent_category_ids: [] };
 const TYPES: readonly TransactionType[] = ["expense", "income", "transfer"];
 const asString = (value: unknown, max = 160) => typeof value === "string" ? value.slice(0, max) : "";
@@ -30,7 +29,7 @@ const amountValue = (value: unknown) => {
   return /^\d{0,15}(?:[.,]\d{0,6})?$/.test(text) ? text : "";
 };
 export function emptyQuickEntryState(): QuickEntryState {
-  return { preference: { ...EMPTY_PREFERENCE, recent_category_ids: [] }, templates: [] };
+  return { preference: { ...EMPTY_PREFERENCE, recent_category_ids: [] } };
 }
 export function cleanQuickEntryDraft(value: unknown): QuickEntryDraft | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
@@ -45,7 +44,7 @@ export function cleanQuickEntryDraft(value: unknown): QuickEntryDraft | null {
     notes: asString(draft.notes, 500),
   };
 }
-export function parseQuickEntryState(value: unknown, type: TransactionType): QuickEntryState {
+export function parseQuickEntryState(value: unknown, _type: TransactionType): QuickEntryState {
   const empty = emptyQuickEntryState();
   if (!value || typeof value !== "object" || Array.isArray(value)) return empty;
   const raw = value as Record<string, unknown>;
@@ -58,14 +57,8 @@ export function parseQuickEntryState(value: unknown, type: TransactionType): Qui
     category_id: idValue(pref.category_id),
     recent_category_ids: [...new Set(categoryIds.filter((x): x is string => typeof x === "string").map((x) => x.slice(0, 80)))].slice(0, 8),
   };
-  empty.templates = (Array.isArray(raw.templates) ? raw.templates : []).flatMap((item: unknown) => {
-    if (!item || typeof item !== "object" || Array.isArray(item)) return [];
-    const row = item as Record<string, unknown>;
-    const draft = cleanQuickEntryDraft(row.draft);
-    const id = idValue(row.id);
-    const name = asString(row.name, 64).trim();
-    return row.type === type && id && name && draft ? [{ id, name, type, draft }] : [];
-  }).slice(0, 12);
+  // Read V4.3 preferences from the existing key while deliberately ignoring
+  // retired template payloads; the next successful save drops them from storage.
   return empty;
 }
 export function quickEntryStorageKey(userId: string, type: TransactionType) {
@@ -75,8 +68,16 @@ export function quickEntryStorageKey(userId: string, type: TransactionType) {
 export function readQuickEntry(userId: string, type: TransactionType): QuickEntryState {
   const key = quickEntryStorageKey(userId, type);
   if (!key || typeof window === "undefined") return emptyQuickEntryState();
-  try { return parseQuickEntryState(JSON.parse(window.localStorage.getItem(key) ?? "null"), type); }
-  catch { return emptyQuickEntryState(); }
+  try {
+    const raw: unknown = JSON.parse(window.localStorage.getItem(key) ?? "null");
+    const state = parseQuickEntryState(raw, type);
+    // Drop old V4.3 templates immediately after a successful read while
+    // keeping the user's remembered account/category preferences untouched.
+    if (raw && typeof raw === "object" && "templates" in raw) {
+      try { window.localStorage.setItem(key, JSON.stringify(state)); } catch { /* storage can be read-only */ }
+    }
+    return state;
+  } catch { return emptyQuickEntryState(); }
 }
 export function writeQuickEntry(userId: string, type: TransactionType, state: QuickEntryState): boolean {
   const key = quickEntryStorageKey(userId, type);
@@ -94,13 +95,4 @@ export function rememberSavedChoice(state: QuickEntryState, draft: QuickEntryDra
     category_id: draft.category_id,
     recent_category_ids: nextCategories,
   }};
-}
-export function upsertQuickEntryTemplate(state: QuickEntryState, template: QuickEntryTemplate): QuickEntryState {
-  const clean = cleanQuickEntryDraft(template.draft);
-  if (!clean || !TYPES.includes(template.type) || !template.name.trim() || !template.id) return state;
-  const safe = { id: idValue(template.id), name: template.name.trim().slice(0, 64), type: template.type, draft: clean };
-  return { ...state, templates: [safe, ...state.templates.filter((row) => row.id !== safe.id)].slice(0, 12) };
-}
-export function removeQuickEntryTemplate(state: QuickEntryState, id: string): QuickEntryState {
-  return { ...state, templates: state.templates.filter((row) => row.id !== id) };
 }

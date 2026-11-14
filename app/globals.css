@@ -817,8 +817,9 @@ body {
     margin-bottom: .5rem;
   }
   .fin-transaction-sheet .fin-category-scroll {
-    /* At most four rows; shorter on compact iPhones so content stays usable. */
-    max-height: min(336px, 32dvh);
+    /* V4.4: always show up to four complete rows (78 × 4 + 8 × 3).
+       Outer sheet remains scrollable on compact iPhones and above the keyboard. */
+    max-height: 336px;
     min-height: 0;
     overscroll-behavior-y: auto;
     touch-action: pan-y;
@@ -1240,3 +1241,20 @@ body:has(.fin-sheet-backdrop[data-fin-dialog="true"]) .fin-mobile-taskbar,
   .fin-report-header { gap: .5rem; }
   .fin-compact-report-kpis .fin-metric-value { font-size: clamp(.9rem, 4.1vw, 1.13rem); }
 }
+
+/* V4.4.0 — transaction picker: dedicated search inset survives .fin-input base
+   padding declarations; recent/frequent chips use one horizontal row. */
+.fin-transaction-sheet .fin-category-search-wrap,
+.fin-category-search-wrap { min-width: 0; }
+.fin-category-search-input,
+.fin-category-search-wrap input.fin-input[type="search"] {
+  box-sizing: border-box;
+  padding-inline-start: 2.75rem !important;
+  padding-inline-end: 2.25rem !important;
+  text-indent: 0;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.fin-category-search-input::-webkit-search-decoration { -webkit-appearance: none; }
+.fin-category-favorites { max-width: 100%; flex-wrap: nowrap; touch-action: pan-x; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
+.fin-category-favorites > button { flex: 0 0 auto; }

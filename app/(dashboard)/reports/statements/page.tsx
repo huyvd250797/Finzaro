@@ -5,6 +5,7 @@ import { ReportNavigation } from "@/components/report-navigation";
 import { ReportDataStatus } from "@/components/report-data-status";
 import { loadFinancialReport } from "@/features/reports/server-report";
 import { flowValue } from "@/features/reports/advanced";
+import { statementBalancesMatch } from "@/features/reports/statement";
 import { formatMinorMoney } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -17,14 +18,17 @@ export default async function FinancialStatementsPage({ searchParams }: { search
   const params = Object.fromEntries(Object.entries(raw).map(([k,v]) => [k, Array.isArray(v) ? v[0] : v])) as Record<string,string|undefined>;
   const r = await loadFinancialReport(params);
   const money = (value: number) => formatMinorMoney(value,r.currency,r.digits);
-  const invalid = r.ledger.diagnostics.strategy === "empty";
+  // The same exact minor-unit reconciler protects Excel/CSV export.
+  // Do not offer downloads/printing when the on-screen summary disagrees.
+  const invalid = r.ledger.diagnostics.strategy === "empty" || !statementBalancesMatch(r.statement);
   const expenseRows = r.current.filter(tx => flowValue(tx,r.currency,"expense") > 0 || flowValue(tx,r.currency,"income") > 0);
   const detail = expenseRows.slice(0, 100);
   return <main className="fin-page-shell mx-auto max-w-[1200px] space-y-4 px-3 py-4 sm:px-4 md:px-6 lg:px-8 lg:py-7">
-    <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs font-black uppercase tracking-widest text-[var(--primary)]">FINZARO · V3.0.0</p><h1 className="mt-1 text-2xl font-black">Báo cáo thu chi chuyên nghiệp</h1><p className="mt-1 text-xs text-[var(--muted-foreground)]">{r.range.from} → {r.range.to} · {r.currency} · Theo bộ lọc đã chọn</p></div><div className="flex flex-wrap gap-2"><Link href={`/reports?${r.query}`} className="fin-secondary-btn !text-xs"><ArrowLeft className="size-4"/> Tổng quan</Link><Link href={`/api/reports/export?${r.query}&format=xlsx`} className="fin-primary-btn !text-xs"><FileSpreadsheet className="size-4"/> Excel</Link><Link href={`/api/reports/export?${r.query}&format=csv`} className="fin-secondary-btn !text-xs"><Download className="size-4"/> CSV</Link><Link href={`/reports/print?${r.query}`} target="_blank" rel="noopener" className="fin-secondary-btn !text-xs"><Printer className="size-4"/> PDF / In</Link></div></div>
+    <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs font-black uppercase tracking-widest text-[var(--primary)]">FINZARO · V3.0.0</p><h1 className="mt-1 text-2xl font-black">Báo cáo thu chi chuyên nghiệp</h1><p className="mt-1 text-xs text-[var(--muted-foreground)]">{r.range.from} → {r.range.to} · {r.currency} · Theo bộ lọc đã chọn</p></div><div className="flex flex-wrap gap-2"><Link href={`/reports?${r.query}`} className="fin-secondary-btn !text-xs"><ArrowLeft className="size-4"/> Tổng quan</Link>{!invalid && <><Link href={`/api/reports/export?${r.query}&format=xlsx`} className="fin-primary-btn !text-xs"><FileSpreadsheet className="size-4"/> Excel</Link><Link href={`/api/reports/export?${r.query}&format=csv`} className="fin-secondary-btn !text-xs"><Download className="size-4"/> CSV</Link><Link href={`/reports/print?${r.query}`} target="_blank" rel="noopener" className="fin-secondary-btn !text-xs"><Printer className="size-4"/> PDF / In</Link></>}</div></div>
     <ReportNavigation active="statements"/>
     <ReportDataStatus diagnostics={r.ledger.diagnostics}/>
-    {invalid ? <Card><CardContent className="p-6 text-sm text-rose-500">Dữ liệu đang lỗi, không thể lập báo cáo chính xác. Không hiển thị các giá trị bằng 0 thay cho dữ liệu thiếu.</CardContent></Card> : <>
+    {invalid ? <Card><CardContent className="p-6 text-sm text-rose-500" role="alert">Dữ liệu chưa thể đối soát. Tạm ẩn báo cáo và chức năng xuất/in để tránh số liệu sai. Vui lòng tải lại trang.</CardContent></Card> : <>
+      <p data-fin-statement-verified className="text-right text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">Đã đối soát: Thu · Chi · Dòng tiền ròng · Danh mục · Tài khoản</p>
       <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">{[
         ["Tổng thu",r.comparison.current.income,"text-emerald-500"],
         ["Tổng chi",r.comparison.current.expense,"text-rose-500"],

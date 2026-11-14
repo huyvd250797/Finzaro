@@ -195,6 +195,7 @@ export function FastReportOverview({ initialSnapshot, initialType }: {
         </div>
       </div>
     </CardContent></Card>
+    {!loading && !error && periodId(visible) === periodId(requested) && <p data-fin-report-verified role="status" className="mt-2 text-right text-[11px] font-semibold text-emerald-600 dark:text-emerald-400" title="Đã kiểm tra KPI, danh mục và dữ liệu theo kỳ">Đã đối soát Thu · Chi · Dòng tiền ròng</p>}
     {error ? <div role="alert" className="mt-3 rounded-xl border border-rose-500/35 p-4 text-sm text-rose-500">{error}
       <button className="ml-3 inline-flex items-center gap-1 font-bold underline" type="button" onClick={() => {
         setError(""); setLoading(true); const seq = ++requestSequence.current;

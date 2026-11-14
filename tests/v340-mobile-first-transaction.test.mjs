@@ -41,7 +41,7 @@ test("iOS visual viewport shrink does not bury form save actions under software 
 });
 
 test("Mobile category picker remains constrained and transaction drafts survive type changes",()=>{
-  assert.match(css, /\.fin-transaction-sheet \.fin-category-scroll\s*\{[^}]*max-height: min\(336px, 32dvh\)/s);
+  assert.match(css, /\.fin-transaction-sheet \.fin-category-scroll\s*\{[^}]*max-height: 336px/s);
   assert.match(css, /overscroll-behavior-y: auto/);
   assert.match(tabs, /visited\.map\(\(kind\)/);
   assert.match(tabs, /hidden=\{type !== kind\}/);

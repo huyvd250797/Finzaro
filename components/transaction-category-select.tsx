@@ -168,11 +168,16 @@ export function TransactionCategorySelect({
   return (
     <div>
       <input type="hidden" name="category_id" required value={currentValue} />
-      <div className="relative mb-2">
-        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[var(--muted-foreground)]" />
-        <input type="search" aria-label="Tìm danh mục" autoComplete="off" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Tìm nhanh danh mục..." className="fin-input min-h-10 w-full pl-9 text-sm" />
+      <div className="fin-category-search-wrap relative mb-2">
+        <Search aria-hidden="true" className="pointer-events-none absolute left-3.5 top-1/2 z-10 size-4 -translate-y-1/2 text-[var(--muted-foreground)]" />
+        <input type="search" aria-label="Tìm danh mục" autoComplete="off" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Tìm nhanh danh mục..." className="fin-input fin-category-search-input min-h-11 w-full text-sm" />
       </div>
-      {priorityCategories.length > 0 && !search && <div className="mb-3 flex flex-wrap items-center gap-1.5" aria-label="Danh mục thường dùng"><span className="inline-flex items-center gap-1 text-[10px] font-semibold text-[var(--muted-foreground)]"><Star className="size-3" /> Thường dùng</span>{priorityCategories.map((category) => <button key={category.id} type="button" onClick={() => setValue(category.id)} aria-pressed={category.id === currentValue} className={`min-h-8 rounded-lg border px-2.5 text-[11px] font-bold ${category.id === currentValue ? "border-[var(--primary)] text-[var(--primary)]" : "border-[var(--border)]"}`}>{category.name}</button>)}</div>}
+      {priorityCategories.length > 0 && !search && <div className="mb-3 min-w-0" aria-label="Danh mục thường dùng">
+        <div className="fin-category-favorites flex min-w-0 snap-x snap-mandatory items-center gap-2 overflow-x-auto pb-1.5" role="group" aria-label="Cuộn ngang danh mục thường dùng">
+          <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap text-[10px] font-semibold text-[var(--muted-foreground)]"><Star className="size-3" /> Thường dùng</span>
+          {priorityCategories.map((category) => <button key={category.id} type="button" onClick={() => setValue(category.id)} aria-pressed={category.id === currentValue} className={`min-h-9 shrink-0 snap-start whitespace-nowrap rounded-lg border px-3 text-[11px] font-bold ${category.id === currentValue ? "border-[var(--primary)] text-[var(--primary)]" : "border-[var(--border)]"}`}>{category.name}</button>)}
+        </div>
+      </div>}
       <div className="mb-2 flex items-center justify-between gap-2 text-[10px] font-bold text-[var(--muted-foreground)]">
         <span>{search ? `${visibleCategories.length} kết quả` : "Chạm để chọn"}</span>
         {!search && <span className="inline-flex items-center gap-1"><GripVertical className="size-3" /> Giữ để sắp xếp</span>}

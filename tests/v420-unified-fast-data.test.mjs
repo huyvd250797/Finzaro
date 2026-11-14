@@ -138,7 +138,7 @@ test("V4.2.0 user-scoped SQL RPC and index are present; no write into business t
 
 test("V4.2.0 performance instrumentation and safe fallbacks preserve release quality gate", () => {
   const pkg = JSON.parse(read("package.json"));
-  assert.equal(pkg.version, "4.3.0");
+  assert.equal(pkg.version, "4.4.0");
   assert.equal(pkg.scripts.check, "npm run lint && npm run typecheck && npm run test && npm run build");
   const loader = read("features/dashboard/snapshot.ts");
   assert.match(loader, /dashboard\.v420\.summary/);

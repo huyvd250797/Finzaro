@@ -2,6 +2,7 @@ import { ReportPrintButton } from "@/components/report-print-button";
 import { loadFinancialReport } from "@/features/reports/server-report";
 import { formatMinorMoney } from "@/lib/utils";
 import { flowValue } from "@/features/reports/advanced";
+import { statementBalancesMatch } from "@/features/reports/statement";
 import Link from "next/link";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -11,7 +12,7 @@ export default async function PrintReportPage({ searchParams }: { searchParams: 
   const raw = await searchParams;
   const params = Object.fromEntries(Object.entries(raw).map(([k,v]) => [k,Array.isArray(v)?v[0]:v])) as Record<string,string|undefined>;
   const r = await loadFinancialReport(params);
-  if (r.ledger.diagnostics.strategy === "empty") return <div className="fin-page-shell p-8 text-rose-500">Không đủ dữ liệu để in báo cáo chính xác.</div>;
+  if (r.ledger.diagnostics.strategy === "empty" || !statementBalancesMatch(r.statement)) return <div className="fin-page-shell p-8 text-rose-500">Không đủ dữ liệu để in báo cáo chính xác.</div>;
   const money = (value: number) => formatMinorMoney(value,r.currency,r.digits);
   const allRows = r.current.filter(tx => flowValue(tx,r.currency,"income") > 0 || flowValue(tx,r.currency,"expense") > 0);
   const rows = allRows.slice(0, 500);

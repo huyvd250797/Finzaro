@@ -77,7 +77,7 @@ function reportFor(transactions,reportType='all') {
 }
 const sum=(arr)=>arr.reduce((n,r)=>n+r.amount,0);
 test('V4.1.4 release version and CI gates include lint, typecheck, tests, build',()=>{
-  assert.equal(JSON.parse(read('package.json')).version,'4.3.0');
+  assert.equal(JSON.parse(read('package.json')).version,'4.4.0');
   assert.match(read('.github/workflows/ci.yml'),/npm run lint/);
   assert.match(read('.github/workflows/ci.yml'),/npm run typecheck/);
   assert.match(read('.github/workflows/ci.yml'),/npm run test/);
