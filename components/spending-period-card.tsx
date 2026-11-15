@@ -7,6 +7,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { CategoryIcon, iconColorValue } from "@/features/categories/icons";
 import type { DashboardFlow, SpendingPeriod, SpendingSummary } from "@/features/dashboard/snapshot";
 import { formatMinorMoney } from "@/lib/utils";
+import { comparePeriodTotals, type DashboardPrevious } from "@/features/dashboard/period-comparison";
+
+const percentFormatter = new Intl.NumberFormat("vi-VN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 const labels: Record<DashboardFlow, Record<SpendingPeriod, { eyebrow: string; title: string; empty: string }>> = {
   expense: {
@@ -21,8 +24,8 @@ const labels: Record<DashboardFlow, Record<SpendingPeriod, { eyebrow: string; ti
   }
 };
 
-export function SpendingPeriodCard({ period, summary, incomeSummary, today, currency, digits }: {
-  period: SpendingPeriod; summary: SpendingSummary; incomeSummary: SpendingSummary;
+export function SpendingPeriodCard({ period, summary, incomeSummary, previous, today, currency, digits }: {
+  period: SpendingPeriod; summary: SpendingSummary; incomeSummary: SpendingSummary; previous: DashboardPrevious;
   today: string; currency: string; digits: number;
 }) {
   const [flow, setFlow] = useState<DashboardFlow>("expense");
@@ -37,6 +40,12 @@ export function SpendingPeriodCard({ period, summary, incomeSummary, today, curr
   const link = flow === "expense" ? expenseLink : incomeLink;
   const isIncome = flow === "income";
   const money = (amount: number) => formatMinorMoney(amount, currency, digits);
+  const change = comparePeriodTotals(current.amount, previous[flow][period]);
+  const compareLabel = period === "today" ? "So với hôm qua" : period === "month" ? "So với tháng trước" : "So với năm trước";
+  const sign = change.difference > 0 ? "+" : change.difference < 0 ? "−" : "";
+  const amountDelta = `${sign}${money(Math.abs(change.difference))}`;
+  const percentDelta = change.percent === null ? "—%" : `${change.percent > 0 ? "+" : change.percent < 0 ? "−" : ""}${percentFormatter.format(Math.abs(change.percent))}%`;
+  const changeTone = change.direction === "positive" ? "text-[var(--fin-income)]" : change.direction === "negative" ? "text-[var(--fin-expense)]" : "text-[var(--muted-foreground)]";
 
   return <Card className={`fin-overview-spend-${period} fin-dashboard-card`}><CardContent className="p-4 sm:p-5">
     <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
@@ -57,7 +66,15 @@ export function SpendingPeriodCard({ period, summary, incomeSummary, today, curr
       <p className="text-xs text-[var(--muted-foreground)]">{period === "today" ? today.split("-").reverse().join("/") : period === "month" ? `Tháng ${Number(today.slice(5,7))}/${today.slice(0,4)}` : `Năm ${today.slice(0,4)}`} · {current.count} {isIncome ? "khoản thu" : "khoản chi"}</p>
       <Link className="fin-text-action shrink-0" href={link}>Xem tất cả <ArrowRight className="size-3.5"/></Link>
     </div>
-    <p className={`mb-4 break-words text-[clamp(1.5rem,5.3vw,2rem)] font-extrabold tracking-tight tabular-nums ${isIncome ? "text-[var(--fin-income)]" : "text-[var(--fin-expense)]"}`} aria-live="polite">{money(current.amount)}</p>
+    <div className="mb-4 flex min-w-0 items-end justify-between gap-2" aria-live="polite">
+      <p className={`min-w-0 flex-1 break-words text-[clamp(1.35rem,4.8vw,2rem)] font-extrabold tracking-tight tabular-nums ${isIncome ? "text-[var(--fin-income)]" : "text-[var(--fin-expense)]"}`}>{money(current.amount)}</p>
+      <div className="min-w-0 max-w-[49%] shrink-0 text-right" aria-label={`${compareLabel}: ${amountDelta}, ${change.percent === null ? "không tính được phần trăm vì kỳ trước bằng 0" : percentDelta}`}>
+        <p className="text-[10px] font-medium leading-tight text-[var(--muted-foreground)] sm:text-xs">{compareLabel}</p>
+        <p className={`mt-0.5 break-words text-[clamp(.625rem,2.3vw,.75rem)] font-semibold leading-snug tabular-nums ${changeTone}`} title={change.percent === null ? "Kỳ trước bằng 0 nên không thể tính tỷ lệ phần trăm" : undefined}>
+          {amountDelta} ({percentDelta})
+        </p>
+      </div>
+    </div>
     {current.count ? <>
       <p className="mb-3 text-xs font-bold text-[var(--muted-foreground)]">Theo danh mục</p>
       <div className="space-y-3">{current.categories.slice(0, 5).map((item) => <div key={item.id} className="flex min-w-0 items-center gap-3">

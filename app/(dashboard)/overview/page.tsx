@@ -38,9 +38,10 @@ async function OverviewDashboard() {
   } catch (error) {
     console.error("[Finzaro Dashboard] aggregate unavailable", error);
   }
-  if (!snapshot) {
+  if (!snapshot || !snapshot.previous) {
     return <div role="alert" className="rounded-xl border border-rose-500/30 p-4 text-sm text-rose-600">Không tải được dữ liệu tài chính để đối soát. Vui lòng thử tải lại trang.</div>;
   }
+  const previous = snapshot.previous;
   const money = (amount: number) => formatMinorMoney(amount, snapshot.currency, snapshot.digits);
   const metrics = [
     { label: "Thu nhập", amount: snapshot.monthTotals.income, tone: "income", icon: ArrowDownLeft },
@@ -67,7 +68,7 @@ async function OverviewDashboard() {
       </CardContent></Card>
       <div className="grid gap-3 lg:grid-cols-3">
         {(["today", "month", "year"] as const).map((period) => <SpendingPeriodCard key={period} period={period}
-          summary={snapshot.spending[period]} incomeSummary={snapshot.incoming[period]} today={snapshot.today} currency={currency} digits={snapshot.digits}/>)}
+          summary={snapshot.spending[period]} incomeSummary={snapshot.incoming[period]} previous={previous} today={snapshot.today} currency={currency} digits={snapshot.digits}/>)}
       </div>
       <Card className="fin-overview-chart fin-dashboard-card"><CardContent className="p-4 sm:p-5">
         <div className="mb-4"><p className="fin-section-eyebrow">XU HƯỚNG TÀI CHÍNH</p><h2 className="mt-1 text-base font-extrabold">Thu · Chi · Tài sản ròng</h2></div>

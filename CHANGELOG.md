@@ -1,3 +1,12 @@
+## V4.5.1 — Dashboard Period Comparison (2026-11-15)
+
+- **Daily:** both income and expense cards show the amount and signed percentage relative to the entire previous day.
+- **Monthly:** compare current calendar month's total to the **complete previous calendar month**.
+- **Yearly:** compare current calendar year's total to the **complete previous calendar year**, even when it is older than the 365-day trend-chart window.
+- **Presentation:** place smaller comparison metrics to the right of the main amount; negative values red, positive values green, unchanged values neutral. Locale `vi-VN` formats percentages to two decimals. When the prior total is zero and the current total is positive, show `—%` instead of a misleading +100%.
+- **Data:** add authenticated read-only invoker RPC `dashboard_period_comparison_v451`, fetching six totals in one request parallel to existing V4.5.0 snapshot. Strictly validate RPC date, currency and all six amounts. Only `standard` income/expense entries in selected currency are included; no transfers, loan or FX leakage. If the migration has not been applied, fall back to ledger over the complete previous year; real database failures are not concealed.
+- **Release:** patch bump V4.5.0 → V4.5.1. Retain all existing 6 modules, UX, reports and prior SQL. Add one new migration and 12 regression tests. No changes to existing transactions, database tables or account balances.
+
 ## V4.5.0 — Mobile Finance UX & Reporting Layout (2026-11-14)
 
 - **Reports mobile:** changed four-column category/account summaries to adaptive fixed-width tables with wrapped category names and amounts; mobile transaction detail now shows all five fields in legible stacked rows without sideways scrolling.
