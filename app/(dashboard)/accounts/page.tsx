@@ -117,7 +117,7 @@ export default async function AccountsPage({ searchParams }: { searchParams: Sea
         <div>
           <p className="text-sm font-semibold text-[var(--primary)]">Quản lý tiền của bạn</p>
           <h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">Tài khoản & ví</h1>
-          <p className="mt-2 text-sm text-[var(--muted-foreground)]">Xem số dư từng ví, tìm kiếm tài khoản và mở lịch sử thu–chi chỉ với một chạm.</p>
+          
         </div>
         <InstantReveal label="Thêm tài khoản" initialOpen={params.new === "1"}><AccountForm currencies={currencies} /></InstantReveal>
       </div>

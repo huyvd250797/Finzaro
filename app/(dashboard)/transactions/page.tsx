@@ -137,7 +137,7 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
   if (quickFormOnly) return <div className="fin-page-shell mx-auto max-w-3xl px-4 py-6">
     <Link href={returnTo || "/transactions"} className="text-sm font-semibold text-[var(--primary)]">← Lịch sử giao dịch</Link>
     <h1 className="mt-3 text-xl font-extrabold">Ghi nhận thu – chi</h1>
-    <p className="mt-1 text-sm text-[var(--muted-foreground)]">Thu tiền, chi tiền hoặc chuyển giữa các tài khoản.</p>
+    
     {params.duplicate && !duplicateSuggestion && <p role="alert" className="fin-inline-error mt-3">Không thể lấy dữ liệu của giao dịch cần nhân bản. Kiểm tra quyền truy cập hoặc thử lại từ lịch sử.</p>}
     <div className="mt-4">{launcher}</div>
   </div>;
@@ -164,7 +164,7 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
 
 
   return <div className="fin-page-shell mx-auto max-w-[1500px] min-w-0 px-4 py-6 md:px-6 lg:px-8 lg:py-8">
-    <div className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-xs font-semibold text-[var(--primary)]">Finzaro · Thu chi</p><h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">Giao dịch</h1><p className="mt-1 text-sm text-[var(--muted-foreground)]">Thu, Chi, Chuyển tiền · thao tác nhanh, số dư tự cập nhật.</p></div>{launcher}</div>
+    <div className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-xs font-semibold text-[var(--primary)]">Finzaro · Thu chi</p><h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">Giao dịch</h1></div>{launcher}</div>
     <InstantCopyOverlay />
     <AuthMessage error={params.error} message={params.message} />
     {editing && <EditTransactionDialog closeHref={returnTo || "/transactions"}><EditTransactionForm transaction={editing} accounts={activeAccounts} categories={editing.transaction_type === "income" ? incomeCategories : expenseCategories} currencies={ledger.currencies} returnTo={returnTo} /></EditTransactionDialog>}

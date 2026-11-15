@@ -1,3 +1,22 @@
+## V4.5.3 — Financial Comparison Logic Fix (2026-11-15)
+
+- **Chi tiêu:** Chênh lệch = kỳ trước − kỳ hiện tại; chi nhiều hơn hiển thị âm/đỏ, chi ít hơn hiển thị dương/xanh ở cả Hôm nay, Tháng này và Năm nay.
+- **Thu nhập:** Chênh lệch = kỳ hiện tại − kỳ trước; tăng xanh lá, giảm đỏ. Đổi Thu/Chi cập nhật đồng thời cả dấu, % và màu.
+- **Kỳ trước bằng 0:** Theo quy ước UI đã yêu cầu, có phát sinh mới hiển thị ±100% theo chiều Thu/Chi; cả hai kỳ bằng 0 hiển thị 0%. Có tooltip nói rõ đây là quy ước hiển thị, không phải tăng trưởng toán học từ 0.
+- **Bố cục:** Giữ phần so sánh nhỏ và căn phải cùng hàng số tiền; tỷ lệ phần trăm tròn không in thêm hai chữ số thập phân. Chuẩn hóa `-0` thành 0 trung tính.
+- **Compatibility:** Xây dựng trên **V4.5.2**, giữ Quản lý danh mục mới và toàn bộ nghiệp vụ báo cáo. Không sửa RPC hay DB. **Không có migration SQL mới.**
+- **QA:** Thêm 12 trường hợp kiểm thử hành vi (income/expense, zero, equal, error inputs, sign/color, V4.5.2 regressions). Full production build cần xác nhận trên Vercel.
+
+## V4.5.2 — Category Management UX Polish (2026-11-15)
+
+- **Category management:** show one tab at a time (Chi tiêu / Thu nhập), defaulting to Chi tiêu; filtered category counts and archive mode stay within the same screen.
+- **Card interaction:** remove four edit/archive/arrow buttons from every card. Tapping a card opens an accessible iOS-friendly bottom-sheet modal for name, parent, icon and color; archiving/restoring requires confirmation. Creation also occurs in the modal.
+- **Live updates:** category mutations return validated server responses; only after confirmed success do changed/new cards update locally and the modal close. On failure keep the edited form and show a recoverable error. Revalidation updates other screens without manual page reload.
+- **iPhone-style sorting:** long press ~420ms to enable jiggle mode, drag between positions; adjacent tiles move with a FLIP animation. Persist complete order on drop; roll back on server rejection, and exit mode with Xong or tapping outside. Alternative Alt+Arrow keyboard sorting and reduced-motion support remain.
+- **Compact copy:** remove nonessential instructional paragraphs from primary screens and settings cards; retain financial warnings, reconciliation/error states, user identity and operation-critical limits.
+- **Release policy:** keep all six modules, all 95 existing SQL files (including 28 migrations), Supabase RLS/ownership checks and strict `lint → typecheck → test → build`. No SQL migration or new npm dependency.
+- **Validation:** 280 Node tests passed including 10 V4.5.2 regressions; TS/TSX syntax and CSS parsing passed. Full npm lint/typecheck/Next production build must be checked on Vercel if dependencies unavailable in the packaging environment.
+
 ## V4.5.1 — Dashboard Period Comparison (2026-11-15)
 
 - **Daily:** both income and expense cards show the amount and signed percentage relative to the entire previous day.

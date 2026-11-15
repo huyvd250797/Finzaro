@@ -9,9 +9,9 @@ import { requireUser } from "@/lib/auth";
 import { APP_RELEASE_NAME, APP_VERSION_LABEL } from "@/lib/app-version";
 
 const sections = [
-  { icon: Smartphone, title: "PWA", desc: "Có thể cài trên iPhone/Android và nhận bản cập nhật mới.", value: "Hoạt động" },
-  { icon: Moon, title: "Giao diện", desc: "Chuyển sáng/tối từ thanh công cụ.", value: "Tùy chọn" },
-  { icon: ShieldCheck, title: "Bảo mật", desc: "Đăng nhập và dữ liệu riêng theo từng tài khoản qua Supabase RLS.", value: "Bật" }
+  { icon: Smartphone, title: "PWA", value: "Hoạt động" },
+  { icon: Moon, title: "Giao diện", value: "Tùy chọn" },
+  { icon: ShieldCheck, title: "Bảo mật", value: "Bật" }
 ];
 
 type SearchParams = Promise<{ error?: string; message?: string }>;
@@ -27,7 +27,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Sea
 
   return (
     <div className="fin-page-shell mx-auto max-w-[900px] px-4 py-6 md:px-6 lg:px-8 lg:py-8">
-      <div><p className="text-sm font-semibold text-[var(--primary)]">Tài khoản & hệ thống</p><h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">Cài đặt</h1><p className="mt-2 text-sm text-[var(--muted-foreground)]">Thu, chi, chuyển tiền, danh mục, tài khoản và tùy chọn của Finzaro {APP_VERSION_LABEL}.</p></div>
+      <div><p className="text-sm font-semibold text-[var(--primary)]">Tài khoản & hệ thống</p><h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">Cài đặt</h1></div>
       <AuthMessage error={params.error} message={params.message} />
 
       <div className="mt-6 grid gap-4 md:grid-cols-2">
@@ -53,12 +53,12 @@ export default async function SettingsPage({ searchParams }: { searchParams: Sea
         </Card>
       </div>
 
-      <Card className="mt-4"><CardContent className="flex flex-wrap items-center justify-between gap-4 p-5 sm:p-6"><div><p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--primary)]">Current release</p><h2 className="mt-1 text-lg font-black">Finzaro {APP_VERSION_LABEL} · {APP_RELEASE_NAME}</h2><p className="mt-1 text-sm text-[var(--muted-foreground)]">Version được quản lý tập trung trong lib/app-version.ts và hiển thị trực tiếp trong app.</p></div><span className="rounded-full bg-emerald-500/10 px-3 py-1.5 text-xs font-black text-emerald-600 dark:text-emerald-400">{APP_VERSION_LABEL}</span></CardContent></Card>
+      <Card className="mt-4"><CardContent className="flex flex-wrap items-center justify-between gap-4 p-5 sm:p-6"><div><p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--primary)]">Current release</p><h2 className="mt-1 text-lg font-black">Finzaro {APP_VERSION_LABEL} · {APP_RELEASE_NAME}</h2></div><span className="rounded-full bg-emerald-500/10 px-3 py-1.5 text-xs font-black text-emerald-600 dark:text-emerald-400">{APP_VERSION_LABEL}</span></CardContent></Card>
 
       <div className="mt-4"><DatabaseStatus /></div>
       <Card className="mt-4"><CardContent className="flex flex-wrap gap-3 p-5"><a href="/categories" className="fin-secondary-btn">Quản lý danh mục</a><a href="/accounts" className="fin-secondary-btn">Tài khoản & ví</a></CardContent></Card>
 
-      <Card className="mt-4"><CardContent className="divide-y divide-[var(--border)] p-0">{sections.map(({ icon: Icon, title, desc, value }) => <div key={title} className="flex items-start gap-4 p-5 sm:p-6"><div className="grid size-10 shrink-0 place-items-center rounded-xl bg-[var(--muted)] text-[var(--primary)]"><Icon className="size-4.5" /></div><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center justify-between gap-2"><h2 className="font-bold">{title}</h2><span className="rounded-full bg-[var(--muted)] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-[var(--muted-foreground)]">{value}</span></div><p className="mt-1.5 text-sm leading-6 text-[var(--muted-foreground)]">{desc}</p></div></div>)}</CardContent></Card>
+      <Card className="mt-4"><CardContent className="divide-y divide-[var(--border)] p-0">{sections.map(({ icon: Icon, title, value }) => <div key={title} className="flex items-start gap-4 p-5 sm:p-6"><div className="grid size-10 shrink-0 place-items-center rounded-xl bg-[var(--muted)] text-[var(--primary)]"><Icon className="size-4.5" /></div><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center justify-between gap-2"><h2 className="font-bold">{title}</h2><span className="rounded-full bg-[var(--muted)] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-[var(--muted-foreground)]">{value}</span></div></div></div>)}</CardContent></Card>
     </div>
   );
 }

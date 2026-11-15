@@ -201,3 +201,92 @@ export async function reorderCategoriesAction(categoryType: CategoryType, ordere
   revalidatePath("/transactions");
   return { ok: true };
 }
+
+
+// V4.5.2: category editor mutations return structured results instead of redirects,
+// so a modal can update only the affected card without a page navigation.
+export type InlineCategoryInput = {
+  id?: string;
+  category_type: CategoryType;
+  name: string;
+  icon_name: string;
+  icon_color: string;
+  parent_id: string | null;
+};
+export type InlineCategoryResult =
+  | { ok: true; category: import("@/features/categories/data").CategoryRow }
+  | { ok: false; error: string };
+
+export async function saveCategoryInlineAction(input: InlineCategoryInput): Promise<InlineCategoryResult> {
+  try {
+    const name = input.name.trim();
+    const parentId = input.parent_id || null;
+    if (!isCategoryType(input.category_type)) throw new Error("Loại danh mục không hợp lệ.");
+    if (name.length < 1 || name.length > 80) throw new Error("Tên danh mục phải từ 1 đến 80 ký tự.");
+    if (!isCategoryIconName(input.icon_name)) throw new Error("Icon không hợp lệ.");
+    if (!isCategoryIconColor(input.icon_color)) throw new Error("Màu icon không hợp lệ.");
+    if (parentId && parentId === input.id) throw new Error("Danh mục không thể là danh mục cha của chính nó.");
+
+    const { supabase, userId } = await requireUser();
+    if (input.id) {
+      const { data: existing, error: existingError } = await supabase.from("categories")
+        .select("id, category_type").eq("id", input.id).eq("user_id", userId).maybeSingle();
+      if (existingError || !existing || existing.category_type !== input.category_type) throw new Error("Danh mục không hợp lệ hoặc không thuộc tài khoản.");
+    }
+    if (parentId) {
+      const { data: parent, error } = await supabase.from("categories")
+        .select("id, category_type, is_archived, parent_id").eq("id", parentId).eq("user_id", userId).maybeSingle();
+      if (error || !parent || parent.is_archived || parent.category_type !== input.category_type)
+        throw new Error("Danh mục cha không hợp lệ.");
+      if (parent.parent_id === input.id) throw new Error("Không thể tạo vòng lặp danh mục cha/con.");
+    }
+    const fields = { name, icon_name: input.icon_name, icon_color: input.icon_color, parent_id: parentId };
+    let saved;
+    if (input.id) {
+      const result = await supabase.from("categories").update(fields)
+        .eq("id", input.id).eq("user_id", userId).eq("category_type", input.category_type)
+        .select("id,user_id,name,category_type,parent_id,icon_name,icon_color,system_key,is_system,is_archived,sort_order,created_at,updated_at").maybeSingle();
+      if (result.error || !result.data) throw new Error(safeMessage(result.error, "Không thể cập nhật danh mục."));
+      saved = result.data;
+    } else {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Database type generator omits legacy category inserts.
+      const result = await (supabase as any).from("categories")
+        .insert({ ...fields, user_id: userId, category_type: input.category_type })
+        .select("id,user_id,name,category_type,parent_id,icon_name,icon_color,system_key,is_system,is_archived,sort_order,created_at,updated_at").single();
+      if (result.error || !result.data) throw new Error(safeMessage(result.error, "Không thể tạo danh mục."));
+      saved = result.data;
+    }
+    revalidatePath("/categories");
+    revalidatePath("/transactions");
+    revalidatePath("/overview");
+    revalidatePath("/reports");
+    return { ok: true, category: saved as import("@/features/categories/data").CategoryRow };
+  } catch (error) {
+    return { ok: false, error: safeMessage(error, error instanceof Error ? error.message : "Không thể lưu danh mục.") };
+  }
+}
+
+export async function archiveCategoryInlineAction(id: string, archived: boolean): Promise<InlineCategoryResult> {
+  try {
+    const { supabase, userId } = await requireUser();
+    if (archived) {
+      const { count, error } = await supabase.from("categories").select("id", { count: "exact", head: true })
+        .eq("user_id", userId).eq("parent_id", id).eq("is_archived", false);
+      if (error) throw error;
+      if ((count ?? 0) > 0) throw new Error("Hãy lưu trữ danh mục con trước.");
+    }
+    const { data, error } = await supabase.from("categories").update({ is_archived: archived })
+      .eq("id", id).eq("user_id", userId)
+      .select("id,user_id,name,category_type,parent_id,icon_name,icon_color,system_key,is_system,is_archived,sort_order,created_at,updated_at").maybeSingle();
+    if (error || !data) throw new Error(error?.message?.includes("Pause recurring rules")
+      ? "Danh mục đang được dùng bởi lịch định kỳ. Hãy tạm dừng lịch trước khi lưu trữ."
+      : safeMessage(error, "Không thể thay đổi trạng thái danh mục."));
+    revalidatePath("/categories");
+    revalidatePath("/transactions");
+    revalidatePath("/overview");
+    revalidatePath("/reports");
+    return { ok: true, category: data as import("@/features/categories/data").CategoryRow };
+  } catch (error) {
+    return { ok: false, error: safeMessage(error, error instanceof Error ? error.message : "Không thể thay đổi trạng thái.") };
+  }
+}

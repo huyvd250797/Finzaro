@@ -8,8 +8,8 @@ const source = (name) => readFileSync(join(root, name), "utf8");
 const css = source("app/globals.css");
 
 test("V4.0.1 hotfix preserves modules and does not alter accounting actions", () => {
-  assert.equal(JSON.parse(source("package.json")).version, "4.5.1");
-  assert.match(source("lib/app-version.ts"), /APP_VERSION = "4\.5\.1"/);
+  assert.equal(JSON.parse(source("package.json")).version, "4.5.3");
+  assert.match(source("lib/app-version.ts"), /APP_VERSION = "4\.5\.3"/);
   assert.deepEqual(readdirSync(join(root, "app/(dashboard)"), { withFileTypes: true }).filter((item) => item.isDirectory()).map((item) => item.name).sort(), ["accounts", "categories", "overview", "reports", "settings", "transactions"]);
   for (const action of ["create_simple_transaction_v120", "update_simple_transaction_v120", "copy_simple_transaction_batch_v320"]) {
     assert.ok(source("features/transactions/actions.ts").includes(action));
@@ -56,10 +56,10 @@ test("Copy, Account, Category and Calculator actions also anchor outside scroll"
   const actions = source("components/sheet-form-actions.tsx");
   assert.match(copy, /createPortal\(actions, footerSlot\.element\)/);
   assert.match(copy, /form=\{formId\}/);
-  for (const v of [account, category]) {
-    assert.match(v, /<SheetFormActions/);
-    assert.match(v, /<PendingSubmitButton form=\{formId\}/);
-  }
+  assert.match(account, /<SheetFormActions/);
+  assert.match(account, /<PendingSubmitButton form=\{formId\}/);
+  assert.match(category, /<CategoryManagerGrid/);
+  assert.match(source("components/category-manager-grid.tsx"), /<BottomSheet/);
   assert.match(actions, /createPortal\(actions, footer\.element\)/);
   assert.match(calc, /<CalculatorFinishAction/);
   assert.match(calc, /createPortal\(action, footer\.element\)/);

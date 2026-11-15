@@ -27,9 +27,9 @@ const css = read("app/globals.css");
 
 test("V4.5.0 metadata is synchronized and full deploy gate remains intact", () => {
   const pkg = JSON.parse(read("package.json"));
-  assert.equal(pkg.version, "4.5.1");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.5\.1"/);
-  assert.match(read("lib/app-version.ts"), /Mobile Finance UX & Reporting Layout|Dashboard Period Comparison/);
+  assert.equal(pkg.version, "4.5.3");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.5\.3"/);
+  assert.match(read("lib/app-version.ts"), /Mobile Finance UX & Reporting Layout|Dashboard Period Comparison|Category Management UX Polish|Financial Comparison Logic Fix/);
   assert.equal(pkg.scripts.check, "npm run lint && npm run typecheck && npm run test && npm run build");
   assert.equal(JSON.parse(read("vercel.json")).buildCommand, "npm run check");
   assert.deepEqual(readdirSync(join(root, "app/(dashboard)"), { withFileTypes: true })

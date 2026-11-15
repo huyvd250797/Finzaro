@@ -94,7 +94,7 @@ function Loading({ height = "h-36" }: { height?: string }) { return <div aria-la
 
 export default function OverviewPage() {
   return <div className="fin-page-shell fin-dashboard-page mx-auto max-w-[1160px] space-y-4 px-3 py-4 sm:px-5 lg:px-8 lg:py-6">
-    <header className="flex flex-wrap items-center justify-between gap-3"><div><p className="fin-section-eyebrow">FINZARO / PERSONAL FINANCE</p><h1 className="mt-1 text-2xl font-extrabold tracking-tight sm:text-3xl">Tổng quan tài chính</h1><p className="mt-1 text-xs text-[var(--muted-foreground)]">Theo dõi số dư, thu chi và hoạt động gần nhất.</p></div>
+    <header className="flex flex-wrap items-center justify-between gap-3"><div><p className="fin-section-eyebrow">FINZARO / PERSONAL FINANCE</p><h1 className="mt-1 text-2xl font-extrabold tracking-tight sm:text-3xl">Tổng quan tài chính</h1></div>
       <Link className="fin-primary-btn !min-h-10 !px-3 !text-xs" href="/transactions?new=expense"><Plus className="size-4"/> Thêm giao dịch</Link></header>
     <Suspense fallback={<><Loading height="h-48"/><div className="grid gap-3 lg:grid-cols-3"><Loading height="h-52"/><Loading height="h-52"/><Loading height="h-52"/></div><Loading height="h-64"/></>}><OverviewDashboard/></Suspense>
     <Suspense fallback={<Loading height="h-48"/>}><OverviewRecent/></Suspense>

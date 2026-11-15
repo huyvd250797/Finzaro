@@ -1279,3 +1279,17 @@ body:has(.fin-sheet-backdrop[data-fin-dialog="true"]) .fin-mobile-taskbar,
   .fin-statement-summary-table th:nth-child(3), .fin-statement-summary-table td:nth-child(3) { width: 43%; }
   .fin-statement-summary-table th:nth-child(4), .fin-statement-summary-table td:nth-child(4) { width: 15%; }
 }
+
+/* V4.5.2 — compact category editor / iPhone-style hold-to-arrange. */
+@keyframes fin-category-wiggle { 0%,100% { rotate: -1deg; } 50% { rotate: 1deg; } }
+.fin-category-sort-mode .fin-category-edit-tile { animation: fin-category-wiggle .26s ease-in-out infinite; }
+.fin-category-sort-mode .fin-category-edit-tile:nth-child(2n) { animation-delay: -.13s; animation-direction: reverse; }
+.fin-category-sort-mode .fin-category-tile-dragging { animation: none; scale: 1.055; opacity: .92; z-index: 6; }
+.fin-category-edit-tile { cursor: pointer; -webkit-touch-callout: none; }
+.fin-category-edit-tile:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) {
+  .fin-category-sort-mode .fin-category-edit-tile { animation: none !important; }
+  .fin-category-sort-mode .fin-category-tile-dragging { scale: 1; }
+}
+
+.fin-category-manager-search[type="search"] { box-sizing: border-box; padding-inline-start: 2.6rem !important; padding-inline-end: 2.5rem !important; }

@@ -70,12 +70,27 @@ export function parseDashboardPrevious(raw: unknown, today: string, currency: st
   return parsed;
 }
 
-/** A zero baseline cannot yield a meaningful percentage increase; never show misleading +100%. */
-export function comparePeriodTotals(current: number, previous: number) {
+/**
+ * Comparison is directional financial impact, not a raw change in transaction volume.
+ * - Income growing is beneficial (+green); income falling is unfavorable (-red).
+ * - Expense growing is unfavorable (-red); expense falling is beneficial (+green).
+ *
+ * When the previous period is zero, ordinary percentage growth is mathematically
+ * undefined. Finzaro explicitly uses +/-100% as a UI convention for a new
+ * nonzero amount, and 0% when both periods are zero. Do not interpret this as
+ * a conventional growth rate; see the comparison tooltip in the Dashboard.
+ */
+export function comparePeriodTotals(current: number, previous: number, flow: CompareFlow) {
   if (![current, previous].every((value) => Number.isSafeInteger(value) && value >= 0))
     throw new Error("Invalid financial period totals");
-  const difference = current - previous;
+  if (flow !== "income" && flow !== "expense") throw new Error("Invalid financial comparison flow");
+
+  const financialDirection = flow === "expense" ? -1 : 1;
+  const rawChange = current - previous;
+  const difference = rawChange === 0 ? 0 : rawChange * financialDirection;
   if (!Number.isSafeInteger(difference)) throw new Error("Financial difference exceeds safe integer range");
-  const percent = previous === 0 ? (current === 0 ? 0 : null) : difference / previous * 100;
+  const percent = previous === 0
+    ? (current === 0 ? 0 : 100 * financialDirection)
+    : (difference / previous) * 100;
   return { difference, percent, direction: difference > 0 ? "positive" : difference < 0 ? "negative" : "neutral" } as const;
 }
