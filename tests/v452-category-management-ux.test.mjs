@@ -2,7 +2,6 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { createRequire } from "node:module";
 
 const root = resolve(import.meta.dirname, "..");
 const read = (path) => readFileSync(join(root, path), "utf8");
@@ -12,9 +11,9 @@ const action = read("features/categories/actions.ts");
 const css = read("app/globals.css");
 const pkg = JSON.parse(read("package.json"));
 
-test("V4.5.3 version is consistent; strict release gate and six modules preserved", () => {
-  assert.equal(pkg.version, "4.5.3");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.5\.3"/);
+test("V4.5.4 version is consistent; strict release gate and six modules preserved", () => {
+  assert.equal(pkg.version, "4.5.4");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.5\.4"/);
   assert.equal(pkg.scripts.check, "npm run lint && npm run typecheck && npm run test && npm run build");
   assert.deepEqual(readdirSync(join(root, "app/(dashboard)"), { withFileTypes: true })
     .filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort(),
@@ -97,7 +96,7 @@ test("Unnecessary instructional descriptions are removed; safety-critical financ
   assert.doesNotMatch(grid, /Giữ và kéo để sắp xếp · hoặc dùng mũi tên/);
 });
 
-test("No V4.5.3 SQL migration; transaction accounting and past period comparison unchanged", () => {
+test("No V4.5.4 SQL migration; transaction accounting and past period comparison unchanged", () => {
   assert.equal(readdirSync(join(root, "supabase/migrations")).some((filename) => /v452/i.test(filename)), false);
   assert.match(read("features/transactions/actions.ts"), /create_simple_transaction_v120/);
   assert.match(read("features/dashboard/period-comparison.ts"), /comparePeriodTotals/);

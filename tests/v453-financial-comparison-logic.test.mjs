@@ -28,11 +28,11 @@ const expect = (current, previous, flow, difference, percent, direction) => {
   assert.deepEqual(comparePeriodTotals(current, previous, flow), { difference, percent, direction });
 };
 
-test("V4.5.3 release is versioned, retains category UX and strict Vercel release gate", () => {
+test("V4.5.4 release is versioned, retains category UX and strict Vercel release gate", () => {
   const pkg = JSON.parse(read("package.json"));
-  assert.equal(pkg.version, "4.5.3");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.5\.3"/);
-  assert.match(read("lib/app-version.ts"), /Financial Comparison Logic Fix/);
+  assert.equal(pkg.version, "4.5.4");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.5\.4"/);
+  assert.match(read("lib/app-version.ts"), /Category Drag Lint Deploy Hotfix/);
   assert.equal(pkg.scripts.check, "npm run lint && npm run typecheck && npm run test && npm run build");
   assert.match(read("components/category-manager-grid.tsx"), /420\)/);
   assert.deepEqual(readdirSync(join(root, "app/(dashboard)"), { withFileTypes: true })
@@ -104,7 +104,7 @@ test("All three dashboard cards pass active Chi/Thu type to shared comparison an
   assert.equal(new Intl.NumberFormat("vi-VN", { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(33.333333333), "33,33");
 });
 
-test("V4.5.3 reuses existing read-only previous period RPC, no SQL migration or account mutation", () => {
+test("V4.5.4 reuses existing read-only previous period RPC, no SQL migration or account mutation", () => {
   assert.match(read("features/dashboard/snapshot.ts"), /dashboard_period_comparison_v451/);
   assert.match(read("features/dashboard/snapshot.ts"), /previousFromLedger/);
   assert.match(source, /financialDirection = flow === "expense" \? -1 : 1/);

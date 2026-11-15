@@ -1,3 +1,10 @@
+## V4.5.4 — Category Drag Lint Deploy Hotfix (2026-11-15)
+
+- Sửa lỗi deploy ESLint `react-hooks/immutability` tại `components/category-manager-grid.tsx`: thay `scroller.scrollTop += delta` bằng API DOM `scroller.scrollBy(0, delta)` trong handler kéo thả; giữ nguyên tự cuộn vùng danh mục.
+- Sửa hai cảnh báo: sử dụng tham số `type` để xác thực loại giao dịch trong `parseQuickEntryState`, xóa import `createRequire` không dùng trong test danh mục.
+- Giữ nguyên các cải tiến Quản lý danh mục V4.5.2 và công thức so sánh Thu/Chi V4.5.3. Không sửa SQL, không cần migration.
+- Đồng bộ phiên bản 4.5.4, thêm test hồi quy. Giữ strict release gate đầy đủ, không tắt ESLint hoặc TypeScript.
+
 ## V4.5.3 — Financial Comparison Logic Fix (2026-11-15)
 
 - **Chi tiêu:** Chênh lệch = kỳ trước − kỳ hiện tại; chi nhiều hơn hiển thị âm/đỏ, chi ít hơn hiển thị dương/xanh ở cả Hôm nay, Tháng này và Năm nay.

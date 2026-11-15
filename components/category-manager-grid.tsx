@@ -183,7 +183,7 @@ export function CategoryManagerGrid({ categories, initialType = "expense", initi
     const edge = 64;
     const delta = clientY < top + edge ? -18 : clientY > bottom - edge ? 18 : 0;
     if (!delta) return;
-    if (scroller) scroller.scrollTop += delta;
+    if (scroller) scroller.scrollBy(0, delta);
     else window.scrollBy(0, delta);
   }
   function onPointerMove(event: ReactPointerEvent<HTMLButtonElement>) {

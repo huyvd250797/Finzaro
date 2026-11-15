@@ -44,8 +44,9 @@ export function cleanQuickEntryDraft(value: unknown): QuickEntryDraft | null {
     notes: asString(draft.notes, 500),
   };
 }
-export function parseQuickEntryState(value: unknown, _type: TransactionType): QuickEntryState {
+export function parseQuickEntryState(value: unknown, type: TransactionType): QuickEntryState {
   const empty = emptyQuickEntryState();
+  if (!TYPES.includes(type)) return empty;
   if (!value || typeof value !== "object" || Array.isArray(value)) return empty;
   const raw = value as Record<string, unknown>;
   const pref = raw.preference && typeof raw.preference === "object" && !Array.isArray(raw.preference)

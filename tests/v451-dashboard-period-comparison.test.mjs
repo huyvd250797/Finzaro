@@ -29,7 +29,7 @@ const tx = (id, date, type, amount, purpose = "standard", currency = "VND") => (
 
 test("V4.5.1 release retains strict deploy gates and six modules", () => {
   const pkg = JSON.parse(read("package.json"));
-  assert.equal(pkg.version, "4.5.3");
+  assert.equal(pkg.version, "4.5.4");
   assert.equal(pkg.scripts.check, "npm run lint && npm run typecheck && npm run test && npm run build");
   assert.deepEqual(readdirSync(join(root, "app/(dashboard)"), { withFileTypes: true }).filter((item) => item.isDirectory()).map((item) => item.name).sort(), ["accounts", "categories", "overview", "reports", "settings", "transactions"]);
 });
@@ -75,7 +75,7 @@ test("V4.5.1 computes -10 million (-33.33%) and sign-independent green/red chang
   assert.equal(comparison.comparePeriodTotals(20, 20, "income").direction, "neutral");
 });
 
-test("V4.5.3 zero-baseline convention shows an explicitly scoped ±100%", () => {
+test("V4.5.4 zero-baseline convention shows an explicitly scoped ±100%", () => {
   assert.deepEqual(comparison.comparePeriodTotals(20_000_000, 0, "income"), { difference: 20_000_000, percent: 100, direction: "positive" });
   assert.deepEqual(comparison.comparePeriodTotals(25_000, 0, "expense"), { difference: -25_000, percent: -100, direction: "negative" });
   assert.deepEqual(comparison.comparePeriodTotals(0, 0, "expense"), { difference: 0, percent: 0, direction: "neutral" });
