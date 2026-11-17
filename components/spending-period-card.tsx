@@ -49,11 +49,13 @@ export function SpendingPeriodCard({ period, summary, incomeSummary, previous, t
     : (isIncome ? "Tổng thu nhập năm trước" : "Tổng chi tiêu năm trước");
   // Month/year are ongoing periods versus a COMPLETED baseline: "Thấp hơn/Vượt"
   // avoids claiming that spending or income has definitively fallen for the full period.
-  const amountDelta = change.difference > 0
-    ? period === "today" ? `Tăng ${isIncome ? "thu" : "chi"} ${money(change.difference)}` : `${isIncome ? "Thu" : "Chi"} vượt ${money(change.difference)}`
+  const changePrefix = change.difference > 0
+    ? period === "today" ? `Tăng ${isIncome ? "thu" : "chi"}` : `${isIncome ? "Thu" : "Chi"} vượt`
     : change.difference < 0
-      ? period === "today" ? `Giảm ${isIncome ? "thu" : "chi"} ${money(Math.abs(change.difference))}` : `${isIncome ? "Thu" : "Chi"} thấp hơn ${money(Math.abs(change.difference))}`
+      ? period === "today" ? `Giảm ${isIncome ? "thu" : "chi"}` : `${isIncome ? "Thu" : "Chi"} thấp hơn`
       : previousAmount === 0 ? "Không phát sinh ở cả hai kỳ" : "Không đổi";
+  const amountDelta = change.difference !== 0
+    ? `${changePrefix} ${money(Math.abs(change.difference))}` : changePrefix;
   const percentDelta = change.percent === null ? "Mới phát sinh"
     : `${change.percent > 0 ? "+" : change.percent < 0 ? "−" : ""}${percentFormatter.format(Math.abs(change.percent))}%`;
   const changeTone = change.direction === "positive" ? "text-[var(--fin-income)]" : change.direction === "negative" ? "text-[var(--fin-expense)]" : "text-[var(--muted-foreground)]";
@@ -84,9 +86,18 @@ export function SpendingPeriodCard({ period, summary, incomeSummary, previous, t
       <p className={`min-w-0 flex-1 break-words text-[clamp(1.35rem,4.8vw,2rem)] font-extrabold tracking-tight tabular-nums ${isIncome ? "text-[var(--fin-income)]" : "text-[var(--fin-expense)]"}`}>{money(current.amount)}</p>
       <div className="min-w-0 max-w-[49%] shrink-0 text-right" aria-label={`${compareLabel}: ${amountDelta}, ${percentDelta}`}>
         <p className="text-[10px] font-medium leading-tight text-[var(--muted-foreground)] sm:text-xs">{compareLabel}</p>
-        <p className={`mt-0.5 inline-flex max-w-full items-start justify-end gap-1 break-words text-[clamp(.625rem,2.3vw,.75rem)] font-semibold leading-snug tabular-nums ${changeTone}`}>
-          <ChangeIcon className="mt-0.5 size-4 shrink-0" strokeWidth={2.25} aria-hidden="true"/>
-          <span>{amountDelta} {change.percent === null ? `· ${percentDelta}` : `(${percentDelta})`}</span>
+        {/* Keep the icon in the SAME inline phrase as the direction label.
+            A flex row here separates the icon when the amount wraps on narrow iPhones. */}
+        <p className={`mt-0.5 break-words text-right text-[clamp(.625rem,2.3vw,.75rem)] font-semibold leading-snug tabular-nums ${changeTone}`}>
+          {change.difference !== 0 ? <>
+            <span className="inline-flex items-center gap-[2px] whitespace-nowrap align-middle">
+              <ChangeIcon className="size-[1em] shrink-0" strokeWidth={2.25} aria-hidden="true"/>
+              <span>{changePrefix}</span>
+            </span>{" "}<span className="whitespace-nowrap">{money(Math.abs(change.difference))}</span>
+          </> : <>
+            <ChangeIcon className="mr-[2px] inline-block size-[1em] align-[-0.125em]" strokeWidth={2.25} aria-hidden="true"/>
+            {amountDelta}
+          </>}{" "}{change.percent === null ? `· ${percentDelta}` : `(${percentDelta})`}
         </p>
       </div>
     </div>

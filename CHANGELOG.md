@@ -1,3 +1,8 @@
+## V4.5.8 — Comparison Icon Alignment Fix (2026-11-17)
+- Dashboard: chỉnh bố cục dòng chênh lệch từ `inline-flex` tách icon và chuỗi dài sang văn bản inline. Nhóm icon và nhãn chiều biến động (`Tăng chi` / `Giảm chi` / `Tăng thu` / `Giảm thu` hoặc `Chi/Thu vượt/thấp hơn`) bằng `inline-flex` có khoảng cách đúng **2px**, `whitespace-nowrap` để luôn cùng một dòng; phần tiền và tỷ lệ có thể xuống dòng tự nhiên.
+- Icon `TrendingUp`/`TrendingDown` giữ hình gấp khúc và màu theo tác động tài chính; text vẫn căn phải, icon ở sát nhãn không bị trôi sang khoảng trống của card khi màn hình hẹp.
+- Giữ nguyên dữ liệu/công thức, UI các module khác và RPC `dashboard_period_comparison_v457`. **Không cần migration mới** cho V4.5.8.
+
 ## V4.5.7 — Full Previous Period Comparison (2026-11-17)
 - Dashboard đối chiếu **toàn bộ ngày/tháng/năm trước**, không còn so sánh cùng ngày lũy kế tháng/năm trước. Kỳ hiện tại vẫn tính đến hôm nay.
 - Icon chênh lệch chuyển thành `TrendingUp`/`TrendingDown` gấp khúc giống hình, màu dựa trên tác động tài chính; zero dùng `Minus`.
