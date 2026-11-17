@@ -43,8 +43,8 @@ const accounts = [{ id: "wallet", account_type: "bank", currency_code: "VND", is
 
 test("V4.5.0 release is versioned, preserves strict deployment gate and six modules", () => {
   const pkg = JSON.parse(read("package.json"));
-  assert.equal(pkg.version, "4.5.4");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.5\.4"/);
+  assert.equal(pkg.version, "4.5.5");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.5\.5"/);
   assert.equal(pkg.scripts.check, "npm run lint && npm run typecheck && npm run test && npm run build");
   assert.deepEqual(readdirSync(join(root, "app/(dashboard)"), { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name).sort(), ["accounts", "categories", "overview", "reports", "settings", "transactions"]);
 });
@@ -62,14 +62,14 @@ test("V4.5.0 separate income and expense day/month/year correctly, excluding tra
     tx("usd", "2026-11-14", "income", 900, { currency: "USD" }),
   ];
   const actual = dashboard.dashboardFromLedger(rows, accounts, "2026-11-14", "VND", 0);
-  assert.deepEqual([actual.incoming.today.amount, actual.incoming.month.amount, actual.incoming.year.amount], [1000, 1900, 2100]);
+  assert.deepEqual([actual.incoming.today.amount, actual.incoming.month.amount, actual.incoming.year.amount], [1000, 1500, 1700]);
   assert.deepEqual([actual.spending.today.amount, actual.spending.month.amount, actual.spending.year.amount], [150, 200, 200]);
-  assert.deepEqual([actual.incoming.today.count, actual.incoming.month.count, actual.incoming.year.count], [1, 3, 4]);
+  assert.deepEqual([actual.incoming.today.count, actual.incoming.month.count, actual.incoming.year.count], [1, 2, 3]);
   assert.equal(actual.monthTotals.income, actual.incoming.month.amount);
   assert.equal(actual.monthTotals.expense, actual.spending.month.amount);
   assert.equal(actual.incoming.today.recent[0].id, "salary");
   assert.equal(actual.spending.today.recent[0].id, "lunch");
-  assert.equal(actual.incoming.month.categories.find((item) => item.id === "salary").amount, 1400);
+  assert.equal(actual.incoming.month.categories.find((item) => item.id === "salary").amount, 1000);
   assert.equal(actual.daily.at(-1).income, 1000);
 });
 

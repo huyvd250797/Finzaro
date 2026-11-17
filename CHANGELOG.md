@@ -1,3 +1,12 @@
+## V4.5.5 — Financial Comparison Clarity Fix (2026-11-17)
+
+- Công thức chênh lệch chuẩn `kỳ hiện tại - kỳ trước` cho Thu và Chi; dấu +/- thể hiện biến động, màu sắc chỉ phản ánh tác động tài chính. Hiển thị “Giảm chi 1.155.000 đ (−96,25%)” nếu 45.000 đ so với 1.200.000 đ.
+- Kỳ trước 0: hiển thị “Mới phát sinh” thay vì phần trăm giả định; cả hai bằng 0: “Không phát sinh ở cả hai kỳ”.
+- Đối chiếu ngày với **toàn bộ ngày hôm qua** (phương án B); tháng/năm đang diễn ra đối chiếu **từ đầu kỳ đến cùng ngày trong kỳ trước**, có xử lý tháng ngắn/năm nhuận. Nhãn và liên kết tra cứu giao dịch kỳ trước rõ ràng.
+- Migration V4.5.5 cập nhật RPC `dashboard_snapshot_v450` để loại bỏ giao dịch tương lai khỏi Thu/Chi hiện tại và thêm RPC xác thực read-only `dashboard_period_comparison_v455` trả cả tổng Thu/Chi của kỳ hiện tại và kỳ so sánh. Dashboard đối soát 6 tổng hiện tại để tránh hiển thị số liệu sai.
+- RPC v455 chưa triển khai: fallback ledger được dùng để tính đúng kỳ; lỗi DB thật vẫn bị báo thay vì âm thầm thay bằng 0. Không sửa/xóa dữ liệu giao dịch hay tài khoản.
+- Số chênh lệch 1.254.000 đ từ trường hợp thực tế chưa thể xác minh nếu không có dữ liệu giao dịch của người dùng; cung cấp truy vấn đối soát read-only trong tài liệu triển khai.
+
 ## V4.5.4 — Category Drag Lint Deploy Hotfix (2026-11-15)
 
 - Sửa lỗi deploy ESLint `react-hooks/immutability` tại `components/category-manager-grid.tsx`: thay `scroller.scrollTop += delta` bằng API DOM `scroller.scrollBy(0, delta)` trong handler kéo thả; giữ nguyên tự cuộn vùng danh mục.

@@ -27,9 +27,9 @@ const css = read("app/globals.css");
 
 test("V4.5.0 metadata is synchronized and full deploy gate remains intact", () => {
   const pkg = JSON.parse(read("package.json"));
-  assert.equal(pkg.version, "4.5.4");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.5\.4"/);
-  assert.match(read("lib/app-version.ts"), /Mobile Finance UX & Reporting Layout|Dashboard Period Comparison|Category Management UX Polish|Financial Comparison Logic Fix|Category Drag Lint Deploy Hotfix/);
+  assert.equal(pkg.version, "4.5.5");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.5\.5"/);
+  assert.match(read("lib/app-version.ts"), /Mobile Finance UX & Reporting Layout|Dashboard Period Comparison|Category Management UX Polish|Financial Comparison Logic Fix|Category Drag Lint Deploy Hotfix|Financial Comparison Clarity Fix/);
   assert.equal(pkg.scripts.check, "npm run lint && npm run typecheck && npm run test && npm run build");
   assert.equal(JSON.parse(read("vercel.json")).buildCommand, "npm run check");
   assert.deepEqual(readdirSync(join(root, "app/(dashboard)"), { withFileTypes: true })
@@ -118,7 +118,7 @@ test("V4.5.0 statement, export and print use one financial reconciliation policy
 });
 
 test("V4.5.0 keeps earlier migrations and adds the read-only dual-flow snapshot and retains Supabase RPC transactions", () => {
-  assert.equal(readdirSync(join(root, "supabase/migrations")).filter((name) => name.endsWith(".sql")).length, 28);
+  assert.equal(readdirSync(join(root, "supabase/migrations")).filter((name) => name.endsWith(".sql")).length, 29);
   assert.match(read("supabase/migrations/20261114120000_dashboard_income_expense_v450.sql"), /dashboard_snapshot_v450/);
   const code = read("features/transactions/actions.ts");
   assert.match(code, /create_simple_transaction_v120/);

@@ -28,11 +28,11 @@ const expect = (current, previous, flow, difference, percent, direction) => {
   assert.deepEqual(comparePeriodTotals(current, previous, flow), { difference, percent, direction });
 };
 
-test("V4.5.4 release is versioned, retains category UX and strict Vercel release gate", () => {
+test("V4.5.5 release is versioned, retains category UX and strict Vercel release gate", () => {
   const pkg = JSON.parse(read("package.json"));
-  assert.equal(pkg.version, "4.5.4");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.5\.4"/);
-  assert.match(read("lib/app-version.ts"), /Category Drag Lint Deploy Hotfix/);
+  assert.equal(pkg.version, "4.5.5");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.5\.5"/);
+  assert.match(read("lib/app-version.ts"), /Financial Comparison Clarity Fix/);
   assert.equal(pkg.scripts.check, "npm run lint && npm run typecheck && npm run test && npm run build");
   assert.match(read("components/category-manager-grid.tsx"), /420\)/);
   assert.deepEqual(readdirSync(join(root, "app/(dashboard)"), { withFileTypes: true })
@@ -40,20 +40,20 @@ test("V4.5.4 release is versioned, retains category UX and strict Vercel release
   ["accounts", "categories", "overview", "reports", "settings", "transactions"]);
 });
 
-test("Yesterday expense 0, today expense 25k is negative 25k and -100 percent by display convention", () => {
-  expect(25_000, 0, "expense", -25_000, -100, "negative");
+test("Yesterday expense 0, today expense 25k is +25k and undefined percentage", () => {
+  expect(25_000, 0, "expense", 25_000, null, "negative");
 });
 
 test("Expense rising over a nonzero baseline is red with an adverse percentage", () => {
-  expect(1_500_000, 1_000_000, "expense", -500_000, -50, "negative");
+  expect(1_500_000, 1_000_000, "expense", 500_000, 50, "negative");
 });
 
-test("Expense falling versus prior month is positive green", () => {
-  expect(7_000_000, 8_000_000, "expense", 1_000_000, 12.5, "positive");
+test("Expense falling versus prior month is negative delta but green", () => {
+  expect(7_000_000, 8_000_000, "expense", -1_000_000, -12.5, "positive");
 });
 
-test("Expense stops entirely: previous 25k, current zero -> +25k (+100%)", () => {
-  expect(0, 25_000, "expense", 25_000, 100, "positive");
+test("Expense stops entirely: previous 25k, current zero -> -25k (-100%)", () => {
+  expect(0, 25_000, "expense", -25_000, -100, "positive");
 });
 
 test("Equal expenses normalize signed negative zero and show neutral color", () => {
@@ -68,9 +68,9 @@ test("Income decline follows conventional red sign and percentage", () => {
   assert.equal(actual.direction, "negative");
 });
 
-test("Income increase is green and a zero baseline uses +100 UI convention", () => {
+test("Income increase is green and zero baseline has no percentage", () => {
   expect(30_000_000, 20_000_000, "income", 10_000_000, 50, "positive");
-  expect(25_000, 0, "income", 25_000, 100, "positive");
+  expect(25_000, 0, "income", 25_000, null, "positive");
   expect(0, 25_000, "income", -25_000, -100, "negative");
 });
 
@@ -91,24 +91,24 @@ test("All three dashboard cards pass active Chi/Thu type to shared comparison an
   const card = read("components/spending-period-card.tsx");
   assert.match(card, /comparePeriodTotals\(current\.amount, previousAmount, flow\)/);
   assert.match(card, /previous\[flow\]\[period\]/);
-  assert.match(card, /So với hôm qua/);
-  assert.match(card, /So với tháng trước/);
-  assert.match(card, /So với năm trước/);
+  assert.match(card, /So với toàn bộ hôm qua/);
+  assert.match(card, /So với cùng kỳ tháng trước/);
+  assert.match(card, /So với cùng kỳ năm trước/);
   assert.match(card, /items-end justify-between/);
   assert.match(card, /max-w-\[49%\]/);
   assert.match(card, /change\.direction === "positive" \? "text-\[var\(--fin-income\)\]"/);
   assert.match(card, /change\.direction === "negative" \? "text-\[var\(--fin-expense\)\]"/);
-  assert.match(card, /100% là quy ước hiển thị/);
+  assert.match(card, /Mới phát sinh/);
   assert.match(card, /minimumFractionDigits: 0, maximumFractionDigits: 2/);
   assert.equal(new Intl.NumberFormat("vi-VN", { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(100), "100");
   assert.equal(new Intl.NumberFormat("vi-VN", { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(33.333333333), "33,33");
 });
 
-test("V4.5.4 reuses existing read-only previous period RPC, no SQL migration or account mutation", () => {
-  assert.match(read("features/dashboard/snapshot.ts"), /dashboard_period_comparison_v451/);
+test("V4.5.5 adds read-only migration with strict fallback and does not mutate accounts", () => {
+  assert.match(read("features/dashboard/snapshot.ts"), /dashboard_period_comparison_v455/);
   assert.match(read("features/dashboard/snapshot.ts"), /previousFromLedger/);
-  assert.match(source, /financialDirection = flow === "expense" \? -1 : 1/);
+  assert.match(source, /beneficialChange = difference \* \(flow === "expense" \? -1 : 1\)/);
   const sqlMigrations = readdirSync(join(root, "supabase/migrations"));
-  assert.equal(sqlMigrations.length, 28);
-  assert.equal(sqlMigrations.some((f) => /v453|453\./.test(f)), false);
+  assert.equal(sqlMigrations.length, 29);
+  assert.equal(sqlMigrations.some((f) => /financial_comparison_clarity_v455/.test(f)), true);
 });

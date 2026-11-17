@@ -64,12 +64,12 @@ test("V4.2.0 uses canonical standard flows across day/month/year cards and exclu
   assert.deepEqual([result.daily.at(-1).income, result.daily.at(-1).expense], [1000,150]);
 });
 
-test("V4.2.0 month/year cards include future-dated postings but today and historical position do not", () => {
+test("V4.2.0 month/year cards exclude future-dated postings like today; historical position remains correct", () => {
   const transactions = [tx("today", "2026-11-13", "expense", 20), tx("future", "2026-11-20", "expense", 30)];
   const result = snapshot.dashboardFromLedger(transactions, [account("a", 950)], "2026-11-13", "VND", 0);
   assert.equal(result.spending.today.amount, 20);
-  assert.equal(result.spending.month.amount, 50);
-  assert.equal(result.spending.year.amount, 50);
+  assert.equal(result.spending.month.amount, 20);
+  assert.equal(result.spending.year.amount, 20);
   assert.equal(result.closingBalance, 980);
 });
 
@@ -142,7 +142,7 @@ test("V4.2.0 user-scoped SQL RPC and index are present; no write into business t
 
 test("V4.2.0 performance instrumentation and safe fallbacks preserve release quality gate", () => {
   const pkg = JSON.parse(read("package.json"));
-  assert.equal(pkg.version, "4.5.4");
+  assert.equal(pkg.version, "4.5.5");
   assert.equal(pkg.scripts.check, "npm run lint && npm run typecheck && npm run test && npm run build");
   const loader = read("features/dashboard/snapshot.ts");
   assert.match(loader, /dashboard\.v450\.summary/);

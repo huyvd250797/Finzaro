@@ -4,7 +4,7 @@ import { loadReportLedger } from "@/features/reports/data";
 import { currentDateKey, currencyDigits, type TransactionView } from "@/features/transactions/data";
 import { standardFlowValue } from "@/features/transactions/financial-flow";
 import { measureServerOperation } from "@/lib/performance";
-import { comparisonRanges, parseDashboardPrevious, previousFromLedger, type DashboardPrevious } from "@/features/dashboard/period-comparison";
+import { comparisonRanges, parseDashboardComparison, previousFromLedger, type DashboardPrevious } from "@/features/dashboard/period-comparison";
 
 export type SpendingPeriod = "today" | "month" | "year";
 export type DashboardFlow = "income" | "expense";
@@ -17,7 +17,7 @@ export type DashboardSnapshot = {
   monthTotals: { income: number; expense: number; net: number };
   spending: Record<SpendingPeriod, SpendingSummary>;
   incoming: Record<SpendingPeriod, SpendingSummary>;
-  /** Hydrated by v451 comparison RPC or strict ledger fallback before Dashboard renders. */
+  /** Hydrated by v455 comparison RPC or strict ledger fallback before Dashboard renders. */
   previous: DashboardPrevious | null;
   daily: DailyFinancialRow[];
   /** Only cash, bank and e-wallet account positions are included; not a complete balance sheet. */
@@ -117,8 +117,7 @@ function standardExpense(tx: TransactionView, currency: string) {
 
 export function dashboardFromLedger(transactions: TransactionView[], accounts: Array<{ id: string; account_type: string; currency_code: string; is_archived: boolean; current_balance_minor: number }>, today: string, currency: string, digits: number): DashboardSnapshot {
   const periodFirst = { today, month: `${today.slice(0, 7)}-01`, year: `${today.slice(0, 4)}-01-01` };
-  const endMonth = new Date(Date.UTC(Number(today.slice(0,4)), Number(today.slice(5,7)), 0)).toISOString().slice(0,10);
-  const periodLast = { today, month: endMonth, year: `${today.slice(0,4)}-12-31` };
+  const periodLast = { today, month: today, year: today };
   const spending: DashboardSnapshot["spending"] = { today: emptySpend(), month: emptySpend(), year: emptySpend() };
   const incoming: DashboardSnapshot["incoming"] = { today: emptySpend(), month: emptySpend(), year: emptySpend() };
   const summaries: Record<DashboardFlow, Record<SpendingPeriod, SpendingSummary>> = { expense: spending, income: incoming };
@@ -138,7 +137,7 @@ export function dashboardFromLedger(transactions: TransactionView[], accounts: A
     const income = standardFlowValue(tx, currency, "income");
     const expense = standardExpense(tx, currency);
     const delta = tx.entries.filter((entry) => activeIds.has(entry.account_id) && entry.currency_code === currency).reduce((sum, entry) => sum + entry.amount_minor, 0);
-    if (tx.transaction_date.startsWith(today.slice(0,7))) { monthIncome += income; monthExpense += expense; }
+    if (tx.transaction_date >= periodFirst.month && tx.transaction_date <= today) { monthIncome += income; monthExpense += expense; }
     if (tx.transaction_date > today) futureDelta += delta;
     if (tx.transaction_date >= firstDate && tx.transaction_date <= today) {
       const row = dates.get(tx.transaction_date) ?? { date: tx.transaction_date, income: 0, expense: 0, delta: 0 };
@@ -187,9 +186,9 @@ export async function loadDashboardSnapshot(supabase: SupabaseClient<Database>, 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- v450 RPC predates generated Supabase types.
       return (supabase as any).rpc("dashboard_snapshot_v450", { p_currency: currency, p_today: today });
     }),
-    measureServerOperation("dashboard.v451.previous", async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- v451 RPC is introduced by its migration; validate unknown response below.
-      return (supabase as any).rpc("dashboard_period_comparison_v451", { p_currency: currency, p_today: today });
+    measureServerOperation("dashboard.v455.comparison", async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- v455 RPC is introduced by its migration; validate unknown response below.
+      return (supabase as any).rpc("dashboard_period_comparison_v455", { p_currency: currency, p_today: today });
     })
   ]);
   if (currencyResult.error) throw currencyResult.error;
@@ -212,13 +211,24 @@ export async function loadDashboardSnapshot(supabase: SupabaseClient<Database>, 
     snapshot = dashboardFromLedger(ledger.transactions, ledger.accounts, today, currency, digits);
   }
   if (!comparison.error) {
-    snapshot.previous = parseDashboardPrevious(comparison.data, today, currency);
+    const comparisons = parseDashboardComparison(comparison.data, today, currency);
+    // v455 independently aggregates six current flow amounts. A discrepancy means
+    // that the displayed cards are not backed by the same canonical ledger rows.
+    // Fail closed rather than showing a plausible but inaccurate comparison.
+    for (const flow of ["income", "expense"] as const) {
+      for (const period of ["today", "month", "year"] as const) {
+        const actual = flow === "income" ? snapshot.incoming[period].amount : snapshot.spending[period].amount;
+        if (actual !== comparisons.current[flow][period])
+          throw new Error(`Đối soát Dashboard không khớp: ${flow}/${period}.`);
+      }
+    }
+    snapshot.previous = comparisons.previous;
   } else {
     if (!isMissingRPC(comparison.error)) throw comparison.error;
     let transactions = fallbackTransactions;
     if (!transactions) {
       const ranges = comparisonRanges(today);
-      const ledger = await measureServerOperation("dashboard.v451.compatibility", () => loadReportLedger(supabase, userId, {
+      const ledger = await measureServerOperation("dashboard.v455.compatibility", () => loadReportLedger(supabase, userId, {
         fromDate: ranges.year.from, toDate: ranges.today.to, includeAccounts: false
       }));
       if (ledger.diagnostics.strategy === "empty") throw new Error("Không thể tải dữ liệu kỳ đối chiếu Dashboard.");

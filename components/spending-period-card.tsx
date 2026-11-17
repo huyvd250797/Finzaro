@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { CategoryIcon, iconColorValue } from "@/features/categories/icons";
 import type { DashboardFlow, SpendingPeriod, SpendingSummary } from "@/features/dashboard/snapshot";
 import { formatMinorMoney } from "@/lib/utils";
-import { comparePeriodTotals, type DashboardPrevious } from "@/features/dashboard/period-comparison";
+import { comparePeriodTotals, comparisonRanges, type DashboardPrevious } from "@/features/dashboard/period-comparison";
 
 const percentFormatter = new Intl.NumberFormat("vi-VN", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 
@@ -32,9 +32,8 @@ export function SpendingPeriodCard({ period, summary, incomeSummary, previous, t
   const current = flow === "expense" ? summary : incomeSummary;
   const info = labels[flow][period];
   const from = period === "today" ? today : period === "month" ? `${today.slice(0,7)}-01` : `${today.slice(0,4)}-01-01`;
-  const to = period === "today" ? today : period === "month"
-    ? new Date(Date.UTC(Number(today.slice(0,4)), Number(today.slice(5,7)), 0)).toISOString().slice(0,10)
-    : `${today.slice(0,4)}-12-31`;
+  // Current periods are partial until today, even if later-dated transactions exist.
+  const to = today;
   const expenseLink = `/transactions?${new URLSearchParams({ type: "expense", from, to })}`;
   const incomeLink = `/transactions?${new URLSearchParams({ type: "income", from, to })}`;
   const link = flow === "expense" ? expenseLink : incomeLink;
@@ -42,13 +41,17 @@ export function SpendingPeriodCard({ period, summary, incomeSummary, previous, t
   const money = (amount: number) => formatMinorMoney(amount, currency, digits);
   const previousAmount = previous[flow][period];
   const change = comparePeriodTotals(current.amount, previousAmount, flow);
-  const compareLabel = period === "today" ? "So với hôm qua" : period === "month" ? "So với tháng trước" : "So với năm trước";
-  const sign = change.difference > 0 ? "+" : change.difference < 0 ? "−" : "";
-  const amountDelta = `${sign}${money(Math.abs(change.difference))}`;
-  const percentDelta = `${change.percent > 0 ? "+" : change.percent < 0 ? "−" : ""}${percentFormatter.format(Math.abs(change.percent))}%`;
-  const comparisonHint = previousAmount === 0 && current.amount > 0
-    ? "Kỳ trước không có phát sinh; mức 100% là quy ước hiển thị, không phải tỷ lệ tăng trưởng toán học."
-    : undefined;
+  const ranges = comparisonRanges(today);
+  const previousLink = `/transactions?${new URLSearchParams({ type: flow, from: ranges[period].from, to: ranges[period].to })}`;
+  const compareLabel = period === "today" ? "So với toàn bộ hôm qua" : period === "month" ? "So với cùng kỳ tháng trước" : "So với cùng kỳ năm trước";
+  const priorLabel = period === "today" ? (isIncome ? "Tổng thu nhập hôm qua" : "Tổng chi tiêu hôm qua")
+    : period === "month" ? (isIncome ? "Thu nhập cùng kỳ tháng trước" : "Chi tiêu cùng kỳ tháng trước")
+    : (isIncome ? "Thu nhập cùng kỳ năm trước" : "Chi tiêu cùng kỳ năm trước");
+  const amountDelta = change.difference > 0 ? `Tăng ${isIncome ? "thu" : "chi"} ${money(change.difference)}`
+    : change.difference < 0 ? `Giảm ${isIncome ? "thu" : "chi"} ${money(Math.abs(change.difference))}`
+    : previousAmount === 0 ? "Không phát sinh ở cả hai kỳ" : "Không đổi";
+  const percentDelta = change.percent === null ? "Mới phát sinh"
+    : `${change.percent > 0 ? "+" : change.percent < 0 ? "−" : ""}${percentFormatter.format(Math.abs(change.percent))}%`;
   const changeTone = change.direction === "positive" ? "text-[var(--fin-income)]" : change.direction === "negative" ? "text-[var(--fin-expense)]" : "text-[var(--muted-foreground)]";
 
   return <Card className={`fin-overview-spend-${period} fin-dashboard-card`}><CardContent className="p-4 sm:p-5">
@@ -74,11 +77,16 @@ export function SpendingPeriodCard({ period, summary, incomeSummary, previous, t
       <p className={`min-w-0 flex-1 break-words text-[clamp(1.35rem,4.8vw,2rem)] font-extrabold tracking-tight tabular-nums ${isIncome ? "text-[var(--fin-income)]" : "text-[var(--fin-expense)]"}`}>{money(current.amount)}</p>
       <div className="min-w-0 max-w-[49%] shrink-0 text-right" aria-label={`${compareLabel}: ${amountDelta}, ${percentDelta}`}>
         <p className="text-[10px] font-medium leading-tight text-[var(--muted-foreground)] sm:text-xs">{compareLabel}</p>
-        <p className={`mt-0.5 break-words text-[clamp(.625rem,2.3vw,.75rem)] font-semibold leading-snug tabular-nums ${changeTone}`} title={comparisonHint}>
-          {amountDelta} ({percentDelta})
+        <p className={`mt-0.5 break-words text-[clamp(.625rem,2.3vw,.75rem)] font-semibold leading-snug tabular-nums ${changeTone}`}>
+          {amountDelta} {change.percent === null ? `· ${percentDelta}` : `(${percentDelta})`}
         </p>
       </div>
     </div>
+    <Link href={previousLink} title={`Xem giao dịch ${ranges[period].from} đến ${ranges[period].to}`}
+      className="mb-4 flex min-h-8 items-center justify-between gap-2 rounded-lg border-t border-[var(--border)] pt-2 text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
+      <span>{priorLabel}</span>
+      <span className="inline-flex shrink-0 items-center gap-1 font-bold tabular-nums text-[var(--foreground)]">{money(previousAmount)}<ChevronRight className="size-3.5" aria-hidden="true"/></span>
+    </Link>
     {current.count ? <>
       <p className="mb-3 text-xs font-bold text-[var(--muted-foreground)]">Theo danh mục</p>
       <div className="space-y-3">{current.categories.slice(0, 5).map((item) => <div key={item.id} className="flex min-w-0 items-center gap-3">
