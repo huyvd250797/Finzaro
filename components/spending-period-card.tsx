@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowDownLeft, ArrowDownRight, ArrowRight, ArrowUpRight, ChevronRight, Minus, Sparkles } from "lucide-react";
+import { ArrowDownLeft, ArrowRight, ArrowUpRight, ChevronRight, Minus, Sparkles, TrendingDown, TrendingUp } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { CategoryIcon, iconColorValue } from "@/features/categories/icons";
 import type { DashboardFlow, SpendingPeriod, SpendingSummary } from "@/features/dashboard/snapshot";
@@ -43,18 +43,23 @@ export function SpendingPeriodCard({ period, summary, incomeSummary, previous, t
   const change = comparePeriodTotals(current.amount, previousAmount, flow);
   const ranges = comparisonRanges(today);
   const previousLink = `/transactions?${new URLSearchParams({ type: flow, from: ranges[period].from, to: ranges[period].to })}`;
-  const compareLabel = period === "today" ? "So với toàn bộ hôm qua" : period === "month" ? "So với cùng kỳ tháng trước" : "So với cùng kỳ năm trước";
+  const compareLabel = period === "today" ? "So với toàn bộ hôm qua" : period === "month" ? "So với toàn bộ tháng trước" : "So với toàn bộ năm trước";
   const priorLabel = period === "today" ? (isIncome ? "Tổng thu nhập hôm qua" : "Tổng chi tiêu hôm qua")
-    : period === "month" ? (isIncome ? "Thu nhập cùng kỳ tháng trước" : "Chi tiêu cùng kỳ tháng trước")
-    : (isIncome ? "Thu nhập cùng kỳ năm trước" : "Chi tiêu cùng kỳ năm trước");
-  const amountDelta = change.difference > 0 ? `Tăng ${isIncome ? "thu" : "chi"} ${money(change.difference)}`
-    : change.difference < 0 ? `Giảm ${isIncome ? "thu" : "chi"} ${money(Math.abs(change.difference))}`
-    : previousAmount === 0 ? "Không phát sinh ở cả hai kỳ" : "Không đổi";
+    : period === "month" ? (isIncome ? "Tổng thu nhập tháng trước" : "Tổng chi tiêu tháng trước")
+    : (isIncome ? "Tổng thu nhập năm trước" : "Tổng chi tiêu năm trước");
+  // Month/year are ongoing periods versus a COMPLETED baseline: "Thấp hơn/Vượt"
+  // avoids claiming that spending or income has definitively fallen for the full period.
+  const amountDelta = change.difference > 0
+    ? period === "today" ? `Tăng ${isIncome ? "thu" : "chi"} ${money(change.difference)}` : `${isIncome ? "Thu" : "Chi"} vượt ${money(change.difference)}`
+    : change.difference < 0
+      ? period === "today" ? `Giảm ${isIncome ? "thu" : "chi"} ${money(Math.abs(change.difference))}` : `${isIncome ? "Thu" : "Chi"} thấp hơn ${money(Math.abs(change.difference))}`
+      : previousAmount === 0 ? "Không phát sinh ở cả hai kỳ" : "Không đổi";
   const percentDelta = change.percent === null ? "Mới phát sinh"
     : `${change.percent > 0 ? "+" : change.percent < 0 ? "−" : ""}${percentFormatter.format(Math.abs(change.percent))}%`;
   const changeTone = change.direction === "positive" ? "text-[var(--fin-income)]" : change.direction === "negative" ? "text-[var(--fin-expense)]" : "text-[var(--muted-foreground)]";
-  const ChangeIcon = change.difference > 0 || change.percent === null ? ArrowUpRight : change.difference < 0 ? ArrowDownRight : Minus;
-  const changeIconLabel = change.difference > 0 || change.percent === null ? "Tăng" : change.difference < 0 ? "Giảm" : "Không đổi";
+  // Match the zigzag arrows in the visual reference. Direction is mathematical;
+  // color is determined separately by financial impact (income up / expense down = green).
+  const ChangeIcon = change.difference > 0 ? TrendingUp : change.difference < 0 ? TrendingDown : Minus;
 
   return <Card className={`fin-overview-spend-${period} fin-dashboard-card`}><CardContent className="p-4 sm:p-5">
     <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
@@ -80,9 +85,8 @@ export function SpendingPeriodCard({ period, summary, incomeSummary, previous, t
       <div className="min-w-0 max-w-[49%] shrink-0 text-right" aria-label={`${compareLabel}: ${amountDelta}, ${percentDelta}`}>
         <p className="text-[10px] font-medium leading-tight text-[var(--muted-foreground)] sm:text-xs">{compareLabel}</p>
         <p className={`mt-0.5 inline-flex max-w-full items-start justify-end gap-1 break-words text-[clamp(.625rem,2.3vw,.75rem)] font-semibold leading-snug tabular-nums ${changeTone}`}>
-          <ChangeIcon className="mt-0.5 size-3 shrink-0" aria-hidden="true"/>
+          <ChangeIcon className="mt-0.5 size-4 shrink-0" strokeWidth={2.25} aria-hidden="true"/>
           <span>{amountDelta} {change.percent === null ? `· ${percentDelta}` : `(${percentDelta})`}</span>
-          <span className="sr-only">{changeIconLabel}</span>
         </p>
       </div>
     </div>

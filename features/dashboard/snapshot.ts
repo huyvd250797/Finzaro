@@ -17,7 +17,7 @@ export type DashboardSnapshot = {
   monthTotals: { income: number; expense: number; net: number };
   spending: Record<SpendingPeriod, SpendingSummary>;
   incoming: Record<SpendingPeriod, SpendingSummary>;
-  /** Hydrated by v455 comparison RPC or strict ledger fallback before Dashboard renders. */
+  /** Hydrated by v457 comparison RPC or strict ledger fallback before Dashboard renders. */
   previous: DashboardPrevious | null;
   daily: DailyFinancialRow[];
   /** Only cash, bank and e-wallet account positions are included; not a complete balance sheet. */
@@ -186,9 +186,9 @@ export async function loadDashboardSnapshot(supabase: SupabaseClient<Database>, 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- v450 RPC predates generated Supabase types.
       return (supabase as any).rpc("dashboard_snapshot_v450", { p_currency: currency, p_today: today });
     }),
-    measureServerOperation("dashboard.v455.comparison", async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- v455 RPC is introduced by its migration; validate unknown response below.
-      return (supabase as any).rpc("dashboard_period_comparison_v455", { p_currency: currency, p_today: today });
+    measureServerOperation("dashboard.v457.comparison", async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- v457 RPC is introduced by its migration; validate unknown response below.
+      return (supabase as any).rpc("dashboard_period_comparison_v457", { p_currency: currency, p_today: today });
     })
   ]);
   if (currencyResult.error) throw currencyResult.error;
@@ -212,7 +212,7 @@ export async function loadDashboardSnapshot(supabase: SupabaseClient<Database>, 
   }
   if (!comparison.error) {
     const comparisons = parseDashboardComparison(comparison.data, today, currency);
-    // v455 independently aggregates six current flow amounts. A discrepancy means
+    // v457 independently aggregates six current flow amounts. A discrepancy means
     // that the displayed cards are not backed by the same canonical ledger rows.
     // Fail closed rather than showing a plausible but inaccurate comparison.
     for (const flow of ["income", "expense"] as const) {
@@ -228,7 +228,7 @@ export async function loadDashboardSnapshot(supabase: SupabaseClient<Database>, 
     let transactions = fallbackTransactions;
     if (!transactions) {
       const ranges = comparisonRanges(today);
-      const ledger = await measureServerOperation("dashboard.v455.compatibility", () => loadReportLedger(supabase, userId, {
+      const ledger = await measureServerOperation("dashboard.v457.compatibility", () => loadReportLedger(supabase, userId, {
         fromDate: ranges.year.from, toDate: ranges.today.to, includeAccounts: false
       }));
       if (ledger.diagnostics.strategy === "empty") throw new Error("Không thể tải dữ liệu kỳ đối chiếu Dashboard.");

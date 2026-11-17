@@ -1,3 +1,9 @@
+## V4.5.7 — Full Previous Period Comparison (2026-11-17)
+- Dashboard đối chiếu **toàn bộ ngày/tháng/năm trước**, không còn so sánh cùng ngày lũy kế tháng/năm trước. Kỳ hiện tại vẫn tính đến hôm nay.
+- Icon chênh lệch chuyển thành `TrendingUp`/`TrendingDown` gấp khúc giống hình, màu dựa trên tác động tài chính; zero dùng `Minus`.
+- Kỳ tháng/năm chưa kết thúc hiển thị "thấp hơn/vượt" so với tổng kỳ trước, tránh kết luận tăng/giảm trọn kỳ.
+- Bổ sung RPC `dashboard_period_comparison_v457` (migration mới, read-only, RLS invoker), xác thực `v457` và range; giữ `v455` để rollback và fallback ledger đúng full period nếu thiếu RPC.
+
 ## V4.5.6 — Comparison Direction Icons (2026-11-17)
 - Dashboard card so sánh Thu/Chi bổ sung icon/mũi tên trực quan đứng trước nội dung biến động: **Tăng chi, Giảm chi, Tăng thu, Giảm thu**. Mũi tên phản ánh hướng tăng/giảm thực tế; màu sắc vẫn phản ánh tác động tài chính theo quy tắc V4.5.5.
 - Trường hợp không đổi hiển thị icon trung tính; trường hợp kỳ trước bằng 0 (`Mới phát sinh`) vẫn hiển thị biểu tượng tăng để nhấn mạnh có phát sinh mới.

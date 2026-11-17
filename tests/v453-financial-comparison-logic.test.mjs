@@ -30,9 +30,9 @@ const expect = (current, previous, flow, difference, percent, direction) => {
 
 test("V4.5.5 release is versioned, retains category UX and strict Vercel release gate", () => {
   const pkg = JSON.parse(read("package.json"));
-  assert.equal(pkg.version, "4.5.6");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.5\.6"/);
-  assert.match(read("lib/app-version.ts"), /Financial Comparison Clarity Fix|Comparison Direction Icons/);
+  assert.equal(pkg.version, "4.5.7");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.5\.7"/);
+  assert.match(read("lib/app-version.ts"), /Financial Comparison Clarity Fix|Comparison Direction Icons|Full Previous Period Comparison/);
   assert.equal(pkg.scripts.check, "npm run lint && npm run typecheck && npm run test && npm run build");
   assert.match(read("components/category-manager-grid.tsx"), /420\)/);
   assert.deepEqual(readdirSync(join(root, "app/(dashboard)"), { withFileTypes: true })
@@ -92,13 +92,14 @@ test("All three dashboard cards pass active Chi/Thu type to shared comparison an
   assert.match(card, /comparePeriodTotals\(current\.amount, previousAmount, flow\)/);
   assert.match(card, /previous\[flow\]\[period\]/);
   assert.match(card, /So với toàn bộ hôm qua/);
-  assert.match(card, /So với cùng kỳ tháng trước/);
-  assert.match(card, /So với cùng kỳ năm trước/);
+  assert.match(card, /So với toàn bộ tháng trước/);
+  assert.match(card, /So với toàn bộ năm trước/);
   assert.match(card, /items-end justify-between/);
   assert.match(card, /max-w-\[49%\]/);
   assert.match(card, /change\.direction === "positive" \? "text-\[var\(--fin-income\)\]"/);
   assert.match(card, /change\.direction === "negative" \? "text-\[var\(--fin-expense\)\]"/);
-  assert.match(card, /ArrowDownRight/);
+  assert.match(card, /TrendingDown/);
+  assert.match(card, /TrendingUp/);
   assert.match(card, /ChangeIcon/);
   assert.match(card, /Mới phát sinh/);
   assert.match(card, /minimumFractionDigits: 0, maximumFractionDigits: 2/);
@@ -107,10 +108,10 @@ test("All three dashboard cards pass active Chi/Thu type to shared comparison an
 });
 
 test("V4.5.5 adds read-only migration with strict fallback and does not mutate accounts", () => {
-  assert.match(read("features/dashboard/snapshot.ts"), /dashboard_period_comparison_v455/);
+  assert.match(read("features/dashboard/snapshot.ts"), /dashboard_period_comparison_v457/);
   assert.match(read("features/dashboard/snapshot.ts"), /previousFromLedger/);
   assert.match(source, /beneficialChange = difference \* \(flow === "expense" \? -1 : 1\)/);
   const sqlMigrations = readdirSync(join(root, "supabase/migrations"));
-  assert.equal(sqlMigrations.length, 29);
+  assert.equal(sqlMigrations.length, 30);
   assert.equal(sqlMigrations.some((f) => /financial_comparison_clarity_v455/.test(f)), true);
 });

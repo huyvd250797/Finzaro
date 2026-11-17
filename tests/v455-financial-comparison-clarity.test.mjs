@@ -40,9 +40,10 @@ test("V4.5.5 real-world 45k versus 1.2m: raw signed negative and green expense i
   assert.match(card, /So với toàn bộ hôm qua/);
   assert.match(card, /Tổng chi tiêu hôm qua/);
   assert.match(card, /previousLink/);
-  assert.match(card, /ArrowDownRight/);
-  assert.match(card, /const ChangeIcon = change\.difference > 0 \|\| change\.percent === null \? ArrowUpRight : change\.difference < 0 \? ArrowDownRight : Minus/);
-  assert.match(card, /<ChangeIcon className="mt-0\.5 size-3 shrink-0"/);
+  assert.match(card, /TrendingDown/);
+  assert.match(card, /TrendingUp/);
+  assert.match(card, /const ChangeIcon = change\.difference > 0 \? TrendingUp : change\.difference < 0 \? TrendingDown : Minus/);
+  assert.match(card, /<ChangeIcon className="mt-0\.5 size-4 shrink-0"/);
 });
 
 test("All financial cases use mathematically signed percent and impact-only colors", () => {
@@ -55,15 +56,15 @@ test("All financial cases use mathematically signed percent and impact-only colo
   assert.deepEqual(compare(20, 20, "income"), { difference: 0, percent: 0, direction: "neutral" });
 });
 
-test("Option B uses complete previous day while month/year align calendar-to-date", () => {
+test("Complete prior calendar day/month/year, including leap years and shorter months", () => {
   assert.deepEqual(ranges("2026-11-17"), {
     today: { from: "2026-11-16", to: "2026-11-16" },
-    month: { from: "2026-10-01", to: "2026-10-17" },
-    year: { from: "2025-01-01", to: "2025-11-17" }
+    month: { from: "2026-10-01", to: "2026-10-31" },
+    year: { from: "2025-01-01", to: "2025-12-31" }
   });
   assert.deepEqual(ranges("2026-03-31").month, { from: "2026-02-01", to: "2026-02-28" });
   assert.deepEqual(ranges("2024-03-31").month, { from: "2024-02-01", to: "2024-02-29" });
-  assert.deepEqual(ranges("2024-02-29").year, { from: "2023-01-01", to: "2023-02-28" });
+  assert.deepEqual(ranges("2024-02-29").year, { from: "2023-01-01", to: "2023-12-31" });
   assert.deepEqual(ranges("2026-01-01").today, { from: "2025-12-31", to: "2025-12-31" });
   for (const invalid of ["2026-02-29", "2026-13-01", "2026-00-01", "2026-11-31"]) {
     assert.throws(() => ranges(invalid));
@@ -71,7 +72,7 @@ test("Option B uses complete previous day while month/year align calendar-to-dat
 });
 
 test("RPC v455 validates dates, signed-in currency, and each current + previous six totals", () => {
-  const valid = { snapshotVersion: "v455", today: "2026-11-17", currency: "VND", ranges: ranges("2026-11-17"),
+  const valid = { snapshotVersion: "v457", today: "2026-11-17", currency: "VND", ranges: ranges("2026-11-17"),
     current: { income: { today: 0, month: 0, year: 0 }, expense: { today: 45_000, month: 45_000, year: 45_000 } },
     previous: { income: { today: 0, month: 0, year: 0 }, expense: { today: 1_200_000, month: 1_200_000, year: 1_200_000 } }
   };
@@ -95,6 +96,6 @@ test("New SQL is read-only, RLS invoker, and limits current month/year to today"
   assert.doesNotMatch(sql, /\b(?:insert into|delete from|update)\s+public\.(?:transactions|accounts|transaction_entries)\b/);
   const snapshot = read("features/dashboard/snapshot.ts");
   assert.match(snapshot, /actual !== comparisons\.current\[flow\]\[period\]/);
-  assert.match(snapshot, /dashboard_period_comparison_v455/);
+  assert.match(snapshot, /dashboard_period_comparison_v457/);
   assert.match(snapshot, /previousFromLedger\(transactions, today, currency\)/);
 });

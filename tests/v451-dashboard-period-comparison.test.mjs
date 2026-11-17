@@ -29,7 +29,7 @@ const tx = (id, date, type, amount, purpose = "standard", currency = "VND") => (
 
 test("V4.5.1 release retains strict deploy gates and six modules", () => {
   const pkg = JSON.parse(read("package.json"));
-  assert.equal(pkg.version, "4.5.6");
+  assert.equal(pkg.version, "4.5.7");
   assert.equal(pkg.scripts.check, "npm run lint && npm run typecheck && npm run test && npm run build");
   assert.deepEqual(readdirSync(join(root, "app/(dashboard)"), { withFileTypes: true }).filter((item) => item.isDirectory()).map((item) => item.name).sort(), ["accounts", "categories", "overview", "reports", "settings", "transactions"]);
 });
@@ -37,14 +37,14 @@ test("V4.5.1 release retains strict deploy gates and six modules", () => {
 test("V4.5.1 prior periods handle January/year boundary and leap day correctly", () => {
   assert.deepEqual(comparison.comparisonRanges("2026-01-01"), {
     today: { from: "2025-12-31", to: "2025-12-31" },
-    month: { from: "2025-12-01", to: "2025-12-01" },
-    year: { from: "2025-01-01", to: "2025-01-01" }
+    month: { from: "2025-12-01", to: "2025-12-31" },
+    year: { from: "2025-01-01", to: "2025-12-31" }
   });
   assert.equal(comparison.comparisonRanges("2024-03-01").today.from, "2024-02-29");
   assert.equal(comparison.comparisonRanges("2026-03-01").today.from, "2026-02-28");
 });
 
-test("V4.5.5 compares same elapsed dates of last month/year, but full yesterday", () => {
+test("V4.5.7 compares complete prior day/month/year", () => {
   const transactions = [
     tx("yesterday-exp", "2026-11-14", "expense", 25),
     tx("oct-income", "2026-10-02", "income", 300),
@@ -61,8 +61,8 @@ test("V4.5.5 compares same elapsed dates of last month/year, but full yesterday"
     tx("excluded-fx", "2025-12-31", "income", 500, "standard", "USD")
   ];
   const result = comparison.previousFromLedger(transactions, "2026-11-15", "VND");
-  assert.deepEqual(result.income, { today: 0, month: 300, year: 81 });
-  assert.deepEqual(result.expense, { today: 25, month: 51, year: 70 });
+  assert.deepEqual(result.income, { today: 0, month: 300, year: 481 });
+  assert.deepEqual(result.expense, { today: 25, month: 201, year: 70 });
 });
 
 test("V4.5.1 computes -10 million (-33.33%) and sign-independent green/red change", () => {
@@ -84,7 +84,7 @@ test("V4.5.5 zero baseline uses undefined percentage, not fabricated ±100%", ()
 });
 
 test("V4.5.1 authenticated comparison JSON must match date, currency, all six totals", () => {
-  const valid = { snapshotVersion: "v455", today: "2026-11-15", currency: "VND", ranges: comparison.comparisonRanges("2026-11-15"), current: { income: {today: 0,month: 0,year: 0}, expense:{today: 0,month: 0,year: 0}}, previous: {
+  const valid = { snapshotVersion: "v457", today: "2026-11-15", currency: "VND", ranges: comparison.comparisonRanges("2026-11-15"), current: { income: {today: 0,month: 0,year: 0}, expense:{today: 0,month: 0,year: 0}}, previous: {
     income: { today: 0, month: "30000000", year: 60000000 },
     expense: { today: 25000, month: 800000, year: 1500000 }
   } };
@@ -99,8 +99,8 @@ test("V4.5.1 all three cards share the right aligned comparison and Chi/Thu togg
   const card = read("components/spending-period-card.tsx");
   const page = read("app/(dashboard)/overview/page.tsx");
   assert.match(card, /So với toàn bộ hôm qua/);
-  assert.match(card, /So với cùng kỳ tháng trước/);
-  assert.match(card, /So với cùng kỳ năm trước/);
+  assert.match(card, /So với toàn bộ tháng trước/);
+  assert.match(card, /So với toàn bộ năm trước/);
   assert.match(card, /previous\[flow\]\[period\]/);
   assert.match(card, /items-end justify-between/);
   assert.match(card, /text-right/);
@@ -116,7 +116,7 @@ test("V4.5.1 RPC is read-only, RLS-invoker, standard-flow and currency scoped", 
     assert.ok(sql.includes(fragment), `Missing RLS/flow contract: ${fragment}`);
   }
   assert.doesNotMatch(sql, /(?:insert into|delete from|update)\s+public\.(?:transactions|accounts|transaction_entries)/i);
-  assert.match(read("features/dashboard/snapshot.ts"), /rpc\("dashboard_period_comparison_v455"/);
+  assert.match(read("features/dashboard/snapshot.ts"), /rpc\("dashboard_period_comparison_v457"/);
   assert.match(read("features/dashboard/snapshot.ts"), /parseDashboardComparison\(/);
 });
 
@@ -152,8 +152,8 @@ function dashboardLoader({ compareRpc, overviewRpc, fallbackRows = [], onLedger 
         data: { snapshotVersion: "v450", today: "2026-11-15", balance: 1000, closingBalance: 1000,
           monthTotals: { income: 0, expense: 0 }, daily: [], movements: [], categories: [], recent: [] }, error: null
       };
-      if (name === "dashboard_period_comparison_v455") return compareRpc ?? {
-        data: { snapshotVersion: "v455", today: "2026-11-15", currency: "VND", ranges: comparison.comparisonRanges("2026-11-15"),
+      if (name === "dashboard_period_comparison_v457") return compareRpc ?? {
+        data: { snapshotVersion: "v457", today: "2026-11-15", currency: "VND", ranges: comparison.comparisonRanges("2026-11-15"),
         current: { income: { today: 0, month: 0, year: 0 }, expense: { today: 0, month: 0, year: 0 } }, previous: {
           income: { today: 100, month: 200, year: 300 }, expense: { today: 10, month: 20, year: 30 }
         } }, error: null
@@ -167,12 +167,12 @@ function dashboardLoader({ compareRpc, overviewRpc, fallbackRows = [], onLedger 
 test("V4.5.1 both fast RPCs run together and do not load historical ledgers", async () => {
   const { dashboard, client, rpcCalls } = dashboardLoader({ onLedger: () => { throw new Error("Unexpected ledger fallback"); } });
   const snapshot = await dashboard.loadDashboardSnapshot(client, "user", "VND", "Asia/Ho_Chi_Minh");
-  assert.deepEqual(rpcCalls.sort(), ["dashboard_period_comparison_v455", "dashboard_snapshot_v450"].sort());
+  assert.deepEqual(rpcCalls.sort(), ["dashboard_period_comparison_v457", "dashboard_snapshot_v450"].sort());
   assert.equal(snapshot.previous.income.month, 200);
   assert.equal(snapshot.spending.month.amount, 0);
 });
 
-test("V4.5.5 only missing v455 RPC falls back to previous-year ledger", async () => {
+test("V4.5.5 only missing v457 RPC falls back to previous-year ledger", async () => {
   let ledgerOptions;
   const { dashboard, client } = dashboardLoader({
     compareRpc: { data: null, error: { code: "PGRST202", message: "No function" } },
@@ -184,7 +184,7 @@ test("V4.5.5 only missing v455 RPC falls back to previous-year ledger", async ()
   assert.deepEqual([ledgerOptions.fromDate, ledgerOptions.toDate, ledgerOptions.includeAccounts], ["2025-01-01", "2026-11-14", false]);
 });
 
-test("V4.5.5 real v455 RPC errors fail the Dashboard instead of showing incorrect comparisons", async () => {
+test("V4.5.5 real v457 RPC errors fail the Dashboard instead of showing incorrect comparisons", async () => {
   const { dashboard, client } = dashboardLoader({ compareRpc: { data: null, error: { code: "42501", message: "Access denied" } } });
   await assert.rejects(dashboard.loadDashboardSnapshot(client, "user", "VND", "Asia/Ho_Chi_Minh"), { code: "42501", message: "Access denied" });
 });

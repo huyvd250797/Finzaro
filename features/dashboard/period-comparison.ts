@@ -19,9 +19,9 @@ function daysInMonth(year: number, month: number): number {
 }
 
 /**
- * Calendar-date comparison: full previous DAY (not same hour, option B),
- * prior MONTH to the equivalent date, prior YEAR to the equivalent date.
- * Leap days and short months clamp to the last available calendar day.
+ * Full previous calendar-period comparisons: yesterday, all of last month,
+ * and all of last year. The ongoing current period is accumulated through today.
+ * The prior period is deliberately not constrained to an equal number of days.
  * Date-only values are independent of server timezone; today is computed
  * from the signed-in user's configured timezone by currentDateKey().
  */
@@ -34,12 +34,10 @@ export function comparisonRanges(today: string): Record<ComparePeriod, { from: s
     throw new Error("Invalid comparison date");
   const previousDay = isoUTC(year, month - 1, day - 1);
   const priorMonthStart = isoUTC(year, month - 2, 1);
-  const priorMonthYear = Number(priorMonthStart.slice(0, 4));
-  const priorMonth = Number(priorMonthStart.slice(5, 7));
   return {
     today: { from: previousDay, to: previousDay },
-    month: { from: priorMonthStart, to: isoUTC(priorMonthYear, priorMonth - 1, Math.min(day, daysInMonth(priorMonthYear, priorMonth))) },
-    year: { from: `${year - 1}-01-01`, to: isoUTC(year - 1, month - 1, Math.min(day, daysInMonth(year - 1, month))) }
+    month: { from: priorMonthStart, to: isoUTC(year, month - 1, 0) },
+    year: { from: `${year - 1}-01-01`, to: `${year - 1}-12-31` }
   };
 }
 
@@ -81,11 +79,11 @@ function parseFlowTotals(raw: unknown): DashboardPrevious {
   return parsed;
 }
 
-/** Validate v455 RPC, including date/currency/range contract; do not accept stale v451 totals. */
+/** Validate v457 RPC full-calendar baseline contract; reject v455 aligned-to-date payloads. */
 export function parseDashboardComparison(raw: unknown, today: string, currency: string): DashboardComparison {
   if (raw === null || typeof raw !== "object" || Array.isArray(raw)) throw new Error("Invalid dashboard comparison response");
   const response = raw as Record<string, unknown>;
-  if (response.snapshotVersion !== "v455" || response.today !== today || response.currency !== currency)
+  if (response.snapshotVersion !== "v457" || response.today !== today || response.currency !== currency)
     throw new Error("Dashboard comparison period/currency mismatch");
   const ranges = comparisonRanges(today);
   const rawRanges = response.ranges;

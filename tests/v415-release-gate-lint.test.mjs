@@ -10,9 +10,9 @@ const packageJson = JSON.parse(read("package.json"));
 const config = read("eslint.config.mjs");
 
 test("V4.2.0 is a real version bump, not a silent V4.1.4 overwrite", () => {
-  assert.equal(packageJson.version, "4.5.6");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION\s*=\s*"4\.5\.6"/);
-  assert.match(read("lib/app-version.ts"), /Financial Snapshot Type Safety Hotfix|Portable Test Runner CI Hotfix|Unified Fast Data Layer|Report RPC Type Safety & Deploy Hotfix|One-Tap Transaction UX|Reporting Trust & UX|Mobile Finance UX & Reporting Layout|Dashboard Period Comparison|Category Management UX Polish|Financial Comparison Logic Fix|Category Drag Lint Deploy Hotfix|Financial Comparison Clarity Fix|Comparison Direction Icons/);
+  assert.equal(packageJson.version, "4.5.7");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION\s*=\s*"4\.5\.7"/);
+  assert.match(read("lib/app-version.ts"), /Financial Snapshot Type Safety Hotfix|Portable Test Runner CI Hotfix|Unified Fast Data Layer|Report RPC Type Safety & Deploy Hotfix|One-Tap Transaction UX|Reporting Trust & UX|Mobile Finance UX & Reporting Layout|Dashboard Period Comparison|Category Management UX Polish|Financial Comparison Logic Fix|Category Drag Lint Deploy Hotfix|Financial Comparison Clarity Fix|Comparison Direction Icons|Full Previous Period Comparison/);
 });
 
 test("ESLint 9.17 uses a parseable Flat Config, not eslint/config", () => {
