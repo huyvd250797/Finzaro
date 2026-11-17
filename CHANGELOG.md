@@ -1,3 +1,9 @@
+## V4.5.6 — Comparison Direction Icons (2026-11-17)
+- Dashboard card so sánh Thu/Chi bổ sung icon/mũi tên trực quan đứng trước nội dung biến động: **Tăng chi, Giảm chi, Tăng thu, Giảm thu**. Mũi tên phản ánh hướng tăng/giảm thực tế; màu sắc vẫn phản ánh tác động tài chính theo quy tắc V4.5.5.
+- Trường hợp không đổi hiển thị icon trung tính; trường hợp kỳ trước bằng 0 (`Mới phát sinh`) vẫn hiển thị biểu tượng tăng để nhấn mạnh có phát sinh mới.
+- Không thay đổi công thức, RPC hay database schema. **Không có migration mới**; tiếp tục dùng migration V4.5.5.
+- Bàn giao kèm `DEPLOY_V4.5.6.md`; V4.5.5 migration vẫn là điều kiện tiên quyết nếu môi trường chưa áp dụng.
+
 ## V4.5.5 — Financial Comparison Clarity Fix (2026-11-17)
 
 - Công thức chênh lệch chuẩn `kỳ hiện tại - kỳ trước` cho Thu và Chi; dấu +/- thể hiện biến động, màu sắc chỉ phản ánh tác động tài chính. Hiển thị “Giảm chi 1.155.000 đ (−96,25%)” nếu 45.000 đ so với 1.200.000 đ.

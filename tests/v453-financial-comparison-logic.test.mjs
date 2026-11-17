@@ -30,9 +30,9 @@ const expect = (current, previous, flow, difference, percent, direction) => {
 
 test("V4.5.5 release is versioned, retains category UX and strict Vercel release gate", () => {
   const pkg = JSON.parse(read("package.json"));
-  assert.equal(pkg.version, "4.5.5");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.5\.5"/);
-  assert.match(read("lib/app-version.ts"), /Financial Comparison Clarity Fix/);
+  assert.equal(pkg.version, "4.5.6");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.5\.6"/);
+  assert.match(read("lib/app-version.ts"), /Financial Comparison Clarity Fix|Comparison Direction Icons/);
   assert.equal(pkg.scripts.check, "npm run lint && npm run typecheck && npm run test && npm run build");
   assert.match(read("components/category-manager-grid.tsx"), /420\)/);
   assert.deepEqual(readdirSync(join(root, "app/(dashboard)"), { withFileTypes: true })
@@ -98,6 +98,8 @@ test("All three dashboard cards pass active Chi/Thu type to shared comparison an
   assert.match(card, /max-w-\[49%\]/);
   assert.match(card, /change\.direction === "positive" \? "text-\[var\(--fin-income\)\]"/);
   assert.match(card, /change\.direction === "negative" \? "text-\[var\(--fin-expense\)\]"/);
+  assert.match(card, /ArrowDownRight/);
+  assert.match(card, /ChangeIcon/);
   assert.match(card, /Mới phát sinh/);
   assert.match(card, /minimumFractionDigits: 0, maximumFractionDigits: 2/);
   assert.equal(new Intl.NumberFormat("vi-VN", { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(100), "100");

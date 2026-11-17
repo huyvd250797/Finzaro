@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowDownLeft, ArrowRight, ArrowUpRight, ChevronRight, Sparkles } from "lucide-react";
+import { ArrowDownLeft, ArrowDownRight, ArrowRight, ArrowUpRight, ChevronRight, Minus, Sparkles } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { CategoryIcon, iconColorValue } from "@/features/categories/icons";
 import type { DashboardFlow, SpendingPeriod, SpendingSummary } from "@/features/dashboard/snapshot";
@@ -53,6 +53,8 @@ export function SpendingPeriodCard({ period, summary, incomeSummary, previous, t
   const percentDelta = change.percent === null ? "Mới phát sinh"
     : `${change.percent > 0 ? "+" : change.percent < 0 ? "−" : ""}${percentFormatter.format(Math.abs(change.percent))}%`;
   const changeTone = change.direction === "positive" ? "text-[var(--fin-income)]" : change.direction === "negative" ? "text-[var(--fin-expense)]" : "text-[var(--muted-foreground)]";
+  const ChangeIcon = change.difference > 0 || change.percent === null ? ArrowUpRight : change.difference < 0 ? ArrowDownRight : Minus;
+  const changeIconLabel = change.difference > 0 || change.percent === null ? "Tăng" : change.difference < 0 ? "Giảm" : "Không đổi";
 
   return <Card className={`fin-overview-spend-${period} fin-dashboard-card`}><CardContent className="p-4 sm:p-5">
     <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
@@ -77,8 +79,10 @@ export function SpendingPeriodCard({ period, summary, incomeSummary, previous, t
       <p className={`min-w-0 flex-1 break-words text-[clamp(1.35rem,4.8vw,2rem)] font-extrabold tracking-tight tabular-nums ${isIncome ? "text-[var(--fin-income)]" : "text-[var(--fin-expense)]"}`}>{money(current.amount)}</p>
       <div className="min-w-0 max-w-[49%] shrink-0 text-right" aria-label={`${compareLabel}: ${amountDelta}, ${percentDelta}`}>
         <p className="text-[10px] font-medium leading-tight text-[var(--muted-foreground)] sm:text-xs">{compareLabel}</p>
-        <p className={`mt-0.5 break-words text-[clamp(.625rem,2.3vw,.75rem)] font-semibold leading-snug tabular-nums ${changeTone}`}>
-          {amountDelta} {change.percent === null ? `· ${percentDelta}` : `(${percentDelta})`}
+        <p className={`mt-0.5 inline-flex max-w-full items-start justify-end gap-1 break-words text-[clamp(.625rem,2.3vw,.75rem)] font-semibold leading-snug tabular-nums ${changeTone}`}>
+          <ChangeIcon className="mt-0.5 size-3 shrink-0" aria-hidden="true"/>
+          <span>{amountDelta} {change.percent === null ? `· ${percentDelta}` : `(${percentDelta})`}</span>
+          <span className="sr-only">{changeIconLabel}</span>
         </p>
       </div>
     </div>

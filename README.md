@@ -1,4 +1,4 @@
-> **Current release: Finzaro V4.5.5 — Financial Comparison Clarity Fix.** Tính biến động Thu/Chi theo dấu số học, màu theo tác động tài chính; so sánh toàn bộ ngày hôm qua, cùng kỳ tháng/năm; đối soát 6 tổng Thu/Chi bằng RPC v455. **Cần chạy migration V4.5.5 trước khi deploy source.** Xem [`DEPLOY_V4.5.5.md`](DEPLOY_V4.5.5.md).
+> **Current release: Finzaro V4.5.6 — Comparison Direction Icons.** Bổ sung icon/mũi tên trực quan đứng trước các trạng thái **Tăng chi, Giảm chi, Tăng thu, Giảm thu** trên Dashboard; giữ nguyên logic tài chính của V4.5.5. **Không có migration DB mới**; chỉ cần đã chạy migration V4.5.5 trước khi deploy source. Xem [`DEPLOY_V4.5.6.md`](DEPLOY_V4.5.6.md).
 
 > **Historical release: Finzaro V4.5.3 — Financial Comparison Logic Fix.** So sánh Thu nhập tăng là dương/xanh; Chi tiêu tăng là âm/đỏ. Hôm qua không chi, hôm nay chi 25.000 đ → **−25.000 đ (−100%)** theo quy ước 100% khi kỳ trước bằng 0. Giữ nguyên Quản lý danh mục V4.5.2. **Không cần SQL migration mới.** Xem [`DEPLOY_V4.5.3.md`](DEPLOY_V4.5.3.md) và [`docs/V4.5.3_QA.md`](docs/V4.5.3_QA.md). Cần xác nhận `npm run check` trên Vercel.
 

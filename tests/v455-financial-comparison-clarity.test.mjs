@@ -40,6 +40,9 @@ test("V4.5.5 real-world 45k versus 1.2m: raw signed negative and green expense i
   assert.match(card, /So với toàn bộ hôm qua/);
   assert.match(card, /Tổng chi tiêu hôm qua/);
   assert.match(card, /previousLink/);
+  assert.match(card, /ArrowDownRight/);
+  assert.match(card, /const ChangeIcon = change\.difference > 0 \|\| change\.percent === null \? ArrowUpRight : change\.difference < 0 \? ArrowDownRight : Minus/);
+  assert.match(card, /<ChangeIcon className="mt-0\.5 size-3 shrink-0"/);
 });
 
 test("All financial cases use mathematically signed percent and impact-only colors", () => {
