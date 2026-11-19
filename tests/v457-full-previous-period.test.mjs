@@ -27,9 +27,9 @@ const comp = loadTs("features/dashboard/period-comparison.ts", { "@/features/tra
 const tx = (date, flow, amount, currency = "VND", purpose = "standard") => ({ transaction_date: date, transaction_type: flow, amount, currency, transaction_purpose: purpose });
 
 test("V4.5.7 has a consistent version, source, migration and deploy gate", () => {
-  assert.equal(JSON.parse(read("package.json")).version, "4.5.8");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.5\.8"/);
-  assert.match(read("lib/app-version.ts"), /Full Previous Period Comparison|Comparison Icon Alignment Fix/);
+  assert.equal(JSON.parse(read("package.json")).version, "4.6.0");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.6\.0"/);
+  assert.match(read("lib/app-version.ts"), /Full Previous Period Comparison|Comparison Icon Alignment Fix|Multi-Asset Portfolio/);
   assert.match(read("features/dashboard/snapshot.ts"), /dashboard_period_comparison_v457/);
   assert.match(read("DEPLOY_V4.5.7.md"), /Migration Supabase/);
 });

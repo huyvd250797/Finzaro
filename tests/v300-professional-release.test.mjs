@@ -22,7 +22,7 @@ test("V3.0.0 version is consistent and app retains six modules", () => {
   const current = JSON.parse(read("package.json")).version;
   assert.match(current, /^(?:3|4)\.\d+\.\d+$/);
   assert.match(read("lib/app-version.ts"), new RegExp(`APP_VERSION = "${current.replaceAll(".", "\\.")}"`));
-  assert.deepEqual(readdirSync(join(root,"app/(dashboard)"),{withFileTypes:true}).filter(entry=>entry.isDirectory()).map(x=>x.name).sort(),["accounts","categories","overview","reports","settings","transactions"]);
+  assert.deepEqual(readdirSync(join(root,"app/(dashboard)"),{withFileTypes:true}).filter(entry=>entry.isDirectory()).map(x=>x.name).sort(),["accounts","categories","overview","portfolio","reports","settings","transactions"]);
 });
 test("Scale: chart visual buckets preserve all financial totals and bound DOM bars", () => {
   const { trendChartBuckets } = compile("features/reports/chart-buckets.ts");

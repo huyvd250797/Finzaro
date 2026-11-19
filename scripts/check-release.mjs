@@ -22,7 +22,7 @@ if (pkg.dependencies?.react !== pkg.dependencies?.["react-dom"]) fail("React and
 if (Number(pkg.dependencies?.next?.split(".")[0]) < 16 || Number(pkg.dependencies?.next?.split(".")[1]) < 4 || Number(pkg.dependencies?.next?.split(".")[2]) < 5) fail("Next.js is below the security-patched 16.4.5 baseline");
 if (/ignoreBuildErrors|ignoreDuringBuilds/.test(read("next.config.ts"))) fail("Production build diagnostics must never be ignored");
 
-const expected = ["overview", "transactions", "accounts", "categories", "reports", "settings"].sort();
+const expected = ["overview", "transactions", "accounts", "categories", "portfolio", "reports", "settings"].sort();
 const found = readdirSync(join(root, "app/(dashboard)"), { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort();
 if (expected.join("|") !== found.join("|")) fail(`Unexpected active routes: ${found.join(", ")}. Run npm run source:sync before committing; GitHub ZIP-overwrite uploads do not delete tracked legacy folders.`);
 for (const rpc of ["create_simple_transaction_v120", "update_simple_transaction_v120", "delete_simple_transaction_v120"]) {

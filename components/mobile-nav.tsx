@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { ArrowDownLeft, ArrowLeftRight, ArrowUpRight, BarChart3, Ellipsis, LayoutDashboard, Plus, ReceiptText, Settings2, Shapes, WalletCards, X } from "lucide-react";
+import { ArrowDownLeft, ArrowLeftRight, ArrowUpRight, BarChart3, Ellipsis, Gem, LayoutDashboard, Plus, ReceiptText, Settings2, Shapes, WalletCards, X } from "lucide-react";
 import { BottomSheet } from "@/components/bottom-sheet";
 import { cn } from "@/lib/utils";
 import { useSmartSectionRoutes } from "@/components/navigation-memory";
@@ -12,6 +12,7 @@ import { APP_RELEASE_NAME, APP_VERSION_LABEL } from "@/lib/app-version";
 
 const moduleItems = [
   { href: "/accounts", label: "Tài khoản & ví", icon: WalletCards, style: "border-[var(--border)]" },
+  { href: "/portfolio", label: "Tài sản", icon: Gem, style: "border-[var(--border)]" },
   { href: "/categories", label: "Danh mục", icon: Shapes, style: "border-[var(--border)]" },
   { href: "/settings", label: "Cài đặt", icon: Settings2, style: "border-[var(--border)]" }
 ];

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { cache, Suspense } from "react";
 import { ArrowDownLeft, ArrowUpRight, CalendarDays, ChevronRight, CircleDollarSign, Plus, WalletCards } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { PortfolioOverviewCard } from "@/components/portfolio-overview-card";
 import { CashflowChart } from "@/components/cashflow-chart";
 import { SpendingPeriodCard } from "@/components/spending-period-card";
 import { BalanceVisibility } from "@/components/balance-visibility";
@@ -97,6 +98,7 @@ export default function OverviewPage() {
     <header className="flex flex-wrap items-center justify-between gap-3"><div><p className="fin-section-eyebrow">FINZARO / PERSONAL FINANCE</p><h1 className="mt-1 text-2xl font-extrabold tracking-tight sm:text-3xl">Tổng quan tài chính</h1></div>
       <Link className="fin-primary-btn !min-h-10 !px-3 !text-xs" href="/transactions?new=expense"><Plus className="size-4"/> Thêm giao dịch</Link></header>
     <Suspense fallback={<><Loading height="h-48"/><div className="grid gap-3 lg:grid-cols-3"><Loading height="h-52"/><Loading height="h-52"/><Loading height="h-52"/></div><Loading height="h-64"/></>}><OverviewDashboard/></Suspense>
+    <Suspense fallback={<Loading height="h-36"/>}><PortfolioOverviewCard/></Suspense>
     <Suspense fallback={<Loading height="h-48"/>}><OverviewRecent/></Suspense>
     <nav className="flex items-center justify-center gap-4 pb-2 text-xs font-semibold text-[var(--muted-foreground)]" aria-label="Lối tắt tài chính"><Link href="/reports/calendar" className="inline-flex min-h-10 items-center gap-1.5 hover:text-[var(--primary)]"><CalendarDays className="size-4"/> Xem lịch tài chính</Link><Link href="/accounts" className="inline-flex min-h-10 items-center gap-1.5 hover:text-[var(--primary)]"><WalletCards className="size-4"/> Tài khoản và ví</Link></nav>
   </div>;

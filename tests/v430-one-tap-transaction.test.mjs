@@ -23,14 +23,14 @@ const draft = (title = "Ăn trưa") => ({ title, from_account_id: "account-a", t
 
 test("V4.5.0 release retains six modules, one read-only dashboard RPC migration, and strict quality gate", () => {
   const pkg = JSON.parse(source("package.json"));
-  assert.equal(pkg.version, "4.5.8");
-  assert.match(source("lib/app-version.ts"), /APP_VERSION = "4\.5\.8"/);
-  assert.match(source("lib/app-version.ts"), /One-Tap Transaction UX|Reporting Trust & UX|Mobile Finance UX & Reporting Layout|Dashboard Period Comparison|Category Management UX Polish|Financial Comparison Logic Fix|Category Drag Lint Deploy Hotfix|Financial Comparison Clarity Fix|Comparison Direction Icons|Full Previous Period Comparison|Comparison Icon Alignment Fix/);
+  assert.equal(pkg.version, "4.6.0");
+  assert.match(source("lib/app-version.ts"), /APP_VERSION = "4\.6\.0"/);
+  assert.match(source("lib/app-version.ts"), /One-Tap Transaction UX|Reporting Trust & UX|Mobile Finance UX & Reporting Layout|Dashboard Period Comparison|Category Management UX Polish|Financial Comparison Logic Fix|Category Drag Lint Deploy Hotfix|Financial Comparison Clarity Fix|Comparison Direction Icons|Full Previous Period Comparison|Comparison Icon Alignment Fix|Multi-Asset Portfolio/);
   assert.equal(pkg.scripts.check, "npm run lint && npm run typecheck && npm run test && npm run build");
   assert.equal(JSON.parse(source("vercel.json")).buildCommand, "npm run check");
-  assert.deepEqual(readdirSync(join(root, "app/(dashboard)"), { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name).sort(), ["accounts", "categories", "overview", "reports", "settings", "transactions"]);
+  assert.deepEqual(readdirSync(join(root, "app/(dashboard)"), { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name).sort(), ["accounts", "categories", "overview", "portfolio", "reports", "settings", "transactions"]);
   assert.equal(readdirSync(join(root, "supabase/migrations")).filter((name) => name.endsWith(".sql")).length,
-    30);
+    31);
 });
 
 test("V4.5.0 storage keys isolate templates/preferences by account and transaction type", () => {

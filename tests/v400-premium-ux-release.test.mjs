@@ -9,11 +9,11 @@ const read = (path) => readFileSync(join(root, path), "utf8");
 const css = read("app/globals.css");
 
 test("V4.0.0 release keeps six standard modules, server RPC contracts and explicit version", () => {
-  assert.equal(JSON.parse(read("package.json")).version, "4.5.8");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.5\.8"/);
-  assert.match(read("lib/app-version.ts"), /Premium UX Release|Fixed Mobile Chrome & Sheet Actions|Viewport-Locked Mobile Chrome & Keyboard Focus|Instant Launch Splash, Clean Sheet Grip & Today Spending|Category Drill-down Reports & Today Spending Disclosure|Full-screen Category Analytics & Instant Details|Compact Reports & Instant Period Navigation|Period Snapshot Type Safety Hotfix|Financial Accuracy & Release Gate|Release Gate Lint Compatibility|Financial Snapshot Type Safety Hotfix|Portable Test Runner CI Hotfix|Unified Fast Data Layer|Report RPC Type Safety & Deploy Hotfix|One-Tap Transaction UX|Reporting Trust & UX|Mobile Finance UX & Reporting Layout|Dashboard Period Comparison|Category Management UX Polish|Financial Comparison Logic Fix|Category Drag Lint Deploy Hotfix|Financial Comparison Clarity Fix|Comparison Direction Icons|Full Previous Period Comparison|Comparison Icon Alignment Fix/);
+  assert.equal(JSON.parse(read("package.json")).version, "4.6.0");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.6\.0"/);
+  assert.match(read("lib/app-version.ts"), /Premium UX Release|Fixed Mobile Chrome & Sheet Actions|Viewport-Locked Mobile Chrome & Keyboard Focus|Instant Launch Splash, Clean Sheet Grip & Today Spending|Category Drill-down Reports & Today Spending Disclosure|Full-screen Category Analytics & Instant Details|Compact Reports & Instant Period Navigation|Period Snapshot Type Safety Hotfix|Financial Accuracy & Release Gate|Release Gate Lint Compatibility|Financial Snapshot Type Safety Hotfix|Portable Test Runner CI Hotfix|Unified Fast Data Layer|Report RPC Type Safety & Deploy Hotfix|One-Tap Transaction UX|Reporting Trust & UX|Mobile Finance UX & Reporting Layout|Dashboard Period Comparison|Category Management UX Polish|Financial Comparison Logic Fix|Category Drag Lint Deploy Hotfix|Financial Comparison Clarity Fix|Comparison Direction Icons|Full Previous Period Comparison|Comparison Icon Alignment Fix|Multi-Asset Portfolio/);
   const modules = readdirSync(join(root, "app/(dashboard)"), { withFileTypes: true }).filter(x=>x.isDirectory()).map(x=>x.name).sort();
-  assert.deepEqual(modules, ["accounts", "categories", "overview", "reports", "settings", "transactions"]);
+  assert.deepEqual(modules, ["accounts", "categories", "overview", "portfolio", "reports", "settings", "transactions"]);
   const actions = read("features/transactions/actions.ts");
   for (const rpc of ["create_simple_transaction_v120", "update_simple_transaction_v120", "delete_simple_transaction_v120", "copy_simple_transaction_batch_v320"]) assert.ok(actions.includes(rpc));
 });

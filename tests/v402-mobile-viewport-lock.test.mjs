@@ -8,11 +8,11 @@ const file = (path) => readFileSync(join(root, path), "utf8");
 const css = file("app/globals.css");
 
 test("V4.0.2 release preserves 6 modules, finance RPCs and database semantics", () => {
-  assert.equal(JSON.parse(file("package.json")).version, "4.5.8");
-  assert.match(file("lib/app-version.ts"), /APP_VERSION = "4\.5\.8"/);
+  assert.equal(JSON.parse(file("package.json")).version, "4.6.0");
+  assert.match(file("lib/app-version.ts"), /APP_VERSION = "4\.6\.0"/);
   assert.deepEqual(readdirSync(join(root,"app/(dashboard)"), { withFileTypes:true })
     .filter((item) => item.isDirectory()).map((item) => item.name).sort(),
-    ["accounts", "categories", "overview", "reports", "settings", "transactions"]);
+    ["accounts", "categories", "overview", "portfolio", "reports", "settings", "transactions"]);
   const actions = file("features/transactions/actions.ts");
   for (const rpc of ["create_simple_transaction_v120", "update_simple_transaction_v120", "delete_simple_transaction_v120", "copy_simple_transaction_batch_v320"]) assert.ok(actions.includes(rpc), rpc);
 });

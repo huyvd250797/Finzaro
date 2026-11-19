@@ -18,7 +18,7 @@ test("V3.2.0 full source version and six-module contract", () => {
   assert.match(read("lib/app-version.ts"), new RegExp(`APP_VERSION = "${current.replaceAll(".", "\\.")}"`));
   assert.deepEqual(readdirSync(join(root, "app/(dashboard)"), { withFileTypes: true })
     .filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort(),
-    ["accounts", "categories", "overview", "reports", "settings", "transactions"]);
+    ["accounts", "categories", "overview", "portfolio", "reports", "settings", "transactions"]);
 });
 
 test("Instant Reports: both flow datasets are computed once from one ledger", () => {

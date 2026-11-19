@@ -98,7 +98,7 @@ test("mobile plus is fully inside fixed safe-area-aware taskbar", () => {
 });
 
 test("only six dashboard modules are buildable; old URLs are redirected", () => {
-  const basic = ["overview", "transactions", "accounts", "categories", "reports", "settings"];
+  const basic = ["overview", "transactions", "accounts", "categories", "portfolio", "reports", "settings"];
   const old = ["assets", "budgets", "cash-flow", "credit-cards", "debt-strategy", "deposits", "forecast", "goal-planner", "goals", "health", "loans", "net-worth", "recurring"];
   for (const item of basic) assert.ok(existsSync(join(root, `app/(dashboard)/${item}`)), item);
   const config = read("next.config.ts");

@@ -1,3 +1,10 @@
+## V4.6.0 — Multi-Asset Portfolio (2026-11-19)
+- Thêm module Tài sản: vàng 24K/9999 (đổi chỉ, cây, phân), chứng khoán VN (SSI FastConnect khi có consumer credentials) và Crypto (giá Binance Spot USDT).
+- Giá vốn bình quân sau nhiều lần mua; bán từng phần tính lãi/lỗ đã thực hiện; giao dịch portfolio độc lập với ledger Thu/Chi để tránh tính trùng.
+- Tổng danh mục VND, tỷ trọng 3 nhóm, lãi/lỗ tạm tính; báo giá thiếu được đánh dấu, không tự ước lượng bằng 0. USDT/VND yêu cầu tỷ giá người dùng cung cấp; snapshots ghi thủ công khi đủ giá.
+- Migration mới `supabase/migrations/20261119220000_multi_asset_portfolio_v460.sql` tạo 4 bảng riêng, RLS, và 3 RPC giao dịch atomic. Legacy `investment_assets` giữ nguyên.
+- Khởi tạo giá ưu tiên PNJ bảng giá công khai (best-effort), SSI API có quyền truy cập, Binance public; hỗ trợ nhập giá thủ công khi không có giá xác thực.
+
 ## V4.5.8 — Comparison Icon Alignment Fix (2026-11-17)
 - Dashboard: chỉnh bố cục dòng chênh lệch từ `inline-flex` tách icon và chuỗi dài sang văn bản inline. Nhóm icon và nhãn chiều biến động (`Tăng chi` / `Giảm chi` / `Tăng thu` / `Giảm thu` hoặc `Chi/Thu vượt/thấp hơn`) bằng `inline-flex` có khoảng cách đúng **2px**, `whitespace-nowrap` để luôn cùng một dòng; phần tiền và tỷ lệ có thể xuống dòng tự nhiên.
 - Icon `TrendingUp`/`TrendingDown` giữ hình gấp khúc và màu theo tác động tài chính; text vẫn căn phải, icon ở sát nhãn không bị trôi sang khoảng trống của card khi màn hình hẹp.

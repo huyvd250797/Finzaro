@@ -30,14 +30,14 @@ const expect = (current, previous, flow, difference, percent, direction) => {
 
 test("V4.5.5 release is versioned, retains category UX and strict Vercel release gate", () => {
   const pkg = JSON.parse(read("package.json"));
-  assert.equal(pkg.version, "4.5.8");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.5\.8"/);
-  assert.match(read("lib/app-version.ts"), /Financial Comparison Clarity Fix|Comparison Direction Icons|Full Previous Period Comparison|Comparison Icon Alignment Fix/);
+  assert.equal(pkg.version, "4.6.0");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.6\.0"/);
+  assert.match(read("lib/app-version.ts"), /Financial Comparison Clarity Fix|Comparison Direction Icons|Full Previous Period Comparison|Comparison Icon Alignment Fix|Multi-Asset Portfolio/);
   assert.equal(pkg.scripts.check, "npm run lint && npm run typecheck && npm run test && npm run build");
   assert.match(read("components/category-manager-grid.tsx"), /420\)/);
   assert.deepEqual(readdirSync(join(root, "app/(dashboard)"), { withFileTypes: true })
     .filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort(),
-  ["accounts", "categories", "overview", "reports", "settings", "transactions"]);
+  ["accounts", "categories", "overview", "portfolio", "reports", "settings", "transactions"]);
 });
 
 test("Yesterday expense 0, today expense 25k is +25k and undefined percentage", () => {
@@ -112,6 +112,6 @@ test("V4.5.5 adds read-only migration with strict fallback and does not mutate a
   assert.match(read("features/dashboard/snapshot.ts"), /previousFromLedger/);
   assert.match(source, /beneficialChange = difference \* \(flow === "expense" \? -1 : 1\)/);
   const sqlMigrations = readdirSync(join(root, "supabase/migrations"));
-  assert.equal(sqlMigrations.length, 30);
+  assert.equal(sqlMigrations.length, 31);
   assert.equal(sqlMigrations.some((f) => /financial_comparison_clarity_v455/.test(f)), true);
 });

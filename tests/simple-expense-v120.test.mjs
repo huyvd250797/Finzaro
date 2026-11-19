@@ -6,7 +6,7 @@ import { resolve, join } from "node:path";
 const root = resolve(import.meta.dirname, "..");
 const read = (path) => readFileSync(join(root, path), "utf8");
 const routes = ["credit-cards", "loans", "debt-strategy", "deposits", "assets", "net-worth", "health", "forecast", "cash-flow", "goal-planner", "goals", "budgets", "recurring"];
-const allowed = ["overview", "transactions", "accounts", "categories", "reports", "settings"];
+const allowed = ["overview", "transactions", "accounts", "categories", "portfolio", "reports", "settings"];
 const sidebar = read("components/app-sidebar.tsx");
 const mobileNav = read("components/mobile-nav.tsx");
 const home = read("app/(dashboard)/overview/page.tsx");
