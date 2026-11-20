@@ -32,10 +32,17 @@ async function OverviewDashboard() {
   // try block; render errors belong to the route error boundary, not here.
   let snapshot: Awaited<ReturnType<typeof loadDashboardSnapshot>> | undefined;
   let currency = "VND";
+  let familyBalance = 0;
   try {
     const context = await overviewContext();
     currency = context.currency;
-    snapshot = await loadDashboardSnapshot(context.supabase, context.userId, currency, context.timeZone);
+    const [loaded, fundsResult] = await Promise.all([
+      loadDashboardSnapshot(context.supabase, context.userId, currency, context.timeZone),
+      context.supabase.from("accounts").select("current_balance_minor").eq("user_id",context.userId).eq("account_type","family_savings").eq("currency_code",currency).eq("is_archived",false)
+    ]);
+    if (fundsResult.error) throw fundsResult.error;
+    snapshot = loaded;
+    familyBalance = (fundsResult.data??[]).reduce((sum,row)=>sum+row.current_balance_minor,0);
   } catch (error) {
     console.error("[Finzaro Dashboard] aggregate unavailable", error);
   }
@@ -59,6 +66,10 @@ async function OverviewDashboard() {
             <p className="mt-2 text-xs text-[var(--fin-hero-muted)]">Tổng tiền mặt, ngân hàng và ví đang hoạt động</p>
           </div>
           <Link href="/accounts" className="fin-hero-accounts inline-flex min-h-10 items-center gap-1.5 rounded-xl px-3 text-xs font-bold">Tài khoản <ChevronRight className="size-4"/></Link>
+        </div>
+        <div className="relative mt-4 grid grid-cols-2 gap-2 border-t border-white/15 pt-4">
+          <Link href="/accounts#family-savings" className="rounded-xl bg-white/10 px-3 py-3"><p className="text-[11px] text-[var(--fin-hero-muted)]">Quỹ gia đình · không khả dụng</p><p className="mt-1 text-sm font-black tabular-nums sm:text-base">{money(familyBalance)}</p></Link>
+          <div className="rounded-xl bg-white/10 px-3 py-3"><p className="text-[11px] text-[var(--fin-hero-muted)]">Tổng tiền đang quản lý</p><p className="mt-1 text-sm font-black tabular-nums sm:text-base">{money(snapshot.balance + familyBalance)}</p></div>
         </div>
         <div className="fin-hero-metrics relative mt-5 grid grid-cols-3 gap-2 border-t pt-4 sm:mt-6 sm:gap-3">
           {metrics.map((item) => { const Icon = item.icon; return <div key={item.label} className="fin-hero-metric min-w-0 rounded-xl px-2.5 py-3 sm:px-4" data-tone={item.tone} title={`${item.label}: ${money(item.amount)}`}>

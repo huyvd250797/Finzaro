@@ -2,21 +2,14 @@ import Link from "next/link";
 import { Filter, Search, X } from "lucide-react";
 import { AuthMessage } from "@/components/auth-message";
 import { InstantTransactionLauncher } from "@/components/instant-transaction-launcher";
-import { PendingSubmitButton } from "@/components/pending-submit-button";
-import { MoneyCalculatorInput } from "@/components/money-calculator-input";
-import { MobileDateInput } from "@/components/mobile-date-input";
 import { TransactionEntryForm } from "@/components/transaction-entry-form";
-import { TransactionCategorySelect } from "@/components/transaction-category-select";
 import { TransactionList } from "@/components/transaction-list";
 import { TransactionCopyPanel } from "@/components/transaction-copy-panel";
 import { InstantCopyOverlay } from "@/components/instant-copy-overlay";
 import { EditTransactionDialog } from "@/components/edit-transaction-dialog";
-import { TransactionFormFooterSlot } from "@/components/transaction-form-footer-slot";
+import { EditTransactionForm } from "@/components/transaction-edit-form";
 import { Card, CardContent } from "@/components/ui/card";
-import { minorToMajorInput } from "@/features/accounts/money";
-import { updateTransactionAction } from "@/features/transactions/actions";
 import { isTransactionType } from "@/features/transactions/constants";
-import type { CategoryType } from "@/features/categories/constants";
 import { currencyDigits, filterTransactions, loadLedger, quickTransactionSuggestions, transactionEntry, type LedgerCurrency, type TransactionView } from "@/features/transactions/data";
 import { requireUser } from "@/lib/auth";
 
@@ -25,34 +18,6 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "Giao dịch" };
 
 type SearchParams = Promise<{ page?: string; search?: string; legacy?: string; new?: string; edit?: string; duplicate?: string; copy?: string; date?: string; return_to?: string; q?: string; type?: string; account?: string; category?: string; from?: string; to?: string; error?: string; message?: string }>;
-
-function EditTransactionForm({ transaction, accounts, categories, currencies, returnTo }: {
-  transaction: TransactionView;
-  accounts: Array<{ id: string; name: string; currency_code: string; institution_name: string | null; decimal_digits?: number }>;
-  categories: Array<{ id: string; name: string; icon_name: string; icon_color: string | null; parent_id: string | null; category_type: CategoryType; sort_order: number }>;
-  currencies: LedgerCurrency[];
-  returnTo?: string;
-}) {
-  if (transaction.transaction_type !== "income" && transaction.transaction_type !== "expense") return null;
-  const type = transaction.transaction_type as "income" | "expense";
-  const entry = transactionEntry(transaction, type);
-  if (!entry) return null;
-  const digits = currencyDigits(currencies, entry.currency_code);
-  return <Card className="mt-5 border-sky-500/25 shadow-xl shadow-black/5"><CardContent className="p-5 sm:p-6">
-    <div className="flex items-start justify-between gap-4"><div><p className="text-xs font-black uppercase tracking-[0.14em] text-sky-600">Chỉnh sửa giao dịch</p><h2 className="mt-1 text-lg font-black">Sửa {type === "income" ? "khoản thu" : "khoản chi"}</h2><p className="mt-1 text-xs text-[var(--muted-foreground)]">Finzaro sẽ hoàn nguyên ledger cũ rồi áp dụng giá trị mới trong một database transaction.</p></div><Link href={returnTo || "/transactions"} className="grid size-9 place-items-center rounded-xl border border-[var(--border)]"><X className="size-4" /></Link></div>
-    <form action={updateTransactionAction} className="mt-5 grid min-w-0 gap-4 md:grid-cols-2">
-      <input type="hidden" name="transaction_id" value={transaction.id} />
-      <input type="hidden" name="return_to" value={returnTo ?? ""} />
-      <div className="fin-amount-field md:col-span-2"><span className="fin-amount-label">Số tiền</span><MoneyCalculatorInput name="amount" defaultValue={minorToMajorInput(Math.abs(entry.amount_minor), digits)} decimalDigits={digits} currencyCode={entry.currency_code} required className="fin-amount-input" /></div>
-      <label className="md:col-span-2"><span className="field-label">Nội dung</span><input name="title" required maxLength={140} defaultValue={transaction.title} className="fin-input" /></label>
-      <label><span className="field-label">Tài khoản</span><select name="account_id" required defaultValue={entry.account_id} className="fin-input">{accounts.map((account) => <option key={account.id} value={account.id}>{account.name} · {account.currency_code}</option>)}</select></label>
-      <label className="md:col-span-2"><span className="field-label">Danh mục</span><TransactionCategorySelect categories={categories} defaultValue={transaction.category_id} /></label>
-      <label><span className="field-label">Ngày giao dịch</span><MobileDateInput name="transaction_date" defaultValue={transaction.transaction_date} ariaLabel="Ngày giao dịch" /></label>
-      <label className="md:col-span-2"><span className="field-label">Ghi chú</span><textarea name="notes" rows={3} maxLength={500} defaultValue={transaction.notes ?? ""} className="fin-textarea" /></label>
-      <div className="md:col-span-2"><TransactionFormFooterSlot><Link href={returnTo || "/transactions"} className="fin-secondary-btn">Hủy</Link><PendingSubmitButton idleLabel="Cập nhật giao dịch" pendingLabel="Đang cập nhật..." className="fin-primary-btn" /></TransactionFormFooterSlot></div>
-    </form>
-  </CardContent></Card>;
-}
 
 export default async function TransactionsPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;

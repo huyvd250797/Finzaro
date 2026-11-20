@@ -48,7 +48,7 @@ test("Instant Copy: existing rows open modal without loading transaction listing
   assert.match(overlay, /event\.preventDefault\(\)/);
   assert.match(overlay, /<BottomSheet open=\{Boolean\(source\)\}/);
   assert.doesNotMatch(overlay, /router\.push|router\.replace|fetch\(/);
-  for (const source of [list, calendar]) {
+  for (const source of [read("components/transaction-swipe-row.tsx"), calendar]) {
     assert.match(source, /data-fin-copy-id=/);
     assert.match(source, /data-fin-copy-date=/);
     assert.match(source, /data-fin-copy-type=/);

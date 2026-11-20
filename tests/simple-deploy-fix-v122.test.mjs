@@ -7,7 +7,7 @@ const root = resolve(import.meta.dirname, "..");
 const actions = readFileSync(resolve(root, "features/transactions/actions.ts"), "utf8");
 
 test("V1.2.2 edit transaction does not access nullable query data inside currency callback", () => {
-  const edit = actions.split("export async function updateTransactionAction(")[1];
+  const edit = actions.split("async function commitSimpleTransactionUpdate(")[1]?.split("export type UpdateTransactionState")[0];
   assert.ok(edit, "edit action must exist");
   assert.match(edit, /const account = accountResult\.data;/);
   assert.match(edit, /if \(accountResult\.error \|\| !account \|\| account\.is_archived/);

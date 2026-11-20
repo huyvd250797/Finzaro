@@ -153,47 +153,65 @@ export async function deleteTransactionAction(formData: FormData) {
   }
 }
 
+async function commitSimpleTransactionUpdate(formData: FormData) {
+  const transactionId = text(formData, "transaction_id");
+  const title = text(formData, "title");
+  const categoryId = text(formData, "category_id");
+  const notes = text(formData, "notes");
+  const date = text(formData, "transaction_date");
+  const accountId = text(formData, "account_id");
+  if (!transactionId || !categoryId || !accountId || !title || title.length > 140 || notes.length > 500 || !validDate(date)) throw new Error("Thông tin giao dịch không hợp lệ.");
+  const { supabase, userId } = await requireUser();
+  const [txResult, categoryResult, accountResult, currencyResult] = await Promise.all([
+    supabase.from("transactions").select("transaction_type, transaction_purpose").eq("id", transactionId).eq("user_id", userId).maybeSingle(),
+    supabase.from("categories").select("category_type, is_archived").eq("id", categoryId).eq("user_id", userId).maybeSingle(),
+    supabase.from("accounts").select("currency_code, account_type, is_archived").eq("id", accountId).eq("user_id", userId).maybeSingle(),
+    supabase.from("supported_currencies").select("code, decimal_digits").eq("is_active", true)
+  ]);
+  const tx = txResult.data;
+  if (txResult.error || !tx || !["income", "expense"].includes(tx.transaction_type) || tx.transaction_purpose !== "standard") throw new Error("Chỉ sửa được giao dịch Thu/Chi thông thường.");
+  if (categoryResult.error || !categoryResult.data || categoryResult.data.is_archived || categoryResult.data.category_type !== tx.transaction_type) throw new Error("Danh mục không hợp lệ.");
+  // Keep the validated account in a local binding so TypeScript retains
+  // non-null narrowing inside the currency lookup callback.
+  const account = accountResult.data;
+  if (accountResult.error || !account || account.is_archived || !["cash", "bank", "ewallet"].includes(account.account_type)) throw new Error("Tài khoản không hợp lệ.");
+  if (currencyResult.error || !currencyResult.data) throw new Error("Không tìm thấy tiền tệ.");
+  const digits = currencyResult.data.find(c => c.code === account.currency_code)?.decimal_digits;
+  if (digits === undefined) throw new Error("Không tìm thấy tiền tệ.");
+  const amount = parseMajorAmountToMinor(text(formData, "amount"), digits);
+  if (!amount || amount <= 0) throw new Error("Số tiền không hợp lệ.");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Historical dynamic Supabase table/RPC adapter; update generated DB types in a schema release.
+  const error = transactionRpcError(await measureServerOperation("transaction.update.rpc", () => (supabase as any).rpc("update_simple_transaction_v120", {
+    p_transaction_id: transactionId, p_title: title, p_category_id: categoryId, p_notes: notes || null,
+    p_transaction_date: date, p_account_id: accountId, p_amount_minor: amount
+  })));
+  if (error) {
+    const issue = error as { code?: string; message?: string };
+    // Return safe, actionable ledger validation errors for income/expense edits.
+    throw new Error(["22023","23503","42501"].includes(issue.code ?? "") && issue.message
+      ? issue.message : dbError(error));
+  }
+  invalidateSimpleLedger();
+}
+
+export type UpdateTransactionState = { error: string };
+
+/** Inline errors keep the edit sheet visible (especially for income edits). */
+export async function updateTransactionStateAction(_previous: UpdateTransactionState, formData: FormData): Promise<UpdateTransactionState> {
+  try {
+    await commitSimpleTransactionUpdate(formData);
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : "Không thể cập nhật khoản thu/chi." };
+  }
+  redirect(feedbackDestination(safeReturnTo(text(formData,"return_to")),"message","Đã cập nhật giao dịch."));
+}
+
+/** Keep existing action for older callers and direct POST fallback. */
 export async function updateTransactionAction(formData: FormData) {
   const returnTo = safeReturnTo(text(formData, "return_to"));
-  try {
-    const transactionId = text(formData, "transaction_id");
-    const title = text(formData, "title");
-    const categoryId = text(formData, "category_id");
-    const notes = text(formData, "notes");
-    const date = text(formData, "transaction_date");
-    const accountId = text(formData, "account_id");
-    if (!transactionId || !categoryId || !accountId || !title || title.length > 140 || notes.length > 500 || !validDate(date)) throw new Error("Thông tin giao dịch không hợp lệ.");
-    const { supabase, userId } = await requireUser();
-    const [txResult, categoryResult, accountResult, currencyResult] = await Promise.all([
-      supabase.from("transactions").select("transaction_type, transaction_purpose").eq("id", transactionId).eq("user_id", userId).maybeSingle(),
-      supabase.from("categories").select("category_type, is_archived").eq("id", categoryId).eq("user_id", userId).maybeSingle(),
-      supabase.from("accounts").select("currency_code, account_type, is_archived").eq("id", accountId).eq("user_id", userId).maybeSingle(),
-      supabase.from("supported_currencies").select("code, decimal_digits").eq("is_active", true)
-    ]);
-    const tx = txResult.data;
-    if (txResult.error || !tx || !["income", "expense"].includes(tx.transaction_type) || tx.transaction_purpose !== "standard") throw new Error("Chỉ sửa được giao dịch Thu/Chi thông thường.");
-    if (categoryResult.error || !categoryResult.data || categoryResult.data.is_archived || categoryResult.data.category_type !== tx.transaction_type) throw new Error("Danh mục không hợp lệ.");
-    // Keep the validated account in a local binding so TypeScript retains
-    // non-null narrowing inside the currency lookup callback.
-    const account = accountResult.data;
-    if (accountResult.error || !account || account.is_archived || !["cash", "bank", "ewallet"].includes(account.account_type)) throw new Error("Tài khoản không hợp lệ.");
-    if (currencyResult.error || !currencyResult.data) throw new Error("Không tìm thấy tiền tệ.");
-    const digits = currencyResult.data.find(c => c.code === account.currency_code)?.decimal_digits;
-    if (digits === undefined) throw new Error("Không tìm thấy tiền tệ.");
-    const amount = parseMajorAmountToMinor(text(formData, "amount"), digits);
-    if (!amount || amount <= 0) throw new Error("Số tiền không hợp lệ.");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Historical dynamic Supabase table/RPC adapter; update generated DB types in a schema release.
-    const error = transactionRpcError(await measureServerOperation("transaction.update.rpc", () => (supabase as any).rpc("update_simple_transaction_v120", {
-      p_transaction_id: transactionId, p_title: title, p_category_id: categoryId, p_notes: notes || null,
-      p_transaction_date: date, p_account_id: accountId, p_amount_minor: amount
-    })));
-    if (error) throw new Error(dbError(error));
-    invalidateSimpleLedger();
-    redirect(feedbackDestination(returnTo, "message", "Đã cập nhật giao dịch."));
-  } catch (error) {
-    if (error && typeof error === "object" && "digest" in error) throw error;
-    redirect(feedbackDestination(returnTo, "error", error instanceof Error ? error.message : "Không thể sửa giao dịch."));
-  }
+  try { await commitSimpleTransactionUpdate(formData); }
+  catch (error) { redirect(feedbackDestination(returnTo,"error", error instanceof Error ? error.message : "Không thể cập nhật giao dịch.")); }
+  redirect(feedbackDestination(returnTo,"message","Đã cập nhật giao dịch."));
 }
 
 

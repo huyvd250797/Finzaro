@@ -41,7 +41,7 @@ test("Transaction history groups by actual transaction_date and exposes duplicat
   const route = read("app/(dashboard)/transactions/page.tsx");
   assert.match(list,/groups\.get\(tx\.transaction_date\)/);
   assert.match(list,/groupByDate/);
-  assert.match(list,/Sao chép giao dịch sang ngày khác/);
+  assert.match(read("components/transaction-swipe-row.tsx"),/Sao chép ngày/);
   assert.match(route,/groupByDate/);
   assert.match(route,/params\.copy/);
   assert.match(route,/<TransactionCopyPanel/);

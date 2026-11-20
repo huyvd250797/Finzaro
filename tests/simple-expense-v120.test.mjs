@@ -99,7 +99,7 @@ test("Account create/edit only permits ordinary cash, bank or e-wallet", () => {
  assert.match(read("features/accounts/constants.ts"),/cash/);
  assert.match(read("features/accounts/constants.ts"),/ewallet/);
  assert.match(accounts,/Tiết kiệm \(dữ liệu cũ/);
- assert.match(accounts,/\["bank", "cash", "ewallet"\]/);
+ assert.match(read("features/accounts/actions.ts"),/\["bank", "cash", "ewallet"\]/);
 });
 test("calendar keeps two financial lines, hide zeros, quick actions", () => {
  const calendar=read("components/report-calendar-interactive.tsx");

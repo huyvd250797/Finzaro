@@ -1,3 +1,11 @@
+## V4.6.6 — Family Savings Fund Management (2026-11-20)
+- Quỹ gia đình trong Tài khoản & Ví: VND, mục tiêu, đóng góp tháng, kỳ hạn và lãi suất dự kiến. Quỹ không tính vào số dư khả dụng nhưng có trong tổng tiền đang quản lý.
+- Tạo/cập nhật quỹ và gửi/rút quỹ qua RPC SECURITY DEFINER có kiểm tra auth.uid() và khóa tài khoản, ghi nhận chuyển khoản nội bộ có hai bút toán. Không phát sinh Thu/Chi khi chuyển tiền.
+- Tổng quan: hiển thị thêm số dư Quỹ gia đình và Tổng tiền đang quản lý, không thay đổi cách tính Thu/Chi.
+- Lịch sử giao dịch: vuốt trái để hiện Sửa/Xóa, giữ Nhân bản/Sao chép trong menu thay vì bốn nút luôn hiển thị.
+- Sửa khoản Thu/Chi: useActionState trả lỗi trong form, không đóng sheet khi thất bại; khóa nút và thông báo đang cập nhật.
+- Cần migration `20261120203000_family_savings_fund_v466.sql`. Không sửa dữ liệu savings cũ; không bật đồng bộ giá nền.
+
 ## V4.6.5 — Portfolio Mobile Layout & Save Feedback (2026-11-20)
 - Tách hoàn toàn hàng nút **Làm mới / Thêm tài sản** khỏi vùng tổng giá trị, trả lại toàn bộ chiều ngang cho tổng tiền trên iPhone.
 - Thống nhất mọi số tiền VND trong module Tài sản và card Tài sản ở Tổng quan: `số tiền ₫`, ký hiệu **₫** đứng ngay sau số tiền và không rớt dòng; hỗ trợ số âm và số tiền lớn, giữ nguyên `USDT` cho giá gốc crypto.

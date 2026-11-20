@@ -23,14 +23,14 @@ const draft = (title = "Ăn trưa") => ({ title, from_account_id: "account-a", t
 
 test("V4.5.0 release retains six modules, one read-only dashboard RPC migration, and strict quality gate", () => {
   const pkg = JSON.parse(source("package.json"));
-  assert.equal(pkg.version, "4.6.5");
-  assert.match(source("lib/app-version.ts"), /APP_VERSION = "4\.6\.5"/);
-  assert.match(source("lib/app-version.ts"), /One-Tap Transaction UX|Reporting Trust & UX|Mobile Finance UX & Reporting Layout|Dashboard Period Comparison|Category Management UX Polish|Financial Comparison Logic Fix|Category Drag Lint Deploy Hotfix|Financial Comparison Clarity Fix|Comparison Direction Icons|Full Previous Period Comparison|Comparison Icon Alignment Fix|Multi-Asset Portfolio|Asset Management UX & Edit|Market Price Reliability Fix|Market Price Reliability Deploy Fix|Portfolio UX & Snapshot Fix|Portfolio Mobile Layout & Save Feedback/);
+  assert.equal(pkg.version, "4.6.6");
+  assert.match(source("lib/app-version.ts"), /APP_VERSION = "4\.6\.6"/);
+  assert.match(source("lib/app-version.ts"), /One-Tap Transaction UX|Reporting Trust & UX|Mobile Finance UX & Reporting Layout|Dashboard Period Comparison|Category Management UX Polish|Financial Comparison Logic Fix|Category Drag Lint Deploy Hotfix|Financial Comparison Clarity Fix|Comparison Direction Icons|Full Previous Period Comparison|Comparison Icon Alignment Fix|Multi-Asset Portfolio|Asset Management UX & Edit|Market Price Reliability Fix|Market Price Reliability Deploy Fix|Portfolio UX & Snapshot Fix|Portfolio Mobile Layout & Save Feedback|Family Savings Fund Management/);
   assert.equal(pkg.scripts.check, "npm run lint && npm run typecheck && npm run test && npm run build");
   assert.equal(JSON.parse(source("vercel.json")).buildCommand, "npm run check");
   assert.deepEqual(readdirSync(join(root, "app/(dashboard)"), { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name).sort(), ["accounts", "categories", "overview", "portfolio", "reports", "settings", "transactions"]);
   assert.equal(readdirSync(join(root, "supabase/migrations")).filter((name) => name.endsWith(".sql")).length,
-    34);
+    35);
 });
 
 test("V4.5.0 storage keys isolate templates/preferences by account and transaction type", () => {
@@ -113,14 +113,14 @@ test("V4.5.0 duplicate requires a new save and editing uses the same atomic upda
   const page = source("app/(dashboard)/transactions/page.tsx");
   const list = source("components/transaction-list.tsx");
   const edit = source("components/edit-transaction-dialog.tsx");
-  assert.match(list, /\/transactions\?duplicate=/);
-  assert.match(list, /\/transactions\?copy=/);
+  assert.match(source("components/transaction-swipe-row.tsx"), /\/transactions\?duplicate=/);
+  assert.match(source("components/transaction-swipe-row.tsx"), /\/transactions\?copy=/);
   assert.match(page, /const duplicateId/);
   assert.match(page, /const duplicateSuggestion/);
   assert.match(page, /prefill=\{/);
   assert.match(page, /<EditTransactionDialog/);
   assert.match(edit, /<BottomSheet/);
-  assert.match(page, /updateTransactionAction/);
+  assert.match(source("components/transaction-edit-form.tsx"), /updateTransactionStateAction/);
   assert.match(source("features/transactions/actions.ts"), /update_simple_transaction_v120/);
 });
 

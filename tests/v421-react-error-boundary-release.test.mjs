@@ -41,7 +41,7 @@ function inspectReactTryBlocks(file) {
 test("V4.2.1 Dashboard handles failed snapshots without constructing JSX in try/catch", () => {
   inspectReactTryBlocks("app/(dashboard)/overview/page.tsx");
   const source = read("app/(dashboard)/overview/page.tsx");
-  assert.match(source, /await loadDashboardSnapshot\(/);
+  assert.match(source, /loadDashboardSnapshot\(context\.supabase/);
   assert.match(source, /if \(!snapshot \|\| !snapshot\.previous\)\s*\{\s*return <div role="alert"/);
   assert.match(source, /<SpendingPeriodCard/);
   assert.match(source, /<CashflowChart/);
@@ -64,8 +64,8 @@ test("V4.2.1 trend modal retains stable focus target during effect cleanup", () 
 
 test("V4.2.1 release retains strict lint, typecheck, tests, and build", () => {
   const pkg = JSON.parse(read("package.json"));
-  assert.equal(pkg.version, "4.6.5");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.6\.5"/);
+  assert.equal(pkg.version, "4.6.6");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.6\.6"/);
   assert.equal(pkg.scripts.check, "npm run lint && npm run typecheck && npm run test && npm run build");
   assert.equal(JSON.parse(read("vercel.json")).buildCommand, "npm run check");
   assert.doesNotMatch(read("next.config.ts"), /ignoreBuildErrors|ignoreDuringBuilds/);
