@@ -2,7 +2,8 @@ import Link from "next/link";
 import { Gem, ChevronRight } from "lucide-react";
 import { requireUser } from "@/lib/auth";
 import { type Position, summarizePortfolio, valuePosition } from "@/features/portfolio/core";
-import { marketUsdtVnd, portfolioMarketQuote } from "@/features/portfolio/market";
+import { marketUsdtVnd } from "@/features/portfolio/market";
+import { resolvePortfolioQuotes } from "@/features/portfolio/market-sync";
 
 const money=(n:number)=>`${new Intl.NumberFormat("vi-VN",{maximumFractionDigits:0}).format(n)} đ`;
 /** Independent stream: does not block cashflow Dashboard when providers are unavailable. */
@@ -19,7 +20,8 @@ export async function PortfolioOverviewCard() {
   const hasCrypto=positions.some(p=>p.kind==="crypto" && Number(p.quantity)>0);
   const liveFx=hasCrypto ? await marketUsdtVnd() : null;
   const rate=liveFx?.rate??(fx.data?.usdt_vnd ? Number(fx.data.usdt_vnd):null);
-  const rows=await Promise.all(positions.map(async p=>valuePosition(p,Number(p.quantity)>0?await portfolioMarketQuote(p):null,rate)));
+  const quotes=await resolvePortfolioQuotes(db,positions);
+  const rows=positions.map(p=>valuePosition(p,quotes.get(p.id)??null,rate));
   const summary=summarizePortfolio(rows);
   return <Link href="/portfolio" className="fin-dashboard-card block rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 transition-colors hover:bg-[var(--muted)]/30 sm:p-5">
     <div className="flex items-start justify-between gap-2"><div><p className="fin-section-eyebrow">TÀI SẢN ĐẦU TƯ</p><p className="mt-1 text-base font-extrabold">Vàng · Chứng khoán · Crypto</p></div><Gem className="size-5 text-[var(--primary)]"/></div>

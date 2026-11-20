@@ -1,3 +1,10 @@
+## V4.6.2 — Automatic Market Price Sync (2026-11-20)
+- PNJ chính thức: đọc nhẫn 9999/vàng miếng đúng nhãn sản phẩm nếu niêm yết, lấy giá mua vào có kiểm tra đơn vị; lỗi HTML không tự suy đoán.
+- Vietcap công khai qua vnstock-js@2.0.0 là nguồn mặc định cho cổ phiếu; SSI FastConnect vẫn giữ dưới dạng tùy chọn nếu được cấp quyền.
+- Binance WebSocket khi mở Tài sản; tự cập nhật giá/lãi lỗ trên UI. Supabase Realtime thông báo khi shared quote cache được cập nhật.
+- Cập nhật khi app đóng qua endpoint backend bảo mật và Supabase Cron (cần cấu hình một lần). Giá cũ được đánh nhãn, thiếu giá không định giá bằng 0.
+- Migration 20261120135000_automatic_market_price_sync_v462.sql: bảng giá công khai không chứa PII, RLS read-only cho authenticated, server-only writes; chuyển metadata cổ phiếu từ SSI sang Vietcap, không sửa khối lượng, giá vốn hay lịch sử.
+
 ## V4.6.1 — Asset Management UX & Edit (2026-11-20)
 - Thiết kế lại giao diện Tài sản mobile-first: tổng quan giá trị, vốn, lãi/lỗ; bộ lọc + tìm kiếm; các card hiển thị giá thị trường, giá vốn, số lượng, nguồn giá và trạng thái định giá; nút **Sửa** và **Mua/Bán** rõ ràng.
 - Chuyển thao tác Thêm/Sửa/Mua/Bán thành bottom sheet có form phân nhóm, sticky footer và thao tác thuận tiện trên iPhone; chuyển tỷ giá, lịch sử, snapshot và lưu trữ sang khu vực công cụ gọn nhẹ.

@@ -1,6 +1,6 @@
 /** Pure, audited Finzaro V4.6.0 portfolio math. Not a transaction ledger. */
 export type AssetKind = "gold" | "stock" | "crypto";
-export type MarketProvider = "manual" | "pnj" | "ssi" | "binance";
+export type MarketProvider = "manual" | "pnj" | "ssi" | "vci" | "binance";
 export type Position = {
   id: string; kind: AssetKind; symbol: string; name: string; variant: string; exchange: string;
   quote_currency: "VND" | "USDT"; provider: MarketProvider; quantity: string;

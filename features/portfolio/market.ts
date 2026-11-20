@@ -55,30 +55,53 @@ export async function fetchSSI(symbol: string, exchange: string): Promise<Quote 
   return candidates.length ? live(candidates[0].price, `SSI · đóng cửa ${candidates[0].date}`, new Date().toISOString()) : null;
 }
 
-/** PNJ official public price table: best-effort parser. Fail closed on markup/units mismatch. */
+/** Parse only a matching official PNJ product row and the BUY price following its name.
+ * PNJ currently publishes quotations in 1,000 VND/chi or 1,000 VND/luong;
+ * reject values outside plausible ranges instead of guessing an arbitrary currency scale.
+ */
 export function parsePnjGold(html: string, variant: string): number | null {
-  const wanted = variant === "pnj_ring" ? /nhẫn\s*trơn\s*pnj\s*999/i : variant === "sjc_bar" ? /(?:vàng\s*miếng\s*)?sjc/i : null;
+  const wanted = variant === "pnj_ring" ? /nhẫn\s*trơn\s*pnj\s*999(?:[.,]9)?/i
+    : variant === "sjc_bar" ? /(?:vàng\s*miếng\s*)?sjc(?:\s*9999|\s*1l|\b)/i : null;
   if (!wanted) return null;
-  const rows = html.match(/<tr\b[^>]*>[\s\S]*?<\/tr>/gi) ?? [];
-  for (const row of rows) {
-    const cells = [...row.matchAll(/<td\b[^>]*>([\s\S]*?)<\/td>/gi)].map(x => x[1]
-      .replace(/<[^>]+>/g," ").replace(/&nbsp;|&#160;/gi," ").replace(/\s+/g," ").trim());
-    if (cells.length < 3 || !wanted.test(cells[0])) continue;
-    const token = cells[1].replace(/\s/g, "");
+  for (const row of html.match(/<tr\b[^>]*>[\s\S]*?<\/tr>/gi) ?? []) {
+    const cells = [...row.matchAll(/<t[dh]\b[^>]*>([\s\S]*?)<\/t[dh]>/gi)]
+      .map(m => m[1].replace(/<[^>]+>/g, " ").replace(/&nbsp;|&#160;/gi, " ").replace(/\s+/g, " ").trim());
+    const index = cells.findIndex((cell) => wanted.test(cell) && !(variant === "sjc_bar" && /nhẫn|trang\s*sức/i.test(cell)));
+    if (index < 0 || index + 2 >= cells.length) continue;
+    const token = cells[index + 1].replace(/\s/g, "");
     if (!/^(?:\d{1,3}(?:[.,]\d{3})+|\d{4,6})$/.test(token)) continue;
-    const raw = Number(token.replace(/[.,]/g,""));
-    // Published PNJ figures may use 1,000 VND/chỉ (~13,000) or 1,000 VND/lượng (~130,000).
-    // Explicit range validation avoids treating ambiguous values as valid.
+    const raw = Number(token.replace(/[.,]/g, ""));
     const perChi = raw >= 5000 && raw <= 50000 ? raw * 1000 : raw > 50000 && raw <= 500000 ? raw * 100 : null;
     if (perChi !== null && perChi >= 5_000_000 && perChi <= 50_000_000) return perChi;
   }
   return null;
 }
 export async function fetchPNJ(variant: string): Promise<Quote | null> {
-  const response = await request("https://www.pnj.com.vn/site/gia-vang",undefined,600);
+  if (!['pnj_ring','sjc_bar'].includes(variant)) return null;
+  const response = await request("https://giavang.pnj.com.vn/",undefined,120);
   const html = await response.text();
   const price = parsePnjGold(html, variant);
-  return live(price, "PNJ · giá mua vào", new Date().toISOString());
+  const plain = html.replace(/<[^>]+>/g,' ').replace(/&nbsp;|&#160;/gi,' ').replace(/\s+/g,' ');
+  const date = plain.match(/giá\s*vàng\s*ngày\s*:?\s*(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2})(?::(\d{2}))?/i);
+  const published=date ? new Date(`${date[3]}-${date[2]}-${date[1]}T${date[4]}:${date[5]}:${date[6]??'00'}+07:00`) : null;
+  const now=Date.now();
+  const observed=published && Number.isFinite(published.getTime()) && published.getTime() <= now + 300000 && published.getTime() > now - 30*86400000
+    ? published.toISOString() : new Date(now).toISOString();
+  return live(price, variant === 'sjc_bar' ? 'PNJ · bảng giá vàng miếng SJC, mua vào' : 'PNJ · nhẫn trơn 9999, mua vào', observed);
+}
+
+/** Public Vietcap adapter via vnstock-js (Node server only, not in client bundle).
+ * The library normalizes listed-share prices to full VND, not thousands of VND.
+ * Unsupported/refused responses must not become a fabricated quote.
+ */
+export async function fetchVietcap(symbol: string): Promise<Quote | null> {
+  if (!/^[A-Z0-9]{2,10}$/.test(symbol)) return null;
+  const { vn } = await import("vnstock-js");
+  const quote: unknown = await vn.stock(symbol).price();
+  if (!quote || typeof quote !== 'object' || !('price' in quote)) return null;
+  const price = numeric(quote.price);
+  if (price === null || price < 100 || price > 5_000_000) return null;
+  return live(price, 'Vietcap · giá khớp/đóng cửa gần nhất', new Date().toISOString());
 }
 
 /** Optional reference USDT/VND from CoinGecko Demo API. Manual FX remains a transparent fallback. */
@@ -93,14 +116,29 @@ export const marketUsdtVnd = cache(async (): Promise<{rate:number; source:string
   } catch { return null; }
 });
 
+/** Stable public quote key; never includes per-user portfolio data. */
+export function marketQuoteKey(position: Pick<Position,'kind'|'symbol'|'variant'|'provider'>): string | null {
+  if (position.provider === 'manual') return null;
+  if (position.kind === 'gold') return ['pnj_ring','sjc_bar'].includes(position.variant) ? `gold:pnj:${position.variant}` : null;
+  if (position.kind === 'stock') return /^[A-Z0-9]{2,10}$/.test(position.symbol) ? `stock:${position.provider === 'ssi' ? 'ssi' : 'vci'}:${position.symbol}` : null;
+  if (position.kind === 'crypto') return /^[A-Z0-9]{2,15}$/.test(position.symbol) ? `crypto:binance:${position.symbol}` : null;
+  return null;
+}
+
+export async function fetchMarketPositionQuote(position: Position): Promise<Quote | null> {
+  if (position.provider === 'manual') return null;
+  if (position.kind === 'gold') return fetchPNJ(position.variant);
+  if (position.kind === 'stock') return position.provider === 'ssi' ? fetchSSI(position.symbol,position.exchange) : fetchVietcap(position.symbol);
+  if (position.kind === 'crypto') return fetchBinance(position.symbol);
+  return null;
+}
+
 /** Request-local cache prevents repeated API fetch for the same holding during one render. */
 export const portfolioMarketQuote = cache(async (position: Position): Promise<Quote | null> => {
-  if (position.provider === "manual") return position.manual_price ? { price:Number(position.manual_price), source:"Nhập thủ công", at:"", type:"manual" } : null;
+  if (position.provider === 'manual') return position.manual_price ? { price:Number(position.manual_price), source:'Nhập thủ công', at:'', type:'manual' } : null;
   try {
-    const quote = position.provider === "binance" && position.kind === "crypto" ? await fetchBinance(position.symbol)
-      : position.provider === "ssi" && position.kind === "stock" ? await fetchSSI(position.symbol, position.exchange)
-      : position.provider === "pnj" && position.kind === "gold" ? await fetchPNJ(position.variant) : null;
+    const quote=await fetchMarketPositionQuote(position);
     if (quote) return quote;
-  } catch { /* Fail closed to explicitly labeled manual price. */ }
-  return position.manual_price ? { price:Number(position.manual_price),source:"Giá dự phòng thủ công (chưa xác minh)",at:"",type:"manual",stale:true } : null;
+  } catch { /* no invented market price on failed upstream */ }
+  return position.manual_price ? { price:Number(position.manual_price),source:'Giá dự phòng thủ công (chưa xác minh)',at:'',type:'manual',stale:true } : null;
 });

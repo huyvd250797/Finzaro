@@ -20,7 +20,7 @@ export function PortfolioAssetSheet({open,onClose,asset,opening}:{open:boolean;o
   const isEdit = asset !== null;
   const currentKind = asset?.kind??kind;
   const formId = `fin-portfolio-${asset?.id??"new"}`;
-  const assetProvider = currentKind==="gold"?[{value:"pnj",label:"PNJ"},{value:"manual",label:"Thủ công"}]:currentKind==="stock"?[{value:"ssi",label:"SSI"},{value:"manual",label:"Thủ công"}]:[{value:"binance",label:"Binance"},{value:"manual",label:"Thủ công"}];
+  const assetProvider = currentKind==="gold"?[{value:"pnj",label:"PNJ"},{value:"manual",label:"Thủ công"}]:currentKind==="stock"?[{value:"vci",label:"Vietcap (công khai)"},{value:"ssi",label:"SSI FastConnect (tuỳ chọn)"},{value:"manual",label:"Thủ công"}]:[{value:"binance",label:"Binance"},{value:"manual",label:"Thủ công"}];
   return <BottomSheet open={open} onClose={onClose} label={isEdit?`Sửa tài sản ${asset.name}`:"Thêm tài sản đầu tư"}
     panelClassName="mx-auto max-w-2xl sm:mb-4 sm:max-h-[calc(100dvh-36px)] sm:rounded-[26px]">
     <div className="px-4 pb-6 pt-2 sm:px-6">
