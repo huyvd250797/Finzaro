@@ -1,3 +1,9 @@
+## V4.6.1 — Asset Management UX & Edit (2026-11-20)
+- Thiết kế lại giao diện Tài sản mobile-first: tổng quan giá trị, vốn, lãi/lỗ; bộ lọc + tìm kiếm; các card hiển thị giá thị trường, giá vốn, số lượng, nguồn giá và trạng thái định giá; nút **Sửa** và **Mua/Bán** rõ ràng.
+- Chuyển thao tác Thêm/Sửa/Mua/Bán thành bottom sheet có form phân nhóm, sticky footer và thao tác thuận tiện trên iPhone; chuyển tỷ giá, lịch sử, snapshot và lưu trữ sang khu vực công cụ gọn nhẹ.
+- **Sửa tài sản**: tên, mã, sàn/loại vàng, nguồn giá, giá thủ công; chỉnh số lượng, giá mua và phí của **giao dịch mua ban đầu**. SQL cập nhật theo owner, khóa vị thế và phát lại lịch sử mua/bán để tính lại giá vốn, số lượng còn lại, lãi/lỗ thực hiện; từ chối sửa nếu khiến lần bán lịch sử không hợp lệ.
+- Migration V4.6.1 bổ sung `portfolio_edit_v461` và `portfolio_opening_trades_v461`; không xóa hoặc làm mất dữ liệu V4.6.0 và không đụng đến Thu/Chi/ví. Lịch sử snapshot đã lưu giữ nguyên.
+
 ## V4.6.0 — Multi-Asset Portfolio (2026-11-19)
 - Thêm module Tài sản: vàng 24K/9999 (đổi chỉ, cây, phân), chứng khoán VN (SSI FastConnect khi có consumer credentials) và Crypto (giá Binance Spot USDT).
 - Giá vốn bình quân sau nhiều lần mua; bán từng phần tính lãi/lỗ đã thực hiện; giao dịch portfolio độc lập với ledger Thu/Chi để tránh tính trùng.

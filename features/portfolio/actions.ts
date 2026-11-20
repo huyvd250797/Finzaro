@@ -63,6 +63,43 @@ export async function createPortfolioPosition(form: FormData) {
     return `Đã thêm ${defaultName} vào danh mục.`;
   });
 }
+/** Edit an existing holding, including its opening purchase, via an atomic historical replay. */
+export async function editPortfolioAsset(form: FormData) {
+  await withResult(async () => {
+    const { supabase, userId } = await requireUser();
+    const positionId = checkId(input(form,"position_id"));
+    const { data: owner, error: ownerError } = await (supabase as any).from("portfolio_positions_v460")
+      .select("kind,quote_currency").eq("id",positionId).eq("user_id",userId).maybeSingle();
+    if (ownerError || !owner) throw new Error("Không tìm thấy tài sản cần sửa.");
+    const kind = String(owner.kind);
+    if (!["gold","stock","crypto"].includes(kind)) throw new Error("Loại tài sản không hợp lệ.");
+    const name = input(form,"name");
+    if (!name || name.length > 120) throw new Error("Tên tài sản phải có 1–120 ký tự.");
+    const symbol = validateSymbol(kind,input(form,"symbol"));
+    const variant = kind === "gold" ? input(form,"variant") : "";
+    const exchange = kind === "stock" ? input(form,"exchange") : "";
+    const provider = input(form,"provider");
+    if (kind === "gold" && !["pnj_ring","sjc_bar","other_ring"].includes(variant)) throw new Error("Loại vàng không hợp lệ.");
+    if (kind === "stock" && !["HOSE","HNX","UPCOM"].includes(exchange)) throw new Error("Sàn chứng khoán không hợp lệ.");
+    if (!(kind === "gold" ? ["pnj","manual"].includes(provider) : kind === "stock" ? ["ssi","manual"].includes(provider) : ["binance","manual"].includes(provider))) {
+      throw new Error("Nguồn giá không phù hợp với tài sản.");
+    }
+    const initialQuantity = number(form,"initial_quantity",kind === "crypto" ? 12 : kind === "gold" ? 1 : 0);
+    const isVnd = owner.quote_currency === "VND";
+    const initialBuyPrice = number(form,"initial_buy_price",8,false,isVnd);
+    const initialFee = number(form,"initial_fee",8,true,isVnd);
+    const manual = input(form,"manual_price");
+    const manualPrice = manual ? number(form,"manual_price",8,false,isVnd) : null;
+    const { error } = await (supabase as any).rpc("portfolio_edit_v461", {
+      p_position_id:positionId,p_name:name,p_symbol:symbol,p_variant:variant,p_exchange:exchange,
+      p_provider:provider,p_manual_price:manualPrice,
+      p_initial_quantity:initialQuantity,p_initial_buy_price:initialBuyPrice,p_initial_fee:initialFee
+    });
+    if (error) throw new Error(error.message);
+    return `Đã lưu thay đổi cho ${name}. Số lượng, giá vốn và lãi/lỗ được đối soát lại.`;
+  });
+}
+
 export async function portfolioTrade(form: FormData) {
   await withResult(async () => {
     const {supabase,userId} = await requireUser();
