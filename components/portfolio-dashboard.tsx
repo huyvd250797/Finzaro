@@ -1,15 +1,14 @@
 "use client";
 
-import { useCallback, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useFormStatus } from "react-dom";
 import { Archive, ArrowDown, ArrowUp, Bitcoin, CheckCircle2, ChevronDown, CircleAlert, Gem, History, Pencil, Plus, RefreshCw, Search, TrendingUp, Wallet, X } from "lucide-react";
 import { BottomSheet } from "@/components/bottom-sheet";
 import { SheetFormActions } from "@/components/sheet-form-actions";
 import { PortfolioAssetSheet, type OpeningTrade, assetNames } from "@/components/portfolio-asset-sheet";
-import { PortfolioPriceSync } from "@/components/portfolio-price-sync";
 import type { AssetKind, ValuedPosition } from "@/features/portfolio/core";
-import { goldUnits, summarizePortfolio, valuePosition } from "@/features/portfolio/core";
+import { goldUnits, summarizePortfolio } from "@/features/portfolio/core";
 import { portfolioTrade, savePortfolioFx, savePortfolioSnapshot, updatePortfolioPosition } from "@/features/portfolio/actions";
 
 const money=(n:number)=>new Intl.NumberFormat("vi-VN",{maximumFractionDigits:0}).format(n)+" đ";
@@ -29,23 +28,12 @@ function Submit({children,primary=false}:{children:React.ReactNode;primary?:bool
 export type PortfolioHistory={id:string;side:"buy"|"sell";quantity:string;unit_price:string;fee:string;realized_gain:string|null;traded_at:string;position_id:string};
 export type PortfolioSnapshot={snapshot_date:string;estimated_value_vnd:string};
 
-export function PortfolioDashboard({positions:serverPositions,fx,fxSource,manualFx,history,snapshots,openingTrades}:{
+export function PortfolioDashboard({positions,fx,fxSource,manualFx,history,snapshots,openingTrades}:{
   positions:ValuedPosition[];fx:number|null;fxSource:string;manualFx:number|null;
   history:PortfolioHistory[];snapshots:PortfolioSnapshot[];openingTrades:OpeningTrade[];
 }){
   const router=useRouter();
   const [refreshing,startRefresh]=useTransition();
-  const [liveCrypto,setLiveCrypto]=useState<Record<string,{price:number;at:string}>>({});
-  const onCryptoQuote=useCallback((symbol:string,price:number,at:string)=>{
-    setLiveCrypto(previous=>({...previous,[symbol]:{price,at}}));
-  },[]);
-  const onCryptoDisconnected=useCallback(()=>setLiveCrypto({}),[]);
-  const positions=serverPositions.map(p=>{
-    const quote=p.kind==='crypto'?liveCrypto[p.symbol]:undefined;
-    return quote && p.quantityNumber>0 && !p.archived
-      ? valuePosition(p,{price:quote.price,at:quote.at,source:'Binance Spot · WebSocket',type:'market'},fx)
-      : p;
-  });
   const [filter,setFilter]=useState<"all"|AssetKind>("all");
   const [search,setSearch]=useState("");
   const [goldMode,setGoldMode]=useState<"chi"|"detail">("chi");
@@ -61,7 +49,6 @@ export function PortfolioDashboard({positions:serverPositions,fx,fxSource,manual
   const priceDate=(value:string)=>{const d=new Date(value);return Number.isNaN(d.getTime())?"":d.toLocaleString("vi-VN",{timeZone:"Asia/Ho_Chi_Minh",day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"});};
   const quantity=(p:ValuedPosition)=>p.kind==="gold"?(goldMode==="chi"?`${decimals(p.quantityNumber,1)} chỉ`:goldUnits(p.quantityNumber)):`${decimals(p.quantityNumber,p.kind==="crypto"?12:0)} ${p.kind==="stock"?"CP":p.symbol}`;
   return <div className="space-y-4 sm:space-y-6">
-    <PortfolioPriceSync quoteKeys={positions.filter(p=>!p.archived&&p.quantityNumber>0&&p.provider!=="manual").map(p=>`${p.kind}:${p.kind==="gold"?`pnj:${p.variant}`:p.kind==="stock"?`${p.provider}:${p.symbol}`:`binance:${p.symbol}`}`)} onCryptoQuote={onCryptoQuote} onCryptoDisconnected={onCryptoDisconnected}/>
     <section className="rounded-[26px] border border-[var(--border)] bg-[var(--card)] p-4 shadow-sm sm:p-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 flex-1"><p className="text-[11px] font-black uppercase tracking-[.14em] text-[var(--primary)]">TỔNG TÀI SẢN ĐẦU TƯ</p>
@@ -124,7 +111,7 @@ export function PortfolioDashboard({positions:serverPositions,fx,fxSource,manual
           </div>
           <div className="mt-3 space-y-1 text-[11px] leading-4 text-[var(--muted-foreground)]">
             <p>Giá vốn bình quân: <strong className="text-[var(--foreground)]">{p.quantityNumber>0?`${decimals(p.costNumber/p.quantityNumber,8)} ${p.quote_currency}/${p.kind==="gold"?"chỉ":"đơn vị"}`:"—"}</strong></p>
-            <p>{p.quote?.stale && p.quote.type==='market'?"Giá gần nhất":p.quote?.type==='manual'?"Giá thủ công / dự phòng":"Giá hiện tại"}: <strong className="text-[var(--foreground)]">{p.quote?`${decimals(p.quote.price,8)} ${p.quote_currency}`:"Chưa có giá hợp lệ"}</strong>{p.quote?` · ${p.quote.stale?"Giá gần nhất · ":""}${p.quote.source}${p.quote.at?` · ${priceDate(p.quote.at)}`:""}`:""}</p>
+            <p>Giá hiện tại: <strong className="text-[var(--foreground)]">{p.quote?`${decimals(p.quote.price,8)} ${p.quote_currency}`:"Chưa có giá hợp lệ"}</strong>{p.quote?` · ${p.quote.source}${p.quote.at?` · ${priceDate(p.quote.at)}`:""}`:""}</p>
           </div>
           <div className="mt-3 flex items-center justify-between gap-2 border-t border-[var(--border)] pt-3">
             <span className="inline-flex items-center gap-1 text-[11px] text-[var(--muted-foreground)]">{hasPrice?<CheckCircle2 className="size-3.5 text-[var(--fin-income)]"/>:<CircleAlert className="size-3.5 text-amber-500"/>}{hasPrice?"Đã định giá":"Chờ cập nhật giá"}</span>

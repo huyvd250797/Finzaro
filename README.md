@@ -1,5 +1,3 @@
-> **Current release: Finzaro V4.6.2 — Automatic Market Price Sync.** Tự tải giá từ nguồn PNJ/Vietcap/Binance, hỗ trợ Binance WebSocket, cache giá ở Supabase, đồng bộ theo lịch khi thiết lập server secret + Supabase Cron. **Cần chạy migration V4.6.2** và cấu hình Cron một lần để giá cập nhật ngay cả khi app đóng. Xem [`DEPLOY_V4.6.2.md`](DEPLOY_V4.6.2.md).
-
 > **Current release: Finzaro V4.6.1 — Asset Management UX & Edit.** Thiết kế lại màn hình Tài sản cho mobile, danh sách tài sản rõ ràng, nút Sửa riêng, sheet nhập/sửa/mua-bán; có thể chỉnh lại thông tin và giao dịch mua đầu tiên. Migration mới V4.6.1 bắt buộc chạy **sau V4.6.0** trước khi deploy. Xem [`DEPLOY_V4.6.1.md`](DEPLOY_V4.6.1.md).
 
 > **Current release: Finzaro V4.6.0 — Multi-Asset Portfolio.** Bổ sung module Tài sản (vàng 9999, cổ phiếu VN, crypto), giá vốn/lãi lỗ, thị trường Binance/SSI/PNJ khi có dữ liệu, FX USDT/VND CoinGecko/dự phòng thủ công, giao dịch mua/bán và snapshots; không trộn Thu/Chi sinh hoạt. **Chạy migration V4.6.0 trên Supabase trước khi deploy.** Xem [`DEPLOY_V4.6.0.md`](DEPLOY_V4.6.0.md).
