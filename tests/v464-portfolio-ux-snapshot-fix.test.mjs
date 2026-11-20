@@ -17,7 +17,7 @@ test('V4.6.4 adds snapshot-save and delete-asset RPCs and updates source to use 
 test('Portfolio UX source emphasizes one-line totals and delete action',()=>{
   const dash=read('components/portfolio-dashboard.tsx');
   const sheet=read('components/portfolio-asset-sheet.tsx');
-  assert.match(dash,/whitespace-nowrap text-\[clamp\(2rem,8vw,3\.25rem\)\]/);
+  assert.match(dash,/grid-cols-\[52px_minmax\(0,1fr\)\]/);
   assert.match(sheet,/Xóa tài sản/);
   assert.match(read('README.md'),/permission denied for table portfolio_snapshots_v460/);
 });

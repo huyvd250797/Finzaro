@@ -53,6 +53,8 @@ Lưu ý: release từng được dự kiến tên `V0.0.13 – Net Worth & Finan
 
 - **`V3.4.0 — Mobile-First Transaction UX`** sửa bottom sheet/scroll và nút Lưu trên iPhone, kế thừa V3.3.0. Không có SQL mới; bản tiếp theo phải cao hơn V3.4.0.
 
+- **`V4.6.5 — Portfolio Mobile Layout & Save Feedback`** chỉnh bố cục tổng tiền mobile và trạng thái submit (không có migration mới), kế thừa V4.6.4. Bản source tiếp theo phải tăng ít nhất lên V4.6.6.
+
 - **`V4.6.4 — Portfolio UX & Snapshot Fix`** là bản nâng cấp tiếp theo của nhánh Tài sản. Mọi source được sửa từ V4.6.4 phải tăng ít nhất lên V4.6.5. Có SQL migration mới V4.6.4 cho RPC lưu snapshot và xóa tài sản.
 
 - **`V4.6.3 — Market Price Reliability Deploy Fix`** là bản vá deploy nâng từ V4.6.2. Mọi source được sửa và phát hành lại phải tăng patch, không giữ nguyên version. Không có SQL migration mới.

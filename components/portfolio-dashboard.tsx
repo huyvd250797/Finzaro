@@ -9,10 +9,10 @@ import { SheetFormActions } from "@/components/sheet-form-actions";
 import { PortfolioAssetSheet, type OpeningTrade, assetNames } from "@/components/portfolio-asset-sheet";
 import type { AssetKind, ValuedPosition } from "@/features/portfolio/core";
 import { goldUnits, summarizePortfolio } from "@/features/portfolio/core";
+import { formatDong, formatMarketAmount, sizeForDong } from "@/features/portfolio/display";
 import { deletePortfolioPosition, portfolioTrade, savePortfolioFx, savePortfolioSnapshot, updatePortfolioPosition } from "@/features/portfolio/actions";
 
-const moneyValue=(n:number)=>new Intl.NumberFormat("vi-VN",{maximumFractionDigits:0}).format(n);
-const money=(n:number)=>`${moneyValue(n)} đ`;
+const money=(n:number)=>formatDong(n);
 const decimals=(n:number,max=8)=>new Intl.NumberFormat("vi-VN",{maximumFractionDigits:max}).format(n);
 const percent=(n:number)=>`${n>0?"+":""}${new Intl.NumberFormat("vi-VN",{maximumFractionDigits:2}).format(n)}%`;
 const kinds:AssetKind[]=["gold","stock","crypto"];
@@ -27,9 +27,11 @@ function Submit({children,primary=false}:{children:React.ReactNode;primary?:bool
   const {pending}=useFormStatus();
   return <button type="submit" disabled={pending} className={primary?actionButton:softButton}>{pending?"Đang lưu...":children}</button>;
 }
-function AmountLine({value,unit="đ",tone="default"}:{value:string;unit?:string;tone?:"default"|"income"|"expense"}){
+function AmountLine({amount,tone="default",size="card"}:{amount:number;tone?:"default"|"income"|"expense";size?:"hero"|"card"|"tile"}){
   const color=tone==="income"?"text-[var(--fin-income)]":tone==="expense"?"text-[var(--fin-expense)]":"text-[var(--foreground)]";
-  return <div className={`mt-1 ${color}`}><div className="overflow-x-auto whitespace-nowrap text-lg font-black leading-none tabular-nums sm:text-xl">{value}</div><div className="mt-1 text-[11px] font-semibold uppercase tracking-[.08em] opacity-75">{unit}</div></div>;
+  return <p className={`mt-1 min-w-0 overflow-x-auto whitespace-nowrap font-black leading-tight tracking-tight tabular-nums ${sizeForDong(amount,size)} ${color}`}>
+    {money(amount)}
+  </p>;
 }
 export type PortfolioHistory={id:string;side:"buy"|"sell";quantity:string;unit_price:string;fee:string;realized_gain:string|null;traded_at:string;position_id:string};
 export type PortfolioSnapshot={snapshot_date:string;estimated_value_vnd:string};
@@ -57,39 +59,41 @@ export function PortfolioDashboard({positions,fx,fxSource,manualFx,history,snaps
 
   return <div className="space-y-4 sm:space-y-6">
     <section className="rounded-[26px] border border-[var(--border)] bg-[var(--card)] p-4 shadow-sm sm:p-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <p className="text-[11px] font-black uppercase tracking-[.14em] text-[var(--primary)]">{summary.missing > 0 ? "TỔNG ĐÃ ĐỊNH GIÁ" : "TỔNG TÀI SẢN ĐẦU TƯ"}</p>
-          <div className="mt-3 rounded-2xl bg-[var(--background)]/70 p-4 sm:p-5">
-            <p className="text-xs text-[var(--muted-foreground)]">Giá trị hiện tại</p>
-            <div className="mt-2 overflow-x-auto whitespace-nowrap text-[clamp(2rem,8vw,3.25rem)] font-black leading-none tracking-tight tabular-nums">{moneyValue(summary.value)}</div>
-            <p className="mt-2 text-xs font-semibold uppercase tracking-[.12em] text-[var(--muted-foreground)]">VND quy đổi</p>
-          </div>
-          <p className="mt-3 text-xs text-[var(--muted-foreground)]">{held.length} tài sản đang nắm giữ{summary.missing>0?` · ${summary.missing} tài sản chờ giá`:""}</p>
-        </div>
-        <div className="flex shrink-0 gap-2">
-          <button type="button" disabled={refreshing} onClick={()=>startRefresh(()=>router.refresh())} title="Cập nhật giá thị trường" aria-label="Cập nhật giá thị trường" className={`${softButton} size-11 !p-0`}><RefreshCw className={`size-4 ${refreshing?"animate-spin":""}`}/></button>
-          <button type="button" onClick={()=>setAssetEditor("create")} className={actionButton}><Plus className="size-4"/>Thêm tài sản</button>
-        </div>
+      <p className="text-[11px] font-black uppercase tracking-[.14em] text-[var(--primary)]">{summary.missing > 0 ? "TỔNG ĐÃ ĐỊNH GIÁ" : "TỔNG TÀI SẢN ĐẦU TƯ"}</p>
+      <div className="mt-3 min-w-0 rounded-2xl bg-[var(--muted)]/55 px-3.5 py-4 sm:px-5 sm:py-5">
+        <p className="text-xs font-semibold text-[var(--muted-foreground)]">Giá trị hiện tại</p>
+        <AmountLine amount={summary.value} size="hero"/>
+        <p className="mt-1.5 text-xs text-[var(--muted-foreground)]">{held.length} tài sản đang nắm giữ{summary.missing>0?` · ${summary.missing} tài sản chờ giá`:""}</p>
+      </div>
+      <div className="mt-3 grid grid-cols-[52px_minmax(0,1fr)] gap-2" aria-label="Thao tác tài sản">
+        <button type="button" disabled={refreshing} onClick={()=>startRefresh(()=>router.refresh())} title="Làm mới giá thị trường" aria-label="Làm mới giá thị trường" className={`${softButton} min-h-12 !p-0 disabled:opacity-60`}>
+          <RefreshCw className={`size-5 ${refreshing?"animate-spin":""}`}/>
+        </button>
+        <button type="button" onClick={()=>setAssetEditor("create")} className={`${actionButton} min-w-0 w-full`}><Plus className="size-4 shrink-0"/>Thêm tài sản</button>
       </div>
 
       {summary.missing>0&&<div role="status" className="mt-4 flex items-start gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-3 text-xs leading-5 text-amber-700 dark:text-amber-300"><CircleAlert className="mt-0.5 size-4 shrink-0"/>Danh mục còn {summary.missing} tài sản chưa có giá hoặc tỷ giá hợp lệ. Tổng hiện tại chỉ tính phần đã định giá.</div>}
 
-      <div className="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3">
-        <div className="rounded-2xl bg-[var(--muted)]/70 p-3 sm:p-4"><p className="text-xs text-[var(--muted-foreground)]">Giá vốn được định giá</p><AmountLine value={moneyValue(summary.cost)}/></div>
-        <div className="rounded-2xl bg-[var(--muted)]/70 p-3 sm:p-4"><p className="text-xs text-[var(--muted-foreground)]">Lãi/lỗ tạm tính</p>
-          <AmountLine value={`${summary.pnl>0?"+":""}${moneyValue(summary.pnl)}`} tone={summary.pnl>=0?"income":"expense"}/>
-          <p className="text-xs font-semibold text-[var(--muted-foreground)]">{summary.cost>0?percent(summary.pnl/summary.cost*100):"Chưa có cơ sở tính %"}</p></div>
+      <div className="mt-4 grid grid-cols-2 gap-2 sm:gap-3">
+        <div className="min-w-0 rounded-2xl border border-[var(--border)] bg-[var(--muted)]/35 p-3 sm:p-4">
+          <p className="text-[11px] leading-4 text-[var(--muted-foreground)]">Giá vốn</p>
+          <AmountLine amount={summary.cost} size="tile"/>
+        </div>
+        <div className="min-w-0 rounded-2xl border border-[var(--border)] bg-[var(--muted)]/35 p-3 sm:p-4">
+          <p className="text-[11px] leading-4 text-[var(--muted-foreground)]">Lãi/lỗ tạm tính</p>
+          <AmountLine amount={summary.pnl} tone={summary.pnl>=0?"income":"expense"} size="tile"/>
+          <p className="mt-1 text-[11px] font-semibold text-[var(--muted-foreground)]">{summary.cost>0?percent(summary.pnl/summary.cost*100):"Chưa có tỷ lệ"}</p>
+        </div>
       </div>
 
       <div className="mt-5 flex h-2.5 overflow-hidden rounded-full bg-[var(--muted)]" role="img" aria-label="Tỷ trọng danh mục theo giá trị đã định giá">
         {kinds.map(k=><div key={k} style={{width:`${summary.value>0?summary.byKind[k]/summary.value*100:0}%`,backgroundColor:kindColor[k]}}/>) }
       </div>
-      <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">{kinds.map(k=>{
+      <div className="mt-2 space-y-1">{kinds.map(k=>{
         const Icon=icons[k];
-        return <button key={k} onClick={()=>setFilter(filter===k?"all":k)} type="button" className="min-w-0 rounded-2xl border border-transparent bg-[var(--muted)]/40 px-3 py-3 text-left transition-colors hover:border-[var(--border)] hover:bg-[var(--muted)]/70" aria-label={`Lọc ${assetNames[k]}`}>
-          <span className="flex items-center gap-1.5 text-[11px] font-bold text-[var(--muted-foreground)]"><Icon className="size-3.5 shrink-0" style={{color:kindColor[k]}}/>{assetNames[k]}</span>
-          <div className="mt-2 overflow-x-auto whitespace-nowrap text-base font-black tabular-nums sm:text-lg">{moneyValue(summary.byKind[k])}</div>
+        return <button key={k} onClick={()=>setFilter(filter===k?"all":k)} type="button" className="flex min-w-0 w-full items-center justify-between gap-3 rounded-xl px-2.5 py-2 text-left hover:bg-[var(--muted)]/60" aria-label={`Lọc ${assetNames[k]}`}>
+          <span className="flex min-w-0 items-center gap-2 text-xs font-semibold text-[var(--muted-foreground)]"><Icon className="size-4 shrink-0" style={{color:kindColor[k]}}/>{assetNames[k]}</span>
+          <span className="shrink-0 whitespace-nowrap text-sm font-extrabold tabular-nums">{money(summary.byKind[k])}</span>
         </button>;
       })}</div>
     </section>
@@ -121,14 +125,22 @@ export function PortfolioDashboard({positions,fx,fxSource,manualFx,history,snaps
             <button type="button" aria-label={`Sửa tài sản ${p.name}`} onClick={()=>setAssetEditor(p.id)} className={`${softButton} shrink-0`}><Pencil className="size-3.5"/>Sửa</button>
           </div>
 
-          <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
-            <div className="rounded-xl bg-[var(--muted)]/60 p-3"><p className="text-[11px] text-[var(--muted-foreground)]">Giá trị hiện tại</p>{p.quantityNumber===0?<AmountLine value="0"/>:hasPrice?<AmountLine value={moneyValue(p.valueVnd!)}/>:<div className="mt-1 text-sm font-bold text-amber-600 dark:text-amber-300">Thiếu giá</div>}</div>
-            <div className="rounded-xl bg-[var(--muted)]/60 p-3"><p className="text-[11px] text-[var(--muted-foreground)]">Lãi/lỗ tạm tính</p>{p.quantityNumber===0?<div className="mt-1 text-sm font-bold text-[var(--muted-foreground)]">—</div>:pnl===null?<div className="mt-1 text-sm font-bold text-[var(--muted-foreground)]">Chưa xác định</div>:<><AmountLine value={`${pnl>0?"+":""}${moneyValue(pnl)}`} tone={gain?"income":"expense"}/>{p.costVnd&&p.costVnd>0&&<p className={`text-[11px] font-semibold ${gain?"text-[var(--fin-income)]":"text-[var(--fin-expense)]"}`}>{percent(pnl/p.costVnd*100)}</p>}</>}</div>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <div className="min-w-0 rounded-xl bg-[var(--muted)]/60 px-3 py-3">
+              <p className="text-[11px] text-[var(--muted-foreground)]">Giá trị hiện tại</p>
+              {p.quantityNumber===0?<AmountLine amount={0}/>:hasPrice?<AmountLine amount={p.valueVnd!}/>:<p className="mt-1 text-sm font-bold text-amber-600 dark:text-amber-300">Thiếu giá</p>}
+            </div>
+            <div className="min-w-0 rounded-xl bg-[var(--muted)]/60 px-3 py-3">
+              <p className="text-[11px] text-[var(--muted-foreground)]">Lãi/lỗ tạm tính</p>
+              {p.quantityNumber===0?<p className="mt-1 text-sm font-bold text-[var(--muted-foreground)]">—</p>:pnl===null?<p className="mt-1 text-sm font-bold text-[var(--muted-foreground)]">Chưa có giá</p>:<>
+                <AmountLine amount={pnl} tone={gain?"income":"expense"}/>
+                {p.costVnd&&p.costVnd>0&&<p className={`mt-0.5 text-[11px] font-semibold ${gain?"text-[var(--fin-income)]":"text-[var(--fin-expense)]"}`}>{percent(pnl/p.costVnd*100)}</p>}
+              </>}
+            </div>
           </div>
-
           <div className="mt-3 space-y-1 text-[11px] leading-4 text-[var(--muted-foreground)]">
-            <p>Giá vốn bình quân: <strong className="text-[var(--foreground)]">{p.quantityNumber>0?`${decimals(p.costNumber/p.quantityNumber,8)} ${p.quote_currency}/${p.kind==="gold"?"chỉ":"đơn vị"}`:"—"}</strong></p>
-            <p>Giá hiện tại: <strong className="text-[var(--foreground)]">{p.quote?`${decimals(p.quote.price,8)} ${p.quote_currency}`:"Chưa có giá hợp lệ"}</strong>{p.quote?` · ${p.quote.source}${p.quote.at?` · ${priceDate(p.quote.at)}`:""}`:""}</p>
+            <p>Giá vốn bình quân: <strong className="text-[var(--foreground)]">{p.quantityNumber>0?`${formatMarketAmount(p.costNumber/p.quantityNumber,p.quote_currency)}/${p.kind==="gold"?"chỉ":p.kind==="stock"?"CP":"coin"}`:"—"}</strong></p>
+            <p>Giá hiện tại: <strong className="text-[var(--foreground)]">{p.quote?`${formatMarketAmount(p.quote.price,p.quote_currency)}/${p.kind==="gold"?"chỉ":p.kind==="stock"?"CP":"coin"}`:"Chưa có giá hợp lệ"}</strong>{p.quote?` · ${p.quote.source}${p.quote.at?` · ${priceDate(p.quote.at)}`:""}`:""}</p>
           </div>
           {!p.quote && p.quoteProblem && <p role="status" className="mt-2 text-[11px] leading-5 text-amber-600 dark:text-amber-300">{p.quoteProblem}</p>}
           {p.quote?.stale && p.quoteProblem && <p role="status" className="mt-2 text-[11px] leading-5 text-amber-600 dark:text-amber-300">{p.quoteProblem} Đang dùng giá dự phòng đã nhập.</p>}
@@ -142,7 +154,7 @@ export function PortfolioDashboard({positions,fx,fxSource,manualFx,history,snaps
 
     <section className="rounded-[26px] border border-[var(--border)] bg-[var(--card)] p-4 sm:p-5">
       <h2 className="text-base font-black">Công cụ danh mục</h2>
-      <details className="mt-3 rounded-xl border border-[var(--border)] p-3"><summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-sm font-bold [&::-webkit-details-marker]:hidden"><span>Quy đổi USDT/VND · {fx?`${decimals(fx,2)} đ`:"Thiếu tỷ giá"}</span><ChevronDown className="size-4"/></summary>
+      <details className="mt-3 rounded-xl border border-[var(--border)] p-3"><summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-sm font-bold [&::-webkit-details-marker]:hidden"><span>Quy đổi USDT/VND · {fx?formatDong(fx,2):"Thiếu tỷ giá"}</span><ChevronDown className="size-4"/></summary>
         <p className="mt-3 text-xs leading-5 text-[var(--muted-foreground)]">Nguồn: {fxSource}. Nếu nguồn tự động không khả dụng, có thể nhập tỷ giá thủ công.</p>
         <form action={savePortfolioFx} className="mt-3 flex flex-wrap items-end gap-2"><div className="min-w-[160px] flex-1"><label htmlFor="fin-usdt" className={label}>Tỷ giá 1 USDT (VND)</label><input id="fin-usdt" name="usdt_vnd" inputMode="decimal" defaultValue={manualFx??""} className={input} required placeholder="Ví dụ 26.000"/></div><Submit><RefreshCw className="size-4"/>Lưu tỷ giá</Submit></form>
       </details>
@@ -155,7 +167,7 @@ export function PortfolioDashboard({positions,fx,fxSource,manualFx,history,snaps
         {snapshots.length===0?<p className="mt-3 text-xs text-[var(--muted-foreground)]">Chưa có thống kê được lưu.</p>:<div className="mt-3 space-y-2">{snapshots.slice(0,8).map(s=><div key={s.snapshot_date} className="flex justify-between gap-3 text-xs"><span>{s.snapshot_date.split("-").reverse().join("/")}</span><strong>{money(Number(s.estimated_value_vnd))}</strong></div>)}</div>}
       </details>
       <details className="mt-2 rounded-xl border border-[var(--border)] p-3"><summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-sm font-bold [&::-webkit-details-marker]:hidden"><span>Giao dịch gần đây ({history.length})</span><ChevronDown className="size-4"/></summary>
-        {history.length===0?<p className="mt-3 text-xs text-[var(--muted-foreground)]">Chưa có giao dịch.</p>:<div className="mt-3 space-y-2">{history.slice(0,20).map(t=>{const owner=positions.find(p=>p.id===t.position_id);return <div key={t.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-[var(--muted)] px-3 py-2 text-xs"><span className="flex items-center gap-1">{t.side==="buy"?<ArrowDown className="size-3.5 text-[var(--fin-income)]"/>:<ArrowUp className="size-3.5 text-[var(--fin-expense)]"/>}<strong>{t.side==="buy"?"Mua":"Bán"} {owner?.symbol??"Tài sản"}</strong> · {decimals(Number(t.quantity),12)} × {decimals(Number(t.unit_price),8)} {owner?.quote_currency??""}</span><span className="text-[var(--muted-foreground)]">{new Date(t.traded_at).toLocaleDateString("vi-VN",{timeZone:"Asia/Ho_Chi_Minh"})}{t.realized_gain!==null?` · Đã thực hiện: ${decimals(Number(t.realized_gain),2)}`:""}</span></div>;})}</div>}
+        {history.length===0?<p className="mt-3 text-xs text-[var(--muted-foreground)]">Chưa có giao dịch.</p>:<div className="mt-3 space-y-2">{history.slice(0,20).map(t=>{const owner=positions.find(p=>p.id===t.position_id);return <div key={t.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-[var(--muted)] px-3 py-2 text-xs"><span className="flex items-center gap-1">{t.side==="buy"?<ArrowDown className="size-3.5 text-[var(--fin-income)]"/>:<ArrowUp className="size-3.5 text-[var(--fin-expense)]"/>}<strong>{t.side==="buy"?"Mua":"Bán"} {owner?.symbol??"Tài sản"}</strong> · {decimals(Number(t.quantity),12)} × {owner?formatMarketAmount(Number(t.unit_price),owner.quote_currency):"Không rõ đơn vị"}</span><span className="text-[var(--muted-foreground)]">{new Date(t.traded_at).toLocaleDateString("vi-VN",{timeZone:"Asia/Ho_Chi_Minh"})}{t.realized_gain!==null?` · Đã thực hiện: ${owner?formatMarketAmount(Number(t.realized_gain),owner.quote_currency,2):money(Number(t.realized_gain))}`:""}</span></div>;})}</div>}
       </details>
       {positions.some(p=>p.archived)&&<details className="mt-2 rounded-xl border border-[var(--border)] p-3"><summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-sm font-bold [&::-webkit-details-marker]:hidden"><span>Tài sản lưu trữ ({positions.filter(p=>p.archived).length})</span><ChevronDown className="size-4"/></summary>
         <div className="mt-3 space-y-2">{positions.filter(p=>p.archived).map(p=><div key={p.id} className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border)] pb-2 text-xs"><span>{p.name} · {p.symbol}</span><div className="flex flex-wrap gap-2"><form action={updatePortfolioPosition}><input type="hidden" name="position_id" value={p.id}/><input type="hidden" name="provider" value={p.provider}/><input type="hidden" name="manual_price" value={p.manual_price??""}/><input type="hidden" name="archived" value="0"/><Submit>Khôi phục</Submit></form><form action={deletePortfolioPosition} onSubmit={event=>{if(!window.confirm(`Xóa vĩnh viễn ${p.name}?`))event.preventDefault();}}><input type="hidden" name="position_id" value={p.id}/><input type="hidden" name="position_name" value={p.name}/><button type="submit" className="inline-flex min-h-10 items-center gap-1 rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 text-xs font-bold text-rose-500"><Trash2 className="size-3.5"/>Xóa</button></form></div></div>)}</div>

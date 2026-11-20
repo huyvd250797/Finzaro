@@ -18,9 +18,9 @@ const page=read("app/(dashboard)/portfolio/page.tsx");
 const sql=read("supabase/migrations/20261120070000_portfolio_asset_edit_v461.sql").toLowerCase();
 
 test("V4.6.1 has correct release metadata, no obsolete modules, and one additive migration",()=>{
-  assert.equal(JSON.parse(read("package.json")).version,"4.6.4");
-  assert.match(read("lib/app-version.ts"),/APP_VERSION = "4\.6\.4"/);
-  assert.match(read("lib/app-version.ts"),/Asset Management UX & Edit|Market Price Reliability Fix|Market Price Reliability Deploy Fix|Portfolio UX & Snapshot Fix/);
+  assert.equal(JSON.parse(read("package.json")).version,"4.6.5");
+  assert.match(read("lib/app-version.ts"),/APP_VERSION = "4\.6\.5"/);
+  assert.match(read("lib/app-version.ts"),/Asset Management UX & Edit|Market Price Reliability Fix|Market Price Reliability Deploy Fix|Portfolio UX & Snapshot Fix|Portfolio Mobile Layout & Save Feedback/);
   assert.equal(readdirSync(join(root,"supabase/migrations")).filter(x=>x.endsWith(".sql")).length,34);
   assert.deepEqual(readdirSync(join(root,"app/(dashboard)"),{withFileTypes:true}).filter(d=>d.isDirectory()).map(d=>d.name).sort(),["accounts","categories","overview","portfolio","reports","settings","transactions"]);
 });

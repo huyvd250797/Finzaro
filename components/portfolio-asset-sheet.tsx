@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { Archive, Bitcoin, Gem, Plus, Save, Trash2, TrendingUp, X } from "lucide-react";
+import { useActionState, useEffect, useRef, useState } from "react";
+import { Archive, Bitcoin, Gem, LoaderCircle, Plus, Save, Trash2, TrendingUp, X } from "lucide-react";
 import { BottomSheet } from "@/components/bottom-sheet";
 import { SheetFormActions } from "@/components/sheet-form-actions";
 import type { AssetKind, ValuedPosition } from "@/features/portfolio/core";
 import { goldUnits, parseDecimal, parseVndAmount } from "@/features/portfolio/core";
+import { formatDong } from "@/features/portfolio/display";
 import { createPortfolioPosition, deletePortfolioPosition, editPortfolioAsset, updatePortfolioPosition } from "@/features/portfolio/actions";
 
 export type OpeningTrade = {position_id:string;quantity:string;unit_price:string;fee:string;trade_count:number};
@@ -22,6 +23,16 @@ export function PortfolioAssetSheet({open,onClose,asset,opening}:{open:boolean;o
   const [buyInput,setBuyInput] = useState(opening?num(opening.unit_price):"");
   const [feeInput,setFeeInput] = useState(opening?num(opening.fee):"0");
   const isEdit = asset !== null;
+  // useActionState works with the fixed footer portaled outside the DOM <form>.
+  // useFormStatus in that footer cannot reliably see the parent form status.
+  const [saveState, saveAction, saving] = useActionState(async (prev: number, formData: FormData) => {
+    if (isEdit) await editPortfolioAsset(formData);
+    else await createPortfolioPosition(formData);
+    return prev + 1;
+  }, 0);
+  const saveLocked = useRef(false);
+  useEffect(() => { if (!saving) saveLocked.current = false; }, [saving]);
+  const closeIfIdle = () => { if (!saving) onClose(); };
   const currentKind = asset?.kind??kind;
   const formId = `fin-portfolio-${asset?.id??"new"}`;
   const assetProvider = currentKind==="gold"
@@ -33,7 +44,7 @@ export function PortfolioAssetSheet({open,onClose,asset,opening}:{open:boolean;o
   const buyPreview = currentKind==="crypto" ? parseDecimal(buyInput,8) : parseVndAmount(buyInput,8);
   const feePreview = currentKind==="crypto" ? parseDecimal(feeInput,8) : parseVndAmount(feeInput,8);
 
-  return <BottomSheet open={open} onClose={onClose} label={isEdit?`Sửa tài sản ${asset.name}`:"Thêm tài sản đầu tư"}
+  return <BottomSheet open={open} onClose={closeIfIdle} label={isEdit?`Sửa tài sản ${asset.name}`:"Thêm tài sản đầu tư"}
     panelClassName="mx-auto max-w-2xl sm:mb-4 sm:max-h-[calc(100dvh-36px)] sm:rounded-[26px]">
     <div className="px-4 pb-6 pt-2 sm:px-6">
       <div className="mb-5 flex items-start justify-between gap-4">
@@ -42,7 +53,7 @@ export function PortfolioAssetSheet({open,onClose,asset,opening}:{open:boolean;o
           <h2 className="mt-1 text-xl font-black">{isEdit?"Chỉnh sửa tài sản":"Thêm tài sản mới"}</h2>
           <p className="mt-1 text-xs leading-5 text-[var(--muted-foreground)]">{isEdit?"Cập nhật thông tin, giá vốn và nguồn giá trong cùng một màn hình.":"Nhập thông tin cơ bản và giá mua ban đầu."}</p>
         </div>
-        <button type="button" onClick={onClose} className="grid size-10 shrink-0 place-items-center rounded-xl border border-[var(--border)]" aria-label="Đóng"><X className="size-4"/></button>
+        <button type="button" onClick={closeIfIdle} disabled={saving} className="grid size-10 shrink-0 place-items-center rounded-xl border border-[var(--border)]" aria-label="Đóng"><X className="size-4"/></button>
       </div>
 
       {!isEdit && <div role="group" aria-label="Loại tài sản" className="mb-5 grid grid-cols-3 gap-2">{types.map(type=>{
@@ -52,7 +63,9 @@ export function PortfolioAssetSheet({open,onClose,asset,opening}:{open:boolean;o
       })}</div>}
 
       {isEdit && !opening ? <p role="alert" className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-4 text-sm">Không đọc được giao dịch mua đầu tiên. Vui lòng kiểm tra migration V4.6.1 trước khi sửa tài sản.</p> :
-      <form id={formId} key={`${asset?.id??"create"}-${currentKind}`} action={isEdit?editPortfolioAsset:createPortfolioPosition} className="space-y-5">
+      <form id={formId} key={`${asset?.id??"create"}-${currentKind}`} action={saveAction}
+        onSubmit={event=>{ if (saveLocked.current || saving) event.preventDefault(); else saveLocked.current = true; }}
+        aria-busy={saving} data-fin-portfolio-saving={saving?"true":"false"} className="space-y-5">
         <input type="hidden" name="kind" value={currentKind}/>
         {asset && <input type="hidden" name="position_id" value={asset.id}/>}
 
@@ -83,7 +96,13 @@ export function PortfolioAssetSheet({open,onClose,asset,opening}:{open:boolean;o
             <div><label htmlFor="asset-fee" className={label}>Phí mua ({currentKind==="crypto"?"USDT":"VND"})</label>
               <input id="asset-fee" name={isEdit?"initial_fee":"fee"} className={field} required inputMode="decimal" value={feeInput} onChange={event=>setFeeInput(event.target.value)}/></div>
           </div>
-          <div className="rounded-xl bg-[var(--muted)] px-3 py-3 text-xs" role="status">Tổng giá vốn mua đầu: <strong>{quantityPreview!==null&&buyPreview!==null&&feePreview!==null?(quantityPreview*buyPreview+feePreview).toLocaleString("vi-VN",{maximumFractionDigits:2})+` ${currentKind==="crypto"?"USDT":"đ"}`:"Nhập đủ số lượng, giá mua và phí"}</strong></div>
+          <div className="rounded-xl bg-[var(--muted)] px-3 py-3 text-xs" role="status">Tổng giá vốn mua đầu:{" "}
+            <strong className="inline-block whitespace-nowrap tabular-nums">{quantityPreview!==null&&buyPreview!==null&&feePreview!==null
+              ? currentKind==="crypto"
+                ? `${(quantityPreview*buyPreview+feePreview).toLocaleString("vi-VN",{maximumFractionDigits:2})}\u00a0USDT`
+                : formatDong(quantityPreview*buyPreview+feePreview,2)
+              : "Nhập đủ số lượng, giá mua và phí"}</strong>
+          </div>
         </section>
 
         <section className="space-y-3 border-t border-[var(--border)] pt-4">
@@ -99,9 +118,11 @@ export function PortfolioAssetSheet({open,onClose,asset,opening}:{open:boolean;o
         </section>
 
         <SheetFormActions className="w-full justify-end border-t border-[var(--border)] bg-[var(--card)] px-4 pb-[max(16px,env(safe-area-inset-bottom))] pt-3 sm:px-6">
-          <button type="button" onClick={onClose} className="min-h-11 rounded-xl border border-[var(--border)] px-4 text-sm font-bold">Hủy</button>
-          <button type="submit" form={formId} className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-[var(--primary)] px-4 text-sm font-extrabold text-white sm:flex-none">
-            {isEdit?<Save className="size-4"/>:<Plus className="size-4"/>}{isEdit?"Lưu thay đổi":"Thêm tài sản"}
+          <span className="sr-only" aria-live="polite">{saving?"Đang xử lý, vui lòng không nhấn lại.":""}{saveState>0?"Đã gửi yêu cầu lưu.":""}</span>
+          <button type="button" onClick={closeIfIdle} disabled={saving} className="min-h-11 rounded-xl border border-[var(--border)] px-4 text-sm font-bold disabled:opacity-50">Hủy</button>
+          <button type="submit" form={formId} disabled={saving} aria-busy={saving} data-fin-portfolio-submit="true" className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-[var(--primary)] px-4 text-sm font-extrabold text-white disabled:cursor-wait disabled:opacity-70 sm:flex-none">
+            {saving?<LoaderCircle className="size-4 animate-spin" aria-hidden="true"/>:isEdit?<Save className="size-4"/>:<Plus className="size-4"/>}
+            <span aria-live="polite">{saving?isEdit?"Đang lưu thay đổi...":"Đang thêm tài sản...":isEdit?"Lưu thay đổi":"Thêm tài sản"}</span>
           </button>
         </SheetFormActions>
       </form>}
@@ -109,11 +130,11 @@ export function PortfolioAssetSheet({open,onClose,asset,opening}:{open:boolean;o
       {asset && <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--border)] pt-4">
         <form action={updatePortfolioPosition} onSubmit={event=>{if(!window.confirm("Lưu trữ tài sản? Các giao dịch trước đây vẫn được giữ lại."))event.preventDefault();}}>
           <input type="hidden" name="position_id" value={asset.id}/><input type="hidden" name="provider" value={asset.provider}/><input type="hidden" name="manual_price" value={asset.manual_price??""}/><input type="hidden" name="archived" value="1"/>
-          <button type="submit" className="inline-flex min-h-10 items-center gap-1.5 rounded-xl border border-[var(--border)] px-3 text-xs font-bold text-[var(--muted-foreground)]"><Archive className="size-3.5"/>Lưu trữ</button>
+          <button type="submit" disabled={saving} className="inline-flex min-h-10 items-center gap-1.5 rounded-xl border border-[var(--border)] px-3 text-xs font-bold text-[var(--muted-foreground)] disabled:opacity-50"><Archive className="size-3.5"/>Lưu trữ</button>
         </form>
         <form action={deletePortfolioPosition} onSubmit={event=>{if(!window.confirm(`Xóa vĩnh viễn ${asset.name}? Toàn bộ lịch sử mua/bán của tài sản này sẽ bị xóa.`))event.preventDefault();}}>
           <input type="hidden" name="position_id" value={asset.id}/><input type="hidden" name="position_name" value={asset.name}/>
-          <button type="submit" className="inline-flex min-h-10 items-center gap-1.5 rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 text-xs font-bold text-rose-500"><Trash2 className="size-3.5"/>Xóa tài sản</button>
+          <button type="submit" disabled={saving} className="inline-flex min-h-10 items-center gap-1.5 rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 text-xs font-bold text-rose-500 disabled:opacity-50"><Trash2 className="size-3.5"/>Xóa tài sản</button>
         </form>
       </div>}
     </div>

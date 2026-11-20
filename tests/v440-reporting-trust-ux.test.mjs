@@ -27,9 +27,9 @@ const css = read("app/globals.css");
 
 test("V4.5.0 metadata is synchronized and full deploy gate remains intact", () => {
   const pkg = JSON.parse(read("package.json"));
-  assert.equal(pkg.version, "4.6.4");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.6\.4"/);
-  assert.match(read("lib/app-version.ts"), /Mobile Finance UX & Reporting Layout|Dashboard Period Comparison|Category Management UX Polish|Financial Comparison Logic Fix|Category Drag Lint Deploy Hotfix|Financial Comparison Clarity Fix|Comparison Direction Icons|Full Previous Period Comparison|Comparison Icon Alignment Fix|Multi-Asset Portfolio|Asset Management UX & Edit|Market Price Reliability Fix|Market Price Reliability Deploy Fix|Portfolio UX & Snapshot Fix/);
+  assert.equal(pkg.version, "4.6.5");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.6\.5"/);
+  assert.match(read("lib/app-version.ts"), /Mobile Finance UX & Reporting Layout|Dashboard Period Comparison|Category Management UX Polish|Financial Comparison Logic Fix|Category Drag Lint Deploy Hotfix|Financial Comparison Clarity Fix|Comparison Direction Icons|Full Previous Period Comparison|Comparison Icon Alignment Fix|Multi-Asset Portfolio|Asset Management UX & Edit|Market Price Reliability Fix|Market Price Reliability Deploy Fix|Portfolio UX & Snapshot Fix|Portfolio Mobile Layout & Save Feedback/);
   assert.equal(pkg.scripts.check, "npm run lint && npm run typecheck && npm run test && npm run build");
   assert.equal(JSON.parse(read("vercel.json")).buildCommand, "npm run check");
   assert.deepEqual(readdirSync(join(root, "app/(dashboard)"), { withFileTypes: true })

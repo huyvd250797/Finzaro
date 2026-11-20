@@ -3,8 +3,9 @@ import { Gem, ChevronRight } from "lucide-react";
 import { requireUser } from "@/lib/auth";
 import { type Position, summarizePortfolio, valuePosition } from "@/features/portfolio/core";
 import { marketUsdtVnd, portfolioMarketQuote } from "@/features/portfolio/market";
+import { formatDong } from "@/features/portfolio/display";
 
-const money=(n:number)=>`${new Intl.NumberFormat("vi-VN",{maximumFractionDigits:0}).format(n)} đ`;
+const money=formatDong;
 /** Independent stream: does not block cashflow Dashboard when providers are unavailable. */
 export async function PortfolioOverviewCard() {
   const {supabase,userId}=await requireUser();
@@ -23,7 +24,7 @@ export async function PortfolioOverviewCard() {
   const summary=summarizePortfolio(rows);
   return <Link href="/portfolio" className="fin-dashboard-card block rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 transition-colors hover:bg-[var(--muted)]/30 sm:p-5">
     <div className="flex items-start justify-between gap-2"><div><p className="fin-section-eyebrow">TÀI SẢN ĐẦU TƯ</p><p className="mt-1 text-base font-extrabold">Vàng · Chứng khoán · Crypto</p></div><Gem className="size-5 text-[var(--primary)]"/></div>
-    <p className="mt-3 break-words text-2xl font-black tabular-nums">{money(summary.value)}</p>
+    <p className="mt-3 max-w-full overflow-x-auto whitespace-nowrap text-[clamp(1.25rem,5vw,1.65rem)] font-black tabular-nums">{money(summary.value)}</p>
     <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs"><span className={summary.pnl>=0?"text-[var(--fin-income)]":"text-[var(--fin-expense)]"}>{summary.pnl>=0?"+":""}{money(summary.pnl)} lãi/lỗ tạm tính</span><span className="flex items-center gap-1 font-bold text-[var(--primary)]">Mở danh mục <ChevronRight className="size-4"/></span></div>
     {summary.missing>0&&<p className="mt-2 text-xs text-amber-600">{summary.missing} tài sản thiếu giá/tỷ giá: tổng chưa đầy đủ.</p>}
   </Link>;

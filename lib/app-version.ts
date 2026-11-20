@@ -1,3 +1,3 @@
-export const APP_VERSION = "4.6.4";
+export const APP_VERSION = "4.6.5";
 export const APP_VERSION_LABEL = `V${APP_VERSION}`;
-export const APP_RELEASE_NAME = "Portfolio UX & Snapshot Fix";
+export const APP_RELEASE_NAME = "Portfolio Mobile Layout & Save Feedback";

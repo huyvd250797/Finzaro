@@ -1,3 +1,10 @@
+## V4.6.5 — Portfolio Mobile Layout & Save Feedback (2026-11-20)
+- Tách hoàn toàn hàng nút **Làm mới / Thêm tài sản** khỏi vùng tổng giá trị, trả lại toàn bộ chiều ngang cho tổng tiền trên iPhone.
+- Thống nhất mọi số tiền VND trong module Tài sản và card Tài sản ở Tổng quan: `số tiền ₫`, ký hiệu **₫** đứng ngay sau số tiền và không rớt dòng; hỗ trợ số âm và số tiền lớn, giữ nguyên `USDT` cho giá gốc crypto.
+- Thu gọn hai KPI Giá vốn / Lãi lỗ và card tài sản trên mobile; mỗi KPI hiển thị một dòng tiền với ký hiệu kèm theo; các nhóm Vàng/Chứng khoán/Crypto thành dòng gọn.
+- Form **Thêm/Sửa tài sản** dùng `useActionState` để hiển thị spinner/`Đang lưu thay đổi...` hoặc `Đang thêm tài sản...`, `aria-busy`, khóa nút Lưu/Hủy và chặn gửi lặp trong khi request đang xử lý, kể cả footer được render qua portal.
+- Giữ nguyên giá thị trường PNJ/Vietcap/Binance, các RPC của V4.6.4 và lịch sử mua/bán. Không chạy Cron hoặc đồng bộ giá nền. **Không có SQL migration mới**.
+
 ## V4.6.4 — Portfolio UX & Snapshot Fix (2026-11-20)
 - Thiết kế lại UI/UX module **Tài sản** theo hướng gọn hơn: khối tổng quan rõ ràng, giảm mô tả dài dòng, số tiền chính đứng riêng một dòng để không bị rớt dòng trên màn hình hẹp.
 - Danh mục tài sản được tinh gọn lại card hiển thị; tiếp tục giữ bộ lọc, tìm kiếm, lãi/lỗ, giá hiện tại và thao tác **Sửa / Mua-Bán**.
