@@ -108,12 +108,24 @@ export function parsePnjPublishedAt(html: string): string | null {
 }
 export async function fetchPNJ(variant: string): Promise<Quote | null> {
   if (variant !== "pnj_ring" && variant !== "sjc_bar") return null;
-  const response = await request("https://giavang.pnj.com.vn/",undefined,300);
-  const html = await response.text();
-  const price = parsePnjGold(html,variant);
-  const quote = live(price,variant === "pnj_ring" ? "PNJ · nhẫn trơn 999.9 · giá mua vào" : "PNJ · SJC · giá mua vào",parsePnjPublishedAt(html) ?? new Date().toISOString());
-  if (quote) quote.checkedAt = new Date().toISOString();
-  return quote;
+  const checkedAt = new Date().toISOString();
+  const urls = ["https://www.giavang.pnj.com.vn/home", "https://giavang.pnj.com.vn/"];
+  for (const url of urls) {
+    try {
+      const response = await request(url,undefined,300);
+      const html = await response.text();
+      const price = parsePnjGold(html,variant);
+      const quote = live(price,variant === "pnj_ring" ? "PNJ · nhẫn trơn 999.9 · giá mua vào" : "PNJ · SJC · giá mua vào",parsePnjPublishedAt(html) ?? checkedAt);
+      if (quote) {
+        quote.checkedAt = checkedAt;
+        quote.note = "Nguồn bảng giá PNJ chính thức";
+        return quote;
+      }
+    } catch {
+      continue;
+    }
+  }
+  return null;
 }
 
 /** Vietcap public board via maintained vnstock-js package; no SSI credentials needed. */

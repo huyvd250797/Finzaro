@@ -23,7 +23,6 @@ async function withResult(operation: () => Promise<string>) {
     revalidatePath("/overview");
     go("message", message);
   } catch (error) {
-    // Do not hide a redirect; handle only business exceptions before redirect.
     if (error && typeof error === "object" && "digest" in error) throw error;
     go("error", error instanceof Error ? error.message : "Có lỗi khi cập nhật tài sản.");
   }
@@ -37,11 +36,12 @@ function validateSymbol(kind: string, symbol: string) {
   if (kind !== "gold" && !/^[A-Z0-9]{2,15}$/.test(value)) throw new Error("Mã chứng khoán/crypto không hợp lệ.");
   return kind === "gold" ? "GOLD9999" : value;
 }
+
 export async function createPortfolioPosition(form: FormData) {
   await withResult(async () => {
     const { supabase } = await requireUser();
     const kind = input(form,"kind");
-    if (!(["gold","stock","crypto"] as string[]).includes(kind)) throw new Error("Loại tài sản không hợp lệ.");
+    if (!( ["gold","stock","crypto"] as string[]).includes(kind)) throw new Error("Loại tài sản không hợp lệ.");
     const variant = kind === "gold" ? input(form,"variant") : "";
     const exchange = kind === "stock" ? input(form,"exchange") : "";
     if (kind === "gold" && !["pnj_ring","sjc_bar","other_ring"].includes(variant)) throw new Error("Chọn loại vàng hợp lệ.");
@@ -63,7 +63,7 @@ export async function createPortfolioPosition(form: FormData) {
     return `Đã thêm ${defaultName} vào danh mục.`;
   });
 }
-/** Edit an existing holding, including its opening purchase, via an atomic historical replay. */
+
 export async function editPortfolioAsset(form: FormData) {
   await withResult(async () => {
     const { supabase, userId } = await requireUser();
@@ -117,6 +117,7 @@ export async function portfolioTrade(form: FormData) {
     return "Đã ghi nhận giao dịch đầu tư và tính lại giá vốn.";
   });
 }
+
 export async function updatePortfolioPosition(form: FormData) {
   await withResult(async () => {
     const {supabase,userId} = await requireUser();
@@ -130,9 +131,21 @@ export async function updatePortfolioPosition(form: FormData) {
       p_manual_price:manual ? number(form,"manual_price",8,false,owner.quote_currency==="VND"):null,p_archived:input(form,"archived")==="1"
     });
     if (error) throw new Error(error.message);
-    return "Đã cập nhật nguồn định giá tài sản.";
+    return input(form,"archived")==="1" ? "Đã lưu trữ tài sản." : "Đã cập nhật nguồn định giá tài sản.";
   });
 }
+
+export async function deletePortfolioPosition(form: FormData) {
+  await withResult(async () => {
+    const { supabase } = await requireUser();
+    const positionId = checkId(input(form, "position_id"));
+    const positionName = input(form, "position_name") || "tài sản";
+    const { error } = await (supabase as any).rpc("portfolio_delete_v464", { p_position_id: positionId });
+    if (error) throw new Error(error.message);
+    return `Đã xóa ${positionName} khỏi danh mục đầu tư.`;
+  });
+}
+
 export async function savePortfolioFx(form: FormData) {
   await withResult(async () => {
     const {supabase,userId}=await requireUser();
@@ -143,28 +156,31 @@ export async function savePortfolioFx(form: FormData) {
     return "Đã lưu tỷ giá USDT/VND thủ công.";
   });
 }
+
 export async function savePortfolioSnapshot() {
   await withResult(async () => {
-    const {supabase,userId}=await requireUser();
+    const {supabase}=await requireUser();
     const { data:positions,error }=await (supabase as any).from("portfolio_positions_v460")
       .select("id,kind,symbol,name,variant,exchange,quote_currency,provider,quantity,cost_total,manual_price,archived")
-      .eq("user_id",userId).eq("archived",false);
+      .eq("archived",false);
     if (error) throw new Error(error.message);
-    const {data:fx,error:fxError}=await (supabase as any).from("portfolio_fx_v460").select("usdt_vnd").eq("user_id",userId).maybeSingle();
+    const {data:fx,error:fxError}=await (supabase as any).from("portfolio_fx_v460").select("usdt_vnd").maybeSingle();
     if (fxError) throw new Error(fxError.message);
-    const autoFx=(positions??[]).some((p:Position)=>p.kind==="crypto") ? await marketUsdtVnd() : null;
-    if((positions??[]).length>150) throw new Error("Danh mục vượt 150 tài sản, chưa thể lưu thống kê đầy đủ.");
+    const activePositions=(positions ?? []) as Position[];
+    const autoFx=activePositions.some((p)=>p.kind==="crypto") ? await marketUsdtVnd() : null;
+    if(activePositions.length>150) throw new Error("Danh mục vượt 150 tài sản, chưa thể lưu thống kê đầy đủ.");
     const rate=autoFx?.rate??(fx?.usdt_vnd ? Number(fx.usdt_vnd) : null);
-    const rows=await Promise.all(((positions ?? []) as Position[]).map(async position=>valuePosition(position,await portfolioMarketQuote(position),rate)));
+    const rows=await Promise.all(activePositions.map(async position=>valuePosition(position,await portfolioMarketQuote(position),rate)));
     const summary=summarizePortfolio(rows);
-    // A partial snapshot is never recorded as a complete financial history row.
     if (summary.missing > 0) throw new Error(`Còn ${summary.missing} tài sản chưa có giá/tỷ giá, không thể lưu thống kê đầy đủ.`);
     const parts=new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Ho_Chi_Minh",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date());
     const get=(type:string)=>parts.find(part=>part.type===type)?.value??"";
     const date=`${get("year")}-${get("month")}-${get("day")}`;
-    const {error:saveError}=await (supabase as any).from("portfolio_snapshots_v460").upsert({
-      user_id:userId,snapshot_date:date,estimated_value_vnd:summary.value,missing_quotes:0,created_at:new Date().toISOString()
-    },{onConflict:"user_id,snapshot_date"});
+    const {error:saveError}=await (supabase as any).rpc("portfolio_save_snapshot_v464", {
+      p_snapshot_date: date,
+      p_estimated_value_vnd: summary.value,
+      p_missing_quotes: 0,
+    });
     if(saveError) throw new Error(saveError.message);
     return "Đã lưu ảnh chụp giá trị danh mục hôm nay.";
   });

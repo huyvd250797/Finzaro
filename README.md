@@ -1,8 +1,10 @@
-# Finzaro V4.6.3 — Market Price Reliability Deploy Fix
+# Finzaro V4.6.4 — Portfolio UX & Snapshot Fix
 
-> **Current release: Finzaro V4.6.3 — Market Price Reliability Deploy Fix.** Giữ nguyên chức năng V4.6.2 và sửa lỗi Vercel test loader. Phiên bản ứng dụng và toàn bộ kiểm thử đã nâng lên V4.6.3. **Không có migration mới.** Xem [`DEPLOY_V4.6.3.md`](DEPLOY_V4.6.3.md).
+> **Current release: Finzaro V4.6.4 — Portfolio UX & Snapshot Fix.** Thiết kế lại module Tài sản gọn và chuyên nghiệp hơn; số tiền tổng danh mục nằm trên một dòng riêng; bổ sung **xóa tài sản**; lưu snapshot chuyển sang RPC owner-scoped để tránh lỗi `permission denied for table portfolio_snapshots_v460`; tăng độ ổn định nguồn giá vàng PNJ bằng bảng giá chính thức `www.giavang.pnj.com.vn/home`. **Có migration mới V4.6.4** và phải chạy sau V4.6.0–V4.6.2. Xem [`DEPLOY_V4.6.4.md`](DEPLOY_V4.6.4.md).
 
-> **Previous release: Finzaro V4.6.2 — Market Price Reliability Fix:** Sửa lỗi số nguyên cổ phiếu, nguồn PNJ bảng giá chính thức, Vietcap công khai theo yêu cầu khi mở trang, trạng thái lỗi giá và quy đổi vàng động; không đồng bộ nền. Xem `DEPLOY_V4.6.2.md`.
+> **Previous release: Finzaro V4.6.3 — Market Price Reliability Deploy Fix.** Giữ nguyên chức năng V4.6.2 và sửa lỗi Vercel test loader. Phiên bản ứng dụng và toàn bộ kiểm thử đã nâng lên V4.6.3. **Không có migration mới.** Xem [`DEPLOY_V4.6.3.md`](DEPLOY_V4.6.3.md).
+
+> **Historical release: Finzaro V4.6.2 — Market Price Reliability Fix:** Sửa lỗi số nguyên cổ phiếu, nguồn PNJ bảng giá chính thức, Vietcap công khai theo yêu cầu khi mở trang, trạng thái lỗi giá và quy đổi vàng động; không đồng bộ nền. Xem `DEPLOY_V4.6.2.md`.
 
 > **Historical release: Finzaro V4.6.1 — Asset Management UX & Edit.** Thiết kế lại màn hình Tài sản cho mobile, danh sách tài sản rõ ràng, nút Sửa riêng, sheet nhập/sửa/mua-bán; có thể chỉnh lại thông tin và giao dịch mua đầu tiên. Migration mới V4.6.1 bắt buộc chạy **sau V4.6.0** trước khi deploy. Xem [`DEPLOY_V4.6.1.md`](DEPLOY_V4.6.1.md).
 

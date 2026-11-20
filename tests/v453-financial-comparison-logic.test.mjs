@@ -30,9 +30,9 @@ const expect = (current, previous, flow, difference, percent, direction) => {
 
 test("V4.5.5 release is versioned, retains category UX and strict Vercel release gate", () => {
   const pkg = JSON.parse(read("package.json"));
-  assert.equal(pkg.version, "4.6.3");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.6\.3"/);
-  assert.match(read("lib/app-version.ts"), /Financial Comparison Clarity Fix|Comparison Direction Icons|Full Previous Period Comparison|Comparison Icon Alignment Fix|Multi-Asset Portfolio|Asset Management UX & Edit|Market Price Reliability Fix|Market Price Reliability Deploy Fix/);
+  assert.equal(pkg.version, "4.6.4");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.6\.4"/);
+  assert.match(read("lib/app-version.ts"), /Financial Comparison Clarity Fix|Comparison Direction Icons|Full Previous Period Comparison|Comparison Icon Alignment Fix|Multi-Asset Portfolio|Asset Management UX & Edit|Market Price Reliability Fix|Market Price Reliability Deploy Fix|Portfolio UX & Snapshot Fix/);
   assert.equal(pkg.scripts.check, "npm run lint && npm run typecheck && npm run test && npm run build");
   assert.match(read("components/category-manager-grid.tsx"), /420\)/);
   assert.deepEqual(readdirSync(join(root, "app/(dashboard)"), { withFileTypes: true })
@@ -64,7 +64,7 @@ test("Equal expenses normalize signed negative zero and show neutral color", () 
 test("Income decline follows conventional red sign and percentage", () => {
   const actual = comparePeriodTotals(20_000_000, 30_000_000, "income");
   assert.equal(actual.difference, -10_000_000);
-  assert.ok(Math.abs(actual.percent + 33.33333333333333) < 0.00000001);
+  assert.ok(Math.abs(actual.percent + 33.333333333333336) < 0.00000001);
   assert.equal(actual.direction, "negative");
 });
 
@@ -104,7 +104,7 @@ test("All three dashboard cards pass active Chi/Thu type to shared comparison an
   assert.match(card, /Mới phát sinh/);
   assert.match(card, /minimumFractionDigits: 0, maximumFractionDigits: 2/);
   assert.equal(new Intl.NumberFormat("vi-VN", { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(100), "100");
-  assert.equal(new Intl.NumberFormat("vi-VN", { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(33.333333333), "33,33");
+  assert.equal(new Intl.NumberFormat("vi-VN", { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(34.343434343), "34,34");
 });
 
 test("V4.5.5 adds read-only migration with strict fallback and does not mutate accounts", () => {
@@ -112,6 +112,6 @@ test("V4.5.5 adds read-only migration with strict fallback and does not mutate a
   assert.match(read("features/dashboard/snapshot.ts"), /previousFromLedger/);
   assert.match(source, /beneficialChange = difference \* \(flow === "expense" \? -1 : 1\)/);
   const sqlMigrations = readdirSync(join(root, "supabase/migrations"));
-  assert.equal(sqlMigrations.length, 33);
+  assert.equal(sqlMigrations.length, 34);
   assert.equal(sqlMigrations.some((f) => /financial_comparison_clarity_v455/.test(f)), true);
 });

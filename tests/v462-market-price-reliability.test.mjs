@@ -25,11 +25,11 @@ const market=load('features/portfolio/market.ts',{'react':{cache:fn=>fn}});
 const quote=(variant,manual_price=null)=>({id:'test',kind:'gold',symbol:'GOLD9999',name:'Nhẫn',variant,exchange:'',quote_currency:'VND',provider:'pnj',quantity:'41',cost_total:'328000000',manual_price,archived:false});
 const html=`<div>Giá vàng ngày: 20/11/2026 10:05:19</div><div>(Đơn vị: ngàn đồng/lượng)</div><table><tr><th>Khu vực</th><th>Loại vàng</th><th>Giá mua</th><th>Giá bán</th></tr><tr><td>Giá vàng nữ trang</td><td>Nhẫn Trơn PNJ 999.9</td><td>127.800</td><td>132.000</td></tr><tr><td>TPHCM</td><td>SJC</td><td>129.200</td><td>134.200</td></tr></table>`;
 
-test('V4.6.3 release retains exact retained modules and additional VCI dependency',()=>{
- assert.equal(JSON.parse(read('package.json')).version,'4.6.3');
+test('V4.6.4 release retains exact retained modules and additional VCI dependency',()=>{
+ assert.equal(JSON.parse(read('package.json')).version,'4.6.4');
  assert.equal(JSON.parse(read('package.json')).dependencies['vnstock-js'],'2.0.0');
- assert.match(read('lib/app-version.ts'),/Market Price Reliability Fix|Market Price Reliability Deploy Fix/);
- assert.equal(readdirSync(join(root,'supabase/migrations')).filter(n=>n.endsWith('.sql')).length,33);
+ assert.match(read('lib/app-version.ts'),/Portfolio UX & Snapshot Fix/);
+ assert.equal(readdirSync(join(root,'supabase/migrations')).filter(n=>n.endsWith('.sql')).length,34);
  assert.equal(readdirSync(join(root,'app/(dashboard)'),{withFileTypes:true}).filter(x=>x.isDirectory()).length,7);
 });
 test('Shares accept only integer quantities without invalid regex; edit and trade share the same parser',()=>{
@@ -57,7 +57,7 @@ test('Fetch PNJ uses official board URL and extracted publisher timestamp, not u
  globalThis.fetch=async(url)=>{called=String(url);return {ok:true,text:async()=>html};};
  try {
   const result=await market.fetchPNJ('pnj_ring');
-  assert.equal(called,'https://giavang.pnj.com.vn/');
+  assert.equal(called,'https://www.giavang.pnj.com.vn/home');
   assert.equal(result?.price,12780000);
   assert.equal(result?.at,'2026-11-20T03:05:19.000Z');
   assert.match(result?.source??'',/PNJ/);
@@ -93,7 +93,7 @@ test('Page displays missing quote reasons, incomplete total, and dynamic gold un
  assert.match(page,/portfolioMarketQuoteStatus/);
  assert.match(dash,/quoteProblem/);
  assert.match(dash,/TỔNG ĐÃ ĐỊNH GIÁ/);
- assert.match(sheet,/goldUnits\(parseDecimal\(quantityInput,1\)!\)/);
+ assert.match(sheet,/goldUnits\(quantityPreview\)/);
  assert.match(sheet,/Tổng giá vốn mua đầu/);
  assert.doesNotMatch(sheet,/>12,3 chỉ = 1 cây 2 chỉ 3 phân</);
 });

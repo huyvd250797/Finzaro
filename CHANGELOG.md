@@ -1,3 +1,11 @@
+## V4.6.4 — Portfolio UX & Snapshot Fix (2026-11-20)
+- Thiết kế lại UI/UX module **Tài sản** theo hướng gọn hơn: khối tổng quan rõ ràng, giảm mô tả dài dòng, số tiền chính đứng riêng một dòng để không bị rớt dòng trên màn hình hẹp.
+- Danh mục tài sản được tinh gọn lại card hiển thị; tiếp tục giữ bộ lọc, tìm kiếm, lãi/lỗ, giá hiện tại và thao tác **Sửa / Mua-Bán**.
+- Bổ sung **xóa tài sản** bằng RPC owner-scoped mới `portfolio_delete_v464`; xóa cả vị thế và lịch sử mua/bán thuộc chính tài sản đó.
+- Sửa lỗi **`permission denied for table portfolio_snapshots_v460`** khi bấm *Lưu thống kê hôm nay* bằng RPC owner-scoped mới `portfolio_save_snapshot_v464`, thay cho upsert trực tiếp từ action.
+- Cải thiện nguồn giá vàng PNJ: ưu tiên bảng giá chính thức `https://www.giavang.pnj.com.vn/home`, có fallback URL cũ nếu cần.
+- Migration mới: `supabase/migrations/20261120190000_portfolio_ux_snapshot_delete_v464.sql`. Chạy **sau V4.6.0 + V4.6.1 + V4.6.2** trước khi deploy source.
+
 ## V4.6.3 — Market Price Reliability Deploy Fix (2026-11-20)
 - Phát hành lại bản sửa `npm run check` của V4.6.2 với **phiên bản mới** theo quy ước dự án; không phát hành hai source ZIP khác nhau cùng một version.
 - Đồng bộ version tại `package.json`, `lib/app-version.ts`, giao diện và các assertion phiên bản của bài kiểm thử; giữ test loader `require('typescript')` để chạy trên Vercel không phụ thuộc đường dẫn Node.js cục bộ.
