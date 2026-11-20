@@ -1,8 +1,12 @@
-> **Finzaro V4.6.2 — Market Price Reliability Fix:** Sửa lỗi số nguyên cổ phiếu, nguồn PNJ bảng giá chính thức, Vietcap công khai theo yêu cầu khi mở trang, trạng thái lỗi giá và quy đổi vàng động; không đồng bộ nền. Xem `DEPLOY_V4.6.2.md`.
+# Finzaro V4.6.3 — Market Price Reliability Deploy Fix
 
-> **Current release: Finzaro V4.6.1 — Asset Management UX & Edit.** Thiết kế lại màn hình Tài sản cho mobile, danh sách tài sản rõ ràng, nút Sửa riêng, sheet nhập/sửa/mua-bán; có thể chỉnh lại thông tin và giao dịch mua đầu tiên. Migration mới V4.6.1 bắt buộc chạy **sau V4.6.0** trước khi deploy. Xem [`DEPLOY_V4.6.1.md`](DEPLOY_V4.6.1.md).
+> **Current release: Finzaro V4.6.3 — Market Price Reliability Deploy Fix.** Giữ nguyên chức năng V4.6.2 và sửa lỗi Vercel test loader. Phiên bản ứng dụng và toàn bộ kiểm thử đã nâng lên V4.6.3. **Không có migration mới.** Xem [`DEPLOY_V4.6.3.md`](DEPLOY_V4.6.3.md).
 
-> **Current release: Finzaro V4.6.0 — Multi-Asset Portfolio.** Bổ sung module Tài sản (vàng 9999, cổ phiếu VN, crypto), giá vốn/lãi lỗ, thị trường Binance/SSI/PNJ khi có dữ liệu, FX USDT/VND CoinGecko/dự phòng thủ công, giao dịch mua/bán và snapshots; không trộn Thu/Chi sinh hoạt. **Chạy migration V4.6.0 trên Supabase trước khi deploy.** Xem [`DEPLOY_V4.6.0.md`](DEPLOY_V4.6.0.md).
+> **Previous release: Finzaro V4.6.2 — Market Price Reliability Fix:** Sửa lỗi số nguyên cổ phiếu, nguồn PNJ bảng giá chính thức, Vietcap công khai theo yêu cầu khi mở trang, trạng thái lỗi giá và quy đổi vàng động; không đồng bộ nền. Xem `DEPLOY_V4.6.2.md`.
+
+> **Historical release: Finzaro V4.6.1 — Asset Management UX & Edit.** Thiết kế lại màn hình Tài sản cho mobile, danh sách tài sản rõ ràng, nút Sửa riêng, sheet nhập/sửa/mua-bán; có thể chỉnh lại thông tin và giao dịch mua đầu tiên. Migration mới V4.6.1 bắt buộc chạy **sau V4.6.0** trước khi deploy. Xem [`DEPLOY_V4.6.1.md`](DEPLOY_V4.6.1.md).
+
+> **Historical release: Finzaro V4.6.0 — Multi-Asset Portfolio.** Bổ sung module Tài sản (vàng 9999, cổ phiếu VN, crypto), giá vốn/lãi lỗ, thị trường Binance/SSI/PNJ khi có dữ liệu, FX USDT/VND CoinGecko/dự phòng thủ công, giao dịch mua/bán và snapshots; không trộn Thu/Chi sinh hoạt. **Chạy migration V4.6.0 trên Supabase trước khi deploy.** Xem [`DEPLOY_V4.6.0.md`](DEPLOY_V4.6.0.md).
 
 > **Current release: Finzaro V4.5.8 — Comparison Icon Alignment Fix.** Chỉnh icon xu hướng tăng/giảm liền sát nhãn ngay trên cùng dòng, không tách rời khi số tiền hoặc phần trăm xuống hàng trên màn hình hẹp. Giữ nguyên quy tắc đối chiếu toàn bộ ngày/tháng/năm trước của V4.5.7. **Không có migration mới**; cần môi trường đã áp dụng migration V4.5.7. Xem [`DEPLOY_V4.5.8.md`](DEPLOY_V4.5.8.md).
 

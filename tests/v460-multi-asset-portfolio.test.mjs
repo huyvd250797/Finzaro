@@ -25,8 +25,8 @@ const position=(partial={})=>({id:"p",kind:"stock",name:"MBB",symbol:"MBB",varia
 const live=(price)=>({price,source:"test",at:"2026-11-19T11:00:00Z",type:"market"});
 
 test("V4.6.0 version, seven modules, migration and navigation",()=>{
-  assert.equal(JSON.parse(read("package.json")).version,"4.6.2");
-  assert.match(read("lib/app-version.ts"),/APP_RELEASE_NAME = "Market Price Reliability Fix"/);
+  assert.equal(JSON.parse(read("package.json")).version,"4.6.3");
+  assert.match(read("lib/app-version.ts"),/APP_RELEASE_NAME = "Market Price Reliability Deploy Fix"/);
   assert.deepEqual(readdirSync(join(root,"app/(dashboard)"),{withFileTypes:true}).filter(x=>x.isDirectory()).map(x=>x.name).sort(),["accounts","categories","overview","portfolio","reports","settings","transactions"]);
   assert.match(read("components/app-sidebar.tsx"),/href: "\/portfolio"/);
   assert.match(read("components/mobile-nav.tsx"),/href: "\/portfolio"/);

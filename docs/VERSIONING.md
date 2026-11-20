@@ -52,3 +52,5 @@ Lưu ý: release từng được dự kiến tên `V0.0.13 – Net Worth & Finan
 - **`V3.3.0 — Premium Visual Foundation`** nâng cấp đồng bộ giao diện Light/Dark và các UI primitives; source baseline V3.2.1, không có SQL migration mới.
 
 - **`V3.4.0 — Mobile-First Transaction UX`** sửa bottom sheet/scroll và nút Lưu trên iPhone, kế thừa V3.3.0. Không có SQL mới; bản tiếp theo phải cao hơn V3.4.0.
+
+- **`V4.6.3 — Market Price Reliability Deploy Fix`** là bản vá deploy nâng từ V4.6.2. Mọi source được sửa và phát hành lại phải tăng patch, không giữ nguyên version. Không có SQL migration mới.

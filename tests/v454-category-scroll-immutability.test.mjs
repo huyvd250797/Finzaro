@@ -37,8 +37,8 @@ test("Quick-entry type parameter is used for runtime validation, not left unused
 test("Category test no longer imports unused createRequire; release gate stays strict", () => {
   assert.doesNotMatch(test452, /import \{ createRequire \} from/);
   const pkg = JSON.parse(read("package.json"));
-  assert.equal(pkg.version, "4.6.2");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.6\.2"/);
+  assert.equal(pkg.version, "4.6.3");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.6\.3"/);
   assert.equal(pkg.scripts.check, "npm run lint && npm run typecheck && npm run test && npm run build");
   assert.deepEqual(readdirSync(join(root, "app/(dashboard)"), { withFileTypes: true })
     .filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort(),

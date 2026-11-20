@@ -1,3 +1,15 @@
+## V4.6.3 — Market Price Reliability Deploy Fix (2026-11-20)
+- Phát hành lại bản sửa `npm run check` của V4.6.2 với **phiên bản mới** theo quy ước dự án; không phát hành hai source ZIP khác nhau cùng một version.
+- Đồng bộ version tại `package.json`, `lib/app-version.ts`, giao diện và các assertion phiên bản của bài kiểm thử; giữ test loader `require('typescript')` để chạy trên Vercel không phụ thuộc đường dẫn Node.js cục bộ.
+- Giữ nguyên module Tài sản, logic PNJ/Vietcap/SSI/Binance, giá vốn và giao dịch; không kích hoạt lại đồng bộ nền.
+- **Không có migration mới**. Tiếp tục dùng migration V4.6.2 nếu đã áp dụng. Không cần chạy lại SQL.
+- Các kiểm thử và kiểm tra cấu trúc phát hành được chạy lại cho bản V4.6.3; production build thực tế cần xác minh trên Vercel.
+
+### V4.6.2 — Deploy Hotfix: Portable TypeScript Test Loader (2026-11-20)
+- Khắc phục lỗi `npm run check` trên Vercel: `tests/v462-market-price-reliability.test.mjs` không còn import TypeScript từ đường dẫn tuyệt đối thuộc máy phát triển, mà dùng `require('typescript')` từ devDependencies.
+- Không đổi logic PNJ/Vietcap, màn hình Tài sản, version ứng dụng, schema hoặc migration của V4.6.2. Không chạy lại SQL khi đã chạy migration V4.6.2.
+- 340/340 bài test offline đạt; full lint/typecheck/Next production build cần Vercel xác minh do môi trường đóng gói chưa cài dependencies đầy đủ.
+
 ## V4.6.2 — Market Price Reliability Fix (2026-11-20)
 - Fix regex integer quantity crash on stock create/edit/trade.
 - PNJ official public board, strict bid-price parsing and VND/chi normalization; publisher timestamp when available.
