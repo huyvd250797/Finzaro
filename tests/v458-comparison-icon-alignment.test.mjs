@@ -13,10 +13,10 @@ try { ts = require("typescript"); }
 catch { ts = require(join(execFileSync("npm", ["root", "-g"], { encoding: "utf8" }).trim(), "typescript")); }
 
 test("V4.6.0 changes only comparison icon alignment, with V4.6.0 additive migration", () => {
-  assert.equal(JSON.parse(read("package.json")).version, "4.6.1");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.6\.1"/);
-  assert.match(read("lib/app-version.ts"), /Comparison Icon Alignment Fix|Multi-Asset Portfolio|Asset Management UX & Edit/);
-  assert.equal(readdirSync(join(root, "supabase/migrations")).filter(name => name.endsWith(".sql")).length, 32);
+  assert.equal(JSON.parse(read("package.json")).version, "4.6.2");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.6\.2"/);
+  assert.match(read("lib/app-version.ts"), /Comparison Icon Alignment Fix|Multi-Asset Portfolio|Asset Management UX & Edit|Market Price Reliability Fix/);
+  assert.equal(readdirSync(join(root, "supabase/migrations")).filter(name => name.endsWith(".sql")).length, 33);
   assert.match(read("features/dashboard/snapshot.ts"), /dashboard_period_comparison_v457/);
 });
 

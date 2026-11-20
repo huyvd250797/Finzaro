@@ -1,20 +1,23 @@
 /** Pure, audited Finzaro V4.6.0 portfolio math. Not a transaction ledger. */
 export type AssetKind = "gold" | "stock" | "crypto";
-export type MarketProvider = "manual" | "pnj" | "ssi" | "binance";
+export type MarketProvider = "manual" | "pnj" | "vci" | "ssi" | "binance";
 export type Position = {
   id: string; kind: AssetKind; symbol: string; name: string; variant: string; exchange: string;
   quote_currency: "VND" | "USDT"; provider: MarketProvider; quantity: string;
   cost_total: string; manual_price: string | null; archived: boolean;
 };
-export type Quote = { price: number; source: string; at: string; type: "market" | "manual"; stale?: boolean };
+export type Quote = { price: number; source: string; at: string; type: "market" | "manual"; stale?: boolean; checkedAt?: string; note?: string };
 export type ValuedPosition = Position & {
   quantityNumber: number; costNumber: number; quote: Quote | null;
   valueVnd: number | null; costVnd: number | null; pnlVnd: number | null;
   valueNative: number | null; pnlNative: number | null;
+  quoteProblem?: string;
 };
 export function parseDecimal(text: string, maxPlaces = 12): number | null {
   const normalized = text.trim().replace(/\s/g, "").replace(",", ".");
-  if (!new RegExp(`^(?:\\d+)(?:\\.\\d{1,${maxPlaces}})?$`).test(normalized)) return null;
+  if (!Number.isInteger(maxPlaces) || maxPlaces < 0 || maxPlaces > 12) return null;
+  const pattern = maxPlaces === 0 ? /^\d+$/ : new RegExp(`^\\d+(?:\\.\\d{1,${maxPlaces}})?$`);
+  if (!pattern.test(normalized)) return null;
   const amount = Number(normalized);
   return Number.isFinite(amount) && amount <= 1e12 ? amount : null;
 }

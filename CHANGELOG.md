@@ -1,3 +1,10 @@
+## V4.6.2 — Market Price Reliability Fix (2026-11-20)
+- Fix regex integer quantity crash on stock create/edit/trade.
+- PNJ official public board, strict bid-price parsing and VND/chi normalization; publisher timestamp when available.
+- Public Vietcap via vnstock-js v2, optional SSI fallback, scoped SQL provider constraint update.
+- Manual price provenance, missing-price reasons, incomplete totals, live gold conversion and capital preview.
+- No background sync, cron, Supabase market cache or realtime.
+
 ## V4.6.1 — Asset Management UX & Edit (2026-11-20)
 - Thiết kế lại giao diện Tài sản mobile-first: tổng quan giá trị, vốn, lãi/lỗ; bộ lọc + tìm kiếm; các card hiển thị giá thị trường, giá vốn, số lượng, nguồn giá và trạng thái định giá; nút **Sửa** và **Mua/Bán** rõ ràng.
 - Chuyển thao tác Thêm/Sửa/Mua/Bán thành bottom sheet có form phân nhóm, sticky footer và thao tác thuận tiện trên iPhone; chuyển tỷ giá, lịch sử, snapshot và lưu trữ sang khu vực công cụ gọn nhẹ.

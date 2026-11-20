@@ -53,7 +53,7 @@ export async function createPortfolioPosition(form: FormData) {
     const fee = number(form,"fee",8,true,kind!=="crypto");
     const manual = input(form,"manual_price");
     const manualPrice = manual ? number(form,"manual_price",8,false,kind!=="crypto") : null;
-    const provider = kind === "stock" ? "ssi" : kind === "crypto" ? "binance" : variant === "other_ring" ? "manual" : "pnj";
+    const provider = kind === "stock" ? "vci" : kind === "crypto" ? "binance" : variant === "other_ring" ? "manual" : "pnj";
     const defaultName = kind === "gold" ? variant === "sjc_bar" ? "Vàng miếng SJC 9999" : variant === "pnj_ring" ? "Nhẫn trơn PNJ 9999" : "Vàng nhẫn 9999" : symbol;
     const { error } = await (supabase as any).rpc("portfolio_create_v460", {
       p_kind:kind,p_symbol:symbol,p_name:defaultName,p_variant:variant,p_exchange:exchange,p_provider:provider,
@@ -81,7 +81,7 @@ export async function editPortfolioAsset(form: FormData) {
     const provider = input(form,"provider");
     if (kind === "gold" && !["pnj_ring","sjc_bar","other_ring"].includes(variant)) throw new Error("Loại vàng không hợp lệ.");
     if (kind === "stock" && !["HOSE","HNX","UPCOM"].includes(exchange)) throw new Error("Sàn chứng khoán không hợp lệ.");
-    if (!(kind === "gold" ? ["pnj","manual"].includes(provider) : kind === "stock" ? ["ssi","manual"].includes(provider) : ["binance","manual"].includes(provider))) {
+    if (!(kind === "gold" ? ["pnj","manual"].includes(provider) : kind === "stock" ? ["vci","ssi","manual"].includes(provider) : ["binance","manual"].includes(provider))) {
       throw new Error("Nguồn giá không phù hợp với tài sản.");
     }
     const initialQuantity = number(form,"initial_quantity",kind === "crypto" ? 12 : kind === "gold" ? 1 : 0);

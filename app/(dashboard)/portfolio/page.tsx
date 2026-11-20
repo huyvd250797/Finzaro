@@ -3,7 +3,7 @@ import { requireUser } from "@/lib/auth";
 import { PortfolioDashboard, type PortfolioHistory, type PortfolioSnapshot } from "@/components/portfolio-dashboard";
 import type { OpeningTrade } from "@/components/portfolio-asset-sheet";
 import { type Position, valuePosition } from "@/features/portfolio/core";
-import { portfolioMarketQuote, marketUsdtVnd } from "@/features/portfolio/market";
+import { portfolioMarketQuoteStatus, marketUsdtVnd } from "@/features/portfolio/market";
 
 export const dynamic="force-dynamic";
 export default async function PortfolioPage({searchParams}:{searchParams:Promise<{error?:string;message?:string}>}) {
@@ -26,8 +26,10 @@ export default async function PortfolioPage({searchParams}:{searchParams:Promise
   const autoFx=needsFx ? await marketUsdtVnd() : null;
   const fx=autoFx?.rate??savedFx;
   const fxSource=autoFx?.source??(savedFx?"Tỷ giá thủ công":"Chưa có tỷ giá");
-  const valued=await Promise.all(positions.map(async position=>valuePosition(position,
-    position.archived||Number(position.quantity)===0?null:await portfolioMarketQuote(position),fx)));
+  const valued=await Promise.all(positions.map(async position=>{
+    const status=position.archived||Number(position.quantity)===0 ? {quote:null,problem:null} : await portfolioMarketQuoteStatus(position);
+    return {...valuePosition(position,status.quote,fx),quoteProblem:status.problem??undefined};
+  }));
   return <div className="fin-page-shell mx-auto max-w-[1300px] px-4 py-6 md:px-6 lg:px-8 lg:py-8">
     <div className="mb-6"><p className="text-sm font-semibold text-[var(--primary)]">Quản lý đầu tư</p><h1 className="mt-1 flex items-center gap-2 text-2xl font-black tracking-tight sm:text-3xl"><Gem className="size-6 text-[var(--primary)]"/>Tài sản</h1><p className="mt-2 text-sm text-[var(--muted-foreground)]">Vàng 24K · Chứng khoán Việt Nam · Crypto. Tất cả giá trị quy đổi về VND khi có tỷ giá hợp lệ.</p></div>
     {query.message && <div role="status" className="mb-4 rounded-xl bg-emerald-500/10 p-3 text-sm text-emerald-500">{query.message.slice(0,250)}</div>}

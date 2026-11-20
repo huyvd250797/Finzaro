@@ -51,7 +51,7 @@ export function PortfolioDashboard({positions,fx,fxSource,manualFx,history,snaps
   return <div className="space-y-4 sm:space-y-6">
     <section className="rounded-[26px] border border-[var(--border)] bg-[var(--card)] p-4 shadow-sm sm:p-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0 flex-1"><p className="text-[11px] font-black uppercase tracking-[.14em] text-[var(--primary)]">TỔNG TÀI SẢN ĐẦU TƯ</p>
+        <div className="min-w-0 flex-1"><p className="text-[11px] font-black uppercase tracking-[.14em] text-[var(--primary)]">{summary.missing > 0 ? "TỔNG ĐÃ ĐỊNH GIÁ (TẠM TÍNH)" : "TỔNG TÀI SẢN ĐẦU TƯ"}</p>
           <p className="mt-2 break-words text-[clamp(1.75rem,6vw,2.5rem)] font-black tracking-tight tabular-nums">{money(summary.value)}</p>
           <p className="mt-1 text-[11px] text-[var(--muted-foreground)]">Quy đổi VND · {held.length} tài sản đang nắm giữ{summary.missing>0?" · Tạm tính":""}</p>
         </div>
@@ -113,8 +113,10 @@ export function PortfolioDashboard({positions,fx,fxSource,manualFx,history,snaps
             <p>Giá vốn bình quân: <strong className="text-[var(--foreground)]">{p.quantityNumber>0?`${decimals(p.costNumber/p.quantityNumber,8)} ${p.quote_currency}/${p.kind==="gold"?"chỉ":"đơn vị"}`:"—"}</strong></p>
             <p>Giá hiện tại: <strong className="text-[var(--foreground)]">{p.quote?`${decimals(p.quote.price,8)} ${p.quote_currency}`:"Chưa có giá hợp lệ"}</strong>{p.quote?` · ${p.quote.source}${p.quote.at?` · ${priceDate(p.quote.at)}`:""}`:""}</p>
           </div>
+          {!p.quote && p.quoteProblem && <p role="status" className="mt-2 text-[11px] leading-5 text-amber-600 dark:text-amber-300">{p.quoteProblem}</p>}
+          {p.quote?.stale && p.quoteProblem && <p role="status" className="mt-2 text-[11px] leading-5 text-amber-600 dark:text-amber-300">{p.quoteProblem} Đang dùng giá dự phòng đã nhập.</p>}
           <div className="mt-3 flex items-center justify-between gap-2 border-t border-[var(--border)] pt-3">
-            <span className="inline-flex items-center gap-1 text-[11px] text-[var(--muted-foreground)]">{hasPrice?<CheckCircle2 className="size-3.5 text-[var(--fin-income)]"/>:<CircleAlert className="size-3.5 text-amber-500"/>}{hasPrice?"Đã định giá":"Chờ cập nhật giá"}</span>
+            <span className="inline-flex items-center gap-1 text-[11px] text-[var(--muted-foreground)]">{hasPrice?<CheckCircle2 className="size-3.5 text-[var(--fin-income)]"/>:<CircleAlert className="size-3.5 text-amber-500"/>}{hasPrice?(p.quote?.stale?"Giá dự phòng":"Đã định giá"):"Chờ cập nhật giá"}</span>
             <button type="button" onClick={()=>setTradeEditor(p.id)} className={softButton}><Plus className="size-3.5"/>Mua / Bán</button>
           </div>
         </article>;

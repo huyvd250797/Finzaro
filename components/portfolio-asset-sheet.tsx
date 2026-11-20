@@ -5,6 +5,7 @@ import { Archive, Bitcoin, Gem, Plus, Save, TrendingUp, X } from "lucide-react";
 import { BottomSheet } from "@/components/bottom-sheet";
 import { SheetFormActions } from "@/components/sheet-form-actions";
 import type { AssetKind, ValuedPosition } from "@/features/portfolio/core";
+import { goldUnits, parseDecimal, parseVndAmount } from "@/features/portfolio/core";
 import { createPortfolioPosition, editPortfolioAsset, updatePortfolioPosition } from "@/features/portfolio/actions";
 
 export type OpeningTrade = {position_id:string;quantity:string;unit_price:string;fee:string;trade_count:number};
@@ -17,10 +18,13 @@ const num = (value: number | string) => String(value).replace(".",",");
 
 export function PortfolioAssetSheet({open,onClose,asset,opening}:{open:boolean;onClose:()=>void;asset:ValuedPosition|null;opening?:OpeningTrade}) {
   const [kind,setKind] = useState<AssetKind>(asset?.kind??"gold");
+  const [quantityInput,setQuantityInput] = useState(opening?num(opening.quantity):"");
+  const [buyInput,setBuyInput] = useState(opening?num(opening.unit_price):"");
+  const [feeInput,setFeeInput] = useState(opening?num(opening.fee):"0");
   const isEdit = asset !== null;
   const currentKind = asset?.kind??kind;
   const formId = `fin-portfolio-${asset?.id??"new"}`;
-  const assetProvider = currentKind==="gold"?[{value:"pnj",label:"PNJ"},{value:"manual",label:"Thủ công"}]:currentKind==="stock"?[{value:"ssi",label:"SSI"},{value:"manual",label:"Thủ công"}]:[{value:"binance",label:"Binance"},{value:"manual",label:"Thủ công"}];
+  const assetProvider = currentKind==="gold"?[{value:"pnj",label:"PNJ"},{value:"manual",label:"Thủ công"}]:currentKind==="stock"?[{value:"vci",label:"Vietcap công khai"},{value:"ssi",label:"SSI · cần API Key"},{value:"manual",label:"Thủ công"}]:[{value:"binance",label:"Binance"},{value:"manual",label:"Thủ công"}];
   return <BottomSheet open={open} onClose={onClose} label={isEdit?`Sửa tài sản ${asset.name}`:"Thêm tài sản đầu tư"}
     panelClassName="mx-auto max-w-2xl sm:mb-4 sm:max-h-[calc(100dvh-36px)] sm:rounded-[26px]">
     <div className="px-4 pb-6 pt-2 sm:px-6">
@@ -57,15 +61,19 @@ export function PortfolioAssetSheet({open,onClose,asset,opening}:{open:boolean;o
           <h3 className="text-sm font-black">02 · {isEdit?"Giao dịch mua ban đầu":"Thông tin mua ban đầu"}</h3>
           {isEdit && <p className="rounded-xl bg-[var(--muted)] px-3 py-2.5 text-xs leading-5 text-[var(--muted-foreground)]">Đây là lần mua đầu tiên, không nhất thiết là số đang nắm giữ. Các lần mua/bán tiếp theo được giữ nguyên và tự tính lại khi lưu.{Number(opening?.trade_count)>1?` Tài sản có ${opening?.trade_count} giao dịch trong lịch sử.`:""}</p>}
           <div><label htmlFor="asset-quantity" className={label}>Số lượng mua ({currentKind==="gold"?"chỉ":currentKind==="stock"?"cổ phiếu":"coin"})</label>
-            <input id="asset-quantity" name={isEdit?"initial_quantity":"quantity"} className={field} required inputMode="decimal" placeholder={currentKind==="gold"?"12,3":currentKind==="stock"?"200":"2,5"} defaultValue={opening?num(opening.quantity):""}/>
-            {currentKind==="gold"&&<p className="mt-1 text-[11px] text-[var(--muted-foreground)]">12,3 chỉ = 1 cây 2 chỉ 3 phân</p>}
+            <input id="asset-quantity" name={isEdit?"initial_quantity":"quantity"} className={field} required inputMode="decimal" placeholder={currentKind==="gold"?"12,3":currentKind==="stock"?"200":"2,5"} value={quantityInput} onChange={event=>setQuantityInput(event.target.value)}/>
+            {currentKind==="gold"&&<p className="mt-1 text-[11px] text-[var(--muted-foreground)]">{parseDecimal(quantityInput,1)!==null?`${quantityInput.replace(".",",")} chỉ = ${goldUnits(parseDecimal(quantityInput,1)!)}`:"Nhập số chỉ, ví dụ 12,3 = 1 cây 2 chỉ 3 phân"}</p>}
           </div>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div><label htmlFor="asset-buy" className={label}>Giá mua / {currentKind==="gold"?"chỉ":currentKind==="stock"?"cổ phiếu":"coin"} ({currentKind==="crypto"?"USDT":"VND"})</label>
-              <input id="asset-buy" name={isEdit?"initial_buy_price":"buy_price"} className={field} required inputMode="decimal" placeholder={currentKind==="crypto"?"120":"21.150"} defaultValue={opening?num(opening.unit_price):""}/></div>
+              <input id="asset-buy" name={isEdit?"initial_buy_price":"buy_price"} className={field} required inputMode="decimal" placeholder={currentKind==="crypto"?"120":"21.150"} value={buyInput} onChange={event=>setBuyInput(event.target.value)}/></div>
             <div><label htmlFor="asset-fee" className={label}>Phí mua ban đầu ({currentKind==="crypto"?"USDT":"VND"})</label>
-              <input id="asset-fee" name={isEdit?"initial_fee":"fee"} className={field} required inputMode="decimal" defaultValue={opening?num(opening.fee):"0"}/></div>
+              <input id="asset-fee" name={isEdit?"initial_fee":"fee"} className={field} required inputMode="decimal" value={feeInput} onChange={event=>setFeeInput(event.target.value)}/></div>
           </div>
+          {(()=>{const q=parseDecimal(quantityInput,currentKind==="stock"?0:currentKind==="gold"?1:12);
+            const price=currentKind==="crypto"?parseDecimal(buyInput,8):parseVndAmount(buyInput,8);
+            const fee=currentKind==="crypto"?parseDecimal(feeInput,8):parseVndAmount(feeInput,8);
+            return <div className="rounded-xl bg-[var(--muted)] px-3 py-3 text-xs" role="status">Tổng giá vốn mua đầu: <strong>{q!==null&&price!==null&&fee!==null?(q*price+fee).toLocaleString("vi-VN",{maximumFractionDigits:2})+` ${currentKind==="crypto"?"USDT":"đ"}`:"Nhập đủ số lượng, giá mua và phí"}</strong></div>;})()}
         </section>
         <section className="space-y-3 border-t border-[var(--border)] pt-4">
           <h3 className="text-sm font-black">03 · Nguồn định giá</h3>
@@ -73,7 +81,7 @@ export function PortfolioAssetSheet({open,onClose,asset,opening}:{open:boolean;o
             {isEdit && <div><label htmlFor="asset-provider" className={label}>Nguồn giá thị trường</label><select id="asset-provider" name="provider" defaultValue={asset.provider} className={field}>
               {assetProvider.map(p=><option key={p.value} value={p.value}>{p.label}</option>)}
             </select></div>}
-            <div><label htmlFor="asset-manual" className={label}>Giá thủ công / dự phòng ({currentKind==="crypto"?"USDT":"VND"})</label>
+            <div><label htmlFor="asset-manual" className={label}>Giá thị trường dự phòng ({currentKind==="gold"?"VND/chỉ":currentKind==="stock"?"VND/CP":"USDT/coin"})</label>
               <input id="asset-manual" name="manual_price" inputMode="decimal" className={field} defaultValue={asset?.manual_price?num(asset.manual_price):""} placeholder="Để trống nếu chưa có"/></div>
           </div>
           <p className="text-xs leading-5 text-[var(--muted-foreground)]">Giá mua dùng tính giá vốn, không tự động xem là giá thị trường. Giá thủ công chỉ được dùng khi nguồn giá không khả dụng hoặc được chọn là nguồn chính.</p>
