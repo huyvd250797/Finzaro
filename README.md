@@ -1,6 +1,8 @@
-# Finzaro V4.6.7 — Personal Lending & Borrowing Management
+# Finzaro V4.6.8 — Personal Debt Deploy Hotfix
 
-> **Current release: Finzaro V4.6.7 — Personal Lending & Borrowing Management.** Công nợ cá nhân hai chiều trong Tài khoản & Ví: cho vay/đi vay, tách gốc khỏi Thu/Chi, ghi nhận lãi thực trả/nhận, thanh toán từng phần, nợ cũ không làm lệch ngân hàng, lịch sử và chống gửi trùng. **Cần migration V4.6.7 trước khi deploy.** Xem [DEPLOY_V4.6.7.md](DEPLOY_V4.6.7.md).
+> **Current release: Finzaro V4.6.8 — Personal Debt Deploy Hotfix.** Sửa lỗi ESLint `react-hooks/set-state-in-effect` tại `RequestKeyInput`, chuyển sang input ẩn không điều khiển và gán request key khi submit; giữ idempotency chống gửi trùng. Không đổi nghiệp vụ hay database, **không có migration mới**. Xem [DEPLOY_V4.6.8.md](DEPLOY_V4.6.8.md).
+
+> **Previous release: Finzaro V4.6.7 — Personal Lending & Borrowing Management.** Công nợ cá nhân hai chiều trong Tài khoản & Ví: cho vay/đi vay, tách gốc khỏi Thu/Chi, ghi nhận lãi thực trả/nhận, thanh toán từng phần, nợ cũ không làm lệch ngân hàng, lịch sử và chống gửi trùng. **Cần migration V4.6.7 trước khi deploy.** Xem [DEPLOY_V4.6.7.md](DEPLOY_V4.6.7.md).
 
 > **Previous release: Finzaro V4.6.5 — Portfolio Mobile Layout & Save Feedback.** Tách nút **Làm mới/Thêm tài sản** xuống hàng riêng để tổng tiền hiển thị trọn vẹn; quy đổi mọi khoản tiền VND thành `số tiền ₫` (ký hiệu ngay sau, không xuống hàng), tối ưu card tài sản trên mobile và bổ sung phản hồi **Đang lưu thay đổi...** với spinner, khóa submit khi chờ server. **Không có migration mới**. Xem [`DEPLOY_V4.6.5.md`](DEPLOY_V4.6.5.md).
 > **Current release: Finzaro V4.6.6 — Family Savings Fund Management.** Quỹ tiết kiệm gia đình trong Tài khoản & Ví, số dư khả dụng tách khỏi quỹ, gửi/rút quỹ bằng giao dịch chuyển nội bộ nguyên tử. Lịch sử giao dịch dùng vuốt trái để Sửa/Xóa, các thao tác sao chép/nhân bản trong menu. Cải thiện sửa khoản thu bằng thông báo lỗi trực tiếp và trạng thái lưu. **Cần migration V4.6.6**. Xem [`DEPLOY_V4.6.6.md`](DEPLOY_V4.6.6.md).

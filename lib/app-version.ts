@@ -1,3 +1,3 @@
-export const APP_VERSION = "4.6.7";
+export const APP_VERSION = "4.6.8";
 export const APP_VERSION_LABEL = `V${APP_VERSION}`;
-export const APP_RELEASE_NAME = "Personal Lending & Borrowing Management";
+export const APP_RELEASE_NAME = "Personal Debt Deploy Hotfix";

@@ -29,7 +29,7 @@ const tx = (id, date, type, amount, purpose = "standard", currency = "VND") => (
 
 test("V4.5.1 release retains strict deploy gates and six modules", () => {
   const pkg = JSON.parse(read("package.json"));
-  assert.equal(pkg.version, "4.6.7");
+  assert.equal(pkg.version, "4.6.8");
   assert.equal(pkg.scripts.check, "npm run lint && npm run typecheck && npm run test && npm run build");
   assert.deepEqual(readdirSync(join(root, "app/(dashboard)"), { withFileTypes: true }).filter((item) => item.isDirectory()).map((item) => item.name).sort(), ["accounts", "categories", "overview", "portfolio", "reports", "settings", "transactions"]);
 });

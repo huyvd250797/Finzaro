@@ -43,8 +43,8 @@ const accounts = [{ id: "wallet", account_type: "bank", currency_code: "VND", is
 
 test("V4.5.0 release is versioned, preserves strict deployment gate and six modules", () => {
   const pkg = JSON.parse(read("package.json"));
-  assert.equal(pkg.version, "4.6.7");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.6\.7"/);
+  assert.equal(pkg.version, "4.6.8");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.6\.8"/);
   assert.equal(pkg.scripts.check, "npm run lint && npm run typecheck && npm run test && npm run build");
   assert.deepEqual(readdirSync(join(root, "app/(dashboard)"), { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name).sort(), ["accounts", "categories", "overview", "portfolio", "reports", "settings", "transactions"]);
 });

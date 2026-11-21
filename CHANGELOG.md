@@ -1,3 +1,9 @@
+## V4.6.8 — Personal Debt Deploy Hotfix (2026-11-21)
+- Fix build-blocking ESLint `react-hooks/set-state-in-effect` in `components/personal-debt-panel.tsx`.
+- Remove the synchronous `useEffect` state update from `RequestKeyInput`. Keep the request key on an uncontrolled hidden input, initialized on the first real form submission; repeat submits reuse the same key to preserve idempotency.
+- Retain personal loans, repayments, user balances, family savings, and existing V4.6.7 SQL unchanged.
+- **No new SQL migration.** If V4.6.7 migration already ran, only deploy the new ZIP.
+
 ## V4.6.7 — Personal Lending & Borrowing Management (2026-11-21)
 - Thêm **Công nợ cá nhân** (người khác nợ tôi / tôi đang nợ) tại Tài khoản & Ví, giữ nguyên 7 module.
 - Tạo khoản vay mới bằng giao dịch tiền thực tế hoặc nhập dư nợ cũ không chạm đến ngân hàng. Luồng ghi tiền và dư nợ chạy nguyên tử bằng RPC user-scoped.

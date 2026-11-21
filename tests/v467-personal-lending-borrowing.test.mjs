@@ -14,7 +14,7 @@ new Function('module','exports',code.outputText)(module,module.exports);
 const {personalDebtTotals,debtLifecycle}=module.exports;
 const loan=(partial={})=>({id:'l',user_id:'u',direction:'receivable',party_name:'Anh A',title:'Cho vay',original_principal_minor:10000000,outstanding_minor:6000000,started_on:'2026-11-01',due_on:'2026-11-30',annual_interest_rate:null,notes:null,archived:false,created_at:'2026-11-01',...partial});
 
-test('V4.6.7 totals receivables, payables, and net without mixing cash or family savings',()=>{
+test('V4.6.8 totals receivables, payables, and net without mixing cash or family savings',()=>{
  const items=[loan(),loan({id:'p',direction:'payable',original_principal_minor:5000000,outstanding_minor:3000000}),loan({id:'a',archived:true,outstanding_minor:0})];
  assert.deepEqual(personalDebtTotals(items),{receivable:6000000,payable:3000000,net:3000000,active:2});
  assert.deepEqual(personalDebtTotals([]),{receivable:0,payable:0,net:0,active:0});
@@ -60,10 +60,10 @@ test('Accounts embeds a mobile-friendly personal debt panel and server actions c
  for(const tag of ['Người khác nợ tôi','Tôi đang nợ','Thu hồi nợ','Trả nợ','Nợ cũ','Lãi đã ghi nhận','onSubmit={stampKey}','PendingSubmitButton','Xóa dư nợ cũ']) assert.ok(panel.includes(tag),tag);
  for(const rpc of ['personal_debt_create_v467','personal_debt_repay_v467','personal_debt_update_v467','personal_debt_delete_unposted_v467']) assert.ok(actions.includes(`rpc("${rpc}"`),rpc);
 });
-test('Release remains seven modules and V4.6.7 includes a new migration',()=>{
- assert.equal(JSON.parse(read('package.json')).version,'4.6.7');
- assert.match(read('lib/app-version.ts'),/Personal Lending & Borrowing Management/);
- assert.match(read('CHANGELOG.md'),/^## V4\.6\.7/);
+test('Release remains seven modules and V4.6.8 includes a new migration',()=>{
+ assert.equal(JSON.parse(read('package.json')).version,'4.6.8');
+ assert.match(read('lib/app-version.ts'),/Personal Lending & Borrowing Management|Personal Debt Deploy Hotfix/);
+ assert.match(read('CHANGELOG.md'),/^## V4\.6\.8/);
  assert.equal(readdirSync(join(root,'supabase/migrations')).filter(s=>s.endsWith('.sql')).length,36);
  const routes=readdirSync(join(root,'app/(dashboard)'),{withFileTypes:true}).filter(x=>x.isDirectory()).map(x=>x.name).sort();
  assert.deepEqual(routes,['accounts','categories','overview','portfolio','reports','settings','transactions']);

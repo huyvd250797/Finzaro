@@ -62,3 +62,5 @@ Lưu ý: release từng được dự kiến tên `V0.0.13 – Net Worth & Finan
 - **`V4.6.6 — Family Savings Fund Management`**: quỹ tiết kiệm gia đình + swipe transaction + lỗi sửa khoản thu, migration riêng; phiên bản tiếp theo ít nhất V4.6.7.
 
 - **V4.6.7 — Personal Lending & Borrowing Management**: Công nợ cá nhân hai chiều, RPC giao dịch nguyên tử; cần migration V4.6.7. Bản tiếp theo phải tăng lên ít nhất V4.6.8.
+
+- **`V4.6.8 — Personal Debt Deploy Hotfix`** fixes React ESLint effect-state lint for the personal debt request key. No DB migration. Next modified source release must increment to V4.6.9 or higher.

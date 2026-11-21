@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { ArrowDownLeft, ArrowUpRight, CalendarClock, ChevronDown, HandCoins, Pencil, Plus, Trash2 } from "lucide-react";
 import { PendingSubmitButton } from "@/components/pending-submit-button";
 import { MoneyCalculatorInput } from "@/components/money-calculator-input";
@@ -15,10 +15,10 @@ function stampKey(event:FormEvent<HTMLFormElement>){
   const field=event.currentTarget.elements.namedItem("request_key");
   if(field instanceof HTMLInputElement && !field.value) field.value=crypto.randomUUID();
 }
+/** An uncontrolled input is stamped on first submit, avoiding mount effects and
+ * preserving the same idempotency key for any repeated submission of this form. */
 function RequestKeyInput(){
-  const [key,setKey]=useState("");
-  useEffect(()=>{setKey(crypto.randomUUID());},[]);
-  return <input type="hidden" name="request_key" value={key} readOnly/>;
+  return <input type="hidden" name="request_key" defaultValue=""/>;
 }
 function DateText({value}:{value:string|null}){
   return <>{value?value.split("-").reverse().join("/"):"Không đặt hạn"}</>;
