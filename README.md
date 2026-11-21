@@ -1,8 +1,11 @@
+# Finzaro V4.6.7 — Personal Lending & Borrowing Management
+
+> **Current release: Finzaro V4.6.7 — Personal Lending & Borrowing Management.** Công nợ cá nhân hai chiều trong Tài khoản & Ví: cho vay/đi vay, tách gốc khỏi Thu/Chi, ghi nhận lãi thực trả/nhận, thanh toán từng phần, nợ cũ không làm lệch ngân hàng, lịch sử và chống gửi trùng. **Cần migration V4.6.7 trước khi deploy.** Xem [DEPLOY_V4.6.7.md](DEPLOY_V4.6.7.md).
+
 > **Previous release: Finzaro V4.6.5 — Portfolio Mobile Layout & Save Feedback.** Tách nút **Làm mới/Thêm tài sản** xuống hàng riêng để tổng tiền hiển thị trọn vẹn; quy đổi mọi khoản tiền VND thành `số tiền ₫` (ký hiệu ngay sau, không xuống hàng), tối ưu card tài sản trên mobile và bổ sung phản hồi **Đang lưu thay đổi...** với spinner, khóa submit khi chờ server. **Không có migration mới**. Xem [`DEPLOY_V4.6.5.md`](DEPLOY_V4.6.5.md).
 > **Current release: Finzaro V4.6.6 — Family Savings Fund Management.** Quỹ tiết kiệm gia đình trong Tài khoản & Ví, số dư khả dụng tách khỏi quỹ, gửi/rút quỹ bằng giao dịch chuyển nội bộ nguyên tử. Lịch sử giao dịch dùng vuốt trái để Sửa/Xóa, các thao tác sao chép/nhân bản trong menu. Cải thiện sửa khoản thu bằng thông báo lỗi trực tiếp và trạng thái lưu. **Cần migration V4.6.6**. Xem [`DEPLOY_V4.6.6.md`](DEPLOY_V4.6.6.md).
 
 
-# Finzaro V4.6.6 — Family Savings Fund Management
 
 > **Previous release: Finzaro V4.6.4 — Portfolio UX & Snapshot Fix.** Thiết kế lại module Tài sản gọn và chuyên nghiệp hơn; số tiền tổng danh mục nằm trên một dòng riêng; bổ sung **xóa tài sản**; lưu snapshot chuyển sang RPC owner-scoped để tránh lỗi `permission denied for table portfolio_snapshots_v460`; tăng độ ổn định nguồn giá vàng PNJ bằng bảng giá chính thức `www.giavang.pnj.com.vn/home`. **Có migration mới V4.6.4** và phải chạy sau V4.6.0–V4.6.2. Xem [`DEPLOY_V4.6.4.md`](DEPLOY_V4.6.4.md).
 

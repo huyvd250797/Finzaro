@@ -1,3 +1,11 @@
+## V4.6.7 — Personal Lending & Borrowing Management (2026-11-21)
+- Thêm **Công nợ cá nhân** (người khác nợ tôi / tôi đang nợ) tại Tài khoản & Ví, giữ nguyên 7 module.
+- Tạo khoản vay mới bằng giao dịch tiền thực tế hoặc nhập dư nợ cũ không chạm đến ngân hàng. Luồng ghi tiền và dư nợ chạy nguyên tử bằng RPC user-scoped.
+- Gốc cho vay/vay và hoàn trả là `transfer` có mục đích `personal_debt`, không phải khoản Thu/Chi. Lãi thực nhận/trả là giao dịch Thu/Chi chuẩn có danh mục riêng, được ghi đồng thời với trả gốc.
+- Theo dõi nợ gốc, các lần trả từng phần, lãi đã thực nhận/trả, quá hạn và sắp đến hạn, sửa metadata, lưu trữ khi tất toán; chỉ cho xóa khoản nợ cũ chưa có dòng tiền.
+- Bảo vệ RLS cho hai bảng mới, kiểm tra quyền sở hữu và tài khoản VND, khóa giao dịch đồng thời; chống gửi lại cùng request key, không xóa hay chuyển đổi dữ liệu vay cũ.
+- Migration mới: `supabase/migrations/20261121150000_personal_lending_borrowing_v467.sql`. Không thêm tự động đồng bộ nền, cron hoặc nguồn giá thị trường mới.
+
 ## V4.6.6 — Family Savings Fund Management (2026-11-20)
 - Quỹ gia đình trong Tài khoản & Ví: VND, mục tiêu, đóng góp tháng, kỳ hạn và lãi suất dự kiến. Quỹ không tính vào số dư khả dụng nhưng có trong tổng tiền đang quản lý.
 - Tạo/cập nhật quỹ và gửi/rút quỹ qua RPC SECURITY DEFINER có kiểm tra auth.uid() và khóa tài khoản, ghi nhận chuyển khoản nội bộ có hai bút toán. Không phát sinh Thu/Chi khi chuyển tiền.

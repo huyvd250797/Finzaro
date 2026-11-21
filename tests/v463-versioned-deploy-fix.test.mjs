@@ -6,22 +6,22 @@ import { join, resolve } from "node:path";
 const root = resolve(import.meta.dirname, "..");
 const read = (file) => readFileSync(join(root, file), "utf8");
 
-test("V4.6.6 version is consistent in runtime, package, docs and release metadata", () => {
+test("V4.6.7 version is consistent in runtime, package, docs and release metadata", () => {
   const pkg = JSON.parse(read("package.json"));
-  assert.equal(pkg.version, "4.6.6");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.6\.6"/);
-  assert.match(read("lib/app-version.ts"), /Portfolio UX & Snapshot Fix|Portfolio Mobile Layout & Save Feedback|Family Savings Fund Management/);
-  assert.match(read("README.md"), /Current release: Finzaro V4\.6\.6/);
-  assert.match(read("CHANGELOG.md"), /^## V4\.6\.6/m);
+  assert.equal(pkg.version, "4.6.7");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.6\.7"/);
+  assert.match(read("lib/app-version.ts"), /Portfolio UX & Snapshot Fix|Portfolio Mobile Layout & Save Feedback|Family Savings Fund Management|Personal Lending & Borrowing Management/);
+  assert.match(read("README.md"), /Current release: Finzaro V4\.6\.7/);
+  assert.match(read("CHANGELOG.md"), /^## V4\.6\.7/m);
   assert.match(read("DEPLOY_V4.6.4.md"), /Migration bắt buộc/i);
 });
 
-test("V4.6.6 retains 7 modules, historical no-background-sync stance, and adds one SQL migration", () => {
+test("V4.6.7 retains 7 modules, historical no-background-sync stance, and adds one SQL migration", () => {
   const routes = readdirSync(join(root, "app/(dashboard)"), { withFileTypes: true })
     .filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort();
   assert.deepEqual(routes, ["accounts", "categories", "overview", "portfolio", "reports", "settings", "transactions"]);
   const migrations = readdirSync(join(root, "supabase/migrations")).filter((file) => file.endsWith(".sql"));
-  assert.equal(migrations.length, 35);
+  assert.equal(migrations.length, 36);
   assert.ok(migrations.includes("20261120163000_market_price_reliability_v462.sql"));
   assert.ok(migrations.includes("20261120190000_portfolio_ux_snapshot_delete_v464.sql"));
   assert.equal(existsSync(join(root, "app/api/portfolio/market-sync/route.ts")), false);

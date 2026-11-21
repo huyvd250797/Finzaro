@@ -60,3 +60,5 @@ Lưu ý: release từng được dự kiến tên `V0.0.13 – Net Worth & Finan
 - **`V4.6.3 — Market Price Reliability Deploy Fix`** là bản vá deploy nâng từ V4.6.2. Mọi source được sửa và phát hành lại phải tăng patch, không giữ nguyên version. Không có SQL migration mới.
 
 - **`V4.6.6 — Family Savings Fund Management`**: quỹ tiết kiệm gia đình + swipe transaction + lỗi sửa khoản thu, migration riêng; phiên bản tiếp theo ít nhất V4.6.7.
+
+- **V4.6.7 — Personal Lending & Borrowing Management**: Công nợ cá nhân hai chiều, RPC giao dịch nguyên tử; cần migration V4.6.7. Bản tiếp theo phải tăng lên ít nhất V4.6.8.
