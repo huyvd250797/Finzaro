@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { WalletCards, X } from "lucide-react";
+import { WalletCards, X, HandCoins, PiggyBank, ArrowUpRight } from "lucide-react";
 import { AuthMessage } from "@/components/auth-message";
 import { InstantReveal } from "@/components/instant-reveal";
 import { PendingSubmitButton } from "@/components/pending-submit-button";
@@ -9,9 +9,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ACCOUNT_TYPE_LABELS } from "@/features/accounts/constants";
 import { familyBalanceTotals } from "@/features/accounts/family-balances";
 import { AccountCollection } from "@/components/account-collection";
-import { FamilySavingsPanel, type FamilyFundRow } from "@/components/family-savings-panel";
-import { PersonalDebtPanel } from "@/components/personal-debt-panel";
-import { type DebtRow, type DebtEvent } from "@/features/debts/core";
 import { createAccountAction, updateAccountAction } from "@/features/accounts/actions";
 import { requireUser } from "@/lib/auth";
 import { formatMinorMoney } from "@/lib/utils";
@@ -95,26 +92,13 @@ function AccountForm({ currencies, account }: { currencies: Currency[]; account?
 export default async function AccountsPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
   const { supabase, userId } = await requireUser();
-  const [{ data: accountsData, error: accountsError }, { data: currenciesData }, { data: preferences }, fundsResult, debtsResult, debtEventsResult] = await Promise.all([
+  const [{ data: accountsData, error: accountsError }, { data: currenciesData }, { data: preferences }] = await Promise.all([
     supabase.from("accounts").select("id, name, account_type, currency_code, institution_name, opening_balance_minor, current_balance_minor, is_archived").eq("user_id", userId).order("is_archived").order("created_at", { ascending: false }),
     supabase.from("supported_currencies").select("code, name, symbol, decimal_digits").eq("is_active", true).order("code"),
     supabase.from("user_preferences").select("currency_code").eq("id", userId).maybeSingle(),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- New V4.6.6 migration tables not yet in generated types.
-    (supabase as any).from("family_savings_funds_v466").select("account_id,user_id,target_amount_minor,monthly_contribution_minor,maturity_date,annual_interest_rate").eq("user_id",userId),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- V4.6.7 new RLS table.
-    (supabase as any).from("personal_debts_v467").select("id,user_id,direction,party_name,title,original_principal_minor,outstanding_minor,started_on,due_on,annual_interest_rate,notes,archived,created_at").eq("user_id",userId).order("created_at",{ascending:false}).limit(201),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- V4.6.7 new RLS table.
-    (supabase as any).from("personal_debt_events_v467").select("id,debt_id,event_type,principal_minor,interest_minor,account_id,event_date,notes,created_at").eq("user_id",userId).order("created_at",{ascending:false}).limit(1001)
   ]);
 
   const accounts = (accountsData ?? []) as Account[];
-  const familyFundRows = (fundsResult.data ?? []) as FamilyFundRow[];
-  const debts = (debtsResult.data ?? []) as DebtRow[];
-  const debtEvents = (debtEventsResult.data ?? []) as DebtEvent[];
-  const debtsTruncated = debts.length > 200 || debtEvents.length > 1000;
-  const todayParts = new Intl.DateTimeFormat("en-CA", {year:"numeric",month:"2-digit",day:"2-digit",timeZone:"Asia/Ho_Chi_Minh"}).formatToParts(new Date());
-  const todayPart = (type:string)=>todayParts.find(part=>part.type===type)?.value??"";
-  const currentDate = `${todayPart("year")}-${todayPart("month")}-${todayPart("day")}`;
   const currencies = (currenciesData ?? []) as Currency[];
   const showArchived = params.archived === "1";
   const visibleAccounts = accounts.filter((item) => item.is_archived === showArchived && !["family_savings", "personal_debt_clearing"].includes(item.account_type));
@@ -124,6 +108,9 @@ export default async function AccountsPage({ searchParams }: { searchParams: Sea
   const activeAccounts = accounts.filter((item) => !item.is_archived);
   const regularAccounts = activeAccounts.filter((item)=>["bank","cash","ewallet"].includes(item.account_type) && item.currency_code === "VND");
   const familyAccounts = activeAccounts.filter((item)=>item.account_type === "family_savings" && item.currency_code === "VND");
+  const balances = familyBalanceTotals(accounts,defaultCurrency);
+  const defaultMeta = currencyMeta(currencies,defaultCurrency);
+  const activeAccounts = accounts.filter((item)=>!item.is_archived);
   const balances = familyBalanceTotals(accounts,defaultCurrency);
   const totalDefaultMinor = balances.available;
   const familySavingsMinor = balances.reserved;
@@ -144,7 +131,7 @@ export default async function AccountsPage({ searchParams }: { searchParams: Sea
         <InstantReveal label="Thêm tài khoản" initialOpen={params.new === "1"}><AccountForm currencies={currencies} /></InstantReveal>
       </div>
 
-      <AuthMessage error={params.error ?? (accountsError ? "Không thể tải dữ liệu tài khoản." : fundsResult.error ? "Không tải được Quỹ gia đình. Kiểm tra migration V4.6.6." : debtsResult.error || debtEventsResult.error ? "Không tải được Công nợ. Cần chạy migration V4.6.7 trước khi sử dụng." : debtsTruncated ? "Lịch sử công nợ vượt giới hạn tải 200 khoản/1.000 giao dịch; cần phân trang trước khi tính toán đầy đủ." : undefined)} message={params.message} />
+      <AuthMessage error={params.error ?? (accountsError ? "Không thể tải dữ liệu tài khoản." : undefined)} message={params.message} />
 
       {editAccount && <AccountForm currencies={currencies} account={editAccount} />}
 
@@ -163,8 +150,16 @@ export default async function AccountsPage({ searchParams }: { searchParams: Sea
         </CardContent>
       </Card>
 
-      <FamilySavingsPanel fundAccounts={familyAccounts} regularAccounts={regularAccounts} details={familyFundRows} currentDate={currentDate} />
-      {!debtsResult.error && !debtEventsResult.error && !debtsTruncated && <PersonalDebtPanel debts={debts} events={debtEvents} accounts={regularAccounts} today={currentDate} managedBalance={totalManagedMinor} feedbackError={params.debt_error} feedbackMessage={params.debt_message} />}
+      <div className="mt-5 grid gap-3 sm:grid-cols-2">
+        <Link href="/funds" className="group flex items-center gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 hover:border-[var(--primary)]">
+          <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-emerald-500/10"><PiggyBank className="size-5 text-[var(--primary)]"/></span>
+          <span className="min-w-0 flex-1"><strong className="block text-sm">Quỹ tiết kiệm gia đình</strong><span className="mt-1 block text-xs text-[var(--muted-foreground)]">Mục tiêu · Gửi / Rút · Quản lý quỹ</span></span><ArrowUpRight className="size-4 text-[var(--primary)]"/>
+        </Link>
+        <Link href="/debts" className="group flex items-center gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 hover:border-[var(--primary)]">
+          <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-amber-500/10"><HandCoins className="size-5 text-amber-500"/></span>
+          <span className="min-w-0 flex-1"><strong className="block text-sm">Công nợ cá nhân</strong><span className="mt-1 block text-xs text-[var(--muted-foreground)]">Cho vay · Đi vay · Thu hồi / Trả nợ</span></span><ArrowUpRight className="size-4 text-[var(--primary)]"/>
+        </Link>
+      </div>
 
       <div className="mt-5 flex items-center gap-2">
         <Link href="/accounts" className={`rounded-xl px-3 py-2 text-xs font-bold ${!showArchived ? "bg-[var(--primary)] text-white" : "border border-[var(--border)] bg-[var(--card)]"}`}>Đang hoạt động ({activeAccounts.filter(a=>a.account_type!=="family_savings").length})</Link>

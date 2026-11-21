@@ -1,3 +1,10 @@
+## V4.6.9 — Dedicated Debts & Family Funds UX (2026-11-21)
+- Công nợ và Quỹ tiết kiệm gia đình được tách khỏi màn hình Tài khoản & Ví thành hai module riêng `/debts` và `/funds` — tổng cộng **9 module**.
+- Thêm điều hướng trực tiếp ở sidebar desktop, menu **Thêm** mobile, liên kết từ Tài khoản & Ví.
+- Modal **full-screen trên mobile** cho tạo/sửa công nợ, thu hồi/trả nợ, tạo/sửa quỹ và gửi/rút tiền. Không thêm các form bên dưới card; trạng thái đang lưu và chống gửi trùng được giữ nguyên.
+- Dashboard thêm card Quỹ gia đình và card Công nợ với số dư phải thu/phải trả, và lối tắt tạo mới.
+- Các RPC tài chính, bảng dữ liệu, chính sách RLS, sổ Thu/Chi và logic điều chuyển tiền giữ nguyên. **Không có migration mới.**
+
 ## V4.6.8 — Personal Debt Deploy Hotfix (2026-11-21)
 - Fix build-blocking ESLint `react-hooks/set-state-in-effect` in `components/personal-debt-panel.tsx`.
 - Remove the synchronous `useEffect` state update from `RequestKeyInput`. Keep the request key on an uncontrolled hidden input, initialized on the first real form submission; repeat submits reuse the same key to preserve idempotency.

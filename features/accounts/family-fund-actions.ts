@@ -30,12 +30,12 @@ function interest(form: FormData) {
   return rate;
 }
 function finish(kind: "error"|"message", value: string) {
-  redirect(`/accounts?${new URLSearchParams({[kind]:value}).toString()}#family-savings`);
+  redirect(`/funds?${new URLSearchParams({[kind]:value}).toString()}`);
 }
 async function mutate(work:()=>Promise<string>) {
   try {
     const response=await work();
-    for (const path of ["/accounts","/overview","/transactions","/reports"]) revalidatePath(path);
+    for (const path of ["/accounts","/funds","/overview","/transactions","/reports"]) revalidatePath(path);
     finish("message",response);
   } catch(error) {
     if (error && typeof error==="object" && "digest" in error) throw error;

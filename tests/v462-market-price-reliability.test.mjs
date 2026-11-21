@@ -25,12 +25,12 @@ const market=load('features/portfolio/market.ts',{'react':{cache:fn=>fn}});
 const quote=(variant,manual_price=null)=>({id:'test',kind:'gold',symbol:'GOLD9999',name:'Nhẫn',variant,exchange:'',quote_currency:'VND',provider:'pnj',quantity:'41',cost_total:'328000000',manual_price,archived:false});
 const html=`<div>Giá vàng ngày: 20/11/2026 10:05:19</div><div>(Đơn vị: ngàn đồng/lượng)</div><table><tr><th>Khu vực</th><th>Loại vàng</th><th>Giá mua</th><th>Giá bán</th></tr><tr><td>Giá vàng nữ trang</td><td>Nhẫn Trơn PNJ 999.9</td><td>127.800</td><td>132.000</td></tr><tr><td>TPHCM</td><td>SJC</td><td>129.200</td><td>134.200</td></tr></table>`;
 
-test('V4.6.8 release retains exact retained modules and additional VCI dependency',()=>{
- assert.equal(JSON.parse(read('package.json')).version,'4.6.8');
+test('V4.6.9 release retains exact retained modules and additional VCI dependency',()=>{
+ assert.equal(JSON.parse(read('package.json')).version,'4.6.9');
  assert.equal(JSON.parse(read('package.json')).dependencies['vnstock-js'],'2.0.0');
- assert.match(read('lib/app-version.ts'),/Portfolio UX & Snapshot Fix|Portfolio Mobile Layout & Save Feedback|Family Savings Fund Management|Personal Lending & Borrowing Management|Personal Debt Deploy Hotfix/);
+ assert.match(read('lib/app-version.ts'),/Portfolio UX & Snapshot Fix|Portfolio Mobile Layout & Save Feedback|Family Savings Fund Management|Personal Lending & Borrowing Management|Dedicated Debts & Family Funds UX/);
  assert.equal(readdirSync(join(root,'supabase/migrations')).filter(n=>n.endsWith('.sql')).length,36);
- assert.equal(readdirSync(join(root,'app/(dashboard)'),{withFileTypes:true}).filter(x=>x.isDirectory()).length,7);
+ assert.equal(readdirSync(join(root,'app/(dashboard)'),{withFileTypes:true}).filter(x=>x.isDirectory()).length,9);
 });
 test('Shares accept only integer quantities without invalid regex; edit and trade share the same parser',()=>{
  for(const value of ['1','100','200','1000000']) assert.equal(core.parseDecimal(value,0),Number(value));

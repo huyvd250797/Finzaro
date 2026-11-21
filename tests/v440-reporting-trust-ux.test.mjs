@@ -27,14 +27,14 @@ const css = read("app/globals.css");
 
 test("V4.5.0 metadata is synchronized and full deploy gate remains intact", () => {
   const pkg = JSON.parse(read("package.json"));
-  assert.equal(pkg.version, "4.6.8");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.6\.8"/);
-  assert.match(read("lib/app-version.ts"), /Mobile Finance UX & Reporting Layout|Dashboard Period Comparison|Category Management UX Polish|Financial Comparison Logic Fix|Category Drag Lint Deploy Hotfix|Financial Comparison Clarity Fix|Comparison Direction Icons|Full Previous Period Comparison|Comparison Icon Alignment Fix|Multi-Asset Portfolio|Asset Management UX & Edit|Market Price Reliability Fix|Market Price Reliability Deploy Fix|Portfolio UX & Snapshot Fix|Portfolio Mobile Layout & Save Feedback|Family Savings Fund Management|Personal Lending & Borrowing Management|Personal Debt Deploy Hotfix/);
+  assert.equal(pkg.version, "4.6.9");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.6\.9"/);
+  assert.match(read("lib/app-version.ts"), /Mobile Finance UX & Reporting Layout|Dashboard Period Comparison|Category Management UX Polish|Financial Comparison Logic Fix|Category Drag Lint Deploy Hotfix|Financial Comparison Clarity Fix|Comparison Direction Icons|Full Previous Period Comparison|Comparison Icon Alignment Fix|Multi-Asset Portfolio|Asset Management UX & Edit|Market Price Reliability Fix|Market Price Reliability Deploy Fix|Portfolio UX & Snapshot Fix|Portfolio Mobile Layout & Save Feedback|Family Savings Fund Management|Personal Lending & Borrowing Management|Dedicated Debts & Family Funds UX/);
   assert.equal(pkg.scripts.check, "npm run lint && npm run typecheck && npm run test && npm run build");
   assert.equal(JSON.parse(read("vercel.json")).buildCommand, "npm run check");
   assert.deepEqual(readdirSync(join(root, "app/(dashboard)"), { withFileTypes: true })
     .filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort(),
-    ["accounts", "categories", "overview", "portfolio", "reports", "settings", "transactions"]);
+    ["accounts", "categories", "debts", "funds", "overview", "portfolio", "reports", "settings", "transactions"]);
 });
 
 test("V4.5.0 removes template UI, template mutation code and legacy template persistence", () => {

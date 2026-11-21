@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { ArrowDownLeft, ArrowUpRight, CalendarClock, ChevronDown, HandCoins, Pencil, Plus, Trash2 } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, CalendarClock, ChevronDown, HandCoins, Pencil, Plus, Trash2, X } from "lucide-react";
 import { PendingSubmitButton } from "@/components/pending-submit-button";
+import { BottomSheet } from "@/components/bottom-sheet";
 import { MoneyCalculatorInput } from "@/components/money-calculator-input";
 import { createPersonalDebtAction, deleteUnpostedPersonalDebtAction, repayPersonalDebtAction, updatePersonalDebtAction } from "@/features/debts/actions";
 import { debtLifecycle, personalDebtTotals, type CashAccount, type DebtDirection, type DebtEvent, type DebtRow } from "@/features/debts/core";
@@ -26,9 +27,10 @@ function DateText({value}:{value:string|null}){
 function DebtCreate({accounts,today,onCancel}:{accounts:CashAccount[];today:string;onCancel:()=>void}){
   const [direction,setDirection]=useState<DebtDirection>("receivable");
   const [mode,setMode]=useState<"cash"|"existing">("cash");
-  return <form action={createPersonalDebtAction} onSubmit={stampKey} className="mt-4 space-y-4 rounded-2xl border border-[var(--border)] bg-[var(--background)] p-4">
+  return <BottomSheet open onClose={onCancel} label="Tạo khoản công nợ" panelClassName="!h-[100dvh] !max-h-[100dvh] !rounded-none sm:!max-w-[760px] sm:!rounded-t-3xl">
+    <form action={createPersonalDebtAction} onSubmit={stampKey} className="flex min-h-full flex-col bg-[var(--card)] px-4 pb-[max(env(safe-area-inset-bottom),20px)] pt-2 sm:px-6">
     <RequestKeyInput/>
-    <div className="flex items-center justify-between gap-3"><h3 className="text-sm font-black">Tạo khoản công nợ</h3><button type="button" onClick={onCancel} className={secondary}>Đóng</button></div>
+    <div className="sticky top-0 z-10 mb-5 flex items-center justify-between gap-3 border-b border-[var(--border)] bg-[var(--card)] py-3"><div><p className="text-[11px] font-bold uppercase tracking-wide text-[var(--primary)]">CÔNG NỢ CÁ NHÂN</p><h3 className="mt-1 text-xl font-black">Tạo khoản công nợ</h3></div><button type="button" onClick={onCancel} aria-label="Đóng tạo công nợ" className={secondary}><X className="size-4"/></button></div>
     <fieldset><legend className={caption}>Loại công nợ</legend><div className="mt-2 grid grid-cols-2 gap-2">
       <button type="button" onClick={()=>setDirection("receivable")} aria-pressed={direction==="receivable"} className={`min-h-11 rounded-xl border px-2 text-xs font-bold ${direction==="receivable"?"border-[var(--primary)] bg-[var(--primary)]/10 text-[var(--primary)]":"border-[var(--border)]"}`}>Người khác nợ tôi</button>
       <button type="button" onClick={()=>setDirection("payable")} aria-pressed={direction==="payable"} className={`min-h-11 rounded-xl border px-2 text-xs font-bold ${direction==="payable"?"border-[var(--primary)] bg-[var(--primary)]/10 text-[var(--primary)]":"border-[var(--border)]"}`}>Tôi đang nợ</button>
@@ -48,8 +50,9 @@ function DebtCreate({accounts,today,onCancel}:{accounts:CashAccount[];today:stri
     {mode==="cash"?<label><span className={caption}>{direction==="receivable"?"Tài khoản giao tiền":"Tài khoản nhận tiền"}</span><select name="account_id" required defaultValue="" className={field}><option value="" disabled>Chọn tài khoản VND</option>{accounts.map(a=><option key={a.id} value={a.id}>{a.name} · {fmt(a.current_balance_minor)}</option>)}</select></label>
       :<p className="rounded-xl bg-[var(--muted)] px-3 py-2.5 text-xs leading-5 text-[var(--muted-foreground)]">Khoản nợ đã tồn tại: Finzaro chỉ ghi nhận số gốc còn nợ, không cộng hoặc trừ số dư ngân hàng lần nữa.</p>}
     <label><span className={caption}>Ghi chú (tùy chọn)</span><textarea name="notes" maxLength={500} rows={2} className={`${field} !h-auto py-2.5`}/></label>
-    <PendingSubmitButton idleLabel="Lưu công nợ" pendingLabel="Đang ghi nhận..." className="fin-primary-btn w-full sm:w-auto"/>
-  </form>;
+    <div className="sticky bottom-0 mt-auto border-t border-[var(--border)] bg-[var(--card)] py-3"><PendingSubmitButton idleLabel="Lưu công nợ" pendingLabel="Đang ghi nhận..." className="fin-primary-btn w-full"/></div>
+  </form>
+  </BottomSheet>;
 }
 function DebtCard({debt,events,accounts,today}:{debt:DebtRow;events:DebtEvent[];accounts:CashAccount[];today:string}){
   const [showPay,setShowPay]=useState(false);
@@ -74,26 +77,31 @@ function DebtCard({debt,events,accounts,today}:{debt:DebtRow;events:DebtEvent[];
       <button type="button" onClick={()=>{setShowPay(v=>!v);setShowEdit(false);}} className="fin-primary-btn text-xs">{isReceivable?"Thu hồi nợ":"Trả nợ"}</button>
       <button type="button" onClick={()=>{setShowEdit(v=>!v);setShowPay(false);}} className={secondary}><Pencil className="size-3.5"/>Sửa</button>
     </div>}
-    {showPay&&!debt.archived&&<form action={repayPersonalDebtAction} onSubmit={stampKey} className="mt-3 space-y-3 rounded-xl border border-[var(--border)] p-3">
+    {showPay&&!debt.archived&&<BottomSheet open={showPay && !debt.archived} onClose={()=>setShowPay(false)} label={`Thanh toán ${debt.title}`} panelClassName="!h-[100dvh] !max-h-[100dvh] !rounded-none sm:!max-w-[720px] sm:!rounded-t-3xl">
+    {showPay&&!debt.archived&&<form action={repayPersonalDebtAction} onSubmit={stampKey} className="flex min-h-full flex-col space-y-4 px-4 pb-[max(env(safe-area-inset-bottom),20px)] pt-2 sm:px-6">
       <RequestKeyInput/><input type="hidden" name="debt_id" value={debt.id}/>
-      <p className="text-xs font-bold">{isReceivable?"Ghi nhận tiền được trả":"Ghi nhận tiền đã trả"}</p>
+      <div className="sticky top-0 z-10 flex items-center justify-between gap-2 border-b border-[var(--border)] bg-[var(--card)] py-3"><div><p className="text-xs font-bold text-[var(--primary)]">{debt.party_name}</p><h3 className="text-xl font-black">{isReceivable?"Thu hồi nợ":"Trả nợ"}</h3><p className="mt-1 text-xs text-[var(--muted-foreground)]">Dư nợ: {fmt(debt.outstanding_minor)}</p></div><button type="button" onClick={()=>setShowPay(false)} aria-label="Đóng thanh toán" className={secondary}><X className="size-4"/></button></div>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2"><label><span className={caption}>Tiền gốc (₫)</span><MoneyCalculatorInput name="principal" decimalDigits={0} defaultValue="0" required/></label>
       <label><span className={caption}>Tiền lãi (₫)</span><MoneyCalculatorInput name="interest" decimalDigits={0} defaultValue="0" required/></label></div>
       <label><span className={caption}>{isReceivable?"Tài khoản nhận":"Tài khoản thanh toán"}</span><select name="account_id" required defaultValue="" className={field}><option value="" disabled>Chọn tài khoản VND</option>{accounts.map(a=><option key={a.id} value={a.id}>{a.name} · {fmt(a.current_balance_minor)}</option>)}</select></label>
       <label><span className={caption}>Ngày thanh toán</span><input name="event_date" type="date" required defaultValue={today} className={field}/></label>
       <label><span className={caption}>Ghi chú</span><input name="notes" maxLength={500} className={field}/></label>
       <p className="text-[11px] leading-5 text-[var(--muted-foreground)]">Gốc chỉ giảm dư nợ; lãi được ghi vào {isReceivable?"Thu nhập":"Chi tiêu"}. Hai khoản được lưu cùng lúc.</p>
-      <PendingSubmitButton idleLabel={isReceivable?"Xác nhận thu hồi":"Xác nhận trả nợ"} pendingLabel="Đang xử lý..." className="fin-primary-btn w-full"/>
+      <div className="sticky bottom-0 mt-auto border-t border-[var(--border)] bg-[var(--card)] py-3"><PendingSubmitButton idleLabel={isReceivable?"Xác nhận thu hồi":"Xác nhận trả nợ"} pendingLabel="Đang xử lý..." className="fin-primary-btn w-full"/></div>
     </form>}
-    {showEdit&&!debt.archived&&<form action={updatePersonalDebtAction} className="mt-3 grid gap-3 rounded-xl border border-[var(--border)] p-3 sm:grid-cols-2">
+    </BottomSheet>}
+    {showEdit&&!debt.archived&&<BottomSheet open={showEdit && !debt.archived} onClose={()=>setShowEdit(false)} label={`Sửa công nợ ${debt.title}`} panelClassName="!h-[100dvh] !max-h-[100dvh] !rounded-none sm:!max-w-[720px] sm:!rounded-t-3xl">
+    {showEdit&&!debt.archived&&<form action={updatePersonalDebtAction} className="flex min-h-full flex-col gap-4 px-4 pb-[max(env(safe-area-inset-bottom),20px)] pt-2 sm:px-6">
+      <div className="sticky top-0 z-10 flex items-center justify-between gap-2 border-b border-[var(--border)] bg-[var(--card)] py-3"><h3 className="text-xl font-black">Sửa thông tin công nợ</h3><button type="button" onClick={()=>setShowEdit(false)} aria-label="Đóng sửa công nợ" className={secondary}><X className="size-4"/></button></div>
       <input type="hidden" name="debt_id" value={debt.id}/><input type="hidden" name="archived" value="0"/>
       <label><span className={caption}>Người liên quan</span><input name="party_name" defaultValue={debt.party_name} required maxLength={120} className={field}/></label>
       <label><span className={caption}>Tên khoản nợ</span><input name="title" defaultValue={debt.title} required maxLength={140} className={field}/></label>
       <label><span className={caption}>Ngày hẹn trả</span><input type="date" name="due_on" defaultValue={debt.due_on??""} className={field}/></label>
       <label><span className={caption}>Lãi suất tham khảo (%/năm)</span><input name="annual_interest_rate" inputMode="decimal" defaultValue={debt.annual_interest_rate??""} className={field}/></label>
       <label className="sm:col-span-2"><span className={caption}>Ghi chú</span><input name="notes" maxLength={500} defaultValue={debt.notes??""} className={field}/></label>
-      <div className="sm:col-span-2"><PendingSubmitButton idleLabel="Lưu thay đổi" pendingLabel="Đang lưu..." className="fin-primary-btn w-full"/></div>
+      <div className="sticky bottom-0 mt-auto border-t border-[var(--border)] bg-[var(--card)] py-3"><PendingSubmitButton idleLabel="Lưu thay đổi" pendingLabel="Đang lưu..." className="fin-primary-btn w-full"/></div>
     </form>}
+    </BottomSheet>}
     <details className="mt-3 border-t border-[var(--border)] pt-3"><summary className="flex min-h-9 cursor-pointer items-center justify-between text-xs font-bold">Lịch sử công nợ ({events.length})<ChevronDown className="size-4"/></summary>
       <div className="mt-2 space-y-2">{events.map(e=><div key={e.id} className="flex items-start justify-between gap-2 rounded-lg bg-[var(--muted)]/60 px-3 py-2 text-xs"><div className="min-w-0"><p className="font-semibold">{e.event_type==="opening_existing"?"Dư nợ cũ":e.event_type==="opening_cash"?(isReceivable?"Đã giao tiền":"Đã nhận tiền"):"Thanh toán"}</p><p className="text-[11px] text-[var(--muted-foreground)]"><DateText value={e.event_date}/></p></div><div className="text-right tabular-nums"><p>Gốc {fmt(e.principal_minor)}</p>{e.interest_minor>0&&<p className="text-[11px] text-[var(--muted-foreground)]">Lãi {fmt(e.interest_minor)}</p>}</div></div>)}</div>
     </details>
@@ -108,16 +116,16 @@ function DebtCard({debt,events,accounts,today}:{debt:DebtRow;events:DebtEvent[];
     {deleteAllowed&&<form action={deleteUnpostedPersonalDebtAction} className="mt-2" onSubmit={e=>{if(!window.confirm("Xóa khoản nợ cũ chưa có giao dịch tiền thực tế?"))e.preventDefault();}}><input type="hidden" name="debt_id" value={debt.id}/><button type="submit" className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-500"><Trash2 className="size-3.5"/>Xóa dư nợ cũ chưa phát sinh giao dịch</button></form>}
   </article>;
 }
-export function PersonalDebtPanel({debts,events,accounts,today,managedBalance,feedbackError,feedbackMessage}:{debts:DebtRow[];events:DebtEvent[];accounts:CashAccount[];today:string;managedBalance:number;feedbackError?:string;feedbackMessage?:string}){
+export function PersonalDebtPanel({debts,events,accounts,today,managedBalance,feedbackError,feedbackMessage,initialCreate=false}:{debts:DebtRow[];events:DebtEvent[];accounts:CashAccount[];today:string;managedBalance:number;feedbackError?:string;feedbackMessage?:string;initialCreate?:boolean}){
   const [tab,setTab]=useState<DebtDirection>("receivable");
-  const [showCreate,setShowCreate]=useState(false);
+  const [showCreate,setShowCreate]=useState(initialCreate);
   const [showArchived,setShowArchived]=useState(false);
   const totals=personalDebtTotals(debts);
   const cards=debts.filter(d=>d.direction===tab&&(showArchived||!d.archived));
   const eventsByDebt=new Map<string,DebtEvent[]>();
   for(const event of events){const list=eventsByDebt.get(event.debt_id)??[];list.push(event);eventsByDebt.set(event.debt_id,list);}
-  return <section id="personal-debts" className="mt-5 scroll-mt-24 rounded-[24px] border border-[var(--border)] bg-[var(--card)] p-4 sm:p-5">
-    <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs font-black uppercase tracking-[.12em] text-[var(--primary)]">CÔNG NỢ CÁ NHÂN</p><h2 className="mt-1 flex items-center gap-2 text-lg font-black"><HandCoins className="size-5"/>Cho vay & Đi vay</h2><p className="mt-1 text-xs text-[var(--muted-foreground)]">Gốc không tính Thu/Chi. Lãi thực nhận/trả được ghi riêng.</p></div><button type="button" onClick={()=>setShowCreate(v=>!v)} className="fin-secondary-btn"><Plus className="size-4"/>Tạo công nợ</button></div>
+  return <section id="personal-debts" className="scroll-mt-24 rounded-[24px] border border-[var(--border)] bg-[var(--card)] p-4 sm:p-5">
+    <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs font-black uppercase tracking-[.12em] text-[var(--primary)]">CÔNG NỢ CÁ NHÂN</p><h2 className="mt-1 flex items-center gap-2 text-lg font-black"><HandCoins className="size-5"/>Cho vay & Đi vay</h2><p className="mt-1 text-xs text-[var(--muted-foreground)]">Gốc không tính Thu/Chi. Lãi thực nhận/trả được ghi riêng.</p></div><button type="button" onClick={()=>setShowCreate(true)} className="fin-secondary-btn"><Plus className="size-4"/>Tạo công nợ</button></div>
     {feedbackError&&<div role="alert" className="mt-3 rounded-xl bg-rose-500/10 p-3 text-sm font-semibold text-rose-500">{feedbackError.slice(0,250)}</div>}
     {feedbackMessage&&<div role="status" className="mt-3 rounded-xl bg-emerald-500/10 p-3 text-sm font-semibold text-emerald-600 dark:text-emerald-400">{feedbackMessage.slice(0,250)}</div>}
     <div className="mt-4 grid grid-cols-2 gap-2"><div className="min-w-0 rounded-xl bg-[var(--muted)]/60 p-3"><p className="flex items-center gap-1 text-[11px] text-[var(--muted-foreground)]"><ArrowDownLeft className="size-3.5 text-[var(--fin-income)]"/>Phải thu</p><p className="mt-2 overflow-x-auto whitespace-nowrap text-lg font-black tabular-nums text-[var(--fin-income)]">{fmt(totals.receivable)}</p></div><div className="min-w-0 rounded-xl bg-[var(--muted)]/60 p-3"><p className="flex items-center gap-1 text-[11px] text-[var(--muted-foreground)]"><ArrowUpRight className="size-3.5 text-[var(--fin-expense)]"/>Phải trả</p><p className="mt-2 overflow-x-auto whitespace-nowrap text-lg font-black tabular-nums text-[var(--fin-expense)]">{fmt(totals.payable)}</p></div></div>

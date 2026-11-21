@@ -32,7 +32,7 @@ test("mobile-nav shortcut style is always a string for every kind of sheet", () 
 
   // Compile the two ACTUAL source arrays together with the strict `cn()` signature.
   // This reproduces TS2345 when one list lacks a string style property.
-  const icons = ["WalletCards", "Gem", "Shapes", "Settings2", "ArrowUpRight", "ArrowDownLeft", "ArrowLeftRight"];
+  const icons = ["WalletCards", "Gem", "HandCoins", "PiggyBank", "Shapes", "Settings2", "ArrowUpRight", "ArrowDownLeft", "ArrowLeftRight"];
   const scenario = [
     ...icons.map((icon) => `declare const ${icon}: { icon: string };`),
     extractArray("moduleItems") + ";",

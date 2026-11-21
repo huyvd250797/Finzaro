@@ -31,12 +31,12 @@ function rate(form:FormData){
   return Number(raw);
 }
 function destination(type:"error"|"message",message:string){
-  return `/accounts?${new URLSearchParams({[type==="error"?"debt_error":"debt_message"]:message}).toString()}#personal-debts`;
+  return `/debts?${new URLSearchParams({[type==="error"?"debt_error":"debt_message"]:message}).toString()}`;
 }
 async function mutate(work:()=>Promise<string>){
   try{
     const message=await work();
-    for(const path of ["/accounts","/overview","/transactions","/reports"]) revalidatePath(path);
+    for(const path of ["/accounts","/debts","/overview","/transactions","/reports"]) revalidatePath(path);
     redirect(destination("message",message));
   }catch(error){
     if(error && typeof error==="object" && "digest" in error) throw error;

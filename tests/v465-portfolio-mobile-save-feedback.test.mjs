@@ -19,7 +19,7 @@ function loadFormat() {
   return module.exports;
 }
 
-test('V4.6.8 formats VND with the dong sign on the same line even for negative and large numbers', () => {
+test('V4.6.9 formats VND with the dong sign on the same line even for negative and large numbers', () => {
   const { formatDong, formatMarketAmount } = loadFormat();
   for(const [amount,expected] of [
     [580195827,'580.195.827\u00a0₫'],
@@ -32,7 +32,7 @@ test('V4.6.8 formats VND with the dong sign on the same line even for negative a
   assert.equal(formatDong(580195827).includes(' đ'),false);
 });
 
-test('V4.6.8 hero amount has full width and action buttons occupy a separate row', () => {
+test('V4.6.9 hero amount has full width and action buttons occupy a separate row', () => {
   const dash=read('components/portfolio-dashboard.tsx');
   const amount=dash.indexOf('<AmountLine amount={summary.value} size="hero"/>');
   const actions=dash.indexOf('aria-label="Thao tác tài sản"');
@@ -43,7 +43,7 @@ test('V4.6.8 hero amount has full width and action buttons occupy a separate row
   assert.doesNotMatch(dash,/VND quy đổi<\/p>/);
 });
 
-test('V4.6.8 save feedback stays visible and disables repeat submission in a sheet portal', () => {
+test('V4.6.9 save feedback stays visible and disables repeat submission in a sheet portal', () => {
   const sheet=read('components/portfolio-asset-sheet.tsx');
   const footer=read('components/sheet-form-actions.tsx');
   assert.match(footer,/createPortal/,'Sheet footer is portaled outside DOM form');
@@ -57,12 +57,12 @@ test('V4.6.8 save feedback stays visible and disables repeat submission in a she
   assert.match(sheet,/aria-live="polite"/);
 });
 
-test('V4.6.8 retains seven modules, unchanged SQL migration count and no scheduled price sync',()=>{
-  assert.equal(JSON.parse(read('package.json')).version,'4.6.8');
-  assert.match(read('lib/app-version.ts'),/APP_VERSION = "4\.6\.8"/);
-  assert.match(read('README.md'),/Current release: Finzaro V4\.6\.8/);
-  assert.match(read('CHANGELOG.md'),/^## V4\.6\.8/);
+test('V4.6.9 retains seven modules, unchanged SQL migration count and no scheduled price sync',()=>{
+  assert.equal(JSON.parse(read('package.json')).version,'4.6.9');
+  assert.match(read('lib/app-version.ts'),/APP_VERSION = "4\.6\.9"/);
+  assert.match(read('README.md'),/Current release: Finzaro V4\.6\.9/);
+  assert.match(read('CHANGELOG.md'),/^## V4\.6\.9/);
   assert.equal(readdirSync(join(root,'supabase/migrations')).filter(f=>f.endsWith('.sql')).length,36);
   assert.match(read('DEPLOY_V4.6.5.md'),/Không có migration mới/);
-  assert.doesNotMatch(read('DEPLOY_V4.6.8.md'),/cron\.schedule/);
+  assert.doesNotMatch(read('DEPLOY_V4.6.9.md'),/cron\.schedule/);
 });

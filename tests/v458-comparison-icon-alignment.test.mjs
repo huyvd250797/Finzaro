@@ -13,9 +13,9 @@ try { ts = require("typescript"); }
 catch { ts = require(join(execFileSync("npm", ["root", "-g"], { encoding: "utf8" }).trim(), "typescript")); }
 
 test("V4.6.0 changes only comparison icon alignment, with V4.6.0 additive migration", () => {
-  assert.equal(JSON.parse(read("package.json")).version, "4.6.8");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.6\.8"/);
-  assert.match(read("lib/app-version.ts"), /Comparison Icon Alignment Fix|Multi-Asset Portfolio|Asset Management UX & Edit|Market Price Reliability Fix|Market Price Reliability Deploy Fix|Portfolio UX & Snapshot Fix|Portfolio Mobile Layout & Save Feedback|Family Savings Fund Management|Personal Lending & Borrowing Management|Personal Debt Deploy Hotfix/);
+  assert.equal(JSON.parse(read("package.json")).version, "4.6.9");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.6\.9"/);
+  assert.match(read("lib/app-version.ts"), /Comparison Icon Alignment Fix|Multi-Asset Portfolio|Asset Management UX & Edit|Market Price Reliability Fix|Market Price Reliability Deploy Fix|Portfolio UX & Snapshot Fix|Portfolio Mobile Layout & Save Feedback|Family Savings Fund Management|Personal Lending & Borrowing Management|Dedicated Debts & Family Funds UX/);
   assert.equal(readdirSync(join(root, "supabase/migrations")).filter(name => name.endsWith(".sql")).length, 36);
   assert.match(read("features/dashboard/snapshot.ts"), /dashboard_period_comparison_v457/);
 });

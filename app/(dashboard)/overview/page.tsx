@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { cache, Suspense } from "react";
-import { ArrowDownLeft, ArrowUpRight, CalendarDays, ChevronRight, CircleDollarSign, Plus, WalletCards } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, CalendarDays, ChevronRight, CircleDollarSign, HandCoins, PiggyBank, Plus, WalletCards } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { PortfolioOverviewCard } from "@/components/portfolio-overview-card";
 import { CashflowChart } from "@/components/cashflow-chart";
@@ -67,9 +67,9 @@ async function OverviewDashboard() {
           </div>
           <Link href="/accounts" className="fin-hero-accounts inline-flex min-h-10 items-center gap-1.5 rounded-xl px-3 text-xs font-bold">Tài khoản <ChevronRight className="size-4"/></Link>
         </div>
-        <div className="relative mt-4 grid grid-cols-2 gap-2 border-t border-white/15 pt-4">
-          <Link href="/accounts#family-savings" className="rounded-xl bg-white/10 px-3 py-3"><p className="text-[11px] text-[var(--fin-hero-muted)]">Quỹ gia đình · không khả dụng</p><p className="mt-1 text-sm font-black tabular-nums sm:text-base">{money(familyBalance)}</p></Link>
-          <div className="rounded-xl bg-white/10 px-3 py-3"><p className="text-[11px] text-[var(--fin-hero-muted)]">Tổng tiền đang quản lý</p><p className="mt-1 text-sm font-black tabular-nums sm:text-base">{money(snapshot.balance + familyBalance)}</p></div>
+        <div className="relative mt-4 border-t border-white/15 pt-4">
+          <p className="text-[11px] text-[var(--fin-hero-muted)]">Tổng tiền đang quản lý (gồm quỹ dành riêng)</p>
+          <p className="mt-1 text-sm font-black tabular-nums sm:text-base">{money(snapshot.balance + familyBalance)}</p>
         </div>
         <div className="fin-hero-metrics relative mt-5 grid grid-cols-3 gap-2 border-t pt-4 sm:mt-6 sm:gap-3">
           {metrics.map((item) => { const Icon = item.icon; return <div key={item.label} className="fin-hero-metric min-w-0 rounded-xl px-2.5 py-3 sm:px-4" data-tone={item.tone} title={`${item.label}: ${money(item.amount)}`}>
@@ -88,6 +88,36 @@ async function OverviewDashboard() {
           decimalDigits={snapshot.digits} currency={currency}/>
       </CardContent></Card>
   </>;
+}
+
+async function OverviewFundsDebtCards() {
+  const {supabase,userId}=await overviewContext();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Debt table added in V4.6.7; regenerate Supabase types after migration.
+  const db=supabase as any;
+  const [fundsResult,debtsResult]=await Promise.all([
+    supabase.from("accounts").select("current_balance_minor").eq("user_id",userId).eq("account_type","family_savings").eq("currency_code","VND").eq("is_archived",false),
+    db.from("personal_debts_v467").select("direction,outstanding_minor,archived").eq("user_id",userId).eq("archived",false).limit(201)
+  ]);
+  if(fundsResult.error||debtsResult.error||((debtsResult.data??[]).length>200)) {
+    return <div role="status" className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 text-xs text-[var(--muted-foreground)]">Chưa thể tải tóm tắt quỹ và công nợ. <Link href="/funds" className="font-bold text-[var(--primary)]">Xem quỹ</Link> · <Link href="/debts" className="font-bold text-[var(--primary)]">Xem công nợ</Link></div>;
+  }
+  const fundTotal=(fundsResult.data??[]).reduce((n,item)=>n+Number(item.current_balance_minor??0),0);
+  const receivable=(debtsResult.data??[]).filter((d:{direction:string})=>d.direction==="receivable").reduce((n:number,d:{outstanding_minor:number})=>n+Number(d.outstanding_minor??0),0);
+  const payable=(debtsResult.data??[]).filter((d:{direction:string})=>d.direction==="payable").reduce((n:number,d:{outstanding_minor:number})=>n+Number(d.outstanding_minor??0),0);
+  const money=(n:number)=>`${new Intl.NumberFormat("vi-VN",{maximumFractionDigits:0}).format(n)} ₫`;
+  return <section className="grid gap-3 sm:grid-cols-2" aria-label="Quỹ gia đình và công nợ">
+    <div className="min-w-0 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 sm:p-5">
+      <div className="flex items-center gap-2 text-sm font-black"><PiggyBank className="size-5 text-[var(--primary)]"/> Quỹ gia đình</div>
+      <p className="mt-3 text-xs text-[var(--muted-foreground)]">Tiền dành riêng · không thuộc số dư khả dụng</p>
+      <p className="mt-1 overflow-x-auto whitespace-nowrap text-xl font-black tabular-nums sm:text-2xl">{money(fundTotal)}</p>
+      <div className="mt-4 flex flex-wrap gap-2"><Link href="/funds" className="fin-secondary-btn text-xs">Xem quỹ</Link><Link href="/funds?new=1" className="fin-primary-btn text-xs"><Plus className="size-3.5"/>Tạo quỹ</Link></div>
+    </div>
+    <div className="min-w-0 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 sm:p-5">
+      <div className="flex items-center gap-2 text-sm font-black"><HandCoins className="size-5 text-[var(--primary)]"/> Công nợ cá nhân</div>
+      <div className="mt-3 grid grid-cols-2 gap-3"><div className="min-w-0"><p className="text-xs text-[var(--muted-foreground)]">Người khác nợ tôi</p><p className="mt-1 overflow-x-auto whitespace-nowrap text-base font-black tabular-nums text-[var(--fin-income)]">{money(receivable)}</p></div><div className="min-w-0"><p className="text-xs text-[var(--muted-foreground)]">Tôi đang nợ</p><p className="mt-1 overflow-x-auto whitespace-nowrap text-base font-black tabular-nums text-[var(--fin-expense)]">{money(payable)}</p></div></div>
+      <div className="mt-4 flex flex-wrap gap-2"><Link href="/debts" className="fin-secondary-btn text-xs">Xem công nợ</Link><Link href="/debts?new=1" className="fin-primary-btn text-xs"><Plus className="size-3.5"/>Tạo công nợ</Link></div>
+    </div>
+  </section>;
 }
 
 async function OverviewRecent() {
@@ -109,6 +139,7 @@ export default function OverviewPage() {
     <header className="flex flex-wrap items-center justify-between gap-3"><div><p className="fin-section-eyebrow">FINZARO / PERSONAL FINANCE</p><h1 className="mt-1 text-2xl font-extrabold tracking-tight sm:text-3xl">Tổng quan tài chính</h1></div>
       <Link className="fin-primary-btn !min-h-10 !px-3 !text-xs" href="/transactions?new=expense"><Plus className="size-4"/> Thêm giao dịch</Link></header>
     <Suspense fallback={<><Loading height="h-48"/><div className="grid gap-3 lg:grid-cols-3"><Loading height="h-52"/><Loading height="h-52"/><Loading height="h-52"/></div><Loading height="h-64"/></>}><OverviewDashboard/></Suspense>
+    <Suspense fallback={<Loading height="h-36"/>}><OverviewFundsDebtCards/></Suspense>
     <Suspense fallback={<Loading height="h-36"/>}><PortfolioOverviewCard/></Suspense>
     <Suspense fallback={<Loading height="h-48"/>}><OverviewRecent/></Suspense>
     <nav className="flex items-center justify-center gap-4 pb-2 text-xs font-semibold text-[var(--muted-foreground)]" aria-label="Lối tắt tài chính"><Link href="/reports/calendar" className="inline-flex min-h-10 items-center gap-1.5 hover:text-[var(--primary)]"><CalendarDays className="size-4"/> Xem lịch tài chính</Link><Link href="/accounts" className="inline-flex min-h-10 items-center gap-1.5 hover:text-[var(--primary)]"><WalletCards className="size-4"/> Tài khoản và ví</Link></nav>

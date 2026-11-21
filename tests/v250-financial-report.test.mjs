@@ -77,7 +77,7 @@ test("V2.5 integrated analytical views and print/XLSX/CSV exports preserve six m
   assert.match(current, /^(?:3|4)\.\d+\.\d+$/);
   assert.match(read("lib/app-version.ts"), new RegExp(`APP_VERSION = "${current.replaceAll(".", "\\.")}"`));
   const dirs = readdirSync(join(root,"app/(dashboard)"),{withFileTypes:true}).filter(item=>item.isDirectory()).map(x=>x.name).sort();
-  assert.deepEqual(dirs,["accounts","categories","overview","portfolio","reports","settings","transactions"]);
+  assert.deepEqual(dirs,["accounts","categories","debts","funds","overview","portfolio","reports","settings","transactions"]);
   const page = read("app/(dashboard)/reports/analysis/page.tsx");
   assert.match(page, /redirect\("\/reports"\)/, "retired Analysis URL should redirect to the overview");
   const navigation = read("components/report-navigation.tsx");

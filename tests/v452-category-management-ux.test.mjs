@@ -12,12 +12,12 @@ const css = read("app/globals.css");
 const pkg = JSON.parse(read("package.json"));
 
 test("V4.5.4 version is consistent; strict release gate and six modules preserved", () => {
-  assert.equal(pkg.version, "4.6.8");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.6\.8"/);
+  assert.equal(pkg.version, "4.6.9");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.6\.9"/);
   assert.equal(pkg.scripts.check, "npm run lint && npm run typecheck && npm run test && npm run build");
   assert.deepEqual(readdirSync(join(root, "app/(dashboard)"), { withFileTypes: true })
     .filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort(),
-    ["accounts", "categories", "overview", "portfolio", "reports", "settings", "transactions"]);
+    ["accounts", "categories", "debts", "funds", "overview", "portfolio", "reports", "settings", "transactions"]);
 });
 
 test("Expense and Income use a compact exclusive tab selector without long vertical lists", () => {
