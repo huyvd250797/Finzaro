@@ -11,13 +11,13 @@ function dayHeading(value: string) {
   if (Number.isNaN(parsed.getTime())) return dateLabel(value);
   return dayFormatter.format(parsed);
 }
-type Props = { transactions: TransactionView[]; currencies: LedgerCurrency[]; limit?: number; showDelete?: boolean; showEdit?: boolean; showCopy?: boolean; groupByDate?: boolean; deletableTransferIds?: string[] };
+type Props = { transactions: TransactionView[]; currencies: LedgerCurrency[]; limit?: number; showDelete?: boolean; showEdit?: boolean; showCopy?: boolean; groupByDate?: boolean; deletableTransferIds?: string[]; maskDashboardMoney?: boolean };
 
-export function TransactionList({ transactions, currencies, limit, showDelete = false, showEdit = false, showCopy = false, groupByDate = false, deletableTransferIds = [] }: Props) {
+export function TransactionList({ transactions, currencies, limit, showDelete = false, showEdit = false, showCopy = false, groupByDate = false, deletableTransferIds = [], maskDashboardMoney = false }: Props) {
   const data = typeof limit === "number" ? transactions.slice(0, limit) : transactions;
   if (!data.length) return <div className="fin-empty-card px-5 py-9 text-center"><p className="text-sm font-bold">Chưa có giao dịch</p><p className="mt-1 text-xs leading-5 text-[var(--muted-foreground)]">Tạo khoản thu hoặc chi để bắt đầu, hoặc thay đổi bộ lọc để xem dữ liệu.</p><Link href="/transactions?new=expense" className="fin-secondary-btn mt-4 inline-flex min-h-11 items-center justify-center rounded-xl px-4 text-xs font-bold">Thêm giao dịch</Link></div>;
   const permitted = new Set(deletableTransferIds);
-  if (!groupByDate) return <div><TransactionActionNotice /><p className="mb-2 text-[11px] text-[var(--muted-foreground)]">Vuốt trái trên giao dịch để hiện Sửa / Xóa; chạm dấu ··· để xem thêm thao tác.</p><div className="divide-y divide-[var(--border)]">{data.map((tx) => <TransactionSwipeRow key={tx.id} tx={tx} currencies={currencies} showDelete={showDelete} showEdit={showEdit} showCopy={showCopy} simpleTransfer={permitted.has(tx.id)} />)}</div></div>;
+  if (!groupByDate) return <div><TransactionActionNotice /><p className="mb-2 text-[11px] text-[var(--muted-foreground)]">Vuốt trái trên giao dịch để hiện Sửa / Xóa; chạm dấu ··· để xem thêm thao tác.</p><div className="divide-y divide-[var(--border)]">{data.map((tx) => <TransactionSwipeRow key={tx.id} tx={tx} currencies={currencies} showDelete={showDelete} showEdit={showEdit} showCopy={showCopy} simpleTransfer={permitted.has(tx.id)} maskDashboardMoney={maskDashboardMoney}/>)}</div></div>;
   const groups = new Map<string, TransactionView[]>();
   for (const tx of data) {
     const bucket = groups.get(tx.transaction_date);
@@ -30,6 +30,6 @@ export function TransactionList({ transactions, currencies, limit, showDelete = 
       <span className="shrink-0 text-[11px] text-[var(--muted-foreground)]">{rows.length} giao dịch</span>
       <ChevronDown className="size-4 shrink-0 text-[var(--muted-foreground)] transition-transform group-open/day:rotate-180" aria-hidden="true" />
     </summary>
-    <div className="divide-y divide-[var(--border)] px-1 sm:px-2">{rows.map((tx) => <TransactionSwipeRow key={tx.id} tx={tx} currencies={currencies} showDelete={showDelete} showEdit={showEdit} showCopy={showCopy} simpleTransfer={permitted.has(tx.id)} />)}</div>
+    <div className="divide-y divide-[var(--border)] px-1 sm:px-2">{rows.map((tx) => <TransactionSwipeRow key={tx.id} tx={tx} currencies={currencies} showDelete={showDelete} showEdit={showEdit} showCopy={showCopy} simpleTransfer={permitted.has(tx.id)} maskDashboardMoney={maskDashboardMoney}/>)}</div>
   </details>)}</div>;
 }

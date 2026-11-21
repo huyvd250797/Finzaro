@@ -1,3 +1,11 @@
+## V4.6.11 — Family Opening Balance & Dashboard Privacy (2026-11-21)
+
+- Quỹ gia đình: số dư đầu kỳ nhập ngay khi tạo hoặc một lần cho quỹ chưa phát sinh giao dịch; không tự tạo Thu/Chi/Chuyển.
+- Thêm migration `20261121190000_family_fund_opening_v4611.sql` với RPC tạo mới và khai báo an toàn, khóa dòng và chặn ghi trùng.
+- Nút con mắt được chuyển lên header cạnh Dark Mode; toàn bộ giá trị tiền trên Dashboard dùng cùng cơ chế che `******` trong phiên trình duyệt.
+- Xu hướng tài chính: cột thu/chi, đường số dư tiền, hai trục đúng đơn vị, card kỳ đang chọn, biểu đồ phóng to và nhãn rõ phạm vi tiền.
+- Giữ nguyên 9 module, Supabase RPC V4.6.6–V4.6.7 và các giao dịch hiện hữu.
+
 ## V4.6.10 — Accounts Redeclaration Deploy Hotfix (2026-11-21)
 - Khắc phục lỗi deploy TypeScript **TS2451** tại `app/(dashboard)/accounts/page.tsx`: chỉ khai báo một lần `defaultMeta`, `activeAccounts` và `balances`; loại bỏ hai biến dư `regularAccounts`/`familyAccounts` không được sử dụng.
 - Giữ nguyên 9 module, Công nợ, Quỹ gia đình, full-screen modal và card Dashboard của V4.6.9.

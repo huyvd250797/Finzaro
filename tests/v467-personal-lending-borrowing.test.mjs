@@ -61,10 +61,10 @@ test('Accounts embeds a mobile-friendly personal debt panel and server actions c
  for(const rpc of ['personal_debt_create_v467','personal_debt_repay_v467','personal_debt_update_v467','personal_debt_delete_unposted_v467']) assert.ok(actions.includes(`rpc("${rpc}"`),rpc);
 });
 test('Release remains seven modules and V4.6.9 includes a new migration',()=>{
- assert.equal(JSON.parse(read('package.json')).version,'4.6.10');
- assert.match(read('lib/app-version.ts'),/Personal Lending & Borrowing Management|Dedicated Debts & Family Funds UX|Accounts Redeclaration Deploy Hotfix/);
- assert.match(read('CHANGELOG.md'),/^## V4\.6\.10/);
- assert.equal(readdirSync(join(root,'supabase/migrations')).filter(s=>s.endsWith('.sql')).length,36);
+ assert.equal(JSON.parse(read('package.json')).version,'4.6.11');
+ assert.match(read('lib/app-version.ts'),/Personal Lending & Borrowing Management|Dedicated Debts & Family Funds UX|Accounts Redeclaration Deploy Hotfix|Family Opening Balance & Dashboard Privacy/);
+ assert.match(read('CHANGELOG.md'),/^## V4\.6\.11/);
+ assert.equal(readdirSync(join(root,'supabase/migrations')).filter(s=>s.endsWith('.sql')).length,37);
  const routes=readdirSync(join(root,'app/(dashboard)'),{withFileTypes:true}).filter(x=>x.isDirectory()).map(x=>x.name).sort();
  assert.deepEqual(routes,['accounts','categories','debts','funds','overview','portfolio','reports','settings','transactions']);
 });

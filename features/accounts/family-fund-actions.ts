@@ -48,15 +48,30 @@ export async function createFamilyFundAction(form: FormData) {
     const {supabase}=await requireUser();
     const name=field(form,"name");
     if(name.length<1||name.length>100) throw new Error("Tên quỹ phải từ 1 đến 100 ký tự.");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- New versioned RPC after migration V4.6.6.
-    const {error}=await (supabase as any).rpc("family_fund_create_v466",{
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- New opening-balance RPC after migration V4.6.11.
+    const {error}=await (supabase as any).rpc("family_fund_create_v4611",{
       p_name:name,p_institution_name:field(form,"institution_name"),
+      p_opening_balance_minor:minor(form,"opening_balance"),
       p_target_amount_minor:minor(form,"target_amount"),
       p_monthly_contribution_minor:minor(form,"monthly_contribution"),
       p_maturity_date:dateText(field(form,"maturity_date")),p_annual_interest_rate:interest(form)
     });
     if(error) throw new Error(error.message);
-    return "Đã tạo Quỹ tiết kiệm gia đình. Số dư ban đầu là 0 ₫.";
+    return "Đã tạo quỹ với số dư đầu kỳ được khai báo. Không phát sinh giao dịch Thu/Chi/Chuyển.";
+  });
+}
+/** Declare opening balance only on a pre-existing zero-activity fund. No ledger transaction is fabricated. */
+export async function declareFamilyFundOpeningAction(form: FormData) {
+  await mutate(async()=>{
+    const {supabase}=await requireUser();
+    const amount=minor(form,"opening_balance");
+    if (amount<=0) throw new Error("Số dư đầu kỳ phải lớn hơn 0 ₫.");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- V4.6.11 versioned RPC, owner scoped.
+    const {error}=await (supabase as any).rpc("family_fund_declare_opening_v4611",{
+      p_account_id:uuid(field(form,"fund_account_id")),p_opening_balance_minor:amount
+    });
+    if(error) throw new Error(error.message);
+    return "Đã ghi nhận số dư quỹ đầu kỳ, không tạo giao dịch giả.";
   });
 }
 export async function updateFamilyFundAction(form: FormData) {

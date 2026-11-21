@@ -2,6 +2,7 @@ import { LogOut, Search } from "lucide-react";
 import Link from "next/link";
 import { logoutAction } from "@/app/auth/actions";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { DashboardMoneyToggle } from "@/components/dashboard-money";
 import { BrandLogo } from "@/components/brand-logo";
 import { APP_RELEASE_NAME, APP_VERSION_LABEL } from "@/lib/app-version";
 
@@ -18,6 +19,7 @@ export function AppHeader({ displayName, email }: { displayName?: string; email?
         <Link href="/transactions?search=1" className="flex h-10 max-w-md items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 text-sm text-[var(--muted-foreground)]"><Search className="size-4" /> Tìm giao dịch</Link>
       </div>
       <div className="ml-auto flex items-center gap-2">
+        <DashboardMoneyToggle />
         <ThemeToggle />
         <div className="ml-1 hidden min-w-0 items-center gap-2 sm:flex">
           <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-sm font-bold text-white">{initial(displayName, email)}</div>

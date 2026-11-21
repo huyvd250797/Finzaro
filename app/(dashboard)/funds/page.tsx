@@ -12,7 +12,7 @@ export default async function FamilyFundsPage({searchParams}:{searchParams:Searc
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Table added in V4.6.6; regenerate linked DB types after migration.
   const db=supabase as any;
   const [accountsResult,fundsResult]=await Promise.all([
-    supabase.from("accounts").select("id,name,account_type,institution_name,currency_code,current_balance_minor,is_archived").eq("user_id",userId).eq("is_archived",false),
+    supabase.from("accounts").select("id,name,account_type,institution_name,currency_code,current_balance_minor,opening_balance_minor,is_archived").eq("user_id",userId).eq("is_archived",false),
     db.from("family_savings_funds_v466").select("account_id,user_id,target_amount_minor,monthly_contribution_minor,maturity_date,annual_interest_rate").eq("user_id",userId)
   ]);
   const accounts=(accountsResult.data??[]) as FamilyAccountRow[];

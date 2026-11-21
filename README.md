@@ -1,6 +1,8 @@
-# Finzaro V4.6.10 — Accounts Redeclaration Deploy Hotfix
+# Finzaro V4.6.11 — Family Opening Balance & Dashboard Privacy
 
-> **Current release: Finzaro V4.6.10 — Accounts Redeclaration Deploy Hotfix.** Sửa lỗi `TS2451` do khai báo trùng `defaultMeta`, `activeAccounts`, `balances` tại `app/(dashboard)/accounts/page.tsx`; bỏ các biến dư không sử dụng. Giữ nguyên 9 module, Công nợ, Quỹ gia đình, form toàn màn hình và Dashboard. **Không có migration mới.** Xem [`DEPLOY_V4.6.10.md`](DEPLOY_V4.6.10.md).
+> **Current release: Finzaro V4.6.11.** Khai báo số dư quỹ gia đình đã có trước khi dùng ứng dụng (không tạo giao dịch giả), ẩn/hiện toàn bộ số tiền trên Dashboard qua nút cạnh Dark Mode, thiết kế mới biểu đồ Xu hướng tài chính. **Cần chạy migration V4.6.11** trước khi deploy. Xem [`DEPLOY_V4.6.11.md`](DEPLOY_V4.6.11.md).
+
+> **Previous release: Finzaro V4.6.10 — Accounts Redeclaration Deploy Hotfix.** Sửa lỗi TS2451, không cần migration mới. Xem [`DEPLOY_V4.6.10.md`](DEPLOY_V4.6.10.md).
 
 > **Previous release: Finzaro V4.6.9 — Dedicated Debts & Family Funds UX.** Tách **Công nợ** (`/debts`) và **Quỹ gia đình** (`/funds`) thành hai module riêng trong điều hướng desktop và mục **Thêm** trên mobile. Tạo, sửa, giải ngân/thu hồi nợ và gửi/rút quỹ đều mở trong modal toàn màn hình trên điện thoại, không còn form mở rộng bên dưới card. Bổ sung hai card tại Dashboard với số dư quỹ và công nợ phải thu/phải trả. Dữ liệu và RPC V4.6.6/V4.6.7 giữ nguyên, **không có migration mới**. Xem [`DEPLOY_V4.6.9.md`](DEPLOY_V4.6.9.md).
 

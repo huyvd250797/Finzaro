@@ -1,6 +1,6 @@
 {
   "name": "finzaro",
-  "version": "4.6.10",
+  "version": "4.6.11",
   "private": true,
   "engines": {
     "node": "22.x",

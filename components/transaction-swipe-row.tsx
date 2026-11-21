@@ -8,11 +8,13 @@ import { CategoryIcon, iconColorValue } from "@/features/categories/icons";
 import { deleteTransactionInlineAction } from "@/features/transactions/actions";
 import { currencyDigits, transactionEntry, type LedgerCurrency, type TransactionView } from "@/features/transactions/data";
 import { formatMinorMoney } from "@/lib/utils";
+import { useDashboardMoneyHidden } from "@/components/dashboard-money";
 
-export function TransactionSwipeRow({tx,currencies,showDelete,showEdit,showCopy,simpleTransfer}:{
-  tx:TransactionView; currencies:LedgerCurrency[];showDelete:boolean;showEdit:boolean;showCopy:boolean;simpleTransfer:boolean;
+export function TransactionSwipeRow({tx,currencies,showDelete,showEdit,showCopy,simpleTransfer,maskDashboardMoney=false}:{
+  tx:TransactionView; currencies:LedgerCurrency[];showDelete:boolean;showEdit:boolean;showCopy:boolean;simpleTransfer:boolean;maskDashboardMoney?:boolean;
 }){
   const [revealed,setRevealed]=useState(false);
+  const moneyHidden = useDashboardMoneyHidden() && maskDashboardMoney;
   const [menu,setMenu]=useState(false);
   const [deletePending,startDelete]=useTransition();
   const router=useRouter();
@@ -64,7 +66,7 @@ export function TransactionSwipeRow({tx,currencies,showDelete,showEdit,showCopy,
       </div>
       <div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold">{tx.title}</p><p className="mt-0.5 line-clamp-2 text-xs text-[var(--muted-foreground)]">{category} · {tx.transaction_type==="transfer"?`${sourceName} → ${destinationName}`:sourceName}</p>{tx.notes&&<p className="mt-1 line-clamp-1 text-xs text-[var(--muted-foreground)]">{tx.notes}</p>}</div>
       <div className="flex min-w-0 shrink-0 flex-col items-end gap-1.5"><div className={`text-right text-xs font-black sm:text-sm ${tx.transaction_type==="income"?"text-emerald-600":tx.transaction_type==="transfer"?"text-sky-600":"text-rose-600"}`}>
-        {primary?<><div className="whitespace-nowrap">{tx.transaction_type==="income"?"+":tx.transaction_type==="expense"?"−":""}{formatMinorMoney(Math.abs(primary.amount_minor),primary.currency_code,digits)}</div>{differentCurrency&&destination&&<div className="mt-0.5 text-[10px] text-[var(--muted-foreground)]">→ {formatMinorMoney(destination.amount_minor,destination.currency_code,destinationDigits)}</div>}</>:"—"}
+        {primary?<><div className="whitespace-nowrap" data-fin-money data-fin-masked={moneyHidden?"true":undefined}>{moneyHidden ? "******" : `${tx.transaction_type==="income"?"+":tx.transaction_type==="expense"?"−":""}${formatMinorMoney(Math.abs(primary.amount_minor),primary.currency_code,digits)}`}</div>{differentCurrency&&destination&&<div className="mt-0.5 text-[10px] text-[var(--muted-foreground)]" data-fin-money data-fin-masked={moneyHidden?"true":undefined}>{moneyHidden ? "******" : `→ ${formatMinorMoney(destination.amount_minor,destination.currency_code,destinationDigits)}`}</div>}</>:"—"}
       </div></div>
       {(canSwipe||(showCopy&&canCopy))&&<button type="button" onClick={()=>setMenu(v=>!v)} aria-expanded={menu} aria-label={`Mở thao tác ${tx.title}`} title="Thao tác giao dịch" className="grid size-8 shrink-0 place-items-center rounded-lg text-[var(--muted-foreground)] hover:bg-[var(--muted)]"><MoreHorizontal className="size-4"/></button>}
     </div>

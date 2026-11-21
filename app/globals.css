@@ -1300,3 +1300,10 @@ body:has(.fin-sheet-backdrop[data-fin-dialog="true"]) .fin-mobile-taskbar,
   .fin-transaction-row.fin-transaction-swipe > :nth-child(3) { max-width: none; overflow-wrap: normal; grid-column: auto; justify-self: stretch; }
   .fin-transaction-row.fin-transaction-swipe > :nth-child(3) .whitespace-nowrap { white-space: nowrap; overflow-wrap: normal; }
 }
+
+/* V4.6.11 — keep last-hidden Dashboard figures concealed before hydration.
+   Hydrated amounts replace their text with ****** and mark themselves masked. */
+html[data-fin-money-privacy="hidden"] .fin-dashboard-page [data-fin-money]:not([data-fin-masked="true"]) { visibility: hidden !important; }
+.fin-trend-frame { background: radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--primary) 6%, transparent), transparent 70%); }
+.fin-trend-group { transition: opacity .2s ease; }
+@media (prefers-reduced-motion:reduce) { .fin-trend-group { transition: none; } }

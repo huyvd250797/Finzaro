@@ -43,8 +43,8 @@ const accounts = [{ id: "wallet", account_type: "bank", currency_code: "VND", is
 
 test("V4.5.0 release is versioned, preserves strict deployment gate and six modules", () => {
   const pkg = JSON.parse(read("package.json"));
-  assert.equal(pkg.version, "4.6.10");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.6\.10"/);
+  assert.equal(pkg.version, "4.6.11");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.6\.11"/);
   assert.equal(pkg.scripts.check, "npm run lint && npm run typecheck && npm run test && npm run build");
   assert.deepEqual(readdirSync(join(root, "app/(dashboard)"), { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name).sort(), ["accounts", "categories", "debts", "funds", "overview", "portfolio", "reports", "settings", "transactions"]);
 });
@@ -125,13 +125,15 @@ test("V4.5.0 quick categories show persisted icon and original mapped color in s
   assert.match(code, /overflow-x-auto/);
 });
 
-test("V4.5.0 dashboard hides and reveals just the available balance and preserves other metrics", () => {
-  const source = read("components/balance-visibility.tsx");
+test("V4.6.11 Dashboard amounts are masked globally via toolbar eye", () => {
+  const source = read("components/dashboard-money.tsx");
   const page = read("app/(dashboard)/overview/page.tsx");
+  const header = read("components/app-header.tsx");
   assert.match(source, /Eye, EyeOff/);
-  assert.match(source, /visible \? amount : "\*\*\*\*\*"/);
-  assert.match(source, /aria-label=\{visible \? "Ẩn số dư khả dụng" : "Hiện số dư khả dụng"\}/);
-  assert.match(page, /<BalanceVisibility amount=\{money\(snapshot.balance\)\}/);
+  assert.match(source, /"\*\*\*\*\*\*"/);
+  assert.match(source, /aria-label=\{hidden \? "Hiện toàn bộ số tiền trên Dashboard"/);
+  assert.match(header, /<DashboardMoneyToggle \/>/);
+  assert.match(page, /<DashboardMoney amount=\{money\(snapshot.balance\)\}\/>/);
   assert.match(page, /snapshot.monthTotals.income/);
 });
 

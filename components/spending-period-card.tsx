@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { CategoryIcon, iconColorValue } from "@/features/categories/icons";
 import type { DashboardFlow, SpendingPeriod, SpendingSummary } from "@/features/dashboard/snapshot";
 import { formatMinorMoney } from "@/lib/utils";
+import { DashboardMoney, useDashboardMoneyHidden } from "@/components/dashboard-money";
 import { comparePeriodTotals, comparisonRanges, type DashboardPrevious } from "@/features/dashboard/period-comparison";
 
 const percentFormatter = new Intl.NumberFormat("vi-VN", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
@@ -29,6 +30,7 @@ export function SpendingPeriodCard({ period, summary, incomeSummary, previous, t
   today: string; currency: string; digits: number;
 }) {
   const [flow, setFlow] = useState<DashboardFlow>("expense");
+  const privacyHidden = useDashboardMoneyHidden();
   const current = flow === "expense" ? summary : incomeSummary;
   const info = labels[flow][period];
   const from = period === "today" ? today : period === "month" ? `${today.slice(0,7)}-01` : `${today.slice(0,4)}-01-01`;
@@ -83,13 +85,13 @@ export function SpendingPeriodCard({ period, summary, incomeSummary, previous, t
       <Link className="fin-text-action shrink-0" href={link}>Xem tất cả <ArrowRight className="size-3.5"/></Link>
     </div>
     <div className="mb-4 flex min-w-0 items-end justify-between gap-2" aria-live="polite">
-      <p className={`min-w-0 flex-1 break-words text-[clamp(1.35rem,4.8vw,2rem)] font-extrabold tracking-tight tabular-nums ${isIncome ? "text-[var(--fin-income)]" : "text-[var(--fin-expense)]"}`}>{money(current.amount)}</p>
-      <div className="min-w-0 max-w-[49%] shrink-0 text-right" aria-label={`${compareLabel}: ${amountDelta}, ${percentDelta}`}>
+      <p className={`min-w-0 flex-1 break-words text-[clamp(1.35rem,4.8vw,2rem)] font-extrabold tracking-tight tabular-nums ${isIncome ? "text-[var(--fin-income)]" : "text-[var(--fin-expense)]"}`}><DashboardMoney amount={money(current.amount)}/></p>
+      <div className="min-w-0 max-w-[49%] shrink-0 text-right" aria-label={privacyHidden ? `${compareLabel}: số tiền đã ẩn` : `${compareLabel}: ${amountDelta}, ${percentDelta}`}>
         <p className="text-[10px] font-medium leading-tight text-[var(--muted-foreground)] sm:text-xs">{compareLabel}</p>
         {/* Keep the icon in the SAME inline phrase as the direction label.
             A flex row here separates the icon when the amount wraps on narrow iPhones. */}
         <p className={`mt-0.5 break-words text-right text-[clamp(.625rem,2.3vw,.75rem)] font-semibold leading-snug tabular-nums ${changeTone}`}>
-          {change.difference !== 0 ? <>
+          {privacyHidden ? <DashboardMoney amount="******"/> : change.difference !== 0 ? <>
             <span className="inline-flex items-center gap-[2px] whitespace-nowrap align-middle">
               <ChangeIcon className="size-[1em] shrink-0" strokeWidth={2.25} aria-hidden="true"/>
               <span>{changePrefix}</span>
@@ -104,13 +106,13 @@ export function SpendingPeriodCard({ period, summary, incomeSummary, previous, t
     <Link href={previousLink} title={`Xem giao dịch ${ranges[period].from} đến ${ranges[period].to}`}
       className="mb-4 flex min-h-8 items-center justify-between gap-2 rounded-lg border-t border-[var(--border)] pt-2 text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
       <span>{priorLabel}</span>
-      <span className="inline-flex shrink-0 items-center gap-1 font-bold tabular-nums text-[var(--foreground)]">{money(previousAmount)}<ChevronRight className="size-3.5" aria-hidden="true"/></span>
+      <span className="inline-flex shrink-0 items-center gap-1 font-bold tabular-nums text-[var(--foreground)]"><DashboardMoney amount={money(previousAmount)}/><ChevronRight className="size-3.5" aria-hidden="true"/></span>
     </Link>
     {current.count ? <>
       <p className="mb-3 text-xs font-bold text-[var(--muted-foreground)]">Theo danh mục</p>
       <div className="space-y-3">{current.categories.slice(0, 5).map((item) => <div key={item.id} className="flex min-w-0 items-center gap-3">
         <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-[var(--muted)]" style={{ color: iconColorValue(item.iconColor) }}><CategoryIcon name={item.iconName} className="size-4.5"/></span>
-        <div className="min-w-0 flex-1"><div className="flex items-center justify-between gap-2"><span className="truncate text-xs font-bold">{item.label}</span><span className="shrink-0 text-xs font-extrabold tabular-nums">{money(item.amount)}</span></div>
+        <div className="min-w-0 flex-1"><div className="flex items-center justify-between gap-2"><span className="truncate text-xs font-bold">{item.label}</span><span className="shrink-0 text-xs font-extrabold tabular-nums"><DashboardMoney amount={money(item.amount)}/></span></div>
           <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[var(--muted)]"><div className="h-full rounded-full" style={{ width: `${current.amount ? Math.max(0, Math.min(100, item.amount / current.amount * 100)) : 0}%`, backgroundColor: iconColorValue(item.iconColor) }}/></div>
         </div>
       </div>)}</div>
@@ -120,7 +122,7 @@ export function SpendingPeriodCard({ period, summary, incomeSummary, previous, t
         </summary>
         {current.recent.map((tx) => <div key={tx.id} className="fin-today-expense-row flex min-w-0 items-center justify-between gap-3 py-2.5">
           <div className="min-w-0"><p className="truncate text-sm font-semibold" title={tx.title}>{tx.title}</p><p className="truncate text-[11px] text-[var(--muted-foreground)]">{tx.category} · {tx.date.split("-").reverse().join("/")}</p></div>
-          <span className={`shrink-0 text-xs font-extrabold tabular-nums ${isIncome ? "text-[var(--fin-income)]" : ""}`}>{isIncome ? "+" : "−"}{money(tx.amount)}</span>
+          <span className={`shrink-0 text-xs font-extrabold tabular-nums ${isIncome ? "text-[var(--fin-income)]" : ""}`}><DashboardMoney amount={`${isIncome ? "+" : "−"}${money(tx.amount)}`}/></span>
         </div>)}
         {current.count > current.recent.length && <Link href={link} className="fin-text-action mt-2">Xem thêm {current.count - current.recent.length} {isIncome ? "khoản thu" : "khoản chi"} <ArrowRight className="size-3.5"/></Link>}
       </details>

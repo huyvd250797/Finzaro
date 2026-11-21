@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ArrowDownLeft, ArrowUpRight, PiggyBank, Plus, SlidersHorizontal, X } from "lucide-react";
-import { createFamilyFundAction, transferFamilyFundAction, updateFamilyFundAction } from "@/features/accounts/family-fund-actions";
+import { createFamilyFundAction, transferFamilyFundAction, updateFamilyFundAction, declareFamilyFundOpeningAction } from "@/features/accounts/family-fund-actions";
 import { PendingSubmitButton } from "@/components/pending-submit-button";
 import { BottomSheet } from "@/components/bottom-sheet";
 import { MoneyCalculatorInput } from "@/components/money-calculator-input";
@@ -12,7 +12,7 @@ export type FamilyFundRow={
   account_id:string;user_id:string;target_amount_minor:number;monthly_contribution_minor:number;
   maturity_date:string|null;annual_interest_rate:number|null;
 };
-export type FamilyAccountRow={id:string;name:string;account_type:string;institution_name:string|null;currency_code:string;current_balance_minor:number;is_archived:boolean};
+export type FamilyAccountRow={id:string;name:string;account_type:string;institution_name:string|null;currency_code:string;current_balance_minor:number;opening_balance_minor:number;is_archived:boolean};
 const style="fin-input min-h-11 w-full";
 const caption="text-xs font-semibold text-[var(--muted-foreground)]";
 function FundFields({row}:{row?:FamilyFundRow}){
@@ -29,20 +29,34 @@ function FundFields({row}:{row?:FamilyFundRow}){
 function FundCard({account,detail,regularAccounts,currentDate}:{account:FamilyAccountRow;detail?:FamilyFundRow;regularAccounts:FamilyAccountRow[];currentDate:string}){
   const [mode,setMode]=useState<"deposit"|"withdraw"|null>(null);
   const [editing,setEditing]=useState(false);
+  const [opening,setOpening]=useState(false);
   const target=Number(detail?.target_amount_minor??0);
   const value=Number(account.current_balance_minor);
   const progress=target>0?Math.min(100,Math.max(0,value/target*100)):0;
   return <article className="rounded-[22px] border border-[var(--border)] bg-[var(--card)] p-4 sm:p-5">
     <div className="flex items-center gap-3"><span className="grid size-11 place-items-center rounded-xl bg-emerald-500/10 text-[var(--primary)]"><PiggyBank className="size-5"/></span><div className="min-w-0 flex-1"><h3 className="truncate text-base font-black">{account.name}</h3><p className="text-xs text-[var(--muted-foreground)]">{account.institution_name||"Quỹ dành riêng"} · VND</p></div></div>
     <div className="mt-4 rounded-xl bg-[var(--muted)]/60 p-4"><p className="text-xs text-[var(--muted-foreground)]">Số dư quỹ</p><p className="mt-1 overflow-x-auto whitespace-nowrap text-xl font-black tabular-nums sm:text-2xl">{formatMinorMoney(value,"VND",0)}</p></div>
+    {Number(account.opening_balance_minor)>0&&<p className="mt-2 text-xs text-[var(--muted-foreground)]">Số dư khai báo đầu kỳ: <strong className="whitespace-nowrap text-[var(--foreground)]">{formatMinorMoney(Number(account.opening_balance_minor),"VND",0)}</strong></p>}
     {target>0&&<div className="mt-4"><div className="flex items-center justify-between gap-2 text-xs"><span className="text-[var(--muted-foreground)]">Mục tiêu</span><strong>{formatMinorMoney(target,"VND",0)}</strong></div><div className="mt-2 h-2 overflow-hidden rounded-full bg-[var(--muted)]"><div className="h-full rounded-full bg-[var(--primary)]" style={{width:`${progress}%`}}/></div><p className="mt-1 text-xs text-[var(--muted-foreground)]">Đạt {progress.toLocaleString("vi-VN",{maximumFractionDigits:1})}%{detail?.monthly_contribution_minor?` · Góp dự kiến ${formatMinorMoney(Number(detail.monthly_contribution_minor),"VND",0)}/tháng`:""}</p></div>}
     {(detail?.maturity_date||(detail?.annual_interest_rate!==null&&detail?.annual_interest_rate!==undefined))&&<p className="mt-2 text-xs text-[var(--muted-foreground)]">{detail?.maturity_date?`Đáo hạn: ${detail.maturity_date.split("-").reverse().join("/")}`:""}{detail?.annual_interest_rate!==null&&detail?.annual_interest_rate!==undefined?` · Lãi suất dự kiến: ${detail.annual_interest_rate}%/năm`:""}</p>}
     <div className="mt-4 grid grid-cols-2 gap-2" role="group" aria-label="Thao tác quỹ">
       <button type="button" onClick={()=>setMode("deposit")} className="fin-primary-btn justify-center text-sm"><ArrowDownLeft className="size-4"/>Gửi vào</button>
       <button type="button" onClick={()=>setMode("withdraw")} className="fin-secondary-btn justify-center text-sm"><ArrowUpRight className="size-4"/>Rút ra</button>
     </div>
-    <button type="button" onClick={()=>setEditing(true)} className="mt-3 inline-flex min-h-10 items-center gap-2 text-xs font-bold text-[var(--muted-foreground)]"><SlidersHorizontal className="size-4"/>Sửa thông tin và mục tiêu quỹ</button>
+    <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1">
+      <button type="button" onClick={()=>setEditing(true)} className="inline-flex min-h-10 items-center gap-2 text-xs font-bold text-[var(--muted-foreground)]"><SlidersHorizontal className="size-4"/>Sửa thông tin và mục tiêu quỹ</button>
+      {value===0&&<button type="button" onClick={()=>setOpening(true)} className="inline-flex min-h-10 items-center gap-1.5 text-xs font-extrabold text-[var(--primary)]"><Plus className="size-4"/>Khai báo số dư đầu kỳ</button>}
+    </div>
 
+    {opening&&<BottomSheet open={opening} onClose={()=>setOpening(false)} label="Khai báo số dư đầu kỳ" panelClassName="!h-[100dvh] !max-h-[100dvh] !rounded-none sm:!max-w-[720px] sm:!rounded-t-3xl">
+      <form action={declareFamilyFundOpeningAction} className="flex min-h-full flex-col gap-4 px-4 pb-[max(env(safe-area-inset-bottom),20px)] pt-2 sm:px-6">
+        <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-[var(--border)] bg-[var(--card)] py-3"><div><p className="text-xs font-bold text-[var(--primary)]">{account.name}</p><h3 className="mt-1 text-xl font-black">Số dư có trước khi dùng app</h3></div><button type="button" onClick={()=>setOpening(false)} aria-label="Đóng số dư đầu kỳ" className="grid size-10 shrink-0 place-items-center rounded-xl border border-[var(--border)]"><X className="size-4"/></button></div>
+        <input type="hidden" name="fund_account_id" value={account.id}/>
+        <label><span className={caption}>Số dư đầu kỳ thực có (₫)</span><MoneyCalculatorInput name="opening_balance" decimalDigits={0} required/></label>
+        <p className="rounded-xl border border-sky-500/20 bg-sky-500/5 p-3 text-xs leading-relaxed text-[var(--muted-foreground)]">Đây là tiền đã nằm trong quỹ trước khi sử dụng Finzaro. Không tạo giao dịch Thu, Chi hoặc Chuyển. Chỉ được khai báo một lần khi quỹ chưa phát sinh giao dịch.</p>
+        <div className="sticky bottom-0 mt-auto border-t border-[var(--border)] bg-[var(--card)] py-3"><PendingSubmitButton idleLabel="Xác nhận số dư đầu kỳ" pendingLabel="Đang ghi nhận..." className="fin-primary-btn w-full"/></div>
+      </form>
+    </BottomSheet>}
     {mode!==null&&<BottomSheet open={mode!==null} onClose={()=>setMode(null)} label={mode==="deposit"?"Gửi tiền vào quỹ":"Rút tiền khỏi quỹ"} panelClassName="!h-[100dvh] !max-h-[100dvh] !rounded-none sm:!max-w-[720px] sm:!rounded-t-3xl">
       {mode!==null&&<form action={transferFamilyFundAction} key={`${account.id}-${mode}`} className="flex min-h-full flex-col gap-4 px-4 pb-[max(env(safe-area-inset-bottom),20px)] pt-2 sm:px-6">
         <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-[var(--border)] bg-[var(--card)] py-3"><div><p className="text-xs font-bold text-[var(--primary)]">{account.name}</p><h3 className="mt-1 text-xl font-black">{mode==="deposit"?"Gửi tiền vào quỹ":"Rút tiền khỏi quỹ"}</h3></div><button type="button" onClick={()=>setMode(null)} aria-label="Đóng chuyển quỹ" className="grid size-10 shrink-0 place-items-center rounded-xl border border-[var(--border)]"><X className="size-4"/></button></div>
@@ -79,7 +93,10 @@ export function FamilySavingsPanel({fundAccounts,regularAccounts,details,current
       {showCreate&&<form action={createFamilyFundAction} className="flex min-h-full flex-col gap-4 px-4 pb-[max(env(safe-area-inset-bottom),20px)] pt-2 sm:px-6">
         <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-[var(--border)] bg-[var(--card)] py-3"><div><p className="text-xs font-bold text-[var(--primary)]">QUỸ DÀNH RIÊNG</p><h3 className="mt-1 text-xl font-black">Tạo quỹ gia đình</h3></div><button type="button" onClick={()=>setShowCreate(false)} aria-label="Đóng tạo quỹ" className="grid size-10 shrink-0 place-items-center rounded-xl border border-[var(--border)]"><X className="size-4"/></button></div>
         <FundFields/>
-        <p className="text-xs text-[var(--muted-foreground)]">Quỹ mới bắt đầu với số dư 0 ₫. Có thể chuyển tiền vào sau khi tạo.</p>
+        <div className="rounded-2xl border border-[var(--primary)]/20 bg-[var(--primary)]/[.045] p-3.5">
+          <label className="block"><span className="text-xs font-black">Số dư đã có trước khi sử dụng Finzaro (₫)</span><span className="mt-1 block text-[11px] text-[var(--muted-foreground)]">Nhập số tiền thật đang có trong quỹ; để 0 nếu đây là quỹ mới mở.</span><div className="mt-2"><MoneyCalculatorInput name="opening_balance" defaultValue="0" decimalDigits={0} required/></div></label>
+          <p className="mt-2 text-[11px] leading-relaxed text-[var(--muted-foreground)]">Số dư đầu kỳ không phải thu nhập, không phải chuyển khoản và không trừ tài khoản ngân hàng khác.</p>
+        </div>
         <div className="sticky bottom-0 mt-auto border-t border-[var(--border)] bg-[var(--card)] py-3"><PendingSubmitButton idleLabel="Tạo quỹ tiết kiệm" pendingLabel="Đang tạo..." className="fin-primary-btn w-full"/></div>
       </form>}
     </BottomSheet>}

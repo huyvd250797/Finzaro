@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { PortfolioOverviewCard } from "@/components/portfolio-overview-card";
 import { CashflowChart } from "@/components/cashflow-chart";
 import { SpendingPeriodCard } from "@/components/spending-period-card";
-import { BalanceVisibility } from "@/components/balance-visibility";
+import { DashboardMoney } from "@/components/dashboard-money";
 import { TransactionList } from "@/components/transaction-list";
 import { loadDashboardSnapshot } from "@/features/dashboard/snapshot";
 import { loadLedger } from "@/features/transactions/data";
@@ -62,19 +62,19 @@ async function OverviewDashboard() {
         <div className="fin-hero-glow pointer-events-none absolute -right-20 -top-24 size-64 rounded-full" aria-hidden="true"/>
         <div className="relative flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0 flex-1"><p className="flex items-center gap-1.5 text-xs font-semibold text-[var(--fin-hero-muted)]"><WalletCards className="size-4"/> Số dư khả dụng · {currency}</p>
-            <BalanceVisibility amount={money(snapshot.balance)} />
+            <p className="fin-available-balance fin-hero-balance mt-2 min-w-0 overflow-x-auto whitespace-nowrap text-[clamp(1.65rem,6vw,2.75rem)] font-extrabold leading-tight tracking-[-.045em] tabular-nums"><DashboardMoney amount={money(snapshot.balance)}/></p>
             <p className="mt-2 text-xs text-[var(--fin-hero-muted)]">Tổng tiền mặt, ngân hàng và ví đang hoạt động</p>
           </div>
           <Link href="/accounts" className="fin-hero-accounts inline-flex min-h-10 items-center gap-1.5 rounded-xl px-3 text-xs font-bold">Tài khoản <ChevronRight className="size-4"/></Link>
         </div>
         <div className="relative mt-4 border-t border-white/15 pt-4">
           <p className="text-[11px] text-[var(--fin-hero-muted)]">Tổng tiền đang quản lý (gồm quỹ dành riêng)</p>
-          <p className="mt-1 text-sm font-black tabular-nums sm:text-base">{money(snapshot.balance + familyBalance)}</p>
+          <p className="mt-1 text-sm font-black tabular-nums sm:text-base"><DashboardMoney amount={money(snapshot.balance + familyBalance)}/></p>
         </div>
         <div className="fin-hero-metrics relative mt-5 grid grid-cols-3 gap-2 border-t pt-4 sm:mt-6 sm:gap-3">
-          {metrics.map((item) => { const Icon = item.icon; return <div key={item.label} className="fin-hero-metric min-w-0 rounded-xl px-2.5 py-3 sm:px-4" data-tone={item.tone} title={`${item.label}: ${money(item.amount)}`}>
+          {metrics.map((item) => { const Icon = item.icon; return <div key={item.label} className="fin-hero-metric min-w-0 rounded-xl px-2.5 py-3 sm:px-4" data-tone={item.tone} >
             <div className="flex items-center gap-1.5"><Icon className="size-3.5 shrink-0"/><span className="truncate text-[10px] font-semibold sm:text-xs">{item.label}</span></div>
-            <p className="mt-2 break-words text-[clamp(.75rem,2.9vw,1.25rem)] font-extrabold tracking-[-.025em] tabular-nums">{money(item.amount)}</p>
+            <p className="mt-2 break-words text-[clamp(.75rem,2.9vw,1.25rem)] font-extrabold tracking-[-.025em] tabular-nums"><DashboardMoney amount={money(item.amount)}/></p>
           </div>; })}
         </div>
       </CardContent></Card>
@@ -83,7 +83,7 @@ async function OverviewDashboard() {
           summary={snapshot.spending[period]} incomeSummary={snapshot.incoming[period]} previous={previous} today={snapshot.today} currency={currency} digits={snapshot.digits}/>)}
       </div>
       <Card className="fin-overview-chart fin-dashboard-card"><CardContent className="p-4 sm:p-5">
-        <div className="mb-4"><p className="fin-section-eyebrow">XU HƯỚNG TÀI CHÍNH</p><h2 className="mt-1 text-base font-extrabold">Thu · Chi · Tài sản ròng</h2></div>
+        <div className="mb-4 flex items-start justify-between gap-2"><div><p className="fin-section-eyebrow">PHÂN TÍCH DÒNG TIỀN</p><h2 className="mt-1 text-lg font-extrabold tracking-tight">Xu hướng tài chính</h2><p className="mt-1 text-xs text-[var(--muted-foreground)]">So sánh thu – chi và biến động số dư tiền theo kỳ</p></div><span className="shrink-0 rounded-xl border border-[var(--border)] bg-[var(--muted)]/50 px-2.5 py-1.5 text-[10px] font-bold tracking-wide text-[var(--muted-foreground)]">FINANCE</span></div>
         <CashflowChart daily={snapshot.daily} today={snapshot.today} closingBalance={snapshot.closingBalance}
           decimalDigits={snapshot.digits} currency={currency}/>
       </CardContent></Card>
@@ -109,12 +109,12 @@ async function OverviewFundsDebtCards() {
     <div className="min-w-0 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 sm:p-5">
       <div className="flex items-center gap-2 text-sm font-black"><PiggyBank className="size-5 text-[var(--primary)]"/> Quỹ gia đình</div>
       <p className="mt-3 text-xs text-[var(--muted-foreground)]">Tiền dành riêng · không thuộc số dư khả dụng</p>
-      <p className="mt-1 overflow-x-auto whitespace-nowrap text-xl font-black tabular-nums sm:text-2xl">{money(fundTotal)}</p>
+      <p className="mt-1 overflow-x-auto whitespace-nowrap text-xl font-black tabular-nums sm:text-2xl"><DashboardMoney amount={money(fundTotal)}/></p>
       <div className="mt-4 flex flex-wrap gap-2"><Link href="/funds" className="fin-secondary-btn text-xs">Xem quỹ</Link><Link href="/funds?new=1" className="fin-primary-btn text-xs"><Plus className="size-3.5"/>Tạo quỹ</Link></div>
     </div>
     <div className="min-w-0 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 sm:p-5">
       <div className="flex items-center gap-2 text-sm font-black"><HandCoins className="size-5 text-[var(--primary)]"/> Công nợ cá nhân</div>
-      <div className="mt-3 grid grid-cols-2 gap-3"><div className="min-w-0"><p className="text-xs text-[var(--muted-foreground)]">Người khác nợ tôi</p><p className="mt-1 overflow-x-auto whitespace-nowrap text-base font-black tabular-nums text-[var(--fin-income)]">{money(receivable)}</p></div><div className="min-w-0"><p className="text-xs text-[var(--muted-foreground)]">Tôi đang nợ</p><p className="mt-1 overflow-x-auto whitespace-nowrap text-base font-black tabular-nums text-[var(--fin-expense)]">{money(payable)}</p></div></div>
+      <div className="mt-3 grid grid-cols-2 gap-3"><div className="min-w-0"><p className="text-xs text-[var(--muted-foreground)]">Người khác nợ tôi</p><p className="mt-1 overflow-x-auto whitespace-nowrap text-base font-black tabular-nums text-[var(--fin-income)]"><DashboardMoney amount={money(receivable)}/></p></div><div className="min-w-0"><p className="text-xs text-[var(--muted-foreground)]">Tôi đang nợ</p><p className="mt-1 overflow-x-auto whitespace-nowrap text-base font-black tabular-nums text-[var(--fin-expense)]"><DashboardMoney amount={money(payable)}/></p></div></div>
       <div className="mt-4 flex flex-wrap gap-2"><Link href="/debts" className="fin-secondary-btn text-xs">Xem công nợ</Link><Link href="/debts?new=1" className="fin-primary-btn text-xs"><Plus className="size-3.5"/>Tạo công nợ</Link></div>
     </div>
   </section>;
@@ -127,7 +127,7 @@ async function OverviewRecent() {
     (tx.transaction_type === "transfer" && tx.entries.some((entry) => entry.entry_role === "transfer_out") && tx.entries.some((entry) => entry.entry_role === "transfer_in"))).slice(0, 5);
   return <Card className="fin-overview-recent fin-dashboard-card"><CardContent className="p-0">
     <div className="flex items-center justify-between gap-2 border-b border-[var(--border)] px-4 py-4 sm:px-5"><div><p className="fin-section-eyebrow">HOẠT ĐỘNG GẦN ĐÂY</p><h2 className="mt-1 text-base font-extrabold">Giao dịch mới nhất</h2></div><Link href="/transactions" className="fin-text-action">Tất cả</Link></div>
-    {recent.length ? <div className="px-2 py-2 sm:p-3"><TransactionList transactions={recent} currencies={ledger.currencies}/></div>
+    {recent.length ? <div className="px-2 py-2 sm:p-3"><TransactionList transactions={recent} currencies={ledger.currencies} maskDashboardMoney/></div>
       : <div className="fin-empty-card mx-4 my-4"><p className="text-sm font-semibold">Chưa có giao dịch</p><p className="mt-1 text-xs text-[var(--muted-foreground)]">Bắt đầu ghi nhận Thu/Chi để theo dõi tài chính.</p></div>}
   </CardContent></Card>;
 }

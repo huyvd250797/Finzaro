@@ -8,11 +8,11 @@ const read=(p)=>readFileSync(join(root,p),'utf8');
 const dirs=()=>readdirSync(join(root,'app/(dashboard)'),{withFileTypes:true}).filter(x=>x.isDirectory()).map(x=>x.name).sort();
 
 test('V4.6.9 introduces two independent modules without altering current Supabase schema',()=>{
-  assert.equal(JSON.parse(read('package.json')).version,'4.6.10');
-  assert.match(read('lib/app-version.ts'),/APP_VERSION = "4\.6\.10"/);
-  assert.match(read('lib/app-version.ts'),/Dedicated Debts & Family Funds UX|Accounts Redeclaration Deploy Hotfix/);
+  assert.equal(JSON.parse(read('package.json')).version,'4.6.11');
+  assert.match(read('lib/app-version.ts'),/APP_VERSION = "4\.6\.11"/);
+  assert.match(read('lib/app-version.ts'),/Dedicated Debts & Family Funds UX|Accounts Redeclaration Deploy Hotfix|Family Opening Balance & Dashboard Privacy/);
   assert.deepEqual(dirs(),['accounts','categories','debts','funds','overview','portfolio','reports','settings','transactions']);
-  assert.equal(readdirSync(join(root,'supabase/migrations')).filter(f=>f.endsWith('.sql')).length,36);
+  assert.equal(readdirSync(join(root,'supabase/migrations')).filter(f=>f.endsWith('.sql')).length,37);
   assert.ok(existsSync(join(root,'app/(dashboard)/debts/page.tsx')));
   assert.ok(existsSync(join(root,'app/(dashboard)/funds/page.tsx')));
 });
@@ -59,6 +59,6 @@ test('Existing financial actions now redirect to independent modules with unchan
   assert.match(debt,/return `\/debts\?/);
   assert.match(fund,/redirect\(`\/funds\?/);
   for(const rpc of ['personal_debt_create_v467','personal_debt_repay_v467','personal_debt_update_v467']) assert.ok(debt.includes(`rpc("${rpc}"`));
-  for(const rpc of ['family_fund_create_v466','family_fund_transfer_v466','family_fund_update_v466']) assert.ok(fund.includes(`rpc("${rpc}"`));
+  for(const rpc of ['family_fund_create_v4611','family_fund_transfer_v466','family_fund_update_v466']) assert.ok(fund.includes(`rpc("${rpc}"`));
   assert.doesNotMatch(read('DEPLOY_V4.6.9.md'),/run new SQL|tạo migration mới/i);
 });
