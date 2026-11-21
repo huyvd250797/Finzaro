@@ -8,11 +8,11 @@ const read = (file) => readFileSync(join(root, file), "utf8");
 
 test("V4.6.9 version is consistent in runtime, package, docs and release metadata", () => {
   const pkg = JSON.parse(read("package.json"));
-  assert.equal(pkg.version, "4.6.9");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.6\.9"/);
-  assert.match(read("lib/app-version.ts"), /Portfolio UX & Snapshot Fix|Portfolio Mobile Layout & Save Feedback|Family Savings Fund Management|Personal Lending & Borrowing Management|Dedicated Debts & Family Funds UX/);
-  assert.match(read("README.md"), /Current release: Finzaro V4\.6\.9/);
-  assert.match(read("CHANGELOG.md"), /^## V4\.6\.9/m);
+  assert.equal(pkg.version, "4.6.10");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.6\.10"/);
+  assert.match(read("lib/app-version.ts"), /Portfolio UX & Snapshot Fix|Portfolio Mobile Layout & Save Feedback|Family Savings Fund Management|Personal Lending & Borrowing Management|Dedicated Debts & Family Funds UX|Accounts Redeclaration Deploy Hotfix/);
+  assert.match(read("README.md"), /Current release: Finzaro V4\.6\.10/);
+  assert.match(read("CHANGELOG.md"), /^## V4\.6\.10/m);
   assert.match(read("DEPLOY_V4.6.4.md"), /Migration bắt buộc/i);
 });
 

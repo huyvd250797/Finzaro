@@ -1,3 +1,9 @@
+## V4.6.10 — Accounts Redeclaration Deploy Hotfix (2026-11-21)
+- Khắc phục lỗi deploy TypeScript **TS2451** tại `app/(dashboard)/accounts/page.tsx`: chỉ khai báo một lần `defaultMeta`, `activeAccounts` và `balances`; loại bỏ hai biến dư `regularAccounts`/`familyAccounts` không được sử dụng.
+- Giữ nguyên 9 module, Công nợ, Quỹ gia đình, full-screen modal và card Dashboard của V4.6.9.
+- Thêm bài kiểm thử hồi quy để phát hiện khai báo trùng biến top-level trong hàm `AccountsPage`.
+- **Không có migration mới**; không thay đổi schema, RPC hoặc dữ liệu tài chính.
+
 ## V4.6.9 — Dedicated Debts & Family Funds UX (2026-11-21)
 - Công nợ và Quỹ tiết kiệm gia đình được tách khỏi màn hình Tài khoản & Ví thành hai module riêng `/debts` và `/funds` — tổng cộng **9 module**.
 - Thêm điều hướng trực tiếp ở sidebar desktop, menu **Thêm** mobile, liên kết từ Tài khoản & Ví.

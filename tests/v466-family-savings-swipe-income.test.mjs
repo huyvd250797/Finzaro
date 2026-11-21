@@ -50,9 +50,9 @@ test('V4.6.9 keeps failing income edits in the sheet with visible errors and pen
 });
 
 test('V4.6.9 release has seven modules and the additive one-file migration',()=>{
-  assert.equal(JSON.parse(read('package.json')).version,'4.6.9');
-  assert.match(read('lib/app-version.ts'),/Family Savings Fund Management|Personal Lending & Borrowing Management|Dedicated Debts & Family Funds UX/);
-  assert.match(read('CHANGELOG.md'),/^## V4\.6\.9/);
+  assert.equal(JSON.parse(read('package.json')).version,'4.6.10');
+  assert.match(read('lib/app-version.ts'),/Family Savings Fund Management|Personal Lending & Borrowing Management|Dedicated Debts & Family Funds UX|Accounts Redeclaration Deploy Hotfix/);
+  assert.match(read('CHANGELOG.md'),/^## V4\.6\.10/);
   assert.equal(readdirSync(join(root,'supabase/migrations')).filter(x=>x.endsWith('.sql')).length,36);
   assert.match(read('DEPLOY_V4.6.9.md'),/migration/);
 });

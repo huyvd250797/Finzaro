@@ -106,12 +106,7 @@ export default async function AccountsPage({ searchParams }: { searchParams: Sea
   const defaultCurrency = preferences?.currency_code ?? "VND";
   const defaultMeta = currencyMeta(currencies, defaultCurrency);
   const activeAccounts = accounts.filter((item) => !item.is_archived);
-  const regularAccounts = activeAccounts.filter((item)=>["bank","cash","ewallet"].includes(item.account_type) && item.currency_code === "VND");
-  const familyAccounts = activeAccounts.filter((item)=>item.account_type === "family_savings" && item.currency_code === "VND");
-  const balances = familyBalanceTotals(accounts,defaultCurrency);
-  const defaultMeta = currencyMeta(currencies,defaultCurrency);
-  const activeAccounts = accounts.filter((item)=>!item.is_archived);
-  const balances = familyBalanceTotals(accounts,defaultCurrency);
+  const balances = familyBalanceTotals(accounts, defaultCurrency);
   const totalDefaultMinor = balances.available;
   const familySavingsMinor = balances.reserved;
   const totalManagedMinor = balances.managed;

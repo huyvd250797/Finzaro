@@ -58,10 +58,10 @@ test('V4.6.9 save feedback stays visible and disables repeat submission in a she
 });
 
 test('V4.6.9 retains seven modules, unchanged SQL migration count and no scheduled price sync',()=>{
-  assert.equal(JSON.parse(read('package.json')).version,'4.6.9');
-  assert.match(read('lib/app-version.ts'),/APP_VERSION = "4\.6\.9"/);
-  assert.match(read('README.md'),/Current release: Finzaro V4\.6\.9/);
-  assert.match(read('CHANGELOG.md'),/^## V4\.6\.9/);
+  assert.equal(JSON.parse(read('package.json')).version,'4.6.10');
+  assert.match(read('lib/app-version.ts'),/APP_VERSION = "4\.6\.10"/);
+  assert.match(read('README.md'),/Current release: Finzaro V4\.6\.10/);
+  assert.match(read('CHANGELOG.md'),/^## V4\.6\.10/);
   assert.equal(readdirSync(join(root,'supabase/migrations')).filter(f=>f.endsWith('.sql')).length,36);
   assert.match(read('DEPLOY_V4.6.5.md'),/Không có migration mới/);
   assert.doesNotMatch(read('DEPLOY_V4.6.9.md'),/cron\.schedule/);

@@ -8,9 +8,9 @@ const read=(p)=>readFileSync(join(root,p),'utf8');
 const dirs=()=>readdirSync(join(root,'app/(dashboard)'),{withFileTypes:true}).filter(x=>x.isDirectory()).map(x=>x.name).sort();
 
 test('V4.6.9 introduces two independent modules without altering current Supabase schema',()=>{
-  assert.equal(JSON.parse(read('package.json')).version,'4.6.9');
-  assert.match(read('lib/app-version.ts'),/APP_VERSION = "4\.6\.9"/);
-  assert.match(read('lib/app-version.ts'),/Dedicated Debts & Family Funds UX/);
+  assert.equal(JSON.parse(read('package.json')).version,'4.6.10');
+  assert.match(read('lib/app-version.ts'),/APP_VERSION = "4\.6\.10"/);
+  assert.match(read('lib/app-version.ts'),/Dedicated Debts & Family Funds UX|Accounts Redeclaration Deploy Hotfix/);
   assert.deepEqual(dirs(),['accounts','categories','debts','funds','overview','portfolio','reports','settings','transactions']);
   assert.equal(readdirSync(join(root,'supabase/migrations')).filter(f=>f.endsWith('.sql')).length,36);
   assert.ok(existsSync(join(root,'app/(dashboard)/debts/page.tsx')));

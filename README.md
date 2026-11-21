@@ -1,6 +1,8 @@
-# Finzaro V4.6.9 — Dedicated Debts & Family Funds UX
+# Finzaro V4.6.10 — Accounts Redeclaration Deploy Hotfix
 
-> **Current release: Finzaro V4.6.9 — Dedicated Debts & Family Funds UX.** Tách **Công nợ** (`/debts`) và **Quỹ gia đình** (`/funds`) thành hai module riêng trong điều hướng desktop và mục **Thêm** trên mobile. Tạo, sửa, giải ngân/thu hồi nợ và gửi/rút quỹ đều mở trong modal toàn màn hình trên điện thoại, không còn form mở rộng bên dưới card. Bổ sung hai card tại Dashboard với số dư quỹ và công nợ phải thu/phải trả. Dữ liệu và RPC V4.6.6/V4.6.7 giữ nguyên, **không có migration mới**. Xem [`DEPLOY_V4.6.9.md`](DEPLOY_V4.6.9.md).
+> **Current release: Finzaro V4.6.10 — Accounts Redeclaration Deploy Hotfix.** Sửa lỗi `TS2451` do khai báo trùng `defaultMeta`, `activeAccounts`, `balances` tại `app/(dashboard)/accounts/page.tsx`; bỏ các biến dư không sử dụng. Giữ nguyên 9 module, Công nợ, Quỹ gia đình, form toàn màn hình và Dashboard. **Không có migration mới.** Xem [`DEPLOY_V4.6.10.md`](DEPLOY_V4.6.10.md).
+
+> **Previous release: Finzaro V4.6.9 — Dedicated Debts & Family Funds UX.** Tách **Công nợ** (`/debts`) và **Quỹ gia đình** (`/funds`) thành hai module riêng trong điều hướng desktop và mục **Thêm** trên mobile. Tạo, sửa, giải ngân/thu hồi nợ và gửi/rút quỹ đều mở trong modal toàn màn hình trên điện thoại, không còn form mở rộng bên dưới card. Bổ sung hai card tại Dashboard với số dư quỹ và công nợ phải thu/phải trả. Dữ liệu và RPC V4.6.6/V4.6.7 giữ nguyên, **không có migration mới**. Xem [`DEPLOY_V4.6.9.md`](DEPLOY_V4.6.9.md).
 
 > **Previous release: Finzaro V4.6.8 — Personal Debt Deploy Hotfix.** Sửa lỗi ESLint `react-hooks/set-state-in-effect` tại `RequestKeyInput`, chuyển sang input ẩn không điều khiển và gán request key khi submit; giữ idempotency chống gửi trùng. Không đổi nghiệp vụ hay database, **không có migration mới**. Xem [DEPLOY_V4.6.8.md](DEPLOY_V4.6.8.md).
 
