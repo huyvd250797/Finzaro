@@ -18,10 +18,10 @@ const page=read("app/(dashboard)/portfolio/page.tsx");
 const sql=read("supabase/migrations/20261120070000_portfolio_asset_edit_v461.sql").toLowerCase();
 
 test("V4.6.1 has correct release metadata, no obsolete modules, and one additive migration",()=>{
-  assert.equal(JSON.parse(read("package.json")).version,"4.6.11");
-  assert.match(read("lib/app-version.ts"),/APP_VERSION = "4\.6\.11"/);
-  assert.match(read("lib/app-version.ts"),/Asset Management UX & Edit|Market Price Reliability Fix|Market Price Reliability Deploy Fix|Portfolio UX & Snapshot Fix|Portfolio Mobile Layout & Save Feedback|Family Savings Fund Management|Personal Lending & Borrowing Management|Dedicated Debts & Family Funds UX|Accounts Redeclaration Deploy Hotfix|Family Opening Balance & Dashboard Privacy/);
-  assert.equal(readdirSync(join(root,"supabase/migrations")).filter(x=>x.endsWith(".sql")).length,37);
+  assert.equal(JSON.parse(read("package.json")).version,"4.6.12");
+  assert.match(read("lib/app-version.ts"),/APP_VERSION = "4\.6\.12"/);
+  assert.match(read("lib/app-version.ts"),/Asset Management UX & Edit|Market Price Reliability Fix|Market Price Reliability Deploy Fix|Portfolio UX & Snapshot Fix|Portfolio Mobile Layout & Save Feedback|Family Savings Fund Management|Personal Lending & Borrowing Management|Dedicated Debts & Family Funds UX|Accounts Redeclaration Deploy Hotfix|Keyboard-Safe Forms & Family Fund Deletion/);
+  assert.equal(readdirSync(join(root,"supabase/migrations")).filter(x=>x.endsWith(".sql")).length,38);
   assert.deepEqual(readdirSync(join(root,"app/(dashboard)"),{withFileTypes:true}).filter(d=>d.isDirectory()).map(d=>d.name).sort(),["accounts","categories","debts","funds","overview","portfolio","reports","settings","transactions"]);
 });
 

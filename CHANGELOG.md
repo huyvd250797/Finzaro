@@ -1,3 +1,11 @@
+## V4.6.12 — Keyboard-Safe Forms & Family Fund Deletion (2026-11-21)
+
+- Fix iOS keyboard overlay on full-screen family/debt forms: responsive height bound to the actual VisualViewport; remove rigid 100dvh sizing, including on iPhone PWA.
+- Scroll focused inputs, textareas, and comboboxes into the visible region above the keyboard in sheets and in the dashboard page.
+- Avoid unwanted iOS input zoom with >=16px font size; keep modal scrolling independent from the background page.
+- Add **Xóa quỹ** with explicit confirmation and user-scoped SECURITY DEFINER RPC. Untouched funds are deleted; zero-balance funds with history are archived; funded active history is protected.
+- New migration: `20261121220000_family_fund_delete_v4612.sql`. No changes to transfers, receipts or spending rules.
+
 ## V4.6.11 — Family Opening Balance & Dashboard Privacy (2026-11-21)
 
 - Quỹ gia đình: số dư đầu kỳ nhập ngay khi tạo hoặc một lần cho quỹ chưa phát sinh giao dịch; không tự tạo Thu/Chi/Chuyển.

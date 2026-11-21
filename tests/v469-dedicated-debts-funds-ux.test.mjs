@@ -8,11 +8,11 @@ const read=(p)=>readFileSync(join(root,p),'utf8');
 const dirs=()=>readdirSync(join(root,'app/(dashboard)'),{withFileTypes:true}).filter(x=>x.isDirectory()).map(x=>x.name).sort();
 
 test('V4.6.9 introduces two independent modules without altering current Supabase schema',()=>{
-  assert.equal(JSON.parse(read('package.json')).version,'4.6.11');
-  assert.match(read('lib/app-version.ts'),/APP_VERSION = "4\.6\.11"/);
-  assert.match(read('lib/app-version.ts'),/Dedicated Debts & Family Funds UX|Accounts Redeclaration Deploy Hotfix|Family Opening Balance & Dashboard Privacy/);
+  assert.equal(JSON.parse(read('package.json')).version,'4.6.12');
+  assert.match(read('lib/app-version.ts'),/APP_VERSION = "4\.6\.12"/);
+  assert.match(read('lib/app-version.ts'),/Dedicated Debts & Family Funds UX|Accounts Redeclaration Deploy Hotfix|Keyboard-Safe Forms & Family Fund Deletion/);
   assert.deepEqual(dirs(),['accounts','categories','debts','funds','overview','portfolio','reports','settings','transactions']);
-  assert.equal(readdirSync(join(root,'supabase/migrations')).filter(f=>f.endsWith('.sql')).length,37);
+  assert.equal(readdirSync(join(root,'supabase/migrations')).filter(f=>f.endsWith('.sql')).length,38);
   assert.ok(existsSync(join(root,'app/(dashboard)/debts/page.tsx')));
   assert.ok(existsSync(join(root,'app/(dashboard)/funds/page.tsx')));
 });
@@ -28,7 +28,7 @@ test('Both new modules are discoverable on desktop and iPhone More menu',()=>{
 test('Personal debt forms open fullscreen dialogs instead of extending cards',()=>{
   const source=read('components/personal-debt-panel.tsx');
   assert.match(source,/import \{ BottomSheet \}/);
-  assert.match(source,/label="Tạo khoản công nợ" panelClassName="!h-\[100dvh\]/);
+  assert.match(source,/label="Tạo khoản công nợ" panelClassName="fin-fullscreen-sheet/);
   assert.match(source,/label=\{`Thanh toán \$\{debt\.title\}`\}/);
   assert.match(source,/label=\{`Sửa công nợ \$\{debt\.title\}`\}/);
   assert.match(source,/onSubmit=\{stampKey\}/);
@@ -38,7 +38,7 @@ test('Personal debt forms open fullscreen dialogs instead of extending cards',()
 
 test('Family saving create, edit, transfer use fullscreen mobile modals',()=>{
   const source=read('components/family-savings-panel.tsx');
-  assert.match(source,/label="Tạo quỹ gia đình" panelClassName="!h-\[100dvh\]/);
+  assert.match(source,/label="Tạo quỹ gia đình" panelClassName="fin-fullscreen-sheet/);
   assert.match(source,/label=\{mode==="deposit"\?"Gửi tiền vào quỹ":"Rút tiền khỏi quỹ"\}/);
   assert.match(source,/label=\{`Sửa \$\{account\.name\}`\}/);
   assert.match(source,/PendingSubmitButton idleLabel="Tạo quỹ tiết kiệm"/);

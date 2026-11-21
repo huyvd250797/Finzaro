@@ -43,8 +43,8 @@ const accounts = [{ id: "wallet", account_type: "bank", currency_code: "VND", is
 
 test("V4.5.0 release is versioned, preserves strict deployment gate and six modules", () => {
   const pkg = JSON.parse(read("package.json"));
-  assert.equal(pkg.version, "4.6.11");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.6\.11"/);
+  assert.equal(pkg.version, "4.6.12");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.6\.12"/);
   assert.equal(pkg.scripts.check, "npm run lint && npm run typecheck && npm run test && npm run build");
   assert.deepEqual(readdirSync(join(root, "app/(dashboard)"), { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name).sort(), ["accounts", "categories", "debts", "funds", "overview", "portfolio", "reports", "settings", "transactions"]);
 });
@@ -125,7 +125,7 @@ test("V4.5.0 quick categories show persisted icon and original mapped color in s
   assert.match(code, /overflow-x-auto/);
 });
 
-test("V4.6.11 Dashboard amounts are masked globally via toolbar eye", () => {
+test("V4.6.12 Dashboard amounts are masked globally via toolbar eye", () => {
   const source = read("components/dashboard-money.tsx");
   const page = read("app/(dashboard)/overview/page.tsx");
   const header = read("components/app-header.tsx");

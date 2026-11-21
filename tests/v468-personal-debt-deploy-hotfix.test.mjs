@@ -18,11 +18,11 @@ test('V4.6.9 personal-debt request key is stamped on submit without effect-drive
 });
 
 test('V4.6.9 package, app, and changelog versions agree and debt SQL remains unchanged',()=>{
-  assert.equal(JSON.parse(read('package.json')).version,'4.6.11');
-  assert.match(read('lib/app-version.ts'),/APP_VERSION = "4\.6\.11"/);
-  assert.match(read('lib/app-version.ts'),/Dedicated Debts & Family Funds UX|Accounts Redeclaration Deploy Hotfix|Family Opening Balance & Dashboard Privacy/);
-  assert.match(read('CHANGELOG.md'),/^## V4\.6\.11/);
+  assert.equal(JSON.parse(read('package.json')).version,'4.6.12');
+  assert.match(read('lib/app-version.ts'),/APP_VERSION = "4\.6\.12"/);
+  assert.match(read('lib/app-version.ts'),/Dedicated Debts & Family Funds UX|Accounts Redeclaration Deploy Hotfix|Keyboard-Safe Forms & Family Fund Deletion/);
+  assert.match(read('CHANGELOG.md'),/^## V4\.6\.12/);
   assert.match(read('DEPLOY_V4.6.9.md'),/no new migration/i);
-  assert.equal(readdirSync(join(root,'supabase/migrations')).filter(n=>n.endsWith('.sql')).length,37);
+  assert.equal(readdirSync(join(root,'supabase/migrations')).filter(n=>n.endsWith('.sql')).length,38);
   assert.ok(existsSync(join(root,'supabase/migrations/20261121150000_personal_lending_borrowing_v467.sql')));
 });

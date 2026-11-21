@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowDownLeft, ArrowUpRight, PiggyBank, Plus, SlidersHorizontal, X } from "lucide-react";
-import { createFamilyFundAction, transferFamilyFundAction, updateFamilyFundAction, declareFamilyFundOpeningAction } from "@/features/accounts/family-fund-actions";
+import { ArrowDownLeft, ArrowUpRight, PiggyBank, Plus, SlidersHorizontal, Trash2, AlertTriangle, X } from "lucide-react";
+import { createFamilyFundAction, transferFamilyFundAction, updateFamilyFundAction, declareFamilyFundOpeningAction, deleteFamilyFundAction } from "@/features/accounts/family-fund-actions";
 import { PendingSubmitButton } from "@/components/pending-submit-button";
 import { BottomSheet } from "@/components/bottom-sheet";
 import { MoneyCalculatorInput } from "@/components/money-calculator-input";
@@ -30,6 +30,7 @@ function FundCard({account,detail,regularAccounts,currentDate}:{account:FamilyAc
   const [mode,setMode]=useState<"deposit"|"withdraw"|null>(null);
   const [editing,setEditing]=useState(false);
   const [opening,setOpening]=useState(false);
+  const [confirmDelete,setConfirmDelete]=useState(false);
   const target=Number(detail?.target_amount_minor??0);
   const value=Number(account.current_balance_minor);
   const progress=target>0?Math.min(100,Math.max(0,value/target*100)):0;
@@ -45,10 +46,20 @@ function FundCard({account,detail,regularAccounts,currentDate}:{account:FamilyAc
     </div>
     <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1">
       <button type="button" onClick={()=>setEditing(true)} className="inline-flex min-h-10 items-center gap-2 text-xs font-bold text-[var(--muted-foreground)]"><SlidersHorizontal className="size-4"/>Sửa thông tin và mục tiêu quỹ</button>
+      <button type="button" onClick={()=>setConfirmDelete(true)} className="inline-flex min-h-10 items-center gap-1.5 text-xs font-bold text-rose-500"><Trash2 className="size-4"/>Xóa quỹ</button>
       {value===0&&<button type="button" onClick={()=>setOpening(true)} className="inline-flex min-h-10 items-center gap-1.5 text-xs font-extrabold text-[var(--primary)]"><Plus className="size-4"/>Khai báo số dư đầu kỳ</button>}
     </div>
 
-    {opening&&<BottomSheet open={opening} onClose={()=>setOpening(false)} label="Khai báo số dư đầu kỳ" panelClassName="!h-[100dvh] !max-h-[100dvh] !rounded-none sm:!max-w-[720px] sm:!rounded-t-3xl">
+    {confirmDelete&&<BottomSheet open={confirmDelete} onClose={()=>setConfirmDelete(false)} label={`Xóa quỹ ${account.name}`} panelClassName="fin-fullscreen-sheet !rounded-none sm:!max-w-[600px] sm:!rounded-t-3xl">
+      <form action={deleteFamilyFundAction} className="flex min-h-full flex-col gap-4 px-4 pb-[max(env(safe-area-inset-bottom),20px)] pt-2 sm:px-6">
+        <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-[var(--border)] bg-[var(--card)] py-3"><h3 className="text-xl font-black">Xóa quỹ gia đình</h3><button type="button" onClick={()=>setConfirmDelete(false)} aria-label="Đóng xác nhận xóa quỹ" className="grid size-10 shrink-0 place-items-center rounded-xl border border-[var(--border)]"><X className="size-4"/></button></div>
+        <div className="flex items-start gap-3 rounded-2xl border border-rose-500/30 bg-rose-500/5 p-4"><AlertTriangle className="mt-0.5 size-5 shrink-0 text-rose-500"/><div className="space-y-2"><p className="font-bold">{account.name}</p><p className="text-sm">Số dư đang quản lý: <strong className="whitespace-nowrap">{formatMinorMoney(value,"VND",0)}</strong></p><p className="text-xs leading-relaxed text-[var(--muted-foreground)]">Quỹ chưa có giao dịch sẽ được xóa vĩnh viễn, bao gồm số dư đầu kỳ đã khai báo. Nếu quỹ đã có lịch sử giao dịch, cần rút hết tiền trước: hệ thống sẽ lưu trữ quỹ, không xóa lịch sử và không làm thay đổi Thu/Chi.</p></div></div>
+        <input type="hidden" name="fund_account_id" value={account.id}/>
+        <label className="flex items-start gap-3 rounded-xl border border-[var(--border)] p-3 text-sm"><input type="checkbox" name="confirmed" value="yes" required className="mt-1 size-4 accent-rose-500"/><span>Tôi xác nhận muốn xóa quỹ này và đã kiểm tra số dư cùng lịch sử giao dịch.</span></label>
+        <div className="sticky bottom-0 mt-auto border-t border-[var(--border)] bg-[var(--card)] py-3"><PendingSubmitButton idleLabel="Xác nhận xóa quỹ" pendingLabel="Đang xử lý..." className="w-full justify-center rounded-xl bg-rose-600 px-4 py-3 font-bold text-white disabled:opacity-60"/></div>
+      </form>
+    </BottomSheet>}
+    {opening&&<BottomSheet open={opening} onClose={()=>setOpening(false)} label="Khai báo số dư đầu kỳ" panelClassName="fin-fullscreen-sheet !rounded-none sm:!max-w-[720px] sm:!rounded-t-3xl">
       <form action={declareFamilyFundOpeningAction} className="flex min-h-full flex-col gap-4 px-4 pb-[max(env(safe-area-inset-bottom),20px)] pt-2 sm:px-6">
         <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-[var(--border)] bg-[var(--card)] py-3"><div><p className="text-xs font-bold text-[var(--primary)]">{account.name}</p><h3 className="mt-1 text-xl font-black">Số dư có trước khi dùng app</h3></div><button type="button" onClick={()=>setOpening(false)} aria-label="Đóng số dư đầu kỳ" className="grid size-10 shrink-0 place-items-center rounded-xl border border-[var(--border)]"><X className="size-4"/></button></div>
         <input type="hidden" name="fund_account_id" value={account.id}/>
@@ -57,7 +68,7 @@ function FundCard({account,detail,regularAccounts,currentDate}:{account:FamilyAc
         <div className="sticky bottom-0 mt-auto border-t border-[var(--border)] bg-[var(--card)] py-3"><PendingSubmitButton idleLabel="Xác nhận số dư đầu kỳ" pendingLabel="Đang ghi nhận..." className="fin-primary-btn w-full"/></div>
       </form>
     </BottomSheet>}
-    {mode!==null&&<BottomSheet open={mode!==null} onClose={()=>setMode(null)} label={mode==="deposit"?"Gửi tiền vào quỹ":"Rút tiền khỏi quỹ"} panelClassName="!h-[100dvh] !max-h-[100dvh] !rounded-none sm:!max-w-[720px] sm:!rounded-t-3xl">
+    {mode!==null&&<BottomSheet open={mode!==null} onClose={()=>setMode(null)} label={mode==="deposit"?"Gửi tiền vào quỹ":"Rút tiền khỏi quỹ"} panelClassName="fin-fullscreen-sheet !rounded-none sm:!max-w-[720px] sm:!rounded-t-3xl">
       {mode!==null&&<form action={transferFamilyFundAction} key={`${account.id}-${mode}`} className="flex min-h-full flex-col gap-4 px-4 pb-[max(env(safe-area-inset-bottom),20px)] pt-2 sm:px-6">
         <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-[var(--border)] bg-[var(--card)] py-3"><div><p className="text-xs font-bold text-[var(--primary)]">{account.name}</p><h3 className="mt-1 text-xl font-black">{mode==="deposit"?"Gửi tiền vào quỹ":"Rút tiền khỏi quỹ"}</h3></div><button type="button" onClick={()=>setMode(null)} aria-label="Đóng chuyển quỹ" className="grid size-10 shrink-0 place-items-center rounded-xl border border-[var(--border)]"><X className="size-4"/></button></div>
         <input type="hidden" name="fund_account_id" value={account.id}/><input type="hidden" name="mode" value={mode}/>
@@ -68,7 +79,7 @@ function FundCard({account,detail,regularAccounts,currentDate}:{account:FamilyAc
         <div className="sticky bottom-0 mt-auto border-t border-[var(--border)] bg-[var(--card)] py-3"><PendingSubmitButton idleLabel={mode==="deposit"?"Chuyển vào quỹ":"Rút khỏi quỹ"} pendingLabel="Đang xử lý..." className="fin-primary-btn w-full"/></div>
       </form>}
     </BottomSheet>}
-    {editing&&<BottomSheet open={editing} onClose={()=>setEditing(false)} label={`Sửa ${account.name}`} panelClassName="!h-[100dvh] !max-h-[100dvh] !rounded-none sm:!max-w-[720px] sm:!rounded-t-3xl">
+    {editing&&<BottomSheet open={editing} onClose={()=>setEditing(false)} label={`Sửa ${account.name}`} panelClassName="fin-fullscreen-sheet !rounded-none sm:!max-w-[720px] sm:!rounded-t-3xl">
       {editing&&<form action={updateFamilyFundAction} className="flex min-h-full flex-col gap-4 px-4 pb-[max(env(safe-area-inset-bottom),20px)] pt-2 sm:px-6">
         <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-[var(--border)] bg-[var(--card)] py-3"><h3 className="text-xl font-black">Sửa quỹ gia đình</h3><button type="button" onClick={()=>setEditing(false)} aria-label="Đóng sửa quỹ" className="grid size-10 shrink-0 place-items-center rounded-xl border border-[var(--border)]"><X className="size-4"/></button></div>
         <input type="hidden" name="account_id" value={account.id}/>
@@ -89,7 +100,7 @@ export function FamilySavingsPanel({fundAccounts,regularAccounts,details,current
   const detailMap=new Map(details.map(d=>[d.account_id,d]));
   return <section id="family-savings" className="scroll-mt-24 rounded-[24px] border border-[var(--border)] bg-[var(--card)] p-4 sm:p-5">
     <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs font-black uppercase tracking-[.12em] text-[var(--primary)]">QUỸ DÀNH RIÊNG</p><h2 className="mt-1 text-lg font-black">Tiết kiệm gia đình</h2><p className="mt-1 text-xs text-[var(--muted-foreground)]">Tách khỏi số dư chi tiêu, vẫn thuộc tổng tiền quản lý.</p></div><button type="button" onClick={()=>setShowCreate(true)} aria-expanded={showCreate} className="fin-secondary-btn"><Plus className="size-4"/>Tạo quỹ</button></div>
-    {showCreate&&<BottomSheet open={showCreate} onClose={()=>setShowCreate(false)} label="Tạo quỹ gia đình" panelClassName="!h-[100dvh] !max-h-[100dvh] !rounded-none sm:!max-w-[720px] sm:!rounded-t-3xl">
+    {showCreate&&<BottomSheet open={showCreate} onClose={()=>setShowCreate(false)} label="Tạo quỹ gia đình" panelClassName="fin-fullscreen-sheet !rounded-none sm:!max-w-[720px] sm:!rounded-t-3xl">
       {showCreate&&<form action={createFamilyFundAction} className="flex min-h-full flex-col gap-4 px-4 pb-[max(env(safe-area-inset-bottom),20px)] pt-2 sm:px-6">
         <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-[var(--border)] bg-[var(--card)] py-3"><div><p className="text-xs font-bold text-[var(--primary)]">QUỸ DÀNH RIÊNG</p><h3 className="mt-1 text-xl font-black">Tạo quỹ gia đình</h3></div><button type="button" onClick={()=>setShowCreate(false)} aria-label="Đóng tạo quỹ" className="grid size-10 shrink-0 place-items-center rounded-xl border border-[var(--border)]"><X className="size-4"/></button></div>
         <FundFields/>

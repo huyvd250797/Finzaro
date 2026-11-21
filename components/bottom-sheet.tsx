@@ -59,15 +59,16 @@ export function BottomSheet({ open, onClose, children, label, panelClassName, ov
     let frame = 0;
     let secondFrame = 0;
     let afterKeyboard = 0;
+    let settleKeyboard = 0;
     let keyboardWasVisible = false;
     const isEditable = (node: Element | null): node is HTMLElement => Boolean(node && (
-      node.matches('input:not([type="hidden"]):not([readonly]), textarea:not([readonly]), [contenteditable="true"]')
+      node.matches('input:not([type="hidden"]):not([readonly]):not([disabled]), textarea:not([readonly]):not([disabled]), select:not([disabled]), [role="combobox"], [contenteditable="true"]')
     ));
     const syncViewport = () => {
       const focused = document.activeElement;
       const focusInside = focused instanceof HTMLElement && overlay.contains(focused) && isEditable(focused);
       const viewportHeight = viewport?.height ?? window.innerHeight;
-      const keyboardShrink = window.innerHeight - viewportHeight > 160;
+      const keyboardShrink = window.innerHeight - viewportHeight > 100;
       const keyboardVisible = keyboardShrink && (focusInside || keyboardWasVisible);
       keyboardWasVisible = keyboardVisible;
       if (keyboardVisible && viewport) {
@@ -75,14 +76,17 @@ export function BottomSheet({ open, onClose, children, label, panelClassName, ov
         overlay.style.top = `${Math.round(y)}px`;
         overlay.style.height = `${Math.round(viewportHeight)}px`;
         overlay.style.setProperty("--fin-visual-height", `${Math.round(viewportHeight)}px`);
+        overlay.dataset.finKeyboard = "true";
       } else {
         // Do NOT reposition on rubber-band scroll or after save/delete.
         overlay.style.removeProperty("top");
         overlay.style.removeProperty("height");
         overlay.style.removeProperty("--fin-visual-height");
+        delete overlay.dataset.finKeyboard;
       }
       if (focusInside) {
         window.cancelAnimationFrame(frame);
+        window.cancelAnimationFrame(secondFrame);
         frame = window.requestAnimationFrame(() => {
           secondFrame = window.requestAnimationFrame(() => {
             if (focused.isConnected) revealTransactionFormTarget(focused);
@@ -96,7 +100,10 @@ export function BottomSheet({ open, onClose, children, label, panelClassName, ov
       // Keyboard animation happens after focusin on Safari. Re-check at the
       // end of the animation even on devices that omit a viewport resize.
       window.clearTimeout(afterKeyboard);
-      afterKeyboard = window.setTimeout(syncViewport, 300);
+      // iOS viewport updates can land before or after the keyboard animation.
+      afterKeyboard = window.setTimeout(syncViewport, 140);
+      window.clearTimeout(settleKeyboard);
+      settleKeyboard = window.setTimeout(syncViewport, 380);
     };
     syncViewport();
     viewport?.addEventListener("resize", syncViewport);
@@ -111,9 +118,11 @@ export function BottomSheet({ open, onClose, children, label, panelClassName, ov
       window.cancelAnimationFrame(frame);
       window.cancelAnimationFrame(secondFrame);
       window.clearTimeout(afterKeyboard);
+      window.clearTimeout(settleKeyboard);
       overlay.style.removeProperty("top");
       overlay.style.removeProperty("height");
       overlay.style.removeProperty("--fin-visual-height");
+      delete overlay.dataset.finKeyboard;
     };
   }, [open, portalReady]);
 

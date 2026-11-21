@@ -8,8 +8,8 @@ const file = (path) => readFileSync(join(root, path), "utf8");
 const css = file("app/globals.css");
 
 test("V4.0.2 release preserves 6 modules, finance RPCs and database semantics", () => {
-  assert.equal(JSON.parse(file("package.json")).version, "4.6.11");
-  assert.match(file("lib/app-version.ts"), /APP_VERSION = "4\.6\.11"/);
+  assert.equal(JSON.parse(file("package.json")).version, "4.6.12");
+  assert.match(file("lib/app-version.ts"), /APP_VERSION = "4\.6\.12"/);
   assert.deepEqual(readdirSync(join(root,"app/(dashboard)"), { withFileTypes:true })
     .filter((item) => item.isDirectory()).map((item) => item.name).sort(),
     ["accounts", "categories", "debts", "funds", "overview", "portfolio", "reports", "settings", "transactions"]);
@@ -55,7 +55,7 @@ test("focused transaction title stays inside sheet viewport as iPhone keyboard r
   assert.match(sheet, /overlay\.addEventListener\("focusin", onFocus\)/);
   assert.match(sheet, /viewport\?\.addEventListener\("resize", syncViewport\)/);
   assert.match(sheet, /revealTransactionFormTarget\(focused\)/);
-  assert.match(sheet, /window\.setTimeout\(syncViewport, 300\)/);
-  assert.match(focusHelper, /rootRect\.bottom - 28/);
+  assert.match(sheet, /window\.setTimeout\(syncViewport, 380\)/);
+  assert.match(focusHelper, /reserveBottom/);
   assert.match(entry, /name="title" className="fin-input" required/);
 });

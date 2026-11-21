@@ -1,4 +1,6 @@
-# Finzaro V4.6.11 — Family Opening Balance & Dashboard Privacy
+# Finzaro V4.6.12 — Keyboard-Safe Forms & Family Fund Deletion
+
+> **Current release: Finzaro V4.6.12.** Sửa bàn phím che ô nhập trên iPhone bằng VisualViewport và cuộn tự động cho form/modal, bổ sung Xóa quỹ an toàn có xác nhận. **Cần chạy migration V4.6.12** sau V4.6.11. Xem [`DEPLOY_V4.6.12.md`](DEPLOY_V4.6.12.md).
 
 > **Current release: Finzaro V4.6.11.** Khai báo số dư quỹ gia đình đã có trước khi dùng ứng dụng (không tạo giao dịch giả), ẩn/hiện toàn bộ số tiền trên Dashboard qua nút cạnh Dark Mode, thiết kế mới biểu đồ Xu hướng tài chính. **Cần chạy migration V4.6.11** trước khi deploy. Xem [`DEPLOY_V4.6.11.md`](DEPLOY_V4.6.11.md).
 

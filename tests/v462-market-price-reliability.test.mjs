@@ -26,10 +26,10 @@ const quote=(variant,manual_price=null)=>({id:'test',kind:'gold',symbol:'GOLD999
 const html=`<div>Giá vàng ngày: 20/11/2026 10:05:19</div><div>(Đơn vị: ngàn đồng/lượng)</div><table><tr><th>Khu vực</th><th>Loại vàng</th><th>Giá mua</th><th>Giá bán</th></tr><tr><td>Giá vàng nữ trang</td><td>Nhẫn Trơn PNJ 999.9</td><td>127.800</td><td>132.000</td></tr><tr><td>TPHCM</td><td>SJC</td><td>129.200</td><td>134.200</td></tr></table>`;
 
 test('V4.6.9 release retains exact retained modules and additional VCI dependency',()=>{
- assert.equal(JSON.parse(read('package.json')).version,'4.6.11');
+ assert.equal(JSON.parse(read('package.json')).version,'4.6.12');
  assert.equal(JSON.parse(read('package.json')).dependencies['vnstock-js'],'2.0.0');
- assert.match(read('lib/app-version.ts'),/Portfolio UX & Snapshot Fix|Portfolio Mobile Layout & Save Feedback|Family Savings Fund Management|Personal Lending & Borrowing Management|Dedicated Debts & Family Funds UX|Accounts Redeclaration Deploy Hotfix|Family Opening Balance & Dashboard Privacy/);
- assert.equal(readdirSync(join(root,'supabase/migrations')).filter(n=>n.endsWith('.sql')).length,37);
+ assert.match(read('lib/app-version.ts'),/Portfolio UX & Snapshot Fix|Portfolio Mobile Layout & Save Feedback|Family Savings Fund Management|Personal Lending & Borrowing Management|Dedicated Debts & Family Funds UX|Accounts Redeclaration Deploy Hotfix|Keyboard-Safe Forms & Family Fund Deletion/);
+ assert.equal(readdirSync(join(root,'supabase/migrations')).filter(n=>n.endsWith('.sql')).length,38);
  assert.equal(readdirSync(join(root,'app/(dashboard)'),{withFileTypes:true}).filter(x=>x.isDirectory()).length,9);
 });
 test('Shares accept only integer quantities without invalid regex; edit and trade share the same parser',()=>{

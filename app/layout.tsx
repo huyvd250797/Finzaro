@@ -3,6 +3,7 @@ import "./globals.css";
 import { PwaRegister } from "@/components/pwa-register";
 import { AppSplash } from "@/components/app-splash";
 import { PerformanceVitals } from "@/components/performance-vitals";
+import { KeyboardFocusManager } from "@/components/keyboard-focus-manager";
 
 export const metadata: Metadata = {
   title: { default: "Finzaro", template: "%s · Finzaro" },
@@ -54,6 +55,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <AppSplash />
         <PwaRegister />
         <PerformanceVitals />
+        <KeyboardFocusManager />
         {children}
       </body>
     </html>

@@ -27,9 +27,9 @@ const comp = loadTs("features/dashboard/period-comparison.ts", { "@/features/tra
 const tx = (date, flow, amount, currency = "VND", purpose = "standard") => ({ transaction_date: date, transaction_type: flow, amount, currency, transaction_purpose: purpose });
 
 test("V4.5.7 has a consistent version, source, migration and deploy gate", () => {
-  assert.equal(JSON.parse(read("package.json")).version, "4.6.11");
-  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.6\.11"/);
-  assert.match(read("lib/app-version.ts"), /Full Previous Period Comparison|Comparison Icon Alignment Fix|Multi-Asset Portfolio|Asset Management UX & Edit|Market Price Reliability Fix|Market Price Reliability Deploy Fix|Portfolio UX & Snapshot Fix|Portfolio Mobile Layout & Save Feedback|Family Savings Fund Management|Personal Lending & Borrowing Management|Dedicated Debts & Family Funds UX|Accounts Redeclaration Deploy Hotfix|Family Opening Balance & Dashboard Privacy/);
+  assert.equal(JSON.parse(read("package.json")).version, "4.6.12");
+  assert.match(read("lib/app-version.ts"), /APP_VERSION = "4\.6\.12"/);
+  assert.match(read("lib/app-version.ts"), /Full Previous Period Comparison|Comparison Icon Alignment Fix|Multi-Asset Portfolio|Asset Management UX & Edit|Market Price Reliability Fix|Market Price Reliability Deploy Fix|Portfolio UX & Snapshot Fix|Portfolio Mobile Layout & Save Feedback|Family Savings Fund Management|Personal Lending & Borrowing Management|Dedicated Debts & Family Funds UX|Accounts Redeclaration Deploy Hotfix|Keyboard-Safe Forms & Family Fund Deletion/);
   assert.match(read("features/dashboard/snapshot.ts"), /dashboard_period_comparison_v457/);
   assert.match(read("DEPLOY_V4.5.7.md"), /Migration Supabase/);
 });

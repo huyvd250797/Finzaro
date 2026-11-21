@@ -1307,3 +1307,25 @@ html[data-fin-money-privacy="hidden"] .fin-dashboard-page [data-fin-money]:not([
 .fin-trend-frame { background: radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--primary) 6%, transparent), transparent 70%); }
 .fin-trend-group { transition: opacity .2s ease; }
 @media (prefers-reduced-motion:reduce) { .fin-trend-group { transition: none; } }
+
+/* V4.6.12 — Keyboard-safe sheets: sizing is relative to the *visible* overlay,
+   not 100dvh (which remains the layout viewport while iOS keyboard is open). */
+.fin-sheet-panel.fin-fullscreen-sheet {
+  height: 100%;
+  max-height: 100%;
+  min-height: 0;
+}
+.fin-sheet-backdrop[data-fin-keyboard="true"] .fin-sheet-panel {
+  max-height: 100%;
+}
+.fin-fullscreen-sheet .fin-sheet-scroll {
+  min-height: 0;
+  scroll-padding-top: 18px;
+  scroll-padding-bottom: 112px;
+}
+/* iOS Safari zooms text fields under 16px and may move the whole app out of view. */
+@media (pointer: coarse) and (max-width: 767px) {
+  .fin-app-shell :is(input:not([type="hidden"]), textarea, select) {
+    font-size: max(16px, 1rem);
+  }
+}

@@ -31,10 +31,10 @@ test('V4.6.10 accounts page declares its financial summary variables exactly onc
 
 test('V4.6.10 historical deploy hotfix remains documented after release update', () => {
   const packageJson = JSON.parse(read('package.json'));
-  assert.equal(packageJson.version, '4.6.11');
-  assert.match(read('lib/app-version.ts'), /APP_VERSION = "4\.6\.11"/);
-  assert.match(read('lib/app-version.ts'), /Accounts Redeclaration Deploy Hotfix|Family Opening Balance & Dashboard Privacy/);
-  assert.match(read('README.md'), /Current release: Finzaro V4\.6\.11/);
-  assert.match(read('CHANGELOG.md'), /^## V4\.6\.11/);
+  assert.equal(packageJson.version, '4.6.12');
+  assert.match(read('lib/app-version.ts'), /APP_VERSION = "4\.6\.12"/);
+  assert.match(read('lib/app-version.ts'), /Accounts Redeclaration Deploy Hotfix|Keyboard-Safe Forms & Family Fund Deletion/);
+  assert.match(read('README.md'), /Current release: Finzaro V4\.6\.12/);
+  assert.match(read('CHANGELOG.md'), /^## V4\.6\.12/);
   assert.match(read('DEPLOY_V4.6.10.md'), /không cần chạy migration SQL mới/i);
 });

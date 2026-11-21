@@ -27,7 +27,7 @@ function DateText({value}:{value:string|null}){
 function DebtCreate({accounts,today,onCancel}:{accounts:CashAccount[];today:string;onCancel:()=>void}){
   const [direction,setDirection]=useState<DebtDirection>("receivable");
   const [mode,setMode]=useState<"cash"|"existing">("cash");
-  return <BottomSheet open onClose={onCancel} label="Tạo khoản công nợ" panelClassName="!h-[100dvh] !max-h-[100dvh] !rounded-none sm:!max-w-[760px] sm:!rounded-t-3xl">
+  return <BottomSheet open onClose={onCancel} label="Tạo khoản công nợ" panelClassName="fin-fullscreen-sheet !rounded-none sm:!max-w-[760px] sm:!rounded-t-3xl">
     <form action={createPersonalDebtAction} onSubmit={stampKey} className="flex min-h-full flex-col bg-[var(--card)] px-4 pb-[max(env(safe-area-inset-bottom),20px)] pt-2 sm:px-6">
     <RequestKeyInput/>
     <div className="sticky top-0 z-10 mb-5 flex items-center justify-between gap-3 border-b border-[var(--border)] bg-[var(--card)] py-3"><div><p className="text-[11px] font-bold uppercase tracking-wide text-[var(--primary)]">CÔNG NỢ CÁ NHÂN</p><h3 className="mt-1 text-xl font-black">Tạo khoản công nợ</h3></div><button type="button" onClick={onCancel} aria-label="Đóng tạo công nợ" className={secondary}><X className="size-4"/></button></div>
@@ -77,7 +77,7 @@ function DebtCard({debt,events,accounts,today}:{debt:DebtRow;events:DebtEvent[];
       <button type="button" onClick={()=>{setShowPay(v=>!v);setShowEdit(false);}} className="fin-primary-btn text-xs">{isReceivable?"Thu hồi nợ":"Trả nợ"}</button>
       <button type="button" onClick={()=>{setShowEdit(v=>!v);setShowPay(false);}} className={secondary}><Pencil className="size-3.5"/>Sửa</button>
     </div>}
-    {showPay&&!debt.archived&&<BottomSheet open={showPay && !debt.archived} onClose={()=>setShowPay(false)} label={`Thanh toán ${debt.title}`} panelClassName="!h-[100dvh] !max-h-[100dvh] !rounded-none sm:!max-w-[720px] sm:!rounded-t-3xl">
+    {showPay&&!debt.archived&&<BottomSheet open={showPay && !debt.archived} onClose={()=>setShowPay(false)} label={`Thanh toán ${debt.title}`} panelClassName="fin-fullscreen-sheet !rounded-none sm:!max-w-[720px] sm:!rounded-t-3xl">
     {showPay&&!debt.archived&&<form action={repayPersonalDebtAction} onSubmit={stampKey} className="flex min-h-full flex-col space-y-4 px-4 pb-[max(env(safe-area-inset-bottom),20px)] pt-2 sm:px-6">
       <RequestKeyInput/><input type="hidden" name="debt_id" value={debt.id}/>
       <div className="sticky top-0 z-10 flex items-center justify-between gap-2 border-b border-[var(--border)] bg-[var(--card)] py-3"><div><p className="text-xs font-bold text-[var(--primary)]">{debt.party_name}</p><h3 className="text-xl font-black">{isReceivable?"Thu hồi nợ":"Trả nợ"}</h3><p className="mt-1 text-xs text-[var(--muted-foreground)]">Dư nợ: {fmt(debt.outstanding_minor)}</p></div><button type="button" onClick={()=>setShowPay(false)} aria-label="Đóng thanh toán" className={secondary}><X className="size-4"/></button></div>
@@ -90,7 +90,7 @@ function DebtCard({debt,events,accounts,today}:{debt:DebtRow;events:DebtEvent[];
       <div className="sticky bottom-0 mt-auto border-t border-[var(--border)] bg-[var(--card)] py-3"><PendingSubmitButton idleLabel={isReceivable?"Xác nhận thu hồi":"Xác nhận trả nợ"} pendingLabel="Đang xử lý..." className="fin-primary-btn w-full"/></div>
     </form>}
     </BottomSheet>}
-    {showEdit&&!debt.archived&&<BottomSheet open={showEdit && !debt.archived} onClose={()=>setShowEdit(false)} label={`Sửa công nợ ${debt.title}`} panelClassName="!h-[100dvh] !max-h-[100dvh] !rounded-none sm:!max-w-[720px] sm:!rounded-t-3xl">
+    {showEdit&&!debt.archived&&<BottomSheet open={showEdit && !debt.archived} onClose={()=>setShowEdit(false)} label={`Sửa công nợ ${debt.title}`} panelClassName="fin-fullscreen-sheet !rounded-none sm:!max-w-[720px] sm:!rounded-t-3xl">
     {showEdit&&!debt.archived&&<form action={updatePersonalDebtAction} className="flex min-h-full flex-col gap-4 px-4 pb-[max(env(safe-area-inset-bottom),20px)] pt-2 sm:px-6">
       <div className="sticky top-0 z-10 flex items-center justify-between gap-2 border-b border-[var(--border)] bg-[var(--card)] py-3"><h3 className="text-xl font-black">Sửa thông tin công nợ</h3><button type="button" onClick={()=>setShowEdit(false)} aria-label="Đóng sửa công nợ" className={secondary}><X className="size-4"/></button></div>
       <input type="hidden" name="debt_id" value={debt.id}/><input type="hidden" name="archived" value="0"/>

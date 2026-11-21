@@ -114,3 +114,19 @@ export async function transferFamilyFundAction(form: FormData) {
     return mode==="deposit"?"Đã gửi tiền vào quỹ. Đây là chuyển khoản nội bộ, không phải chi tiêu.":"Đã rút tiền từ quỹ về tài khoản sử dụng.";
   });
 }
+
+/** Delete an untouched fund; archive an empty fund with ledger history. RPC validates ownership and blocks funded historical accounts. */
+export async function deleteFamilyFundAction(form: FormData) {
+  await mutate(async () => {
+    if (field(form,"confirmed") !== "yes") throw new Error("Cần xác nhận trước khi xóa quỹ.");
+    const { supabase } = await requireUser();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Versioned authenticated RPC added in V4.6.12.
+    const { data, error } = await (supabase as any).rpc("family_fund_delete_v4612", {
+      p_account_id: uuid(field(form,"fund_account_id"))
+    });
+    if (error) throw new Error(error.message);
+    return data === "archived"
+      ? "Quỹ đã được lưu trữ an toàn. Lịch sử giao dịch được giữ nguyên."
+      : "Đã xóa quỹ chưa phát sinh giao dịch. Không tạo giao dịch Thu/Chi.";
+  });
+}

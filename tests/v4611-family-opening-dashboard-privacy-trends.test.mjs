@@ -4,7 +4,7 @@ import {readFileSync} from "node:fs";
 import {join} from "node:path";
 const read = (name) => readFileSync(join(import.meta.dirname,"..",name),"utf8");
 
-test("V4.6.11 creates family funds with a true opening balance rather than fake transaction",()=>{
+test("V4.6.12 creates family funds with a true opening balance rather than fake transaction",()=>{
   const sql=read("supabase/migrations/20261121190000_family_fund_opening_v4611.sql");
   const actions=read("features/accounts/family-fund-actions.ts");
   const ui=read("components/family-savings-panel.tsx");
@@ -18,7 +18,7 @@ test("V4.6.11 creates family funds with a true opening balance rather than fake 
   assert.match(ui,/Khai báo số dư đầu kỳ/);
 });
 
-test("V4.6.11 privacy toggle is global in toolbar; numbers are masked across Dashboard",()=>{
+test("V4.6.12 privacy toggle is global in toolbar; numbers are masked across Dashboard",()=>{
   const header=read("components/app-header.tsx");
   const root=read("app/layout.tsx");
   const visibility=read("components/dashboard-money.tsx");
@@ -38,7 +38,7 @@ test("V4.6.11 privacy toggle is global in toolbar; numbers are masked across Das
   assert.match(chart,/data-fin-money/);
 });
 
-test("V4.6.11 financial trend compares grouped income/expense bars with a separate cash-balance series",()=>{
+test("V4.6.12 financial trend compares grouped income/expense bars with a separate cash-balance series",()=>{
   const chart=read("components/cashflow-chart.tsx");
   assert.match(chart,/barWidth/);
   assert.match(chart,/row\.income/);
